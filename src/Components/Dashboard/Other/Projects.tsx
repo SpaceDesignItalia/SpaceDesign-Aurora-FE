@@ -7,6 +7,7 @@ import RemoveRedEyeRoundedIcon from "@mui/icons-material/RemoveRedEyeRounded";
 interface ProjectConfig {
   id?: number;
   projectImagePath?: string;
+  projectCompany?: string;
   projectName?: string;
   creationDate?: Date;
   projectStatus?: ProjectStatusConfig;
@@ -23,8 +24,10 @@ export default function Projects() {
   const [projects, setProjects] = useState<ProjectConfig[]>([
     {
       id: 1,
-      projectImagePath: "https://via.placeholder.com/150",
-      projectName: "Project A",
+      projectImagePath:
+        "https://media.licdn.com/dms/image/D4D0BAQFRoHQIrEZqIw/company-logo_200_200/0/1709029507756/syllog_ai_logo?e=2147483647&v=beta&t=I63DzyaIy0PfDucirOvzFHryIb1I1Td3YMb9t7KIbRY",
+      projectCompany: "Syllog Ai",
+      projectName: "Sito Web",
       creationDate: new Date(),
       projectStatus: {
         idStatus: 1,
@@ -39,6 +42,7 @@ export default function Projects() {
     {
       id: 2,
       projectImagePath: "https://via.placeholder.com/150",
+      projectCompany: "Company B",
       projectName: "Project B",
       creationDate: new Date(),
       projectStatus: {
@@ -54,6 +58,7 @@ export default function Projects() {
     {
       id: 3,
       projectImagePath: "https://via.placeholder.com/150",
+      projectCompany: "Company C",
       projectName: "Project C",
       creationDate: new Date(),
       projectStatus: {
@@ -103,8 +108,13 @@ export default function Projects() {
                       alt={project.projectName}
                       className="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
                     />
-                    <div className="text-sm font-medium leading-6 text-gray-900">
-                      {project.projectName}
+                    <div className="flex flex-col">
+                      <div className="text-sm font-medium leading-6 text-gray-900">
+                        {project.projectCompany}
+                      </div>
+                      <div className="text-xs font-medium leading-6 text-gray-600">
+                        {project.projectName}
+                      </div>
                     </div>
                     <Menu as="div" className="relative ml-auto">
                       <Menu.Button className="-m-2.5 block p-2.5 text-gray-400 hover:text-gray-500">
