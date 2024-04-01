@@ -4,6 +4,7 @@ import { Spinner } from "@nextui-org/react";
 import axios from "axios";
 import { API_URL } from "./API/API";
 import Dashboard from "./Pages/Dashboard/Dashboard";
+import Sidebar from "./Components/Layout/Sidebar";
 
 const App: React.FC = () => {
   const [isAuth, setIsAuth] = useState<boolean>(true);
@@ -38,6 +39,8 @@ const App: React.FC = () => {
 
   return (
     <>
+      <Sidebar />
+
       <Routes>{/* <Route element={<Dashboard />} path="/login" /> */}</Routes>
       <ProtectedRoutes isAuth={isAuth} />
     </>
