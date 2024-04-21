@@ -5,6 +5,10 @@ import axios from "axios";
 import { API_URL } from "./API/API";
 import Dashboard from "./Pages/Dashboard/Dashboard";
 import Sidebar from "./Components/Layout/Sidebar";
+import CustomerDashboard from "./Pages/Customer/CustomerDashboard";
+import PermissionDashboard from "./Pages/Permission/PermissionDashboard";
+import AddCustomerPage from "./Pages/Customer/AddCustomerPage";
+import AddCompanyPage from "./Pages/Customer/AddCompanyPage";
 
 const App: React.FC = () => {
   const [isAuth, setIsAuth] = useState<boolean>(true);
@@ -65,6 +69,22 @@ const ProtectedRoutes: React.FC<{ isAuth: boolean }> = ({ isAuth }) => {
     <Routes>
       <Route element={<Outlet />}>
         <Route element={<Dashboard />} path="/" />
+        <Route
+          element={<CustomerDashboard />}
+          path="/administration/customer"
+        />
+        <Route
+          element={<AddCustomerPage />}
+          path="/administration/customer/add-customer"
+        />
+        <Route
+          element={<AddCompanyPage />}
+          path="/administration/customer/add-company"
+        />
+        <Route
+          element={<PermissionDashboard />}
+          path="/administration/permission"
+        />
       </Route>
     </Routes>
   );
