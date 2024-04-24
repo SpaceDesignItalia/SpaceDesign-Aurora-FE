@@ -1,11 +1,115 @@
+import React, { useState } from "react";
+import axios from "axios";
 import { Input, Button } from "@nextui-org/react";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import SaveIcon from "@mui/icons-material/Save";
+import CompanyAlert from "./CompanyAlert";
+
+interface Company {
+  companyName: string;
+  companyAddress: string;
+  companyEmail: string;
+  companyPhone: string;
+}
+
+interface AlertData {
+  isOpen: boolean;
+  alertTitle: string;
+  alertDescription: string;
+  alertColor: string;
+}
 
 export default function AddCompanyModel() {
+  const [newCompanyData, setNewCompanyData] = useState<Company>({
+    companyName: "",
+    companyAddress: "",
+    companyEmail: "",
+    companyPhone: "",
+  });
+  const [isAddingData, setIsAddingData] = useState<boolean>(false);
+  const [alertData, setAlertData] = useState<AlertData>({
+    isOpen: false,
+    alertTitle: "",
+    alertDescription: "",
+    alertColor: "",
+  });
+
+  function handleCompanyNameChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.value.length <= 150) {
+      setNewCompanyData({ ...newCompanyData, companyName: e.target.value });
+    }
+  }
+
+  function handleCompanyAddressChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.value.length <= 150) {
+      setNewCompanyData({ ...newCompanyData, companyAddress: e.target.value });
+    }
+  }
+
+  function handleCompanyEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.value.length <= 100) {
+      setNewCompanyData({ ...newCompanyData, companyEmail: e.target.value });
+    }
+  }
+
+  function handleCompanyPhoneChange(e) {
+    const input = e.target.value.replace(/\D/g, ""); // Rimuove tutti i caratteri non numerici
+    if (input.length <= 15) {
+      setNewCompanyData({ ...newCompanyData, companyPhone: input });
+    }
+  }
+
+  function checkAllDataCompiled() {
+    if (
+      newCompanyData.companyName !== "" &&
+      newCompanyData.companyAddress !== "" &&
+      newCompanyData.companyEmail !== "" &&
+      newCompanyData.companyPhone !== ""
+    ) {
+      return false;
+    }
+    return true;
+  }
+
+  async function handleCreateNewCompany() {
+    try {
+      console.log(newCompanyData);
+      const res = await axios.post("/Company/POST/AddCompany", newCompanyData);
+      setIsAddingData(true);
+
+      if (res.status === 200) {
+        setAlertData({
+          isOpen: true,
+          alertTitle: "Operazione completata",
+          alertDescription: "L'azienda è stata aggiunta con successo.",
+          alertColor: "green",
+        });
+        setTimeout(() => {
+          window.location.href = "/administration/customer";
+        }, 2000);
+        console.log("Successo:", res.data);
+      }
+      // Esegui altre azioni dopo la creazione dell'azienda, se necessario
+    } catch (error) {
+      setAlertData({
+        isOpen: true,
+        alertTitle: "Errore durante l'operazione",
+        alertDescription:
+          "Si è verificato un errore durante l'aggiunta dell'azienda. Per favore, riprova più tardi.",
+        alertColor: "red",
+      });
+
+      setTimeout(() => {
+        window.location.href = "/administration/customer";
+      }, 2000);
+      console.error("Errore durante la creazione dell'azienda:", error);
+      // Gestisci l'errore in modo appropriato, ad esempio mostrando un messaggio all'utente
+    }
+  }
+
   return (
-    <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
-      <form action="#" method="POST">
+    <>
+      <CompanyAlert AlertData={alertData} />
+      <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
         <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
           <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
             <div>
@@ -26,7 +130,14 @@ export default function AddCompanyModel() {
                 >
                   Nome azienda
                 </label>
-                <Input variant="bordered" type="email" radius="sm" fullWidth />
+                <Input
+                  variant="bordered"
+                  type="text"
+                  radius="sm"
+                  value={newCompanyData.companyName}
+                  onChange={handleCompanyNameChange}
+                  fullWidth
+                />
               </div>
 
               <div className="col-span-6 sm:col-span-6">
@@ -36,7 +147,14 @@ export default function AddCompanyModel() {
                 >
                   Indirizzo
                 </label>
-                <Input variant="bordered" type="text" radius="sm" fullWidth />
+                <Input
+                  variant="bordered"
+                  type="text"
+                  radius="sm"
+                  value={newCompanyData.companyAddress}
+                  onChange={handleCompanyAddressChange}
+                  fullWidth
+                />
               </div>
 
               <div className="col-span-6 sm:col-span-6">
@@ -46,7 +164,14 @@ export default function AddCompanyModel() {
                 >
                   Email azienda
                 </label>
-                <Input variant="bordered" type="email" radius="sm" fullWidth />
+                <Input
+                  variant="bordered"
+                  type="email"
+                  radius="sm"
+                  value={newCompanyData.companyEmail}
+                  onChange={handleCompanyEmailChange}
+                  fullWidth
+                />
               </div>
 
               <div className="col-span-6 sm:col-span-6">
@@ -56,7 +181,14 @@ export default function AddCompanyModel() {
                 >
                   Numero di telefono
                 </label>
-                <Input variant="bordered" type="number" radius="sm" fullWidth />
+                <Input
+                  variant="bordered"
+                  type="text"
+                  radius="sm"
+                  value={newCompanyData.companyPhone}
+                  onChange={handleCompanyPhoneChange}
+                  fullWidth
+                />
               </div>
             </div>
           </div>
@@ -65,13 +197,16 @@ export default function AddCompanyModel() {
               color="success"
               className="text-white"
               radius="sm"
-              startContent={<SaveIcon />}
+              startContent={!isAddingData && <SaveIcon />}
+              isDisabled={checkAllDataCompiled()}
+              isLoading={isAddingData}
+              onClick={handleCreateNewCompany}
             >
-              Salva azienda
+              {isAddingData ? "Salvando l'azienda..." : "Salva azienda"}
             </Button>
           </div>
         </div>
-      </form>
-    </div>
+      </div>
+    </>
   );
 }

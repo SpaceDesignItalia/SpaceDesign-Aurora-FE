@@ -1,22 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Fragment } from "react";
-import io from "socket.io-client";
-
-const socket = io("http://localhost:3000/API/v1/Permission/GET"); // Sostituisci con il tuo indirizzo del server Socket.IO
 
 export default function PermissionTable() {
   const [locations, setLocations] = useState([]);
-
-  useEffect(() => {
-    // Funzione per ricevere i dati dal server via WebSocket
-    socket.on("updateData", (data) => {
-      console.log("Dati ricevuti:", data); // Aggiunto console.log per visualizzare i dati ricevuti
-      setLocations(data);
-    });
-
-    // Cleanup: disconnetti il socket quando il componente viene smontato
-    return () => socket.disconnect();
-  }, []);
 
   return {
     /* <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">

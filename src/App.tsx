@@ -11,6 +11,7 @@ import AddCustomerPage from "./Pages/Customer/AddCustomerPage";
 import AddCompanyPage from "./Pages/Customer/AddCompanyPage";
 
 const App: React.FC = () => {
+  axios.defaults.baseURL = API_URL;
   const [isAuth, setIsAuth] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
