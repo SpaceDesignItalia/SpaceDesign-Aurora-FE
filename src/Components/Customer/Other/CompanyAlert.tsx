@@ -30,14 +30,14 @@ export default function CompanyAlert({ AlertData }: { AlertData: AlertData }) {
                   />
                 ) : (
                   <XCircleIcon
-                    className={`h-5 w-5 text-${AlertData.alertColor}-400`}
+                    className={`h-5 w-5 text-${AlertData.alertColor}-700`}
                     aria-hidden="true"
                   />
                 )}
               </div>
               <div className="ml-3">
                 <h3
-                  className={`text-sm font-medium text-${AlertData.alertColor}-800`}
+                  className={`text-sm font-medium text-${AlertData.alertColor}-700`}
                 >
                   {AlertData.alertTitle}
                 </h3>

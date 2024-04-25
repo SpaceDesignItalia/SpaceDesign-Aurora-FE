@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Input, Button } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
 import CompanyAlert from "./CompanyAlert";
+import { useParams } from "react-router-dom";
 
 interface Company {
-  companyName: string;
-  companyAddress: string;
-  companyEmail: string;
-  companyPhone: string;
+  CompanyId: number;
+  CompanyName: string;
+  CompanyAddress: string;
+  CompanyEmail: string;
+  CompanyPhone: string;
 }
 
 interface AlertData {
@@ -18,12 +20,21 @@ interface AlertData {
   alertColor: string;
 }
 
-export default function AddCompanyModel() {
+export default function EditCompanyModel() {
+  const { CompanyId, CompanyName } = useParams();
   const [newCompanyData, setNewCompanyData] = useState<Company>({
-    companyName: "",
-    companyAddress: "",
-    companyEmail: "",
-    companyPhone: "",
+    CompanyId: 0,
+    CompanyName: "",
+    CompanyAddress: "",
+    CompanyEmail: "",
+    CompanyPhone: "",
+  });
+  const [initialCompanyData, setInitialCompanyData] = useState<Company>({
+    CompanyId: 0,
+    CompanyName: "",
+    CompanyAddress: "",
+    CompanyEmail: "",
+    CompanyPhone: "",
   });
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>({
@@ -33,37 +44,48 @@ export default function AddCompanyModel() {
     alertColor: "",
   });
 
+  useEffect(() => {
+    axios
+      .get("/Company/GET/GetCompanyByIdAndName", {
+        params: { CompanyId: CompanyId, CompanyName: CompanyName },
+      })
+      .then((res) => {
+        setNewCompanyData(res.data[0]);
+        setInitialCompanyData(res.data[0]);
+      });
+  }, []);
+
   function handleCompanyNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.value.length <= 150) {
-      setNewCompanyData({ ...newCompanyData, companyName: e.target.value });
+      setNewCompanyData({ ...newCompanyData, CompanyName: e.target.value });
     }
   }
 
   function handleCompanyAddressChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.value.length <= 150) {
-      setNewCompanyData({ ...newCompanyData, companyAddress: e.target.value });
+      setNewCompanyData({ ...newCompanyData, CompanyAddress: e.target.value });
     }
   }
 
   function handleCompanyEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.value.length <= 100) {
-      setNewCompanyData({ ...newCompanyData, companyEmail: e.target.value });
+      setNewCompanyData({ ...newCompanyData, CompanyEmail: e.target.value });
     }
   }
 
-  function handleCompanyPhoneChange(e) {
+  function handleCompanyPhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
     const input = e.target.value.replace(/\D/g, ""); // Rimuove tutti i caratteri non numerici
     if (input.length <= 15) {
-      setNewCompanyData({ ...newCompanyData, companyPhone: input });
+      setNewCompanyData({ ...newCompanyData, CompanyPhone: input });
     }
   }
 
   function checkAllDataCompiled() {
     if (
-      newCompanyData.companyName !== "" &&
-      newCompanyData.companyAddress !== "" &&
-      newCompanyData.companyEmail !== "" &&
-      newCompanyData.companyPhone !== ""
+      newCompanyData.CompanyName !== initialCompanyData.CompanyName ||
+      newCompanyData.CompanyAddress !== initialCompanyData.CompanyAddress ||
+      newCompanyData.CompanyEmail !== initialCompanyData.CompanyEmail ||
+      newCompanyData.CompanyPhone !== initialCompanyData.CompanyPhone
     ) {
       return false;
     }
@@ -74,14 +96,16 @@ export default function AddCompanyModel() {
     try {
       console.log(newCompanyData);
       const res = await axios
-        .post("/Company/POST/AddCompany", newCompanyData)
+        .put("/Company/UPDATE/UpdateCompanyData", {
+          CompanyData: newCompanyData,
+        })
         .then(setIsAddingData(true));
 
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
           alertTitle: "Operazione completata",
-          alertDescription: "L'azienda è stata aggiunta con successo.",
+          alertDescription: "L'azienda è stata modificata con successo.",
           alertColor: "green",
         });
         setTimeout(() => {
@@ -95,14 +119,14 @@ export default function AddCompanyModel() {
         isOpen: true,
         alertTitle: "Errore durante l'operazione",
         alertDescription:
-          "Si è verificato un errore durante l'aggiunta dell'azienda. Per favore, riprova più tardi.",
+          "Si è verificato un errore durante la modifica dell'azienda. Per favore, riprova più tardi.",
         alertColor: "red",
       });
 
       setTimeout(() => {
         window.location.href = "/administration/customer";
       }, 2000);
-      console.error("Errore durante la creazione dell'azienda:", error);
+      console.error("Errore durante l'aggiornamento dell'azienda:", error);
       // Gestisci l'errore in modo appropriato, ad esempio mostrando un messaggio all'utente
     }
   }
@@ -115,11 +139,10 @@ export default function AddCompanyModel() {
           <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
             <div>
               <h3 className="text-base font-semibold leading-6 text-gray-900">
-                Aggiungi azienda
+                Modifica azienda
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                In questo pannello potrai aggiungere una nuova azienda al
-                database.
+                In questo pannello potrai modificare un'azienda dal database.
               </p>
             </div>
 
@@ -135,7 +158,7 @@ export default function AddCompanyModel() {
                   variant="bordered"
                   type="text"
                   radius="sm"
-                  value={newCompanyData.companyName}
+                  value={newCompanyData.CompanyName}
                   onChange={handleCompanyNameChange}
                   fullWidth
                 />
@@ -152,7 +175,7 @@ export default function AddCompanyModel() {
                   variant="bordered"
                   type="text"
                   radius="sm"
-                  value={newCompanyData.companyAddress}
+                  value={newCompanyData.CompanyAddress}
                   onChange={handleCompanyAddressChange}
                   fullWidth
                 />
@@ -169,7 +192,7 @@ export default function AddCompanyModel() {
                   variant="bordered"
                   type="email"
                   radius="sm"
-                  value={newCompanyData.companyEmail}
+                  value={newCompanyData.CompanyEmail}
                   onChange={handleCompanyEmailChange}
                   fullWidth
                 />
@@ -186,7 +209,7 @@ export default function AddCompanyModel() {
                   variant="bordered"
                   type="text"
                   radius="sm"
-                  value={newCompanyData.companyPhone}
+                  value={newCompanyData.CompanyPhone}
                   onChange={handleCompanyPhoneChange}
                   fullWidth
                 />
@@ -203,7 +226,7 @@ export default function AddCompanyModel() {
               isLoading={isAddingData}
               onClick={handleCreateNewCompany}
             >
-              {isAddingData ? "Salvando l'azienda..." : "Salva azienda"}
+              {isAddingData ? "Salvando le modifiche..." : "Salva modifiche"}
             </Button>
           </div>
         </div>

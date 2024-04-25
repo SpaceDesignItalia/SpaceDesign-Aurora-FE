@@ -3,6 +3,7 @@ import {
   Autocomplete,
   AutocompleteItem,
   Button,
+  Link,
 } from "@nextui-org/react";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import SaveIcon from "@mui/icons-material/Save";
@@ -85,7 +86,7 @@ export default function AddCustomerModel() {
                 >
                   Azienda
                 </label>
-                <div className="flex flex-row gap-4">
+                <div className="flex flex-col md:flex-row gap-4">
                   <Autocomplete
                     defaultItems={company}
                     placeholder="Seleziona azienda"
@@ -115,6 +116,8 @@ export default function AddCustomerModel() {
                     )}
                   </Autocomplete>
                   <Button
+                    as={Link}
+                    href="/administration/customer/add-company"
                     color="primary"
                     radius="sm"
                     startContent={<AddRoundedIcon />}

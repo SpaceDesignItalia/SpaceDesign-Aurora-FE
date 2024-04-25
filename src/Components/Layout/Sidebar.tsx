@@ -63,6 +63,7 @@ export default function Sidebar() {
           subRoutes: [
             "/administration/customer/add-customer",
             "/administration/customer/add-company",
+            "/administration/customer/edit-company",
           ],
         },
       }),
