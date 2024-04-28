@@ -87,17 +87,17 @@ export default function CustomersTable() {
     }
   }
 
-  async function DeleteCompany(CompanyId: any) {
+  async function DeleteCustomer(CustomerId: any) {
     try {
-      const res = await axios.delete("/Company/DELETE/DeleteCompany", {
-        params: { CompanyId: CompanyId },
+      const res = await axios.delete("/Customer/DELETE/DeleteCustomer", {
+        params: { CustomerId: CustomerId },
       });
 
       if (res.status === 200) {
         fetchData();
       }
     } catch (error) {
-      console.error("Errore nella cancellazione dell'azienda:", error);
+      console.error("Errore nella cancellazione del cliente:", error);
     }
   }
 
@@ -171,7 +171,7 @@ export default function CustomersTable() {
                     startContent={<DeleteOutlinedIcon />}
                     aria-label="Remove"
                     aria-labelledby="Remove"
-                    onClick={() => DeleteCompany(customer.CustomerId)}
+                    onClick={() => DeleteCustomer(customer.CustomerId)}
                   >
                     Rimuovi
                   </DropdownItem>
