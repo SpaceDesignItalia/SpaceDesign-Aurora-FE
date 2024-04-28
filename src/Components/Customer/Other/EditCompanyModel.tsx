@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Input, Button } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
-import CompanyAlert from "./CompanyAlert";
+import StatusAlert from "./StatusAlert";
 import { useParams } from "react-router-dom";
 
 interface Company {
@@ -50,8 +50,15 @@ export default function EditCompanyModel() {
         params: { CompanyId: CompanyId, CompanyName: CompanyName },
       })
       .then((res) => {
-        setNewCompanyData(res.data[0]);
-        setInitialCompanyData(res.data[0]);
+        const companyData = res.data[0];
+        // Verifica se CompanyPhone è null e imposta una stringa vuota se lo è
+        const updatedCompanyData = {
+          ...companyData,
+          CompanyPhone:
+            companyData.CompanyPhone !== null ? "" : companyData.CompanyPhone,
+        };
+        setNewCompanyData(updatedCompanyData);
+        setInitialCompanyData(updatedCompanyData);
       });
   }, []);
 
@@ -92,9 +99,8 @@ export default function EditCompanyModel() {
     return true;
   }
 
-  async function handleCreateNewCompany() {
+  async function handleUpdateCompany() {
     try {
-      console.log(newCompanyData);
       const res = await axios
         .put("/Company/UPDATE/UpdateCompanyData", {
           CompanyData: newCompanyData,
@@ -133,7 +139,7 @@ export default function EditCompanyModel() {
 
   return (
     <>
-      <CompanyAlert AlertData={alertData} />
+      <StatusAlert AlertData={alertData} />
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
         <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
           <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
@@ -224,7 +230,7 @@ export default function EditCompanyModel() {
               startContent={!isAddingData && <SaveIcon />}
               isDisabled={checkAllDataCompiled()}
               isLoading={isAddingData}
-              onClick={handleCreateNewCompany}
+              onClick={handleUpdateCompany}
             >
               {isAddingData ? "Salvando le modifiche..." : "Salva modifiche"}
             </Button>

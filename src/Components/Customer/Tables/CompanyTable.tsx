@@ -15,7 +15,6 @@ import {
   Pagination,
   SortDescriptor,
   Link,
-  useDisclosure,
 } from "@nextui-org/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import AddBusinessRoundedIcon from "@mui/icons-material/AddBusinessRounded";
@@ -119,18 +118,12 @@ export default function CompanyTable() {
       const cellValue = company[columnKey as keyof Company];
 
       switch (columnKey) {
-        case "name":
-          return <p>{cellValue}</p>;
-        case "company":
+        case "CompanyPhone":
           return (
             <div className="flex flex-col">
-              <p className="text-bold text-small capitalize">{cellValue}</p>
-            </div>
-          );
-        case "phone":
-          return (
-            <div className="flex flex-col">
-              <p className="text-bold text-small capitalize">{cellValue}</p>
+              <p className="text-bold text-small">
+                {cellValue == null ? "Non presente" : cellValue}
+              </p>
             </div>
           );
         case "actions":
@@ -273,7 +266,7 @@ export default function CompanyTable() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Nessun cliente trovato!"} items={items}>
+        <TableBody emptyContent={"Nessun azienda trovata!"} items={items}>
           {(item) => (
             <TableRow key={item.CompanyId}>
               {(columnKey) => (

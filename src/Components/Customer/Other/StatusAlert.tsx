@@ -9,7 +9,7 @@ interface AlertData {
   alertColor: string;
 }
 
-export default function CompanyAlert({ AlertData }: { AlertData: AlertData }) {
+export default function StatusAlert({ AlertData }: { AlertData: AlertData }) {
   return (
     <>
       {AlertData.isOpen && (

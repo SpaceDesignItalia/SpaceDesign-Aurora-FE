@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Input, Button } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
-import CompanyAlert from "./CompanyAlert";
+import StatusAlert from "./StatusAlert";
 
 interface Company {
   companyName: string;
@@ -23,7 +23,7 @@ export default function AddCompanyModel() {
     companyName: "",
     companyAddress: "",
     companyEmail: "",
-    companyPhone: "",
+    companyPhone: null,
   });
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>({
@@ -62,8 +62,7 @@ export default function AddCompanyModel() {
     if (
       newCompanyData.companyName !== "" &&
       newCompanyData.companyAddress !== "" &&
-      newCompanyData.companyEmail !== "" &&
-      newCompanyData.companyPhone !== ""
+      newCompanyData.companyEmail !== ""
     ) {
       return false;
     }
@@ -72,7 +71,6 @@ export default function AddCompanyModel() {
 
   async function handleCreateNewCompany() {
     try {
-      console.log(newCompanyData);
       const res = await axios
         .post("/Company/POST/AddCompany", newCompanyData)
         .then(setIsAddingData(true));
@@ -109,7 +107,7 @@ export default function AddCompanyModel() {
 
   return (
     <>
-      <CompanyAlert AlertData={alertData} />
+      <StatusAlert AlertData={alertData} />
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
         <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
           <div className="space-y-6 bg-white px-4 py-6 sm:p-6">

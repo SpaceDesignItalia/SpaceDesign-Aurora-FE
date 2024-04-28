@@ -6,19 +6,32 @@ import {
   ModalFooter,
   Button,
 } from "@nextui-org/react";
-import { UserCircleIcon } from "@heroicons/react/20/solid";
-
-interface Company {
-  CompanyId: number;
-  CompanyName: string;
-  CompanyAddress: string;
-  CompanyEmail: string;
-  CompanyPhone: string;
-}
+import { Accordion, AccordionItem } from "@nextui-org/react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function ViewCompanyModal({ isOpen, isClosed, CompanyData }) {
+  const [companyMembers, setCompanyMembers] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("/Company/GET/GetCompanyMembersById", {
+        params: { CompanyId: CompanyData.CompanyId },
+      })
+      .then((res) => {
+        setCompanyMembers(res.data);
+      });
+  }, [isOpen]);
+
   return (
-    <Modal isOpen={isOpen} onOpenChange={isClosed} size="5xl" backdrop="blur">
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={isClosed}
+      size="5xl"
+      scrollBehavior="inside"
+      placement="center"
+      backdrop="blur"
+    >
       <ModalContent>
         {(isClosed) => (
           <>
@@ -57,7 +70,9 @@ export default function ViewCompanyModal({ isOpen, isClosed, CompanyData }) {
                       Telefono azienda
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                      {CompanyData.CompanyPhone}
+                      {CompanyData.CompanyPhone == null
+                        ? "Non presente"
+                        : CompanyData.CompanyPhone}
                     </dd>
                   </div>
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -65,23 +80,48 @@ export default function ViewCompanyModal({ isOpen, isClosed, CompanyData }) {
                       Clienti associati
                     </dt>
                     <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                      <ul
-                        role="list"
-                        className="divide-y divide-gray-100 rounded-md border border-gray-200"
-                      >
-                        <li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-6">
-                          <div className="flex w-0 flex-1 items-center">
-                            <span className="truncate font-medium">
-                              resume_back_end_developer.pdf
-                            </span>
-                          </div>
-                          <div className="ml-4 flex-shrink-0">
-                            <Button color="primary" variant="ghost" radius="sm">
-                              Visualizza
-                            </Button>
-                          </div>
-                        </li>
-                      </ul>
+                      {companyMembers.length === 0 ? (
+                        <p>Nessun membro trovato</p>
+                      ) : (
+                        <Accordion variant="bordered" isCompact>
+                          {companyMembers.map((member) => (
+                            <AccordionItem
+                              key="1"
+                              aria-label={member.customerfullname}
+                              title={member.customerfullname}
+                            >
+                              <div class="border-t border-gray-100">
+                                <dl class="divide-y divide-gray-100">
+                                  <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                    <dt class="text-sm font-medium leading-6 text-gray-900">
+                                      Nome Cliente
+                                    </dt>
+                                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                      {member.customerfullname}
+                                    </dd>
+                                  </div>
+                                  <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                    <dt class="text-sm font-medium leading-6 text-gray-900">
+                                      Email Cliente
+                                    </dt>
+                                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                      {member.CustomerEmail}
+                                    </dd>
+                                  </div>
+                                  <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                    <dt class="text-sm font-medium leading-6 text-gray-900">
+                                      Telefono Cliente
+                                    </dt>
+                                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                      {member.CustomerPhone}
+                                    </dd>
+                                  </div>
+                                </dl>
+                              </div>
+                            </AccordionItem>
+                          ))}
+                        </Accordion>
+                      )}
                     </dd>
                   </div>
                 </dl>
