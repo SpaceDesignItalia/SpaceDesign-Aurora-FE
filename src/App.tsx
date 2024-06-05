@@ -11,6 +11,7 @@ import AddCustomerPage from "./Pages/Customer/AddCustomerPage";
 import AddCompanyPage from "./Pages/Customer/AddCompanyPage";
 import EditCompanyPage from "./Pages/Customer/EditCompanyPage";
 import EditCustomerPage from "./Pages/Customer/EditCustomerPage";
+import AddRolePage from "./Pages/Permission/AddRolePage";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
@@ -95,6 +96,10 @@ const ProtectedRoutes: React.FC<{ isAuth: boolean }> = ({ isAuth }) => {
         <Route
           element={<PermissionDashboard />}
           path="/administration/permission"
+        />
+        <Route
+          element={<AddRolePage />}
+          path="/administration/permission/add-permission"
         />
       </Route>
     </Routes>

@@ -255,6 +255,7 @@ export default function CompanyTable() {
         topContent={topContent}
         topContentPlacement="outside"
         onSortChange={setSortDescriptor}
+        radius="sm"
       >
         <TableHeader columns={columns}>
           {(column) => (

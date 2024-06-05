@@ -62,6 +62,7 @@ export default function Sidebar() {
           href: "/administration/customer",
           subRoutes: [
             "/administration/customer/add-customer",
+            "/administration/customer/edit-customer",
             "/administration/customer/add-company",
             "/administration/customer/edit-company",
           ],
