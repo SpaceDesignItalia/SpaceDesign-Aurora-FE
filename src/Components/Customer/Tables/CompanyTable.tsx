@@ -24,6 +24,7 @@ import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
 import ViewCompanyModal from "../Other/ViewCompanyModal";
+import ConfirmDeleteCompanyModal from "../Other/ConfirmDeleteCompanyModal";
 
 interface Company {
   CompanyId: number;
@@ -38,8 +39,12 @@ interface ModalData {
   open: boolean;
 }
 
+interface ModalDeleteData {
+  Company: Company;
+  open: boolean;
+}
+
 const columns = [
-  { name: "ID", uid: "CompanyId" },
   { name: "Nome azienda", uid: "CompanyName" },
   { name: "Indirizzo Azienda", uid: "CompanyAddress" },
   { name: "Email Azienda", uid: "CompanyEmail" },
@@ -77,6 +82,17 @@ export default function CompanyTable() {
     open: false,
   });
 
+  const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
+    Company: {
+      CompanyId: 0,
+      CompanyName: "",
+      CompanyAddress: "",
+      CompanyEmail: "",
+      CompanyPhone: "",
+    },
+    open: false,
+  });
+
   async function SearchCompany(e: { target: { value: string } }) {
     const searchQuery = e.target.value.trim(); // Otteniamo il valore di ricerca e rimuoviamo gli spazi vuoti
     try {
@@ -89,10 +105,10 @@ export default function CompanyTable() {
     }
   }
 
-  async function DeleteCompany(CompanyId: any) {
+  async function DeleteCompany(CompanyData: any) {
     try {
       const res = await axios.delete("/Company/DELETE/DeleteCompany", {
-        params: { CompanyId: CompanyId },
+        params: { CompanyData },
       });
 
       if (res.status === 200) {
@@ -169,7 +185,13 @@ export default function CompanyTable() {
                     startContent={<DeleteOutlinedIcon />}
                     aria-label="Remove"
                     aria-labelledby="Remove"
-                    onClick={() => DeleteCompany(company.CompanyId)}
+                    onClick={() =>
+                      setModalDeleteData({
+                        ...modalDeleteData,
+                        open: true,
+                        Company: company,
+                      })
+                    }
                   >
                     Rimuovi
                   </DropdownItem>
@@ -243,7 +265,12 @@ export default function CompanyTable() {
         isClosed={() => setModalData({ ...modalData, open: false })}
         CompanyData={modalData.Company}
       />
-
+      <ConfirmDeleteCompanyModal
+        isOpen={modalDeleteData.open}
+        isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
+        CompanyData={modalDeleteData.Company}
+        DeleteCompany={DeleteCompany}
+      />
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky

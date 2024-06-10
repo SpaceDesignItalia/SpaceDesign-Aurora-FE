@@ -41,7 +41,7 @@ export default function AddCustomerModel() {
     CustomerName: "",
     CustomerSurname: "",
     CustomerEmail: "",
-    CustomerPhone: "",
+    CustomerPhone: null,
     CustomerPassword: "",
     CompanyId: "",
   });
@@ -93,7 +93,6 @@ export default function AddCustomerModel() {
       customerData.CustomerName !== "" &&
       customerData.CustomerSurname !== "" &&
       customerData.CustomerEmail !== "" &&
-      customerData.CustomerPhone !== "" &&
       customerData.CompanyId !== ""
     ) {
       return false;
@@ -101,7 +100,7 @@ export default function AddCustomerModel() {
     return true;
   }
 
-  function generateRandomPassword(length: number) {
+  async function generateRandomPassword(length: number) {
     const charset =
       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+{}[]|;:,.<>?";
     let password = "";
@@ -114,21 +113,19 @@ export default function AddCustomerModel() {
 
   async function handleCreateNewCustomer() {
     try {
-      setCustomerData({
-        ...customerData,
-        CustomerPassword: generateRandomPassword(14),
+      setIsAddingData(true);
+
+      const password = await generateRandomPassword(14);
+
+      const res = await axios.post("/Customer/POST/AddCustomer", {
+        customerData: { ...customerData, CustomerPassword: password },
       });
 
-      const res = await axios
-        .post("/Customer/POST/AddCustomer", customerData)
-        .then(setIsAddingData(true));
-
       if (res.status === 200) {
-        console.log("test");
         setAlertData({
           isOpen: true,
           alertTitle: "Operazione completata",
-          alertDescription: "L'azienda è stata aggiunta con successo.",
+          alertDescription: "Il cliente è stato aggiunto con successo.",
           alertColor: "green",
         });
         setTimeout(() => {
@@ -136,20 +133,21 @@ export default function AddCustomerModel() {
         }, 2000);
         console.log("Successo:", res.data);
       }
+
       // Esegui altre azioni dopo la creazione dell'azienda, se necessario
     } catch (error) {
       setAlertData({
         isOpen: true,
         alertTitle: "Errore durante l'operazione",
         alertDescription:
-          "Si è verificato un errore durante l'aggiunta dell'azienda. Per favore, riprova più tardi.",
+          "Si è verificato un errore durante l'aggiunta del cliente. Per favore, riprova più tardi.",
         alertColor: "red",
       });
 
       setTimeout(() => {
         window.location.href = "/administration/customer";
       }, 2000);
-      console.error("Errore durante la creazione dell'azienda:", error);
+      console.error("Errore durante la creazione del cliente:", error);
       // Gestisci l'errore in modo appropriato, ad esempio mostrando un messaggio all'utente
     }
   }

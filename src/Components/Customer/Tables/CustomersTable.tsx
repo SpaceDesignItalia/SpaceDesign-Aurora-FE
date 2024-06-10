@@ -24,6 +24,7 @@ import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
 import ViewCustomerModal from "../Other/ViewCustomerModal";
+import ConfirmDeleteCustomerModal from "../Other/ConfirmDeleteCustomerModal";
 
 interface Customer {
   CustomerId: number;
@@ -37,8 +38,12 @@ interface ModalData {
   open: boolean;
 }
 
+interface ModalDeleteData {
+  Customer: Customer;
+  open: boolean;
+}
+
 const columns = [
-  { name: "ID", uid: "CustomerId" },
   { name: "Nome Cliente", uid: "CustomerFullName" },
   { name: "Email Cliente", uid: "CustomerEmail" },
   { name: "Telefono Cliente", uid: "CustomerPhone" },
@@ -73,6 +78,15 @@ export default function CustomersTable() {
     },
     open: false,
   });
+  const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
+    Customer: {
+      CustomerId: 0,
+      CustomerFullName: "",
+      CustomerEmail: "",
+      CustomerPhone: "",
+    },
+    open: false,
+  });
 
   async function SearchCompany(e: { target: { value: string } }) {
     const searchQuery = e.target.value.trim(); // Otteniamo il valore di ricerca e rimuoviamo gli spazi vuoti
@@ -86,10 +100,10 @@ export default function CustomersTable() {
     }
   }
 
-  async function DeleteCustomer(CustomerId: any) {
+  async function DeleteCustomer(CustomerData: any) {
     try {
       const res = await axios.delete("/Customer/DELETE/DeleteCustomer", {
-        params: { CustomerId: CustomerId },
+        params: { CustomerData },
       });
 
       if (res.status === 200) {
@@ -114,18 +128,12 @@ export default function CustomersTable() {
       const cellValue = customer[columnKey as keyof Customer];
 
       switch (columnKey) {
-        case "name":
-          return <p>{cellValue}</p>;
-        case "company":
+        case "CustomerPhone":
           return (
             <div className="flex flex-col">
-              <p className="text-bold text-small capitalize">{cellValue}</p>
-            </div>
-          );
-        case "phone":
-          return (
-            <div className="flex flex-col">
-              <p className="text-bold text-small capitalize">{cellValue}</p>
+              <p className="text-bold text-small capitalize">
+                {cellValue == null ? "Non presente" : cellValue}
+              </p>
             </div>
           );
         case "actions":
@@ -170,7 +178,13 @@ export default function CustomersTable() {
                     startContent={<DeleteOutlinedIcon />}
                     aria-label="Remove"
                     aria-labelledby="Remove"
-                    onClick={() => DeleteCustomer(customer.CustomerId)}
+                    onClick={() =>
+                      setModalDeleteData({
+                        ...modalDeleteData,
+                        open: true,
+                        Customer: customer,
+                      })
+                    }
                   >
                     Rimuovi
                   </DropdownItem>
@@ -243,6 +257,12 @@ export default function CustomersTable() {
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
         CustomerData={modalData.Customer}
+      />
+      <ConfirmDeleteCustomerModal
+        isOpen={modalDeleteData.open}
+        isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
+        CustomerData={modalDeleteData.Customer}
+        DeleteCustomer={DeleteCustomer}
       />
 
       <Table

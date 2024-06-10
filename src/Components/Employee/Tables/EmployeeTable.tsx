@@ -44,7 +44,6 @@ interface ModalDeleteData {
 }
 
 const columns = [
-  { name: "ID", uid: "EmployeeId" },
   { name: "Nome Dipendente", uid: "EmployeeFullName" },
   { name: "Email Dipendente", uid: "EmployeeEmail" },
   { name: "Telefono Dipendente", uid: "EmployeePhone" },
@@ -104,7 +103,6 @@ export default function EmployeeTable() {
 
   async function DeleteEmployee(EmployeeData: any) {
     try {
-      console.log(EmployeeData);
       const res = await axios.delete("/Staffer/DELETE/DeleteStaffer", {
         params: { EmployeeData },
       });

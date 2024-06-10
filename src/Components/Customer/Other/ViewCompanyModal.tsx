@@ -65,16 +65,16 @@ export default function ViewCompanyModal({ isOpen, isClosed, CompanyData }) {
                       {CompanyData.CompanyEmail}
                     </dd>
                   </div>
-                  <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                    <dt className="text-sm font-medium leading-6 text-gray-900">
-                      Telefono azienda
-                    </dt>
-                    <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                      {CompanyData.CompanyPhone == null
-                        ? "Non presente"
-                        : CompanyData.CompanyPhone}
-                    </dd>
-                  </div>
+                  {CompanyData.CompanyPhone !== null && (
+                    <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                      <dt className="text-sm font-medium leading-6 text-gray-900">
+                        Telefono azienda
+                      </dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        {CompanyData.CompanyPhone}
+                      </dd>
+                    </div>
+                  )}
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Clienti associati
@@ -108,14 +108,16 @@ export default function ViewCompanyModal({ isOpen, isClosed, CompanyData }) {
                                       {member.CustomerEmail}
                                     </dd>
                                   </div>
-                                  <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                                    <dt class="text-sm font-medium leading-6 text-gray-900">
-                                      Telefono Cliente
-                                    </dt>
-                                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                                      {member.CustomerPhone}
-                                    </dd>
-                                  </div>
+                                  {member.CustomerPhone !== null && (
+                                    <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                      <dt class="text-sm font-medium leading-6 text-gray-900">
+                                        Telefono Cliente
+                                      </dt>
+                                      <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                        {member.CustomerPhone}
+                                      </dd>
+                                    </div>
+                                  )}
                                 </dl>
                               </div>
                             </AccordionItem>

@@ -56,26 +56,30 @@ export default function ViewCustomerModal({ isOpen, isClosed, CustomerData }) {
                       {CustomerData.CustomerEmail}
                     </dd>
                   </div>
-                  <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                    <dt className="text-sm font-medium leading-6 text-gray-900">
-                      Telefono Cliente
-                    </dt>
-                    <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                      {CustomerData.CustomerPhone}
-                    </dd>
-                  </div>
-                  <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                    <dt className="text-sm font-medium leading-6 text-gray-900">
-                      Azienda Associata
-                    </dt>
-                    <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                      <ul>
-                        {customerCompanies.map((company) => {
-                          return <li>{company.CompanyName}</li>;
-                        })}
-                      </ul>
-                    </dd>
-                  </div>
+                  {CustomerData.CustomerPhone !== null && (
+                    <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                      <dt className="text-sm font-medium leading-6 text-gray-900">
+                        Telefono Cliente
+                      </dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        {CustomerData.CustomerPhone}
+                      </dd>
+                    </div>
+                  )}
+                  {customerCompanies.length > 0 && (
+                    <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                      <dt className="text-sm font-medium leading-6 text-gray-900">
+                        Azienda Associata
+                      </dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        <ul>
+                          {customerCompanies.map((company) => {
+                            return <li>{company.CompanyName}</li>;
+                          })}
+                        </ul>
+                      </dd>
+                    </div>
+                  )}
                 </dl>
               </div>
             </ModalBody>

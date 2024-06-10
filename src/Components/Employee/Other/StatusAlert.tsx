@@ -23,14 +23,14 @@ export default function StatusAlert({ AlertData }: { AlertData: AlertData }) {
           >
             <div className="flex">
               <div className="flex-shrink-0">
-                {AlertData.alertColor === "success" ? (
+                {AlertData.alertColor === "green" ? (
                   <CheckCircleIcon
-                    className={`h-5 w-5 text-${AlertData.alertColor}-400`}
+                    className={`h-5 w-5 text-green-400`}
                     aria-hidden="true"
                   />
                 ) : (
                   <XCircleIcon
-                    className={`h-5 w-5 text-${AlertData.alertColor}-700`}
+                    className={`h-5 w-5 text-red-400`}
                     aria-hidden="true"
                   />
                 )}

@@ -70,6 +70,7 @@ export default function EditCustomerModel() {
       .then((res) => {
         setNewCustomerData(res.data[0]);
         setInitialCustomerData(res.data[0]);
+        console.log(res.data[0]);
       });
     axios.get("/Company/GET/GetAllCompany").then((res) => {
       setCompany(res.data);
@@ -123,12 +124,12 @@ export default function EditCustomerModel() {
 
   async function handleUpdateCustomer() {
     try {
-      const res = await axios
-        .put("/Customer/UPDATE/UpdateCustomerData", {
-          CustomerData: newCustomerData,
-          OldCompanyId: initialCustomerData.CompanyId,
-        })
-        .then(setIsAddingData(true));
+      setIsAddingData(true);
+
+      const res = await axios.put("/Customer/UPDATE/UpdateCustomerData", {
+        CustomerData: newCustomerData,
+        OldCompanyId: initialCustomerData.CompanyId,
+      });
 
       if (res.status === 200) {
         setAlertData({

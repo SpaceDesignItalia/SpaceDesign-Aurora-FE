@@ -101,11 +101,11 @@ export default function EditCompanyModel() {
 
   async function handleUpdateCompany() {
     try {
-      const res = await axios
-        .put("/Company/UPDATE/UpdateCompanyData", {
-          CompanyData: newCompanyData,
-        })
-        .then(setIsAddingData(true));
+      setIsAddingData(true);
+
+      const res = await axios.put("/Company/UPDATE/UpdateCompanyData", {
+        CompanyData: newCompanyData,
+      });
 
       if (res.status === 200) {
         setAlertData({
