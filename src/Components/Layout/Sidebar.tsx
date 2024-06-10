@@ -71,11 +71,14 @@ export default function Sidebar() {
     },
     {
       name: "Dipendenti",
-      href: "#",
+      href: "/administration/employee",
       icon: EngineeringOutlinedIcon,
       current: isSubRoute({
         currentUrl,
-        parentRoute: { href: "#", subRoutes: [] },
+        parentRoute: {
+          href: "/administration/employee",
+          subRoutes: ["/administration/employee/add-employee"],
+        },
       }),
     },
     {
