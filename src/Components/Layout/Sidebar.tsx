@@ -77,7 +77,10 @@ export default function Sidebar() {
         currentUrl,
         parentRoute: {
           href: "/administration/employee",
-          subRoutes: ["/administration/employee/add-employee"],
+          subRoutes: [
+            "/administration/employee/add-employee",
+            "/administration/employee/edit-employee",
+          ],
         },
       }),
     },

@@ -24,6 +24,7 @@ import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
 import ViewEmployeeModal from "../Other/ViewEmployeeModal";
+import ConfirmDeleteModal from "../Other/ConfirmDeleteModal";
 
 interface Employee {
   EmployeeId: number;
@@ -33,6 +34,11 @@ interface Employee {
 }
 
 interface ModalData {
+  Employee: Employee;
+  open: boolean;
+}
+
+interface ModalDeleteData {
   Employee: Employee;
   open: boolean;
 }
@@ -74,30 +80,41 @@ export default function EmployeeTable() {
     open: false,
   });
 
-  async function SearchCompany(e: { target: { value: string } }) {
+  const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
+    Employee: {
+      EmployeeId: 0,
+      EmployeeFullName: "",
+      EmployeeEmail: "",
+      EmployeePhone: "",
+    },
+    open: false,
+  });
+
+  async function SearchEmployee(e: { target: { value: string } }) {
     const searchQuery = e.target.value.trim(); // Otteniamo il valore di ricerca e rimuoviamo gli spazi vuoti
-    console.log(searchQuery);
     try {
-      const response = await axios.get("/Customer/GET/SearchCustomerByEmail", {
-        params: { CustomerEmail: searchQuery },
+      const response = await axios.get("/Staffer/GET/SearchStafferByEmail", {
+        params: { EmployeeEmail: searchQuery },
       });
       setEmployees(response.data);
     } catch (error) {
-      console.error("Errore durante la ricerca delle aziende:", error);
+      console.error("Errore durante la ricerca del dipendente:", error);
     }
   }
 
-  async function DeleteCustomer(CustomerId: any) {
+  async function DeleteEmployee(EmployeeData: any) {
     try {
-      const res = await axios.delete("/Customer/DELETE/DeleteCustomer", {
-        params: { CustomerId: CustomerId },
+      console.log(EmployeeData);
+      const res = await axios.delete("/Staffer/DELETE/DeleteStaffer", {
+        params: { EmployeeData },
       });
 
+      // Simulazione della chiamata API con setTimeout
       if (res.status === 200) {
         fetchData();
       }
     } catch (error) {
-      console.error("Errore nella cancellazione del cliente:", error);
+      console.error("Errore nella cancellazione del dipendente:", error);
     }
   }
 
@@ -160,7 +177,7 @@ export default function EmployeeTable() {
                     aria-label="Edit"
                     aria-labelledby="Edit"
                     href={
-                      "/administration/customer/edit-customer/" +
+                      "/administration/employee/edit-employee/" +
                       employee.EmployeeId
                     }
                   >
@@ -171,7 +188,13 @@ export default function EmployeeTable() {
                     startContent={<DeleteOutlinedIcon />}
                     aria-label="Remove"
                     aria-labelledby="Remove"
-                    onClick={() => DeleteCustomer(employee.EmployeeId)}
+                    onClick={() =>
+                      setModalDeleteData({
+                        ...modalDeleteData,
+                        open: true,
+                        Employee: employee,
+                      })
+                    }
                   >
                     Rimuovi
                   </DropdownItem>
@@ -202,7 +225,7 @@ export default function EmployeeTable() {
             radius="sm"
             variant="bordered"
             startContent={<SearchOutlinedIcon />}
-            onChange={SearchCompany}
+            onChange={SearchEmployee}
             className="w-1/3"
             placeholder="Cerca dipendente per email..."
           />
@@ -243,7 +266,13 @@ export default function EmployeeTable() {
       <ViewEmployeeModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
-        CustomerData={modalData.Employee}
+        EmployeeData={modalData.Employee}
+      />
+      <ConfirmDeleteModal
+        isOpen={modalDeleteData.open}
+        isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
+        EmployeeData={modalDeleteData.Employee}
+        DeleteEmployee={DeleteEmployee}
       />
 
       <Table

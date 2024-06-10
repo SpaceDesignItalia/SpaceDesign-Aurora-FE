@@ -79,7 +79,6 @@ export default function CompanyTable() {
 
   async function SearchCompany(e: { target: { value: string } }) {
     const searchQuery = e.target.value.trim(); // Otteniamo il valore di ricerca e rimuoviamo gli spazi vuoti
-    console.log(searchQuery);
     try {
       const response = await axios.get("/Company/GET/SearchCompanyByName", {
         params: { CompanyName: searchQuery },
