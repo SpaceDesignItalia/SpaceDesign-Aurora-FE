@@ -23,16 +23,16 @@ import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
+import ViewRoleModal from "../Other/ViewRoleModal";
 
-interface Customer {
-  CustomerId: number;
-  CustomerFullName: string;
-  CustomerEmail: string;
-  CustomerPhone: string;
+interface Role {
+  RoleId: number;
+  RoleName: string;
+  RoleDescription: string;
 }
 
 interface ModalData {
-  Customer: Customer;
+  Role: Role;
   open: boolean;
 }
 
@@ -42,146 +42,132 @@ const columns = [
   { name: "Azioni", uid: "actions" },
 ];
 
-export default function PermissionTable() {
-  const [customers, setCustomers] = useState<Customer[]>([]);
+export default function RoleTable() {
+  const [roles, setRoles] = useState<Role[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
   });
 
-  /*   useEffect(() => {
+  useEffect(() => {
     fetchData();
   }, []);
 
   function fetchData() {
-    axios.get("/Customer/GET/GetAllCustomers").then((res) => {
-      setCustomers(res.data);
+    axios.get("/Permission/GET/GetAllRoles").then((res) => {
+      setRoles(res.data);
     });
-  } 
- */
+  }
+
   const [page, setPage] = useState(1);
   const [modalData, setModalData] = useState<ModalData>({
-    Customer: {
-      CustomerId: 0,
-      CustomerFullName: "",
-      CustomerEmail: "",
-      CustomerPhone: "",
+    Role: {
+      RoleId: 0,
+      RoleName: "",
+      RoleDescription: "",
     },
     open: false,
   });
 
-  async function SearchCompany(e: { target: { value: string } }) {
-    const searchQuery = e.target.value.trim(); // Otteniamo il valore di ricerca e rimuoviamo gli spazi vuoti
-    console.log(searchQuery);
+  async function SearchRole(e: { target: { value: string } }) {
+    const searchQuery = e.target.value.trim();
     try {
-      const response = await axios.get("/Customer/GET/SearchCustomerByEmail", {
-        params: { CustomerEmail: searchQuery },
+      const response = await axios.get("/Permission/GET/SearchRoleByName", {
+        params: { RoleName: searchQuery },
       });
-      setCustomers(response.data);
+      setRoles(response.data);
     } catch (error) {
-      console.error("Errore durante la ricerca delle aziende:", error);
+      console.error("Errore durante la ricerca dei ruoli:", error);
     }
   }
 
-  async function DeleteCustomer(CustomerId: any) {
+  async function deleteRole(RoleId: number) {
     try {
-      const res = await axios.delete("/Customer/DELETE/DeleteCustomer", {
-        params: { CustomerId: CustomerId },
+      const res = await axios.delete("/Permission/DELETE/DeleteRole", {
+        params: { RoleId: RoleId },
       });
 
       if (res.status === 200) {
         fetchData();
       }
     } catch (error) {
-      console.error("Errore nella cancellazione del cliente:", error);
+      console.error("Errore nella cancellazione del ruolo:", error);
     }
   }
 
-  const pages = Math.ceil(customers.length / rowsPerPage);
+  const pages = Math.ceil(roles.length / rowsPerPage);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
 
-    return customers.slice(start, end);
-  }, [page, customers, rowsPerPage]);
+    return roles.slice(start, end);
+  }, [page, roles, rowsPerPage]);
 
-  const renderCell = React.useCallback(
-    (customer: Customer, columnKey: React.Key) => {
-      const cellValue = customer[columnKey as keyof Customer];
+  const renderCell = React.useCallback((role: Role, columnKey: React.Key) => {
+    const cellValue = role[columnKey as keyof Role];
 
-      switch (columnKey) {
-        case "name":
-          return <p>{cellValue}</p>;
-        case "company":
-          return (
-            <div className="flex flex-col">
-              <p className="text-bold text-small capitalize">{cellValue}</p>
-            </div>
-          );
-        case "phone":
-          return (
-            <div className="flex flex-col">
-              <p className="text-bold text-small capitalize">{cellValue}</p>
-            </div>
-          );
-        case "actions":
-          return (
-            <div className="relative flex justify-left items-center gap-2">
-              <Dropdown radius="sm">
-                <DropdownTrigger>
-                  <Button isIconOnly size="sm" variant="light">
-                    <MoreVertRoundedIcon />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  <DropdownItem
-                    color="primary"
-                    startContent={<RemoveRedEyeOutlinedIcon />}
-                    aria-label="View"
-                    aria-labelledby="View"
-                    onClick={() =>
-                      setModalData({
-                        ...modalData,
-                        open: true,
-                        Customer: customer,
-                      })
-                    }
-                  >
-                    Visualizza
-                  </DropdownItem>
-                  <DropdownItem
-                    color="warning"
-                    startContent={<ModeOutlinedIcon />}
-                    aria-label="Edit"
-                    aria-labelledby="Edit"
-                    href={
-                      "/administration/customer/edit-customer/" +
-                      customer.CustomerId
-                    }
-                  >
-                    Modifica
-                  </DropdownItem>
-                  <DropdownItem
-                    color="danger"
-                    startContent={<DeleteOutlinedIcon />}
-                    aria-label="Remove"
-                    aria-labelledby="Remove"
-                    onClick={() => DeleteCustomer(customer.CustomerId)}
-                  >
-                    Rimuovi
-                  </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-            </div>
-          );
-        default:
-          return cellValue;
-      }
-    },
-    []
-  );
+    switch (columnKey) {
+      case "name":
+        return <p>{cellValue}</p>;
+      case "description":
+        return (
+          <div className="flex flex-col">
+            <p className="text-bold text-small capitalize">{cellValue}</p>
+          </div>
+        );
+      case "actions":
+        return (
+          <div className="relative flex justify-left items-center gap-2">
+            <Dropdown radius="sm">
+              <DropdownTrigger>
+                <Button isIconOnly size="sm" variant="light">
+                  <MoreVertRoundedIcon />
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu>
+                <DropdownItem
+                  color="primary"
+                  startContent={<RemoveRedEyeOutlinedIcon />}
+                  aria-label="View"
+                  aria-labelledby="View"
+                  onClick={() =>
+                    setModalData({
+                      ...modalData,
+                      open: true,
+                      Role: role,
+                    })
+                  }
+                >
+                  Visualizza
+                </DropdownItem>
+                <DropdownItem
+                  color="warning"
+                  startContent={<ModeOutlinedIcon />}
+                  aria-label="Edit"
+                  aria-labelledby="Edit"
+                  href={"/administration/permission/edit-role/" + role.RoleId}
+                >
+                  Modifica
+                </DropdownItem>
+                <DropdownItem
+                  color="danger"
+                  startContent={<DeleteOutlinedIcon />}
+                  aria-label="Remove"
+                  aria-labelledby="Remove"
+                  onClick={() => deleteRole(role.RoleId)}
+                >
+                  Rimuovi
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          </div>
+        );
+      default:
+        return cellValue;
+    }
+  }, []);
 
   const onRowsPerPageChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -199,7 +185,7 @@ export default function PermissionTable() {
             radius="sm"
             variant="bordered"
             startContent={<SearchOutlinedIcon />}
-            onChange={SearchCompany}
+            onChange={SearchRole}
             className="w-1/3"
             placeholder="Cerca ruolo per nome..."
           />
@@ -217,7 +203,7 @@ export default function PermissionTable() {
         </div>
       </div>
     );
-  }, [onRowsPerPageChange, customers.length]);
+  }, [onRowsPerPageChange, roles.length]);
 
   const bottomContent = React.useMemo(() => {
     return (
@@ -237,6 +223,12 @@ export default function PermissionTable() {
 
   return (
     <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
+      <ViewRoleModal
+        isOpen={modalData.open}
+        isClosed={() => setModalData({ ...modalData, open: false })}
+        RoleData={modalData.Role}
+      />
+
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
@@ -261,7 +253,7 @@ export default function PermissionTable() {
         </TableHeader>
         <TableBody emptyContent={"Nessun ruolo trovato!"} items={items}>
           {(item) => (
-            <TableRow key={item.CustomerId}>
+            <TableRow key={item.RoleId}>
               {(columnKey) => (
                 <TableCell>{renderCell(item, columnKey)}</TableCell>
               )}

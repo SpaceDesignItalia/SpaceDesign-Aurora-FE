@@ -1,4 +1,4 @@
-import PermissionTable from "../../Components/Permission/Tables/PermissionTable";
+import PermissionTable from "../../Components/Permission/Tables/RoleTable";
 
 export default function PermissionDashboard() {
   return (

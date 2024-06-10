@@ -108,7 +108,8 @@ export default function AddRoleModel() {
     try {
       const res = await axios
         .post("/Permission/POST/AddRole", {
-          params: { RoleData: newRole, RolePermissionData: newRolePermissions },
+          RoleData: newRole,
+          RolePermissionData: newRolePermissions,
         })
         .then(setIsAddingData(true));
 
@@ -124,7 +125,6 @@ export default function AddRoleModel() {
         }, 2000);
         console.log("Successo:", res.data);
       }
-      // Esegui altre azioni dopo la creazione dell'azienda, se necessario
     } catch (error) {
       setAlertData({
         isOpen: true,
@@ -138,7 +138,6 @@ export default function AddRoleModel() {
         window.location.href = "/administration/permission";
       }, 2000);
       console.error("Errore durante la creazione dell'azienda:", error);
-      // Gestisci l'errore in modo appropriato, ad esempio mostrando un messaggio all'utente
     }
   }
 
@@ -246,7 +245,7 @@ export default function AddRoleModel() {
               isLoading={isAddingData}
               onClick={handleCreateNewRole}
             >
-              {isAddingData ? "Salvando l'azienda..." : "Salva azienda"}
+              {isAddingData ? "Salvando il ruolo..." : "Salva ruolo"}
             </Button>
           </div>
         </div>

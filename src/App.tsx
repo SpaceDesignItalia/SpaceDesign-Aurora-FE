@@ -101,6 +101,10 @@ const ProtectedRoutes: React.FC<{ isAuth: boolean }> = ({ isAuth }) => {
           element={<AddRolePage />}
           path="/administration/permission/add-permission"
         />
+        <Route
+          //element={<EditRolePage />}
+          path="/administration/permission/edit-permission"
+        />
       </Route>
     </Routes>
   );
