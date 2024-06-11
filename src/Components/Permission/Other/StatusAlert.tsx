@@ -19,7 +19,7 @@ export default function StatusAlert({ AlertData }: { AlertData: AlertData }) {
         >
           <Spinner size="lg" color="primary" />
           <div
-            className={`absolute top-20 right-0 w-1/4 rounded-md bg-${AlertData.alertColor}-50 p-4`}
+            className={`absolute top-20 mr-10 right-0 justify-center md:w-1/4 rounded-md bg-${AlertData.alertColor}-50 p-4`}
           >
             <div className="flex">
               <div className="flex-shrink-0">
