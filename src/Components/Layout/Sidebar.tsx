@@ -1,3 +1,4 @@
+import { usePermissions } from "./PermissionProvider";
 import { Fragment, useState } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
@@ -20,6 +21,7 @@ import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
 
 export default function Sidebar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { hasPermission } = usePermissions();
   const currentUrl = window.location.pathname;
 
   function isSubRoute({
@@ -45,6 +47,7 @@ export default function Sidebar() {
       name: "Dashboard",
       href: "/",
       icon: DashboardOutlinedIcon,
+      requiredCondition: null,
       current: isSubRoute({
         currentUrl,
         parentRoute: { href: "/", subRoutes: [] },
@@ -57,6 +60,8 @@ export default function Sidebar() {
       name: "Clienti",
       href: "/administration/customer",
       icon: PeopleAltOutlinedIcon,
+      requiredCondition:
+        hasPermission("VIEW_CUSTOMER") && hasPermission("VIEW_COMPANY"),
       current: isSubRoute({
         currentUrl,
         parentRoute: {
@@ -74,6 +79,7 @@ export default function Sidebar() {
       name: "Dipendenti",
       href: "/administration/employee",
       icon: EngineeringOutlinedIcon,
+      requiredCondition: true,
       current: isSubRoute({
         currentUrl,
         parentRoute: {
@@ -89,9 +95,13 @@ export default function Sidebar() {
       name: "Permessi",
       href: "/administration/permission",
       icon: VpnKeyOutlinedIcon,
+      requiredCondition: true,
       current: isSubRoute({
         currentUrl,
-        parentRoute: { href: "/administration/permission", subRoutes: [] },
+        parentRoute: {
+          href: "/administration/permission",
+          subRoutes: ["/administration/permission/edit-role"],
+        },
       }),
     },
   ];
@@ -101,6 +111,7 @@ export default function Sidebar() {
       name: "Progetti",
       href: "#",
       icon: FolderCopyOutlinedIcon,
+      requiredCondition: true,
       current: isSubRoute({
         currentUrl,
         parentRoute: { href: "#", subRoutes: [] },
@@ -215,28 +226,32 @@ export default function Sidebar() {
                         </div>
                         <ul role="list" className="-mx-2 mt-2 space-y-1">
                           {administration.map((admin) => (
-                            <li key={admin.name}>
-                              <a
-                                href={admin.href}
-                                className={classNames(
-                                  admin.current
-                                    ? "bg-gray-100 text-primary"
-                                    : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                                  "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                )}
-                              >
-                                <admin.icon
-                                  className={classNames(
-                                    admin.current
-                                      ? "text-primary"
-                                      : "text-gray-400 group-hover:text-primary",
-                                    "h-6 w-6 shrink-0"
-                                  )}
-                                  aria-hidden="true"
-                                />
-                                {admin.name}
-                              </a>
-                            </li>
+                            <>
+                              {admin.requiredCondition && (
+                                <li key={admin.name}>
+                                  <a
+                                    href={admin.href}
+                                    className={classNames(
+                                      admin.current
+                                        ? "bg-gray-100 text-primary"
+                                        : "text-gray-700 hover:text-primary hover:bg-gray-100",
+                                      "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                    )}
+                                  >
+                                    <admin.icon
+                                      className={classNames(
+                                        admin.current
+                                          ? "text-primary"
+                                          : "text-gray-400 group-hover:text-primary",
+                                        "h-6 w-6 shrink-0"
+                                      )}
+                                      aria-hidden="true"
+                                    />
+                                    {admin.name}
+                                  </a>
+                                </li>
+                              )}
+                            </>
                           ))}
                         </ul>
                       </li>
@@ -335,28 +350,32 @@ export default function Sidebar() {
                 </div>
                 <ul role="list" className="-mx-2 mt-2 space-y-1">
                   {administration.map((admin) => (
-                    <li key={admin.name}>
-                      <a
-                        href={admin.href}
-                        className={classNames(
-                          admin.current
-                            ? "bg-gray-100 text-primary"
-                            : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                          "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                        )}
-                      >
-                        <admin.icon
-                          className={classNames(
-                            admin.current
-                              ? "text-primary"
-                              : "text-gray-400 group-hover:text-primary",
-                            "h-6 w-6 shrink-0"
-                          )}
-                          aria-hidden="true"
-                        />
-                        {admin.name}
-                      </a>
-                    </li>
+                    <>
+                      {admin.requiredCondition && (
+                        <li key={admin.name}>
+                          <a
+                            href={admin.href}
+                            className={classNames(
+                              admin.current
+                                ? "bg-gray-100 text-primary"
+                                : "text-gray-700 hover:text-primary hover:bg-gray-100",
+                              "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                            )}
+                          >
+                            <admin.icon
+                              className={classNames(
+                                admin.current
+                                  ? "text-primary"
+                                  : "text-gray-400 group-hover:text-primary",
+                                "h-6 w-6 shrink-0"
+                              )}
+                              aria-hidden="true"
+                            />
+                            {admin.name}
+                          </a>
+                        </li>
+                      )}
+                    </>
                   ))}
                 </ul>
               </li>

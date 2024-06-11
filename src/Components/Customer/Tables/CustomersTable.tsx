@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { usePermissions } from "../../Layout/PermissionProvider";
 import {
   Table,
   TableHeader,
@@ -57,6 +58,7 @@ export default function CustomersTable() {
     column: "age",
     direction: "ascending",
   });
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     fetchData();
@@ -161,33 +163,38 @@ export default function CustomersTable() {
                   >
                     Visualizza
                   </DropdownItem>
-                  <DropdownItem
-                    color="warning"
-                    startContent={<ModeOutlinedIcon />}
-                    aria-label="Edit"
-                    aria-labelledby="Edit"
-                    href={
-                      "/administration/customer/edit-customer/" +
-                      customer.CustomerId
-                    }
-                  >
-                    Modifica
-                  </DropdownItem>
-                  <DropdownItem
-                    color="danger"
-                    startContent={<DeleteOutlinedIcon />}
-                    aria-label="Remove"
-                    aria-labelledby="Remove"
-                    onClick={() =>
-                      setModalDeleteData({
-                        ...modalDeleteData,
-                        open: true,
-                        Customer: customer,
-                      })
-                    }
-                  >
-                    Rimuovi
-                  </DropdownItem>
+                  {hasPermission("EDIT_CUSTOMER") && (
+                    <DropdownItem
+                      color="warning"
+                      startContent={<ModeOutlinedIcon />}
+                      aria-label="Edit"
+                      aria-labelledby="Edit"
+                      href={
+                        "/administration/customer/edit-customer/" +
+                        customer.CustomerId
+                      }
+                    >
+                      Modifica
+                    </DropdownItem>
+                  )}
+
+                  {hasPermission("DELETE_CUSTOMER") && (
+                    <DropdownItem
+                      color="danger"
+                      startContent={<DeleteOutlinedIcon />}
+                      aria-label="Remove"
+                      aria-labelledby="Remove"
+                      onClick={() =>
+                        setModalDeleteData({
+                          ...modalDeleteData,
+                          open: true,
+                          Customer: customer,
+                        })
+                      }
+                    >
+                      Rimuovi
+                    </DropdownItem>
+                  )}
                 </DropdownMenu>
               </Dropdown>
             </div>
@@ -220,15 +227,17 @@ export default function CustomersTable() {
             placeholder="Cerca cliente per email..."
           />
           <div className="flex gap-3">
-            <Button
-              as={Link}
-              href="./customer/add-customer"
-              color="primary"
-              radius="sm"
-              startContent={<PersonAddAlt1RoundedIcon />}
-            >
-              Aggiungi cliente
-            </Button>
+            {hasPermission("CREATE_CUSTOMER") && (
+              <Button
+                as={Link}
+                href="./customer/add-customer"
+                color="primary"
+                radius="sm"
+                startContent={<PersonAddAlt1RoundedIcon />}
+              >
+                Aggiungi cliente
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -264,7 +273,6 @@ export default function CustomersTable() {
         CustomerData={modalDeleteData.Customer}
         DeleteCustomer={DeleteCustomer}
       />
-
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky

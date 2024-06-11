@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { usePermissions } from "../../Layout/PermissionProvider";
 import {
   Table,
   TableHeader,
@@ -59,6 +60,7 @@ export default function CompanyTable() {
     column: "age",
     direction: "ascending",
   });
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     fetchData();
@@ -166,35 +168,39 @@ export default function CompanyTable() {
                   >
                     Visualizza
                   </DropdownItem>
-                  <DropdownItem
-                    color="warning"
-                    startContent={<ModeOutlinedIcon />}
-                    aria-label="Edit"
-                    aria-labelledby="Edit"
-                    href={
-                      "/administration/customer/edit-company/" +
-                      company.CompanyId +
-                      "/" +
-                      company.CompanyName
-                    }
-                  >
-                    Modifica
-                  </DropdownItem>
-                  <DropdownItem
-                    color="danger"
-                    startContent={<DeleteOutlinedIcon />}
-                    aria-label="Remove"
-                    aria-labelledby="Remove"
-                    onClick={() =>
-                      setModalDeleteData({
-                        ...modalDeleteData,
-                        open: true,
-                        Company: company,
-                      })
-                    }
-                  >
-                    Rimuovi
-                  </DropdownItem>
+                  {hasPermission("EDIT_COMPANY") && (
+                    <DropdownItem
+                      color="warning"
+                      startContent={<ModeOutlinedIcon />}
+                      aria-label="Edit"
+                      aria-labelledby="Edit"
+                      href={
+                        "/administration/customer/edit-company/" +
+                        company.CompanyId +
+                        "/" +
+                        company.CompanyName
+                      }
+                    >
+                      Modifica
+                    </DropdownItem>
+                  )}
+                  {hasPermission("DELETE_COMPANY") && (
+                    <DropdownItem
+                      color="danger"
+                      startContent={<DeleteOutlinedIcon />}
+                      aria-label="Remove"
+                      aria-labelledby="Remove"
+                      onClick={() =>
+                        setModalDeleteData({
+                          ...modalDeleteData,
+                          open: true,
+                          Company: company,
+                        })
+                      }
+                    >
+                      Rimuovi
+                    </DropdownItem>
+                  )}
                 </DropdownMenu>
               </Dropdown>
             </div>
@@ -227,15 +233,17 @@ export default function CompanyTable() {
             placeholder="Cerca per nome azienda..."
           />
           <div className="flex gap-3">
-            <Button
-              as={Link}
-              href="./customer/add-company"
-              color="primary"
-              radius="sm"
-              startContent={<AddBusinessRoundedIcon />}
-            >
-              Aggiungi azienda
-            </Button>
+            {hasPermission("CREATE_COMPANY") && (
+              <Button
+                as={Link}
+                href="./customer/add-company"
+                color="primary"
+                radius="sm"
+                startContent={<AddBusinessRoundedIcon />}
+              >
+                Aggiungi azienda
+              </Button>
+            )}
           </div>
         </div>
       </div>

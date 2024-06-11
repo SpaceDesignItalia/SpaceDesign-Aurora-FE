@@ -1,41 +1,76 @@
-import { createContext, useContext, useState } from "react";
+import axios from "axios";
+import React, { createContext, useContext, useState, ReactNode } from "react";
 
-// Context per i permessi
-const PermissionsContext = createContext();
+interface Permission {
+  PermissionAction: string;
+}
+interface PermissionsContextType {
+  permissions: Permission[];
+  permissionsLoaded: boolean;
+  loadPermissions: (stafferId: string) => Promise<void>;
+  hasPermission: (action: string) => Promise<boolean>; // Modifica qui
+  setStafferId: (id: string) => void;
+}
 
-export const PermissionsProvider = ({ children }) => {
-  const [permissions, setPermissions] = useState([]);
+const PermissionsContext = createContext<PermissionsContextType | undefined>(
+  undefined
+);
 
-  const fetchPermissions = async () => {
-    const response = await fetch("/api/permissions");
-    if (!response.ok) {
-      throw new Error("Failed to fetch permissions");
-    }
-    const permissions = await response.json();
-    return permissions;
-  };
+interface PermissionsProviderProps {
+  children: ReactNode;
+}
 
-  const loadPermissions = async () => {
+export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({
+  children,
+}) => {
+  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [stafferId, setStafferId] = useState<string>("");
+  const [permissionsLoaded, setPermissionsLoaded] = useState<boolean>(false);
+
+  const loadPermissions = async (id: string) => {
+    if (permissionsLoaded) return;
+
     try {
-      const userPermissions = await fetchPermissions();
-      setPermissions(userPermissions);
+      const res = await axios.get("/Permission/GET/GetPermissionsByUserRole", {
+        params: { StafferId: id },
+      });
+      if (res.status === 200) {
+        console.log(res.data);
+        setPermissions(res.data);
+        setPermissionsLoaded(true);
+      }
     } catch (error) {
       console.error("Errore nel caricamento dei permessi:", error);
     }
   };
 
-  const hasPermission = (action) => {
-    return permissions.includes(action);
+  const hasPermission = async (action: string) => {
+    // Modifica qui
+    await loadPermissions(stafferId); // Assicurati che i permessi siano stati caricati
+    return permissions.some(
+      (permission) => permission.PermissionAction === action
+    );
   };
 
   return (
-    <PermissionsContext.Provider value={{ loadPermissions, hasPermission }}>
+    <PermissionsContext.Provider
+      value={{
+        permissions,
+        permissionsLoaded,
+        loadPermissions,
+        hasPermission,
+        setStafferId,
+      }}
+    >
       {children}
     </PermissionsContext.Provider>
   );
 };
 
-// Hook personalizzato per usare i permessi
 export const usePermissions = () => {
-  return useContext(PermissionsContext);
+  const context = useContext(PermissionsContext);
+  if (!context) {
+    throw new Error("usePermissions must be used within a PermissionsProvider");
+  }
+  return context;
 };

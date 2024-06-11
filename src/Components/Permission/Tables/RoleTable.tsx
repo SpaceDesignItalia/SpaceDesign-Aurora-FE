@@ -192,7 +192,7 @@ export default function RoleTable() {
           <div className="flex gap-3">
             <Button
               as={Link}
-              href="./permission/add-permission"
+              href="./permission/add-role"
               color="primary"
               radius="sm"
               startContent={<AddModeratorRoundedIcon />}
