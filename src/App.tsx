@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, Outlet, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { Spinner } from "@nextui-org/react";
 import axios from "axios";
 import { API_URL } from "./API/API";
@@ -15,15 +15,16 @@ import AddRolePage from "./Pages/Permission/AddRolePage";
 import EmployeeDashboard from "./Pages/Employee/EmployeeDashboard";
 import AddEmployeePage from "./Pages/Employee/AddEmployeePage";
 import EditEmployeePage from "./Pages/Employee/EditEmployeePage";
+import Login from "./Pages/Login/Login";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
-  const [isAuth, setIsAuth] = useState<boolean>(true);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isAuth, setIsAuth] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  /* useEffect(() => {
+  useEffect(() => {
     axios
-      .get(API_URL + "/Customer/CheckSession", { withCredentials: true })
+      .get("/Authentication/GET/CheckSession", { withCredentials: true })
       .then((res) => {
         if (res.status === 200 && res.data) {
           setIsAuth(true);
@@ -36,9 +37,9 @@ const App: React.FC = () => {
         setIsAuth(false);
       })
       .finally(() => {
-        setIsLoading(false); // Aggiorna lo stato di caricamento quando la richiesta è completata
+        setIsLoading(false);
       });
-  }, []); */
+  }, []);
 
   if (isLoading) {
     return (
@@ -50,28 +51,21 @@ const App: React.FC = () => {
 
   return (
     <>
-      <Sidebar />
-
-      <Routes>{/* <Route element={<Dashboard />} path="/login" /> */}</Routes>
-      <ProtectedRoutes isAuth={isAuth} />
+      {isAuth && <Sidebar />}
+      <Routes>
+        <Route element={<Login />} path="/login" />
+        <Route
+          path="/*"
+          element={
+            isAuth ? <ProtectedRoutes /> : <Navigate to="/login" replace />
+          }
+        />
+      </Routes>
     </>
   );
 };
 
-const ProtectedRoutes: React.FC<{ isAuth: boolean }> = ({ isAuth }) => {
-  // Definiamo i percorsi protetti
-  const protectedPaths = ["/"];
-
-  // Verifichiamo se l'utente sta tentando di accedere a un percorso protetto
-  const isAccessingProtectedPath = protectedPaths.some((path) =>
-    window.location.pathname.startsWith(path)
-  );
-
-  // Se l'utente non è autenticato e sta tentando di accedere a un percorso protetto, lo reindirizziamo a /
-  if (!isAuth && isAccessingProtectedPath) {
-    return <Navigate to="/login" />;
-  }
-
+const ProtectedRoutes: React.FC = () => {
   return (
     <Routes>
       <Route element={<Outlet />}>
@@ -115,10 +109,6 @@ const ProtectedRoutes: React.FC<{ isAuth: boolean }> = ({ isAuth }) => {
         <Route
           element={<AddRolePage />}
           path="/administration/permission/add-permission"
-        />
-        <Route
-          //element={<EditRolePage />}
-          path="/administration/permission/edit-permission"
         />
       </Route>
     </Routes>
