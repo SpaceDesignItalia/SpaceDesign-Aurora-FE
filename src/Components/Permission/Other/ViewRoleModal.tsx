@@ -84,7 +84,7 @@ export default function ViewRoleModal({ isOpen, isClosed, RoleData }) {
                       Permessi Associati
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                      {Role.permissions.length === 1 ? (
+                      {Role.permissions.length === 0 ? (
                         <p className="text-sm font-small leading-6 text-gray-900">
                           Nessun permesso associato
                         </p>
