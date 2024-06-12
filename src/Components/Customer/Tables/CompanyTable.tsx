@@ -56,6 +56,11 @@ const columns = [
 export default function CompanyTable() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [adminCompanyPermission, setAdminCompanyPermission] = useState({
+    addCompanyPermission: false,
+    editCompanyermission: false,
+    deleteCompanyPermission: false,
+  });
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
@@ -63,6 +68,14 @@ export default function CompanyTable() {
   const { hasPermission } = usePermissions();
 
   useEffect(() => {
+    async function checkPermissions() {
+      setAdminCompanyPermission({
+        addCompanyPermission: await hasPermission("CREATE_COMPANY"),
+        editCompanyermission: await hasPermission("EDIT_COMPANY"),
+        deleteCompanyPermission: await hasPermission("DELETE_COMPANY"),
+      });
+    }
+    checkPermissions();
     fetchData();
   }, []);
 
@@ -168,7 +181,7 @@ export default function CompanyTable() {
                   >
                     Visualizza
                   </DropdownItem>
-                  {hasPermission("EDIT_COMPANY") && (
+                  {adminCompanyPermission.editCompanyermission && (
                     <DropdownItem
                       color="warning"
                       startContent={<ModeOutlinedIcon />}
@@ -184,7 +197,7 @@ export default function CompanyTable() {
                       Modifica
                     </DropdownItem>
                   )}
-                  {hasPermission("DELETE_COMPANY") && (
+                  {adminCompanyPermission.deleteCompanyPermission && (
                     <DropdownItem
                       color="danger"
                       startContent={<DeleteOutlinedIcon />}
@@ -209,7 +222,7 @@ export default function CompanyTable() {
           return cellValue;
       }
     },
-    []
+    [adminCompanyPermission]
   );
 
   const onRowsPerPageChange = React.useCallback(
@@ -233,7 +246,7 @@ export default function CompanyTable() {
             placeholder="Cerca per nome azienda..."
           />
           <div className="flex gap-3">
-            {hasPermission("CREATE_COMPANY") && (
+            {adminCompanyPermission.addCompanyPermission && (
               <Button
                 as={Link}
                 href="./customer/add-company"

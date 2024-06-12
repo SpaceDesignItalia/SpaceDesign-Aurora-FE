@@ -1,8 +1,22 @@
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import EditCompanyModel from "../../Components/Customer/Other/EditCompanyModel";
+import { usePermissions } from "../../Components/Layout/PermissionProvider";
+import { useEffect } from "react";
 
 export default function EditCompanyPage() {
+  const { hasPermission } = usePermissions();
+
+  useEffect(() => {
+    async function fetchData() {
+      const createCompany = await hasPermission("EDIT_COMPANY");
+
+      if (!createCompany) {
+        return (window.location.href = "/");
+      }
+    }
+    fetchData();
+  }, [hasPermission]);
   return (
     <div className="py-10 m-0 lg:ml-72">
       <header>

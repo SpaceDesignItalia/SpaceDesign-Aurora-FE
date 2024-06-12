@@ -26,6 +26,7 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
 import ViewCustomerModal from "../Other/ViewCustomerModal";
 import ConfirmDeleteCustomerModal from "../Other/ConfirmDeleteCustomerModal";
+import { Edit } from "@mui/icons-material";
 
 interface Customer {
   CustomerId: number;
@@ -54,6 +55,12 @@ const columns = [
 export default function CustomersTable() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [adminCustomerPermission, setAdminCustomerPermission] = useState({
+    addCustomerPermission: false,
+    editCustomerPermission: false,
+    deleteCustomerPermission: false,
+  });
+
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
@@ -61,6 +68,14 @@ export default function CustomersTable() {
   const { hasPermission } = usePermissions();
 
   useEffect(() => {
+    async function checkPermissions() {
+      setAdminCustomerPermission({
+        addCustomerPermission: await hasPermission("CREATE_CUSTOMER"),
+        editCustomerPermission: await hasPermission("EDIT_CUSTOMER"),
+        deleteCustomerPermission: await hasPermission("DELETE_CUSTOMER"),
+      });
+    }
+    checkPermissions();
     fetchData();
   }, []);
 
@@ -163,7 +178,7 @@ export default function CustomersTable() {
                   >
                     Visualizza
                   </DropdownItem>
-                  {hasPermission("EDIT_CUSTOMER") && (
+                  {adminCustomerPermission.editCustomerPermission ? (
                     <DropdownItem
                       color="warning"
                       startContent={<ModeOutlinedIcon />}
@@ -176,9 +191,9 @@ export default function CustomersTable() {
                     >
                       Modifica
                     </DropdownItem>
-                  )}
+                  ) : null}
 
-                  {hasPermission("DELETE_CUSTOMER") && (
+                  {adminCustomerPermission.deleteCustomerPermission ? (
                     <DropdownItem
                       color="danger"
                       startContent={<DeleteOutlinedIcon />}
@@ -194,7 +209,7 @@ export default function CustomersTable() {
                     >
                       Rimuovi
                     </DropdownItem>
-                  )}
+                  ) : null}
                 </DropdownMenu>
               </Dropdown>
             </div>
@@ -203,7 +218,7 @@ export default function CustomersTable() {
           return cellValue;
       }
     },
-    []
+    [adminCustomerPermission] // Assicurati di includere adminCustomerPermission come dipendenza
   );
 
   const onRowsPerPageChange = React.useCallback(
@@ -227,7 +242,7 @@ export default function CustomersTable() {
             placeholder="Cerca cliente per email..."
           />
           <div className="flex gap-3">
-            {hasPermission("CREATE_CUSTOMER") && (
+            {adminCustomerPermission.addCustomerPermission && (
               <Button
                 as={Link}
                 href="./customer/add-customer"

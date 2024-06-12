@@ -1,5 +1,5 @@
 import { usePermissions } from "./PermissionProvider";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -19,17 +19,98 @@ import EngineeringOutlinedIcon from "@mui/icons-material/EngineeringOutlined";
 import FolderCopyOutlinedIcon from "@mui/icons-material/FolderCopyOutlined";
 import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
 
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+  requiredCondition: boolean;
+  current: boolean;
+}
+
 export default function Sidebar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { hasPermission } = usePermissions();
   const currentUrl = window.location.pathname;
+  const [adminPermissions, setAdminPermissions] = useState({
+    customer: false,
+    employee: false,
+    permission: false,
+  });
+  const { hasPermission } = usePermissions();
+
+  const [administration, setAdministration] = useState<NavigationItem[]>([]);
+
+  useEffect(() => {
+    async function fetchPermissions() {
+      const customerPermission =
+        (await hasPermission("VIEW_CUSTOMER")) ||
+        (await hasPermission("VIEW_COMPANY"));
+
+      setAdminPermissions({
+        customer: customerPermission,
+        employee: true,
+        permission: true,
+      });
+
+      setAdministration([
+        {
+          name: "Clienti",
+          href: "/administration/customer",
+          icon: PeopleAltOutlinedIcon,
+          requiredCondition: customerPermission,
+          current: isSubRoute({
+            currentUrl,
+            parentRoute: {
+              href: "/administration/customer",
+              subRoutes: [
+                "/administration/customer/add-customer",
+                "/administration/customer/edit-customer",
+                "/administration/customer/add-company",
+                "/administration/customer/edit-company",
+              ],
+            },
+          }),
+        },
+        {
+          name: "Dipendenti",
+          href: "/administration/employee",
+          icon: EngineeringOutlinedIcon,
+          requiredCondition: true,
+          current: isSubRoute({
+            currentUrl,
+            parentRoute: {
+              href: "/administration/employee",
+              subRoutes: [
+                "/administration/employee/add-employee",
+                "/administration/employee/edit-employee",
+              ],
+            },
+          }),
+        },
+        {
+          name: "Permessi",
+          href: "/administration/permission",
+          icon: VpnKeyOutlinedIcon,
+          requiredCondition: true,
+          current: isSubRoute({
+            currentUrl,
+            parentRoute: {
+              href: "/administration/permission",
+              subRoutes: ["/administration/permission/edit-role"],
+            },
+          }),
+        },
+      ]);
+    }
+
+    fetchPermissions();
+  }, [currentUrl]);
 
   function isSubRoute({
     currentUrl,
     parentRoute,
   }: {
     currentUrl: string;
-    parentRoute: { href: string; subRoutes?: string[] };
+    parentRoute: { href: string; subRoutes: string[] };
   }): boolean {
     if (currentUrl === parentRoute.href) {
       return true;
@@ -42,12 +123,12 @@ export default function Sidebar() {
     return false;
   }
 
-  const navigation = [
+  const navigation: NavigationItem[] = [
     {
       name: "Dashboard",
       href: "/",
       icon: DashboardOutlinedIcon,
-      requiredCondition: null,
+      requiredCondition: true,
       current: isSubRoute({
         currentUrl,
         parentRoute: { href: "/", subRoutes: [] },
@@ -55,58 +136,7 @@ export default function Sidebar() {
     },
   ];
 
-  const administration = [
-    {
-      name: "Clienti",
-      href: "/administration/customer",
-      icon: PeopleAltOutlinedIcon,
-      requiredCondition:
-        hasPermission("VIEW_CUSTOMER") && hasPermission("VIEW_COMPANY"),
-      current: isSubRoute({
-        currentUrl,
-        parentRoute: {
-          href: "/administration/customer",
-          subRoutes: [
-            "/administration/customer/add-customer",
-            "/administration/customer/edit-customer",
-            "/administration/customer/add-company",
-            "/administration/customer/edit-company",
-          ],
-        },
-      }),
-    },
-    {
-      name: "Dipendenti",
-      href: "/administration/employee",
-      icon: EngineeringOutlinedIcon,
-      requiredCondition: true,
-      current: isSubRoute({
-        currentUrl,
-        parentRoute: {
-          href: "/administration/employee",
-          subRoutes: [
-            "/administration/employee/add-employee",
-            "/administration/employee/edit-employee",
-          ],
-        },
-      }),
-    },
-    {
-      name: "Permessi",
-      href: "/administration/permission",
-      icon: VpnKeyOutlinedIcon,
-      requiredCondition: true,
-      current: isSubRoute({
-        currentUrl,
-        parentRoute: {
-          href: "/administration/permission",
-          subRoutes: ["/administration/permission/edit-role"],
-        },
-      }),
-    },
-  ];
-
-  const projectManagement = [
+  const projectManagement: NavigationItem[] = [
     {
       name: "Progetti",
       href: "#",
@@ -118,13 +148,14 @@ export default function Sidebar() {
       }),
     },
   ];
+
   const userNavigation = [
     { name: "Your profile", href: "#" },
     { name: "Sign out", href: "#" },
   ];
 
-  function classNames(...classes: (string | boolean | undefined)[]): string {
-    return classes.filter((className) => !!className).join(" ");
+  function classNames(...classes: string[]): string {
+    return classes.filter(Boolean).join(" ");
   }
 
   return (

@@ -1,8 +1,22 @@
 import AddCustomerModel from "../../Components/Customer/Other/AddCustomerModel";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import { usePermissions } from "../../Components/Layout/PermissionProvider";
+import { useEffect } from "react";
 
 export default function AddCustomerPage() {
+  const { hasPermission } = usePermissions();
+
+  useEffect(() => {
+    async function fetchData() {
+      const createCompany = await hasPermission("CREATE_CUSTOMER");
+
+      if (!createCompany) {
+        return (window.location.href = "/");
+      }
+    }
+    fetchData();
+  }, [hasPermission]);
   return (
     <div className="py-10 m-0 lg:ml-72">
       <header>
