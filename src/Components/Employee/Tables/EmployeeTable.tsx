@@ -25,6 +25,7 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
 import ViewEmployeeModal from "../Other/ViewEmployeeModal";
 import ConfirmDeleteModal from "../Other/ConfirmDeleteModal";
+import { usePermissions } from "../../Layout/PermissionProvider";
 
 interface Employee {
   EmployeeId: number;
@@ -57,8 +58,22 @@ export default function EmployeeTable() {
     column: "age",
     direction: "ascending",
   });
+  const [adminEmployeePermission, setAdminEmployeePermission] = useState({
+    addEmployeePermission: false,
+    editEmployeePermission: false,
+    deleteEmployeePermission: false,
+  });
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
+    async function checkPermissions() {
+      setAdminEmployeePermission({
+        addEmployeePermission: await hasPermission("CREATE_EMPLOYEE"),
+        editEmployeePermission: await hasPermission("EDIT_EMPLOYEE"),
+        deleteEmployeePermission: await hasPermission("DELETE_EMPLOYEE"),
+      });
+    }
+    checkPermissions();
     fetchData();
   }, []);
 
@@ -169,33 +184,38 @@ export default function EmployeeTable() {
                   >
                     Visualizza
                   </DropdownItem>
-                  <DropdownItem
-                    color="warning"
-                    startContent={<ModeOutlinedIcon />}
-                    aria-label="Edit"
-                    aria-labelledby="Edit"
-                    href={
-                      "/administration/employee/edit-employee/" +
-                      employee.EmployeeId
-                    }
-                  >
-                    Modifica
-                  </DropdownItem>
-                  <DropdownItem
-                    color="danger"
-                    startContent={<DeleteOutlinedIcon />}
-                    aria-label="Remove"
-                    aria-labelledby="Remove"
-                    onClick={() =>
-                      setModalDeleteData({
-                        ...modalDeleteData,
-                        open: true,
-                        Employee: employee,
-                      })
-                    }
-                  >
-                    Rimuovi
-                  </DropdownItem>
+                  {adminEmployeePermission.editEmployeePermission && (
+                    <DropdownItem
+                      color="warning"
+                      startContent={<ModeOutlinedIcon />}
+                      aria-label="Edit"
+                      aria-labelledby="Edit"
+                      href={
+                        "/administration/employee/edit-employee/" +
+                        employee.EmployeeId
+                      }
+                    >
+                      Modifica
+                    </DropdownItem>
+                  )}
+
+                  {adminEmployeePermission.deleteEmployeePermission && (
+                    <DropdownItem
+                      color="danger"
+                      startContent={<DeleteOutlinedIcon />}
+                      aria-label="Remove"
+                      aria-labelledby="Remove"
+                      onClick={() =>
+                        setModalDeleteData({
+                          ...modalDeleteData,
+                          open: true,
+                          Employee: employee,
+                        })
+                      }
+                    >
+                      Rimuovi
+                    </DropdownItem>
+                  )}
                 </DropdownMenu>
               </Dropdown>
             </div>
@@ -204,7 +224,7 @@ export default function EmployeeTable() {
           return cellValue;
       }
     },
-    []
+    [adminEmployeePermission]
   );
 
   const onRowsPerPageChange = React.useCallback(
@@ -218,25 +238,41 @@ export default function EmployeeTable() {
   const topContent = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between gap-3 items-end">
+        <div className="flex flex-row justify-between gap-3 items-end">
           <Input
             radius="sm"
             variant="bordered"
             startContent={<SearchOutlinedIcon />}
             onChange={SearchEmployee}
-            className="w-1/3"
+            className="md:w-1/3"
             placeholder="Cerca dipendente per email..."
           />
           <div className="flex gap-3">
-            <Button
-              as={Link}
-              href="./employee/add-employee"
-              color="primary"
-              radius="sm"
-              startContent={<PersonAddAlt1RoundedIcon />}
-            >
-              Aggiungi dipendente
-            </Button>
+            {adminEmployeePermission.addEmployeePermission && (
+              <>
+                <Button
+                  as={Link}
+                  href="./employee/add-employee"
+                  color="primary"
+                  radius="sm"
+                  startContent={<PersonAddAlt1RoundedIcon />}
+                  className="hidden sm:flex"
+                >
+                  Aggiungi dipendente
+                </Button>
+
+                <Button
+                  as={Link}
+                  href="./employee/add-employee"
+                  color="primary"
+                  radius="sm"
+                  isIconOnly
+                  className="sm:hidden"
+                >
+                  <PersonAddAlt1RoundedIcon />
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

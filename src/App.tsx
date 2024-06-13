@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { usePermissions } from "./Components/Layout/PermissionProvider";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { Spinner } from "@nextui-org/react";
 import axios from "axios";
@@ -16,30 +17,45 @@ import EmployeeDashboard from "./Pages/Employee/EmployeeDashboard";
 import AddEmployeePage from "./Pages/Employee/AddEmployeePage";
 import EditEmployeePage from "./Pages/Employee/EditEmployeePage";
 import Login from "./Pages/Login/Login";
+import EditRolePage from "./Pages/Permission/EditRolePage";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
   const [isAuth, setIsAuth] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { loadPermissions, setStafferId, permissionsLoaded } = usePermissions();
 
   useEffect(() => {
-    axios
-      .get("/Authentication/GET/CheckSession", { withCredentials: true })
-      .then((res) => {
+    const fetchData = async () => {
+      try {
+        const res = await axios.get("/Authentication/GET/CheckSession", {
+          withCredentials: true,
+        });
+
         if (res.status === 200 && res.data) {
           setIsAuth(true);
+          const sessionRes = await axios.get(
+            "/Authentication/GET/GetSessionData",
+            {
+              withCredentials: true,
+            }
+          );
+          if (sessionRes.status === 200 && sessionRes.data) {
+            await loadPermissions(sessionRes.data.StafferId);
+          }
         } else {
           setIsAuth(false);
         }
-      })
-      .catch((err) => {
-        console.error("Errore durante il controllo della sessione:", err);
+      } catch (error) {
+        console.error("Errore durante il controllo della sessione:", error);
         setIsAuth(false);
-      })
-      .finally(() => {
+      } finally {
         setIsLoading(false);
-      });
-  }, []);
+      }
+    };
+
+    fetchData();
+  }, [loadPermissions, permissionsLoaded, setStafferId]);
 
   if (isLoading) {
     return (
@@ -108,7 +124,11 @@ const ProtectedRoutes: React.FC = () => {
         />
         <Route
           element={<AddRolePage />}
-          path="/administration/permission/add-permission"
+          path="/administration/permission/add-role"
+        />
+        <Route
+          element={<EditRolePage />}
+          path="/administration/permission/edit-role/:RoleId"
         />
       </Route>
     </Routes>

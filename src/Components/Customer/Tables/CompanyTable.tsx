@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { usePermissions } from "../../Layout/PermissionProvider";
 import {
   Table,
   TableHeader,
@@ -55,12 +56,26 @@ const columns = [
 export default function CompanyTable() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [adminCompanyPermission, setAdminCompanyPermission] = useState({
+    addCompanyPermission: false,
+    editCompanyermission: false,
+    deleteCompanyPermission: false,
+  });
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
   });
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
+    async function checkPermissions() {
+      setAdminCompanyPermission({
+        addCompanyPermission: await hasPermission("CREATE_COMPANY"),
+        editCompanyermission: await hasPermission("EDIT_COMPANY"),
+        deleteCompanyPermission: await hasPermission("DELETE_COMPANY"),
+      });
+    }
+    checkPermissions();
     fetchData();
   }, []);
 
@@ -166,35 +181,39 @@ export default function CompanyTable() {
                   >
                     Visualizza
                   </DropdownItem>
-                  <DropdownItem
-                    color="warning"
-                    startContent={<ModeOutlinedIcon />}
-                    aria-label="Edit"
-                    aria-labelledby="Edit"
-                    href={
-                      "/administration/customer/edit-company/" +
-                      company.CompanyId +
-                      "/" +
-                      company.CompanyName
-                    }
-                  >
-                    Modifica
-                  </DropdownItem>
-                  <DropdownItem
-                    color="danger"
-                    startContent={<DeleteOutlinedIcon />}
-                    aria-label="Remove"
-                    aria-labelledby="Remove"
-                    onClick={() =>
-                      setModalDeleteData({
-                        ...modalDeleteData,
-                        open: true,
-                        Company: company,
-                      })
-                    }
-                  >
-                    Rimuovi
-                  </DropdownItem>
+                  {adminCompanyPermission.editCompanyermission && (
+                    <DropdownItem
+                      color="warning"
+                      startContent={<ModeOutlinedIcon />}
+                      aria-label="Edit"
+                      aria-labelledby="Edit"
+                      href={
+                        "/administration/customer/edit-company/" +
+                        company.CompanyId +
+                        "/" +
+                        company.CompanyName
+                      }
+                    >
+                      Modifica
+                    </DropdownItem>
+                  )}
+                  {adminCompanyPermission.deleteCompanyPermission && (
+                    <DropdownItem
+                      color="danger"
+                      startContent={<DeleteOutlinedIcon />}
+                      aria-label="Remove"
+                      aria-labelledby="Remove"
+                      onClick={() =>
+                        setModalDeleteData({
+                          ...modalDeleteData,
+                          open: true,
+                          Company: company,
+                        })
+                      }
+                    >
+                      Rimuovi
+                    </DropdownItem>
+                  )}
                 </DropdownMenu>
               </Dropdown>
             </div>
@@ -203,7 +222,7 @@ export default function CompanyTable() {
           return cellValue;
       }
     },
-    []
+    [adminCompanyPermission]
   );
 
   const onRowsPerPageChange = React.useCallback(
@@ -217,25 +236,40 @@ export default function CompanyTable() {
   const topContent = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between gap-3 items-end">
+        <div className="flex flex-row justify-between gap-3 items-end">
           <Input
             radius="sm"
             variant="bordered"
             startContent={<SearchOutlinedIcon />}
             onChange={SearchCompany}
-            className="w-1/3"
+            className="md:w-1/3"
             placeholder="Cerca per nome azienda..."
           />
           <div className="flex gap-3">
-            <Button
-              as={Link}
-              href="./customer/add-company"
-              color="primary"
-              radius="sm"
-              startContent={<AddBusinessRoundedIcon />}
-            >
-              Aggiungi azienda
-            </Button>
+            {adminCompanyPermission.addCompanyPermission && (
+              <>
+                <Button
+                  as={Link}
+                  href="./customer/add-company"
+                  color="primary"
+                  radius="sm"
+                  startContent={<AddBusinessRoundedIcon />}
+                  className="hidden sm:flex"
+                >
+                  Aggiungi azienda
+                </Button>
+                <Button
+                  as={Link}
+                  href="./customer/add-company"
+                  color="primary"
+                  radius="sm"
+                  isIconOnly
+                  className="sm:hidden"
+                >
+                  <AddBusinessRoundedIcon />
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

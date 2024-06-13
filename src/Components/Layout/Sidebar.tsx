@@ -1,4 +1,5 @@
-import { Fragment, useState } from "react";
+import { usePermissions } from "./PermissionProvider";
+import { Fragment, useState, useEffect } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -21,16 +22,86 @@ import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumberOutlined";
 
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+  requiredCondition: boolean;
+  current: boolean;
+}
+
 export default function Sidebar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUrl = window.location.pathname;
+
+  const { hasPermission } = usePermissions();
+
+  const [administration, setAdministration] = useState<NavigationItem[]>([]);
+
+  useEffect(() => {
+    async function fetchPermissions() {
+      setAdministration([
+        {
+          name: "Clienti",
+          href: "/administration/customer",
+          icon: PeopleAltOutlinedIcon,
+          requiredCondition:
+            (await hasPermission("VIEW_CUSTOMER")) ||
+            (await hasPermission("VIEW_COMPANY")),
+          current: isSubRoute({
+            currentUrl,
+            parentRoute: {
+              href: "/administration/customer",
+              subRoutes: [
+                "/administration/customer/add-customer",
+                "/administration/customer/edit-customer",
+                "/administration/customer/add-company",
+                "/administration/customer/edit-company",
+              ],
+            },
+          }),
+        },
+        {
+          name: "Dipendenti",
+          href: "/administration/employee",
+          icon: EngineeringOutlinedIcon,
+          requiredCondition: await hasPermission("VIEW_EMPLOYEE"),
+          current: isSubRoute({
+            currentUrl,
+            parentRoute: {
+              href: "/administration/employee",
+              subRoutes: [
+                "/administration/employee/add-employee",
+                "/administration/employee/edit-employee",
+              ],
+            },
+          }),
+        },
+        {
+          name: "Permessi",
+          href: "/administration/permission",
+          icon: VpnKeyOutlinedIcon,
+          requiredCondition: await hasPermission("VIEW_ROLE"),
+          current: isSubRoute({
+            currentUrl,
+            parentRoute: {
+              href: "/administration/permission",
+              subRoutes: ["/administration/permission/edit-role"],
+            },
+          }),
+        },
+      ]);
+    }
+
+    fetchPermissions();
+  }, [currentUrl]);
 
   function isSubRoute({
     currentUrl,
     parentRoute,
   }: {
     currentUrl: string;
-    parentRoute: { href: string; subRoutes?: string[] };
+    parentRoute: { href: string; subRoutes: string[] };
   }): boolean {
     if (currentUrl === parentRoute.href) {
       return true;
@@ -43,11 +114,12 @@ export default function Sidebar() {
     return false;
   }
 
-  const navigation = [
+  const navigation: NavigationItem[] = [
     {
       name: "Dashboard",
       href: "/",
       icon: DashboardOutlinedIcon,
+      requiredCondition: true,
       current: isSubRoute({
         currentUrl,
         parentRoute: { href: "/", subRoutes: [] },
@@ -55,55 +127,12 @@ export default function Sidebar() {
     },
   ];
 
-  const administration = [
-    {
-      name: "Clienti",
-      href: "/administration/customer",
-      icon: PeopleAltOutlinedIcon,
-      current: isSubRoute({
-        currentUrl,
-        parentRoute: {
-          href: "/administration/customer",
-          subRoutes: [
-            "/administration/customer/add-customer",
-            "/administration/customer/edit-customer",
-            "/administration/customer/add-company",
-            "/administration/customer/edit-company",
-          ],
-        },
-      }),
-    },
-    {
-      name: "Dipendenti",
-      href: "/administration/employee",
-      icon: EngineeringOutlinedIcon,
-      current: isSubRoute({
-        currentUrl,
-        parentRoute: {
-          href: "/administration/employee",
-          subRoutes: [
-            "/administration/employee/add-employee",
-            "/administration/employee/edit-employee",
-          ],
-        },
-      }),
-    },
-    {
-      name: "Permessi",
-      href: "/administration/permission",
-      icon: VpnKeyOutlinedIcon,
-      current: isSubRoute({
-        currentUrl,
-        parentRoute: { href: "/administration/permission", subRoutes: [] },
-      }),
-    },
-  ];
-
-  const projectManagement = [
+  const projectManagement: NavigationItem[] = [
     {
       name: "Progetti",
       href: "#",
       icon: FolderCopyOutlinedIcon,
+      requiredCondition: true,
       current: isSubRoute({
         currentUrl,
         parentRoute: { href: "#", subRoutes: [] },
@@ -131,8 +160,8 @@ export default function Sidebar() {
     { name: "Sign out", href: "#" },
   ];
 
-  function classNames(...classes: (string | boolean | undefined)[]): string {
-    return classes.filter((className) => !!className).join(" ");
+  function classNames(...classes: string[]): string {
+    return classes.filter(Boolean).join(" ");
   }
 
   return (
@@ -266,28 +295,32 @@ export default function Sidebar() {
                         </div>
                         <ul role="list" className="-mx-2 mt-2 space-y-1">
                           {administration.map((admin) => (
-                            <li key={admin.name}>
-                              <a
-                                href={admin.href}
-                                className={classNames(
-                                  admin.current
-                                    ? "bg-gray-100 text-primary"
-                                    : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                                  "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                )}
-                              >
-                                <admin.icon
-                                  className={classNames(
-                                    admin.current
-                                      ? "text-primary"
-                                      : "text-gray-400 group-hover:text-primary",
-                                    "h-6 w-6 shrink-0"
-                                  )}
-                                  aria-hidden="true"
-                                />
-                                {admin.name}
-                              </a>
-                            </li>
+                            <>
+                              {admin.requiredCondition && (
+                                <li key={admin.name}>
+                                  <a
+                                    href={admin.href}
+                                    className={classNames(
+                                      admin.current
+                                        ? "bg-gray-100 text-primary"
+                                        : "text-gray-700 hover:text-primary hover:bg-gray-100",
+                                      "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                    )}
+                                  >
+                                    <admin.icon
+                                      className={classNames(
+                                        admin.current
+                                          ? "text-primary"
+                                          : "text-gray-400 group-hover:text-primary",
+                                        "h-6 w-6 shrink-0"
+                                      )}
+                                      aria-hidden="true"
+                                    />
+                                    {admin.name}
+                                  </a>
+                                </li>
+                              )}
+                            </>
                           ))}
                         </ul>
                       </li>
@@ -417,28 +450,32 @@ export default function Sidebar() {
                 </div>
                 <ul role="list" className="-mx-2 mt-2 space-y-1">
                   {administration.map((admin) => (
-                    <li key={admin.name}>
-                      <a
-                        href={admin.href}
-                        className={classNames(
-                          admin.current
-                            ? "bg-gray-100 text-primary"
-                            : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                          "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                        )}
-                      >
-                        <admin.icon
-                          className={classNames(
-                            admin.current
-                              ? "text-primary"
-                              : "text-gray-400 group-hover:text-primary",
-                            "h-6 w-6 shrink-0"
-                          )}
-                          aria-hidden="true"
-                        />
-                        {admin.name}
-                      </a>
-                    </li>
+                    <>
+                      {admin.requiredCondition && (
+                        <li key={admin.name}>
+                          <a
+                            href={admin.href}
+                            className={classNames(
+                              admin.current
+                                ? "bg-gray-100 text-primary"
+                                : "text-gray-700 hover:text-primary hover:bg-gray-100",
+                              "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                            )}
+                          >
+                            <admin.icon
+                              className={classNames(
+                                admin.current
+                                  ? "text-primary"
+                                  : "text-gray-400 group-hover:text-primary",
+                                "h-6 w-6 shrink-0"
+                              )}
+                              aria-hidden="true"
+                            />
+                            {admin.name}
+                          </a>
+                        </li>
+                      )}
+                    </>
                   ))}
                 </ul>
               </li>

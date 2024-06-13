@@ -1,10 +1,17 @@
+import axios from "axios";
+import { useEffect, useState } from "react";
+
 export default function ProfileInfo() {
-  const user = {
-    name: "Andrea Braia",
-    role: "CEO",
-    imageUrl:
-      "https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  };
+  const [username, setUsername] = useState<string>("");
+  useEffect(() => {
+    axios
+      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
+      .then((res) => {
+        console.log(res.data);
+        setUsername(res.data.StafferName + " " + res.data.StafferSurname);
+      });
+  }, []);
+
   const stats = [
     { label: "Task totali da fare", value: 12 },
     { label: "Progetti attivi", value: 4 },
@@ -18,19 +25,13 @@ export default function ProfileInfo() {
       <div className="bg-white p-6">
         <div className="sm:flex sm:items-center sm:justify-between">
           <div className="sm:flex sm:space-x-5">
-            <div className="flex-shrink-0">
-              <img
-                className="mx-auto h-20 w-20 rounded-full"
-                src={user.imageUrl}
-                alt=""
-              />
-            </div>
+            <div className="flex-shrink-0"></div>
             <div className="mt-4 text-center sm:mt-0 sm:pt-1 sm:text-left">
               <p className="text-xl font-bold text-gray-900 sm:text-2xl">
-                👋 Ciao, {user.name}
+                👋 Ciao, {username}
               </p>
 
-              <p className="text-sm font-medium text-gray-600">{user.role}</p>
+              <p className="text-sm font-medium text-gray-600">CEO</p>
             </div>
           </div>
         </div>

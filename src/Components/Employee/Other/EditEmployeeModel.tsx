@@ -4,6 +4,7 @@ import {
   AutocompleteItem,
   Button,
   Input,
+  select,
 } from "@nextui-org/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -76,8 +77,11 @@ export default function EditEmployeeModel() {
     axios
       .get("/Staffer/GET/GetStafferRoleById", { params: { EmployeeId } })
       .then((res) => {
-        setInitialSelectedRole(res.data[0].RoleId);
-        setSelectedRole(res.data[0].RoleId);
+        setInitialSelectedRole({
+          ...initialSelectedRole,
+          RoleId: res.data[0].RoleId,
+        });
+        setSelectedRole({ ...selectedRole, RoleId: res.data[0].RoleId });
       });
     axios.get("/Permission/GET/GetAllRoles").then((res) => {
       setRoles(res.data);
@@ -264,7 +268,7 @@ export default function EditEmployeeModel() {
                     <Autocomplete
                       placeholder="Seleziona ruolo"
                       onSelectionChange={handleEmployeeRoleId}
-                      selectedKey={selectedRole}
+                      selectedKey={String(selectedRole.RoleId)}
                       variant="bordered"
                       radius="sm"
                       aria-label="company"

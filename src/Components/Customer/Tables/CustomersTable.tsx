@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { usePermissions } from "../../Layout/PermissionProvider";
 import {
   Table,
   TableHeader,
@@ -25,6 +26,7 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
 import ViewCustomerModal from "../Other/ViewCustomerModal";
 import ConfirmDeleteCustomerModal from "../Other/ConfirmDeleteCustomerModal";
+import { Edit } from "@mui/icons-material";
 
 interface Customer {
   CustomerId: number;
@@ -53,12 +55,27 @@ const columns = [
 export default function CustomersTable() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [adminCustomerPermission, setAdminCustomerPermission] = useState({
+    addCustomerPermission: false,
+    editCustomerPermission: false,
+    deleteCustomerPermission: false,
+  });
+
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
   });
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
+    async function checkPermissions() {
+      setAdminCustomerPermission({
+        addCustomerPermission: await hasPermission("CREATE_CUSTOMER"),
+        editCustomerPermission: await hasPermission("EDIT_CUSTOMER"),
+        deleteCustomerPermission: await hasPermission("DELETE_CUSTOMER"),
+      });
+    }
+    checkPermissions();
     fetchData();
   }, []);
 
@@ -161,33 +178,38 @@ export default function CustomersTable() {
                   >
                     Visualizza
                   </DropdownItem>
-                  <DropdownItem
-                    color="warning"
-                    startContent={<ModeOutlinedIcon />}
-                    aria-label="Edit"
-                    aria-labelledby="Edit"
-                    href={
-                      "/administration/customer/edit-customer/" +
-                      customer.CustomerId
-                    }
-                  >
-                    Modifica
-                  </DropdownItem>
-                  <DropdownItem
-                    color="danger"
-                    startContent={<DeleteOutlinedIcon />}
-                    aria-label="Remove"
-                    aria-labelledby="Remove"
-                    onClick={() =>
-                      setModalDeleteData({
-                        ...modalDeleteData,
-                        open: true,
-                        Customer: customer,
-                      })
-                    }
-                  >
-                    Rimuovi
-                  </DropdownItem>
+                  {adminCustomerPermission.editCustomerPermission ? (
+                    <DropdownItem
+                      color="warning"
+                      startContent={<ModeOutlinedIcon />}
+                      aria-label="Edit"
+                      aria-labelledby="Edit"
+                      href={
+                        "/administration/customer/edit-customer/" +
+                        customer.CustomerId
+                      }
+                    >
+                      Modifica
+                    </DropdownItem>
+                  ) : null}
+
+                  {adminCustomerPermission.deleteCustomerPermission ? (
+                    <DropdownItem
+                      color="danger"
+                      startContent={<DeleteOutlinedIcon />}
+                      aria-label="Remove"
+                      aria-labelledby="Remove"
+                      onClick={() =>
+                        setModalDeleteData({
+                          ...modalDeleteData,
+                          open: true,
+                          Customer: customer,
+                        })
+                      }
+                    >
+                      Rimuovi
+                    </DropdownItem>
+                  ) : null}
                 </DropdownMenu>
               </Dropdown>
             </div>
@@ -196,7 +218,7 @@ export default function CustomersTable() {
           return cellValue;
       }
     },
-    []
+    [adminCustomerPermission] // Assicurati di includere adminCustomerPermission come dipendenza
   );
 
   const onRowsPerPageChange = React.useCallback(
@@ -210,25 +232,40 @@ export default function CustomersTable() {
   const topContent = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between gap-3 items-end">
+        <div className="flex flex-row justify-between gap-3 items-end">
           <Input
             radius="sm"
             variant="bordered"
             startContent={<SearchOutlinedIcon />}
             onChange={SearchCompany}
-            className="w-1/3"
+            className="md:w-1/3"
             placeholder="Cerca cliente per email..."
           />
           <div className="flex gap-3">
-            <Button
-              as={Link}
-              href="./customer/add-customer"
-              color="primary"
-              radius="sm"
-              startContent={<PersonAddAlt1RoundedIcon />}
-            >
-              Aggiungi cliente
-            </Button>
+            {adminCustomerPermission.addCustomerPermission && (
+              <>
+                <Button
+                  as={Link}
+                  href="./customer/add-customer"
+                  color="primary"
+                  radius="sm"
+                  startContent={<PersonAddAlt1RoundedIcon />}
+                  className="hidden sm:flex"
+                >
+                  Aggiungi cliente
+                </Button>
+                <Button
+                  as={Link}
+                  href="./customer/add-customer"
+                  color="primary"
+                  radius="sm"
+                  isIconOnly
+                  className="sm:hidden"
+                >
+                  <PersonAddAlt1RoundedIcon />
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -264,7 +301,6 @@ export default function CustomersTable() {
         CustomerData={modalDeleteData.Customer}
         DeleteCustomer={DeleteCustomer}
       />
-
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
