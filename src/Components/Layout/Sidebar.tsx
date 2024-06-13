@@ -30,33 +30,21 @@ interface NavigationItem {
 export default function Sidebar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUrl = window.location.pathname;
-  const [adminPermissions, setAdminPermissions] = useState({
-    customer: false,
-    employee: false,
-    permission: false,
-  });
+
   const { hasPermission } = usePermissions();
 
   const [administration, setAdministration] = useState<NavigationItem[]>([]);
 
   useEffect(() => {
     async function fetchPermissions() {
-      const customerPermission =
-        (await hasPermission("VIEW_CUSTOMER")) ||
-        (await hasPermission("VIEW_COMPANY"));
-
-      setAdminPermissions({
-        customer: customerPermission,
-        employee: true,
-        permission: true,
-      });
-
       setAdministration([
         {
           name: "Clienti",
           href: "/administration/customer",
           icon: PeopleAltOutlinedIcon,
-          requiredCondition: customerPermission,
+          requiredCondition:
+            (await hasPermission("VIEW_CUSTOMER")) ||
+            (await hasPermission("VIEW_COMPANY")),
           current: isSubRoute({
             currentUrl,
             parentRoute: {
@@ -74,7 +62,7 @@ export default function Sidebar() {
           name: "Dipendenti",
           href: "/administration/employee",
           icon: EngineeringOutlinedIcon,
-          requiredCondition: true,
+          requiredCondition: await hasPermission("VIEW_EMPLOYEE"),
           current: isSubRoute({
             currentUrl,
             parentRoute: {
@@ -90,7 +78,7 @@ export default function Sidebar() {
           name: "Permessi",
           href: "/administration/permission",
           icon: VpnKeyOutlinedIcon,
-          requiredCondition: true,
+          requiredCondition: await hasPermission("VIEW_ROLE"),
           current: isSubRoute({
             currentUrl,
             parentRoute: {

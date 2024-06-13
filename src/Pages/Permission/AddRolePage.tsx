@@ -1,8 +1,22 @@
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import AddRoleModel from "../../Components/Permission/Other/AddRoleModel";
+import { usePermissions } from "../../Components/Layout/PermissionProvider";
+import { useEffect } from "react";
 
 export default function AddRolePage() {
+  const { hasPermission } = usePermissions();
+
+  useEffect(() => {
+    async function fetchData() {
+      const permission = await hasPermission("CREATE_ROLE");
+
+      if (!permission) {
+        return (window.location.href = "/");
+      }
+    }
+    fetchData();
+  }, [hasPermission]);
   return (
     <div className="py-10 m-0 lg:ml-72">
       <header>

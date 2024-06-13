@@ -9,9 +9,9 @@ export default function AddCustomerPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const createCompany = await hasPermission("CREATE_CUSTOMER");
+      const permission = await hasPermission("CREATE_CUSTOMER");
 
-      if (!createCompany) {
+      if (!permission) {
         return (window.location.href = "/");
       }
     }

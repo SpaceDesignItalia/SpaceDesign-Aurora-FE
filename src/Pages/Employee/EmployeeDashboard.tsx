@@ -1,8 +1,22 @@
 import EmployeeTable from "../../Components/Employee/Tables/EmployeeTable";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import { usePermissions } from "../../Components/Layout/PermissionProvider";
+import { useEffect } from "react";
 
 export default function EmployeeDashboard() {
+  const { hasPermission } = usePermissions();
+
+  useEffect(() => {
+    async function fetchData() {
+      const permission = await hasPermission("VIEW_EMPLOYEE");
+
+      if (!permission) {
+        return (window.location.href = "/");
+      }
+    }
+    fetchData();
+  }, [hasPermission]);
   return (
     <div className="py-10 m-0 lg:ml-72">
       <header>

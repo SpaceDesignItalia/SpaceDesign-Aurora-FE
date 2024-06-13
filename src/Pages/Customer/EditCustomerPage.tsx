@@ -9,9 +9,9 @@ export default function EditCustomerPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const createCompany = await hasPermission("EDIT_CUSTOMER");
+      const permission = await hasPermission("EDIT_CUSTOMER");
 
-      if (!createCompany) {
+      if (!permission) {
         return (window.location.href = "/");
       }
     }

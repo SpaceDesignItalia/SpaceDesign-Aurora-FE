@@ -24,6 +24,7 @@ import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
 import ViewRoleModal from "../Other/ViewRoleModal";
+import { usePermissions } from "../../Layout/PermissionProvider";
 
 interface Role {
   RoleId: number;
@@ -45,12 +46,27 @@ const columns = [
 export default function RoleTable() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [adminRolePermission, setAdminRolePermission] = useState({
+    addRolePermission: false,
+    editRolePermission: false,
+    deleteRolePermission: false,
+  });
+
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
   });
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
+    async function checkPermissions() {
+      setAdminRolePermission({
+        addRolePermission: await hasPermission("CREATE_ROLE"),
+        editRolePermission: await hasPermission("EDIT_ROLE"),
+        deleteRolePermission: await hasPermission("DELETE_ROLE"),
+      });
+    }
+    checkPermissions();
     fetchData();
   }, []);
 
@@ -105,69 +121,78 @@ export default function RoleTable() {
     return roles.slice(start, end);
   }, [page, roles, rowsPerPage]);
 
-  const renderCell = React.useCallback((role: Role, columnKey: React.Key) => {
-    const cellValue = role[columnKey as keyof Role];
+  const renderCell = React.useCallback(
+    (role: Role, columnKey: React.Key) => {
+      const cellValue = role[columnKey as keyof Role];
 
-    switch (columnKey) {
-      case "name":
-        return <p>{cellValue}</p>;
-      case "description":
-        return (
-          <div className="flex flex-col">
-            <p className="text-bold text-small capitalize">{cellValue}</p>
-          </div>
-        );
-      case "actions":
-        return (
-          <div className="relative flex justify-left items-center gap-2">
-            <Dropdown radius="sm">
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
-                  <MoreVertRoundedIcon />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem
-                  color="primary"
-                  startContent={<RemoveRedEyeOutlinedIcon />}
-                  aria-label="View"
-                  aria-labelledby="View"
-                  onClick={() =>
-                    setModalData({
-                      ...modalData,
-                      open: true,
-                      Role: role,
-                    })
-                  }
-                >
-                  Visualizza
-                </DropdownItem>
-                <DropdownItem
-                  color="warning"
-                  startContent={<ModeOutlinedIcon />}
-                  aria-label="Edit"
-                  aria-labelledby="Edit"
-                  href={"/administration/permission/edit-role/" + role.RoleId}
-                >
-                  Modifica
-                </DropdownItem>
-                <DropdownItem
-                  color="danger"
-                  startContent={<DeleteOutlinedIcon />}
-                  aria-label="Remove"
-                  aria-labelledby="Remove"
-                  onClick={() => deleteRole(role.RoleId)}
-                >
-                  Rimuovi
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </div>
-        );
-      default:
-        return cellValue;
-    }
-  }, []);
+      switch (columnKey) {
+        case "name":
+          return <p>{cellValue}</p>;
+        case "description":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-small capitalize">{cellValue}</p>
+            </div>
+          );
+        case "actions":
+          return (
+            <div className="relative flex justify-left items-center gap-2">
+              <Dropdown radius="sm">
+                <DropdownTrigger>
+                  <Button isIconOnly size="sm" variant="light">
+                    <MoreVertRoundedIcon />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu>
+                  <DropdownItem
+                    color="primary"
+                    startContent={<RemoveRedEyeOutlinedIcon />}
+                    aria-label="View"
+                    aria-labelledby="View"
+                    onClick={() =>
+                      setModalData({
+                        ...modalData,
+                        open: true,
+                        Role: role,
+                      })
+                    }
+                  >
+                    Visualizza
+                  </DropdownItem>
+                  {adminRolePermission.editRolePermission && (
+                    <DropdownItem
+                      color="warning"
+                      startContent={<ModeOutlinedIcon />}
+                      aria-label="Edit"
+                      aria-labelledby="Edit"
+                      href={
+                        "/administration/permission/edit-role/" + role.RoleId
+                      }
+                    >
+                      Modifica
+                    </DropdownItem>
+                  )}
+                  {adminRolePermission.deleteRolePermission && (
+                    <DropdownItem
+                      color="danger"
+                      startContent={<DeleteOutlinedIcon />}
+                      aria-label="Remove"
+                      aria-labelledby="Remove"
+                      onClick={() => deleteRole(role.RoleId)}
+                    >
+                      Rimuovi
+                    </DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+          );
+        default:
+          return cellValue;
+      }
+    },
+    [adminRolePermission]
+  );
 
   const onRowsPerPageChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -190,15 +215,17 @@ export default function RoleTable() {
             placeholder="Cerca ruolo per nome..."
           />
           <div className="flex gap-3">
-            <Button
-              as={Link}
-              href="./permission/add-role"
-              color="primary"
-              radius="sm"
-              startContent={<AddModeratorRoundedIcon />}
-            >
-              Aggiungi ruolo
-            </Button>
+            {adminRolePermission.addRolePermission && (
+              <Button
+                as={Link}
+                href="./permission/add-role"
+                color="primary"
+                radius="sm"
+                startContent={<AddModeratorRoundedIcon />}
+              >
+                Aggiungi ruolo
+              </Button>
+            )}
           </div>
         </div>
       </div>

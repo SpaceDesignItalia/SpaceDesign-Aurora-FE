@@ -1,6 +1,20 @@
+import { useEffect } from "react";
+import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import PermissionTable from "../../Components/Permission/Tables/RoleTable";
 
 export default function PermissionDashboard() {
+  const { hasPermission } = usePermissions();
+
+  useEffect(() => {
+    async function fetchData() {
+      const permission = await hasPermission("VIEW_ROLE");
+
+      if (!permission) {
+        return (window.location.href = "/");
+      }
+    }
+    fetchData();
+  }, [hasPermission]);
   return (
     <div className="py-10 m-0 lg:ml-72">
       <header>
