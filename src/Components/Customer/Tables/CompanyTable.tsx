@@ -236,26 +236,39 @@ export default function CompanyTable() {
   const topContent = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between gap-3 items-end">
+        <div className="flex flex-row justify-between gap-3 items-end">
           <Input
             radius="sm"
             variant="bordered"
             startContent={<SearchOutlinedIcon />}
             onChange={SearchCompany}
-            className="w-1/3"
+            className="md:w-1/3"
             placeholder="Cerca per nome azienda..."
           />
           <div className="flex gap-3">
             {adminCompanyPermission.addCompanyPermission && (
-              <Button
-                as={Link}
-                href="./customer/add-company"
-                color="primary"
-                radius="sm"
-                startContent={<AddBusinessRoundedIcon />}
-              >
-                Aggiungi azienda
-              </Button>
+              <>
+                <Button
+                  as={Link}
+                  href="./customer/add-company"
+                  color="primary"
+                  radius="sm"
+                  startContent={<AddBusinessRoundedIcon />}
+                  className="hidden sm:flex"
+                >
+                  Aggiungi azienda
+                </Button>
+                <Button
+                  as={Link}
+                  href="./customer/add-company"
+                  color="primary"
+                  radius="sm"
+                  isIconOnly
+                  className="sm:hidden"
+                >
+                  <AddBusinessRoundedIcon />
+                </Button>
+              </>
             )}
           </div>
         </div>

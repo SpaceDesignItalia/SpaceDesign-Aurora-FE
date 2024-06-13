@@ -238,26 +238,40 @@ export default function EmployeeTable() {
   const topContent = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between gap-3 items-end">
+        <div className="flex flex-row justify-between gap-3 items-end">
           <Input
             radius="sm"
             variant="bordered"
             startContent={<SearchOutlinedIcon />}
             onChange={SearchEmployee}
-            className="w-1/3"
+            className="md:w-1/3"
             placeholder="Cerca dipendente per email..."
           />
           <div className="flex gap-3">
             {adminEmployeePermission.addEmployeePermission && (
-              <Button
-                as={Link}
-                href="./employee/add-employee"
-                color="primary"
-                radius="sm"
-                startContent={<PersonAddAlt1RoundedIcon />}
-              >
-                Aggiungi dipendente
-              </Button>
+              <>
+                <Button
+                  as={Link}
+                  href="./employee/add-employee"
+                  color="primary"
+                  radius="sm"
+                  startContent={<PersonAddAlt1RoundedIcon />}
+                  className="hidden sm:flex"
+                >
+                  Aggiungi dipendente
+                </Button>
+
+                <Button
+                  as={Link}
+                  href="./employee/add-employee"
+                  color="primary"
+                  radius="sm"
+                  isIconOnly
+                  className="sm:hidden"
+                >
+                  <PersonAddAlt1RoundedIcon />
+                </Button>
+              </>
             )}
           </div>
         </div>

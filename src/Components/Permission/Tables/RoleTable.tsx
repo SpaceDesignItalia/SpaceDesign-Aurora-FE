@@ -205,26 +205,40 @@ export default function RoleTable() {
   const topContent = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between gap-3 items-end">
+        <div className="flex flex-row justify-between gap-3 items-end">
           <Input
             radius="sm"
             variant="bordered"
             startContent={<SearchOutlinedIcon />}
             onChange={SearchRole}
-            className="w-1/3"
+            className="md:w-1/3"
             placeholder="Cerca ruolo per nome..."
           />
           <div className="flex gap-3">
             {adminRolePermission.addRolePermission && (
-              <Button
-                as={Link}
-                href="./permission/add-role"
-                color="primary"
-                radius="sm"
-                startContent={<AddModeratorRoundedIcon />}
-              >
-                Aggiungi ruolo
-              </Button>
+              <>
+                <Button
+                  as={Link}
+                  href="./permission/add-role"
+                  color="primary"
+                  radius="sm"
+                  startContent={<AddModeratorRoundedIcon />}
+                  className="hidden sm:flex"
+                >
+                  Aggiungi ruolo
+                </Button>
+
+                <Button
+                  as={Link}
+                  href="./permission/add-role"
+                  color="primary"
+                  radius="sm"
+                  isIconOnly
+                  className="sm:hidden"
+                >
+                  <AddModeratorRoundedIcon />
+                </Button>
+              </>
             )}
           </div>
         </div>
