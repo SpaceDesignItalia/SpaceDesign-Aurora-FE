@@ -18,6 +18,8 @@ import AddEmployeePage from "./Pages/Employee/AddEmployeePage";
 import EditEmployeePage from "./Pages/Employee/EditEmployeePage";
 import Login from "./Pages/Login/Login";
 import EditRolePage from "./Pages/Permission/EditRolePage";
+import ChatDashboard from "./Pages/Chat/ChatDashboard";
+
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
@@ -129,6 +131,10 @@ const ProtectedRoutes: React.FC = () => {
         <Route
           element={<EditRolePage />}
           path="/administration/permission/edit-role/:RoleId"
+        />
+        <Route
+          element={<ChatDashboard />}
+          path="/comunications/chat"
         />
       </Route>
     </Routes>
