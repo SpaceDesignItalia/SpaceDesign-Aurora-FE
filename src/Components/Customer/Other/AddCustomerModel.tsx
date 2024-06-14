@@ -9,7 +9,7 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import SaveIcon from "@mui/icons-material/Save";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import StatusAlert from "./StatusAlert";
+import StatusAlert from "../../Layout/StatusAlert";
 
 interface Company {
   CompanyId: number;

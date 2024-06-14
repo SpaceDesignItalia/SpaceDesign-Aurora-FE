@@ -130,12 +130,12 @@ export default function Sidebar() {
   const projectManagement: NavigationItem[] = [
     {
       name: "Progetti",
-      href: "#",
+      href: "/projects",
       icon: FolderCopyOutlinedIcon,
       requiredCondition: true,
       current: isSubRoute({
         currentUrl,
-        parentRoute: { href: "#", subRoutes: [] },
+        parentRoute: { href: "/projects", subRoutes: [] },
       }),
     },
   ];

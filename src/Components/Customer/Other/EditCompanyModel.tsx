@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Input, Button } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
-import StatusAlert from "./StatusAlert";
+import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
 
 interface Company {
