@@ -5,22 +5,31 @@ import {
   Button,
   Textarea,
   Autocomplete,
+  AutocompleteItem,
+  Chip,
   DatePicker,
   Avatar,
   RadioGroup,
   Radio,
   cn,
-  AutocompleteItem,
 } from "@nextui-org/react";
 import { I18nProvider } from "@react-aria/i18n";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
 import { API_URL_IMG } from "../../../API/API";
+import {
+  DateValue,
+  parseDate,
+  getLocalTimeZone,
+} from "@internationalized/date";
+import dayjs from "dayjs";
+import { useDateFormatter } from "@react-aria/i18n";
 
 interface Project {
   ProjectName: string;
   ProjectDescription: string;
-  ProjectEndDate: Date;
+  ProjectEndDate: DateValue;
+  ProjectManagerId: number;
   CompanyId: number;
   ProjectBannerId: number;
 }
@@ -29,6 +38,13 @@ interface Company {
   CompanyId: number;
   CompanyName: string;
   CompanyAddress: string;
+}
+
+interface Manager {
+  StafferId: number;
+  StafferFullName: string;
+  StafferEmail: string;
+  RoleName: "CEO";
 }
 
 interface Banner {
@@ -66,12 +82,14 @@ export default function AddProjectModel() {
   const [newProjectData, setNewProjectData] = useState<Project>({
     ProjectName: "",
     ProjectDescription: "",
-    ProjectEndDate: null,
+    ProjectEndDate: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+    ProjectManagerId: 0,
     CompanyId: 0,
     ProjectBannerId: 0,
   });
   const [banners, setBanners] = useState<Banner[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [managers, setManagers] = useState<Manager[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>({
     isOpen: false,
@@ -86,21 +104,56 @@ export default function AddProjectModel() {
     });
     axios.get("/Company/GET/GetAllCompany").then((res) => {
       setCompanies(res.data);
-      console.log(res.data);
+    });
+    axios.get("/Project/GET/GetAllManagers").then((res) => {
+      setManagers(res.data);
     });
   }, []);
 
+  function handleProjectBannerChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setNewProjectData({ ...newProjectData, ProjectBannerId: e.target.value });
+  }
+
   function handleProjectNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 150) {
+    if (e.target.value.length <= 200) {
       setNewProjectData({ ...newProjectData, ProjectName: e.target.value });
     }
   }
 
+  function handleProjectDescriptionChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
+    if (e.target.value.length <= 200) {
+      setNewProjectData({
+        ...newProjectData,
+        ProjectDescription: e.target.value,
+      });
+    }
+  }
+
+  function handleProjectEndDateChange(date: DateValue) {
+    setNewProjectData({
+      ...newProjectData,
+      ProjectEndDate: date,
+    });
+  }
+
+  function handleProjectProjectManagerIdChange(e: React.Key) {
+    setNewProjectData({ ...newProjectData, ProjectManagerId: String(e) });
+  }
+
+  function handleProjectCompanyIdChange(e: React.Key) {
+    setNewProjectData({ ...newProjectData, CompanyId: String(e) });
+  }
+
   function checkAllDataCompiled() {
     if (
-      newCompanyData.companyName !== "" &&
-      newCompanyData.companyAddress !== "" &&
-      newCompanyData.companyEmail !== ""
+      newProjectData.ProjectName !== "" &&
+      newProjectData.ProjectDescription !== "" &&
+      newProjectData.ProjectEndDate !== null &&
+      newProjectData.ProjectManagerId !== 0 &&
+      newProjectData.CompanyId !== 0 &&
+      newProjectData.ProjectBannerId !== 0
     ) {
       return false;
     }
@@ -109,39 +162,56 @@ export default function AddProjectModel() {
 
   async function handleCreateNewCompany() {
     try {
-      const res = await axios
-        .post("/Company/POST/AddCompany", newCompanyData)
-        .then(setIsAddingData(true));
+      setIsAddingData(true);
+
+      // Formatta la data di fine progetto
+      const formattedDate = dayjs(
+        formatter.format(
+          newProjectData.ProjectEndDate.toDate(getLocalTimeZone())
+        )
+      ).format("YYYY-MM-DD");
+
+      // Crea una copia dei dati del progetto con la data formattata
+      const formattedProjectData = {
+        ...newProjectData,
+        ProjectEndDate: formattedDate,
+      };
+
+      const res = await axios.post("/Project/POST/AddProject", {
+        ProjectData: formattedProjectData,
+      });
 
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
           alertTitle: "Operazione completata",
-          alertDescription: "L'azienda è stata aggiunta con successo.",
+          alertDescription: "Il progetto è stato aggiunto con successo.",
           alertColor: "green",
         });
         setTimeout(() => {
-          window.location.href = "/administration/customer";
+          window.location.href = "/projects";
         }, 2000);
         console.log("Successo:", res.data);
       }
-      // Esegui altre azioni dopo la creazione dell'azienda, se necessario
+      // Esegui altre azioni dopo la creazione del progetto, se necessario
     } catch (error) {
       setAlertData({
         isOpen: true,
         alertTitle: "Errore durante l'operazione",
         alertDescription:
-          "Si è verificato un errore durante l'aggiunta dell'azienda. Per favore, riprova più tardi.",
+          "Si è verificato un errore durante l'aggiunta del progetto. Per favore, riprova più tardi.",
         alertColor: "red",
       });
 
       setTimeout(() => {
-        window.location.href = "/administration/customer";
+        window.location.href = "/projects";
       }, 2000);
-      console.error("Errore durante la creazione dell'azienda:", error);
+      console.error("Errore durante la creazione del progetto:", error);
       // Gestisci l'errore in modo appropriato, ad esempio mostrando un messaggio all'utente
     }
   }
+
+  let formatter = useDateFormatter({ dateStyle: "full" });
 
   return (
     <>
@@ -167,12 +237,16 @@ export default function AddProjectModel() {
                   Banner
                 </label>
                 <div className="flex flex-wrap gap-5 mt-3">
-                  <RadioGroup orientation="horizontal">
+                  <RadioGroup
+                    orientation="horizontal"
+                    value={String(newProjectData.ProjectBannerId)}
+                    onChange={handleProjectBannerChange}
+                  >
                     {banners.length > 0 &&
                       banners.map((banner) => (
                         <CustomRadio
                           key={banner.ProjectBannerId}
-                          value={banner.ProjectBannerId}
+                          value={banner.ProjectBannerId.toString()}
                         >
                           <Avatar
                             radius="sm"
@@ -189,7 +263,7 @@ export default function AddProjectModel() {
               </div>
               <div className="col-span-6 sm:col-span-4">
                 <label
-                  htmlFor="email-address"
+                  htmlFor="project-name"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
                   Nome progetto
@@ -206,44 +280,99 @@ export default function AddProjectModel() {
 
               <div className="col-span-6 sm:col-span-2">
                 <label
-                  htmlFor="Name"
+                  htmlFor="project-end-date"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
                   Fine Progetto
                 </label>
                 <I18nProvider locale="it-GB">
-                  <DatePicker variant="bordered" radius="sm" />
+                  <DatePicker
+                    variant="bordered"
+                    radius="sm"
+                    value={newProjectData.ProjectEndDate}
+                    onChange={handleProjectEndDateChange}
+                  />
+                  <p className="text-default-500 text-sm mt-1">
+                    Data selezionata:{" "}
+                    {newProjectData.ProjectEndDate
+                      ? dayjs(
+                          formatter.format(
+                            newProjectData.ProjectEndDate.toDate(
+                              getLocalTimeZone()
+                            )
+                          )
+                        ).format("DD-MM-YYYY")
+                      : "--"}
+                  </p>
                 </I18nProvider>
               </div>
 
               <div className="col-span-6 sm:col-span-6">
                 <label
-                  htmlFor="email-address"
+                  htmlFor="project-description"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
                   Descrizione
                 </label>
                 <Textarea
                   variant="bordered"
-                  type="text"
+                  type="textarea"
                   radius="sm"
+                  value={newProjectData.ProjectDescription}
+                  onChange={handleProjectDescriptionChange}
                   fullWidth
                 />
               </div>
 
               <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="Name"
+                  htmlFor="project-manager"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
                   Project Manager
                 </label>
-                <Autocomplete variant="bordered" type="text" radius="sm" />
+                <Autocomplete
+                  defaultItems={managers}
+                  placeholder="Seleziona Project Manager"
+                  onSelectionChange={handleProjectProjectManagerIdChange}
+                  variant="bordered"
+                  radius="sm"
+                  aria-label="manager"
+                  fullWidth
+                >
+                  {(manager) => (
+                    <AutocompleteItem
+                      key={manager.StafferId}
+                      textValue={manager.StafferFullName}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex gap-2 items-center">
+                          <div className="flex flex-col">
+                            <span className="text-small">
+                              {manager.StafferFullName}{" "}
+                              <Chip
+                                color="primary"
+                                size="sm"
+                                radius="sm"
+                                variant="flat"
+                              >
+                                {manager.RoleName}
+                              </Chip>
+                            </span>
+                            <span className="text-tiny text-default-400">
+                              {manager.StafferEmail}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </AutocompleteItem>
+                  )}
+                </Autocomplete>
               </div>
 
               <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="last-name"
+                  htmlFor="company"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
                   Azienda
@@ -251,6 +380,7 @@ export default function AddProjectModel() {
                 <Autocomplete
                   defaultItems={companies}
                   placeholder="Seleziona azienda"
+                  onSelectionChange={handleProjectCompanyIdChange}
                   variant="bordered"
                   radius="sm"
                   aria-label="company"
@@ -285,6 +415,7 @@ export default function AddProjectModel() {
               className="text-white"
               radius="sm"
               startContent={!isAddingData && <SaveIcon />}
+              isDisabled={checkAllDataCompiled()}
               isLoading={isAddingData}
               onClick={handleCreateNewCompany}
             >

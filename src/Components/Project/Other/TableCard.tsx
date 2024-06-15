@@ -1,5 +1,20 @@
 import axios from "axios";
+import {
+  Avatar,
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Link,
+} from "@nextui-org/react";
 import { useEffect, useState } from "react";
+import { API_URL_IMG } from "../../../API/API";
+import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
+import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import ConfirmDeleteProjectModal from "./ConfirmDeleteProjectModal";
 
 interface Project {
   ProjectId: number;
@@ -10,7 +25,7 @@ interface Project {
   ProjectManagerId: number;
   ProjectBannerId: number;
   CompanyId: number;
-  ProjectStatusId: number;
+  StatusId: number;
 }
 
 interface Company {
@@ -25,20 +40,44 @@ interface Status {
   StatusColor: string;
 }
 
+interface ModalDeleteData {
+  Project: Project;
+  open: boolean;
+}
+
 export default function TableCard({ project }: { project: Project }) {
   const [company, setCompany] = useState<Company>({
-    CompanyId: 4,
-    CompanyName: "Smoke di Macherelli Armando",
-    CompnayPhoto:
-      "https://lh3.googleusercontent.com/p/AF1QipPBceBZK41EDAWKbpzA4j6ENBSjzFPqJ0GfW9AI=s1360-w1360-h1020",
+    CompanyId: 0,
+    CompanyName: "",
+    CompnayPhoto: "",
   });
-
   const [statusList, setStatusList] = useState<Status[]>([]);
+  const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
+    Project: {
+      ProjectId: 0,
+      ProjectName: "",
+      ProjectDescription: "",
+      ProjectCreationDate: "",
+      ProjectEndDate: "",
+      ProjectManagerId: 0,
+      ProjectBannerId: 0,
+      CompanyId: 0,
+      StatusId: 0,
+    },
+    open: false,
+  });
 
   useEffect(() => {
     axios.get("/Project/GET/GetAllStatus").then((res) => {
       setStatusList(res.data);
     });
+    axios
+      .get("/Company/GET/GetCompanyById", {
+        params: { CompanyId: project.CompanyId },
+      })
+      .then((res) => {
+        setCompany(res.data[0]);
+      });
   }, []);
 
   const statuses = [
@@ -49,12 +88,12 @@ export default function TableCard({ project }: { project: Project }) {
 
   function displayStatus() {
     return statusList.map((status) => {
-      if (status.StatusId == project.ProjectStatusId) {
+      if (status.StatusId == project.StatusId) {
         return (
           <span
             key={status.StatusId}
             className={classNames(
-              statuses[project.ProjectStatusId - 1],
+              statuses[project.StatusId - 1],
               "rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset"
             )}
           >
@@ -66,39 +105,110 @@ export default function TableCard({ project }: { project: Project }) {
     });
   }
 
+  async function DeleteProject(CompanyData: any) {
+    try {
+      /* const res = await axios.delete("/Company/DELETE/DeleteCompany", {
+        params: { CompanyData },
+      }); */
+
+      if (res.status === 200) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Errore nella cancellazione dell'azienda:", error);
+    }
+  }
+
   function classNames(...classes: (string | boolean | undefined)[]): string {
     return classes.filter((className) => !!className).join(" ");
   }
 
   return (
-    <div
-      key={project.ProjectId}
-      className="overflow-hidden rounded-xl border border-gray-200 list-none"
-    >
-      <div className="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
-        <img
-          src={company.CompnayPhoto}
-          alt={String(project.CompanyId)}
-          className="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
-        />
-        <div className="flex flex-col">
-          <div className="text-sm font-medium leading-6 text-gray-900">
-            {project.ProjectName}
+    <>
+      <ConfirmDeleteProjectModal
+        isOpen={modalDeleteData.open}
+        isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
+        ProjectData={modalDeleteData.Project}
+        DeleteProject={DeleteProject}
+      />
+      <div
+        key={project.ProjectId}
+        className="overflow-hidden rounded-xl border border-gray-200 list-none"
+      >
+        <div className="flex items-center justify-between gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
+          <div className="flex flex-row gap-5">
+            <Avatar
+              size="lg"
+              radius="sm"
+              src={
+                company.CompnayPhoto
+                  ? company.CompnayPhoto
+                  : API_URL_IMG + "/companyImages/defaultLogo.png"
+              }
+              alt={String(project.CompanyId)}
+              isBordered
+            />
+            <div className="flex flex-col">
+              <div className="text-sm font-medium leading-6 text-gray-900">
+                {project.ProjectName}
+              </div>
+              <div className="text-sm font-medium leading-6 text-gray-500">
+                {company.CompanyName}
+              </div>
+            </div>
           </div>
-          <div className="text-sm font-medium leading-6 text-gray-500">
-            {company.CompanyName}
+          <Dropdown radius="sm">
+            <DropdownTrigger>
+              <Button isIconOnly size="sm" variant="light">
+                <MoreVertRoundedIcon />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu>
+              <DropdownItem
+                as={Link}
+                color="primary"
+                startContent={<RemoveRedEyeOutlinedIcon />}
+                aria-label="View"
+                aria-labelledby="View"
+                href={
+                  "/projects/" +
+                  company.CompanyName +
+                  "/" +
+                  project.ProjectId +
+                  "/" +
+                  project.ProjectName
+                }
+              >
+                Visualizza
+              </DropdownItem>
+
+              <DropdownItem
+                color="danger"
+                startContent={<DeleteOutlinedIcon />}
+                aria-label="Remove"
+                aria-labelledby="Remove"
+                onClick={() =>
+                  setModalDeleteData({
+                    ...modalDeleteData,
+                    open: true,
+                    Project: project,
+                  })
+                }
+              >
+                Rimuovi
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </div>
+        <dl className="-my-3 divide-y divide-gray-100 px-6 py-4 text-sm leading-6">
+          <div className="flex justify-between gap-x-4 py-3">
+            <dt className="text-gray-500">Task da fare</dt>
+            <dd className="text-gray-700">1</dd>
           </div>
-        </div>
-      </div>
-      <dl className="-my-3 divide-y divide-gray-100 px-6 py-4 text-sm leading-6">
-        <div className="flex justify-between gap-x-4 py-3">
-          <dt className="text-gray-500">Task da fare</dt>
-          <dd className="text-gray-700">1</dd>
-        </div>
-        <div className="flex justify-between gap-x-4 py-3">
-          <dt className="text-gray-500">Team</dt>
-          <dd className="text-gray-700">
-            {/* <AvatarGroup isBordered max={2} total={10} size="sm">
+          <div className="flex justify-between gap-x-4 py-3">
+            <dt className="text-gray-500">Team</dt>
+            <dd className="text-gray-700">
+              {/* <AvatarGroup isBordered max={2} total={10} size="sm">
               {project.team !== undefined && (
                 <>
                   {project.team.map((member: string, index: number) => (
@@ -107,13 +217,14 @@ export default function TableCard({ project }: { project: Project }) {
                 </>
               )}
             </AvatarGroup> */}
-          </dd>
-        </div>
-        <div className="flex justify-between gap-x-4 py-3">
-          <dt className="text-gray-500">Status progetto</dt>
-          <dd className="flex items-start gap-x-2">{displayStatus()}</dd>
-        </div>
-      </dl>
-    </div>
+            </dd>
+          </div>
+          <div className="flex justify-between gap-x-4 py-3">
+            <dt className="text-gray-500">Status progetto</dt>
+            <dd className="flex items-start gap-x-2">{displayStatus()}</dd>
+          </div>
+        </dl>
+      </div>
+    </>
   );
 }

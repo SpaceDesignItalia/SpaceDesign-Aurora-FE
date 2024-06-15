@@ -2,20 +2,29 @@ import { Button, Input, Link } from "@nextui-org/react";
 import TableCard from "../Other/TableCard";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-const project = {
-  ProjectId: 1,
-  ProjectName: "Project 1",
-  ProjectDescription: "Project 1 Description",
-  ProjectCreationDate: "2021-01-01",
-  ProjectEndDate: "2021-01-01",
-  ProjectManagerId: 1,
-  ProjectBannerId: 1,
-  CompanyId: 4,
-  ProjectStatusId: 1,
-};
+interface Project {
+  ProjectId: number;
+  ProjectName: string;
+  ProjectDescription: string;
+  ProjectCreationDate: string;
+  ProjectEndDate: string;
+  ProjectManagerId: number;
+  ProjectBannerId: number;
+  CompanyId: number;
+  StatusId: number;
+}
 
 export default function ProjectTable() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  useEffect(() => {
+    axios.get("/Project/GET/GetAllProjects").then((res) => {
+      setProjects(res.data);
+      console.log(res.data);
+    });
+  }, []);
   async function SearchProject(e: { target: { value: string } }) {
     const searchQuery = e.target.value.trim(); // Otteniamo il valore di ricerca e rimuoviamo gli spazi vuoti
     try {
@@ -61,9 +70,10 @@ export default function ProjectTable() {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        <TableCard project={project} />
-        <TableCard project={project} />
-        <TableCard project={project} />
+        {projects.length > 0 &&
+          projects.map((project) => {
+            return <TableCard project={project} key={project.ProjectId} />;
+          })}
       </div>
     </div>
   );

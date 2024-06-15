@@ -20,6 +20,7 @@ import Login from "./Pages/Login/Login";
 import EditRolePage from "./Pages/Permission/EditRolePage";
 import ProjectDashboard from "./Pages/Project/ProjectDashboard";
 import AddProjectPage from "./Pages/Project/AddProjectPage";
+import ProjectPage from "./Pages/Project/ProjectPage";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
@@ -134,6 +135,10 @@ const ProtectedRoutes: React.FC = () => {
         />
         <Route element={<ProjectDashboard />} path="/projects" />
         <Route element={<AddProjectPage />} path="/projects/add-project" />
+        <Route
+          element={<ProjectPage />}
+          path="/projects/:CompanyName/:ProjectId/:ProjectName"
+        />
       </Route>
     </Routes>
   );
