@@ -20,8 +20,8 @@ import FolderCopyOutlinedIcon from "@mui/icons-material/FolderCopyOutlined";
 import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
 import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
 import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumberOutlined";
-import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
-import QuestionAnswerOutlinedIcon from '@mui/icons-material/QuestionAnswerOutlined';
+import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
+import QuestionAnswerOutlinedIcon from "@mui/icons-material/QuestionAnswerOutlined";
 
 interface NavigationItem {
   name: string;
@@ -342,9 +342,9 @@ export default function Sidebar() {
                           Amministrazione
                         </div>
                         <ul role="list" className="-mx-2 mt-2 space-y-1">
-                          {administration.map((admin) => (
-                            <>
-                              {admin.requiredCondition && (
+                          {administration.map(
+                            (admin) =>
+                              admin.requiredCondition && (
                                 <li key={admin.name}>
                                   <a
                                     href={admin.href}
@@ -367,9 +367,8 @@ export default function Sidebar() {
                                     {admin.name}
                                   </a>
                                 </li>
-                              )}
-                            </>
-                          ))}
+                              )
+                          )}
                         </ul>
                       </li>
                       <li>
@@ -528,9 +527,9 @@ export default function Sidebar() {
                   Amministrazione
                 </div>
                 <ul role="list" className="-mx-2 mt-2 space-y-1">
-                  {administration.map((admin) => (
-                    <>
-                      {admin.requiredCondition && (
+                  {administration.map(
+                    (admin) =>
+                      admin.requiredCondition && (
                         <li key={admin.name}>
                           <a
                             href={admin.href}
@@ -553,9 +552,8 @@ export default function Sidebar() {
                             {admin.name}
                           </a>
                         </li>
-                      )}
-                    </>
-                  ))}
+                      )
+                  )}
                 </ul>
               </li>
               <li>

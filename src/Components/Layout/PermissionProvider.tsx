@@ -35,7 +35,6 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({
         params: { StafferId: id },
       });
       if (res.status === 200) {
-        console.log(res.data);
         setPermissions(res.data);
         setPermissionsLoaded(true);
       }

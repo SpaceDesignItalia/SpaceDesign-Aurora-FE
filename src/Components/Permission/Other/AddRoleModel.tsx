@@ -123,7 +123,6 @@ export default function AddRoleModel() {
         setTimeout(() => {
           window.location.href = "/administration/permission";
         }, 2000);
-        console.log("Successo:", res.data);
       }
     } catch (error) {
       setAlertData({
