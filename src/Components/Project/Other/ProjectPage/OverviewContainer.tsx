@@ -76,8 +76,8 @@ export default function OverviewContainer({
         isClosed={() => setModalData({ ...modalData, open: false })}
         ProjectId={modalData.ProjectId}
       />
-      <div className="grid grid-cols-6 gap-5 h-screen">
-        <div className="grid grid-cols-1 xl:grid-cols-6 gap-6 col-span-4">
+      <div className="grid grid-cols-1 sm:grid-cols-6 gap-5 h-screen">
+        <div className="grid grid-cols-1 xl:grid-cols-6 gap-6 col-span-6 md:col-span-4">
           <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6 xl:col-span-6 h-fit">
             <h1 className="text-xl font-bold mb-4">Dettagli progetto</h1>
 
@@ -111,12 +111,12 @@ export default function OverviewContainer({
           </div>
         </div>
 
-        <div className="flex flex-col gap-5 col-span-1 xl:col-span-2">
+        <div className="flex flex-col gap-5 col-span-6 md:col-span-2 md:col-span-2">
           <div className="grid grid-cols-1 2xl:grid-cols-1 gap-4">
-            <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
+            <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6">
               <div className="flex flex-col gap-3 items-start">
                 <h1 className="font-bold">Collegamenti esterni</h1>
-                <div className="flex flex-row gap-3 items-center">
+                <div className="flex flex-row flex-wrap gap-3 items-center">
                   {links.map((link) => {
                     return (
                       <Tooltip content={link.ProjectLinkTitle} closeDelay={0}>
