@@ -91,6 +91,19 @@ export default function ChatTable() {
             )
           );
           handleOpenChat(conversationId);
+          setConversations((prev) => {
+            const sortedConversations = [...prev];
+            sortedConversations.sort((a, b) => {
+              if (a.lastMessageDate && b.lastMessageDate) {
+                return (
+                  new Date(b.lastMessageDate).getTime() -
+                  new Date(a.lastMessageDate).getTime()
+                );
+              }
+              return 0;
+            });
+            return sortedConversations;
+          });
         });
     });
   }
