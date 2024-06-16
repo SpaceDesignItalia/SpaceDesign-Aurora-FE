@@ -188,6 +188,11 @@ export default function AddProjectModel() {
           alertDescription: "Il progetto è stato aggiunto con successo.",
           alertColor: "green",
         });
+
+        axios.post("/Project/POST/CreateProjectConversation", {
+          ProjectId: res.data.ProjectId,
+        });
+
         setTimeout(() => {
           window.location.href = "/projects";
         }, 2000);
