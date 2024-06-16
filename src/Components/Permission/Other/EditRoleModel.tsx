@@ -9,7 +9,7 @@ import {
   Checkbox,
 } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
-import StatusAlert from "./StatusAlert";
+import StatusAlert from "../../Layout/StatusAlert";
 
 interface Role {
   RoleName: string;

@@ -8,7 +8,7 @@ import {
 } from "@nextui-org/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import StatusAlert from "./StatusAlert";
+import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
 
 interface Employee {

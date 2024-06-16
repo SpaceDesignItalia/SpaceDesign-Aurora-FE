@@ -7,9 +7,8 @@ import {
   AutocompleteItem,
 } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
-import CompanyAlert from "./StatusAlert";
+import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
-import StatusAlert from "./StatusAlert";
 
 interface Customer {
   CustomerId: number;

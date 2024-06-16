@@ -1,3 +1,4 @@
+import { light } from "@mui/material/styles/createPalette";
 import { nextui } from "@nextui-org/react";
 
 /** @type {import('tailwindcss').Config} */
