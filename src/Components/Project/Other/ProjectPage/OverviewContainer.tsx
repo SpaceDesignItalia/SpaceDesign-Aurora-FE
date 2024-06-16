@@ -111,7 +111,7 @@ export default function OverviewContainer({
           </div>
         </div>
 
-        <div className="flex flex-col gap-5 col-span-6 md:col-span-2 md:col-span-2">
+        <div className="flex flex-col gap-5 col-span-6  md:col-span-2">
           <div className="grid grid-cols-1 2xl:grid-cols-1 gap-4">
             <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6">
               <div className="flex flex-col gap-3 items-start">

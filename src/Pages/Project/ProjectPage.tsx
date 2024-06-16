@@ -12,6 +12,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import ChangeProjectTheme from "../../Components/Project/Other/ChangeProjectTheme";
 import OverviewContainer from "../../Components/Project/Other/ProjectPage/OverviewContainer";
+import TeamContainer from "../../Components/Project/Other/ProjectPage/TeamContainer";
 
 interface Project {
   ProjectId: number;
@@ -155,7 +156,11 @@ export default function ProjectPage() {
               <OverviewContainer projectData={projectData} />
             )}
             {activeTab === "Tasks" && <div>Tasks content</div>}
-            {activeTab === "Team" && <div>Team content</div>}
+            {activeTab === "Team" && (
+              <div>
+                <TeamContainer />
+              </div>
+            )}
             {activeTab === "Files" && <div>Files content</div>}
             {activeTab === "Ticket" && <div>Ticket content</div>}
           </div>
