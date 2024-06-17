@@ -1,9 +1,11 @@
-import { Avatar, Button, Input, cn } from "@nextui-org/react";
+import { Avatar, Button, Input, ScrollShadow, cn } from "@nextui-org/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import SendRoundedIcon from "@mui/icons-material/SendRounded";
+import ChatMessage from "../Other/ChatMessage";
 
 const socket = io("http://localhost:3000");
 
@@ -147,6 +149,7 @@ export default function ChatTable() {
   }
 
   function handleSendMessage() {
+    if (newMessage === "") return;
     try {
       console.log("conversationId: ", conversationId);
       console.log("newMessage: ", newMessage);
@@ -345,41 +348,31 @@ export default function ChatTable() {
 
       <div className="flex flex-col w-full mx-auto px-4 py-2 gap-5">
         <div className="flex flex-col space-y-2">
-          {searchQuery === "" &&
-            messages.map((message) => (
-              <div
-                key={message.MessageId}
-                className={cn(
-                  "relative mr-3 text-sm py-2 px-4 shadow rounded-xl flex flex-col",
-                  `message ${
-                    message.StafferSenderId === loggedStafferId
-                      ? "self-end bg-green-200"
-                      : "self-start bg-blue-200"
-                  }`
-                )}
-              >
-                <p className="font-semibold text-md">{message.Text}</p>
-                <p
-                  className={cn(
-                    "text-xs",
-                    message.StafferSenderId === loggedStafferId
-                      ? "self-end"
-                      : "self-start"
-                  )}
-                ></p>
-              </div>
-            ))}
+          <ScrollShadow>
+            {searchQuery === "" &&
+              messages.map((message) => {
+                if (message.StafferSenderId !== loggedStafferId) {
+                  return <ChatMessage message={message} type="recive" />;
+                } else return <ChatMessage message={message} type="send" />;
+              })}
+          </ScrollShadow>
         </div>
         {conversationId != -1 && (
-          <div className="mt-4 flex flex-row gap-5">
+          <div className="flex flex-row items-center gap-3">
             <Input
-              type="text"
+              variant="bordered"
+              className="w-full"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Scrivi un messaggio..."
+              placeholder="Messaggio"
             />
-            <Button color="primary" onClick={() => handleSendMessage()}>
-              Invia
+            <Button
+              onClick={handleSendMessage}
+              color="primary"
+              isIconOnly
+              isDisabled={newMessage === "" ? true : false}
+            >
+              <SendRoundedIcon />
             </Button>
           </div>
         )}

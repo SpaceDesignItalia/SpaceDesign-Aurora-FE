@@ -1,5 +1,5 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import { Button, Input, ScrollShadow } from "@nextui-org/react";
+import { Button, Input, ScrollShadow, cn } from "@nextui-org/react";
 import ProjectTeamMemberCard from "../ProjectTeamMemberCard";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
@@ -87,6 +87,7 @@ export default function TeamContainer() {
   }
 
   function handleSendMessage() {
+    if (newMessage === "") return;
     try {
       console.log("conversationId: ", conversationId);
       console.log("newMessage: ", newMessage);
@@ -128,7 +129,12 @@ export default function TeamContainer() {
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Messaggio"
           />
-          <Button onClick={handleSendMessage} color="primary" isIconOnly>
+          <Button
+            onClick={handleSendMessage}
+            color="primary"
+            isIconOnly
+            isDisabled={newMessage === "" ? true : false}
+          >
             <SendRoundedIcon />
           </Button>
         </div>
