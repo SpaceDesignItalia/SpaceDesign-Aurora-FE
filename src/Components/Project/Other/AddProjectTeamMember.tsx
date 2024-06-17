@@ -1,8 +1,6 @@
 import {
   Button,
   Avatar,
-  Radio,
-  cn,
   Modal,
   ModalBody,
   ModalContent,
@@ -10,7 +8,7 @@ import {
   ModalHeader,
   Autocomplete,
   AutocompleteItem,
-  Input,
+  Chip,
 } from "@nextui-org/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -31,10 +29,11 @@ interface Link {
   ProjectLinkTypeId: number;
 }
 
-interface ProjectLinkType {
-  ProjectLinkTypeId: number;
-  ProjectLinkTypeName: string;
-  ProjectLinkTypeImage: string;
+interface Staffer {
+  StafferId: number;
+  StafferFullName: string;
+  StafferEmail: string;
+  RoleName: string;
 }
 
 interface AlertData {
@@ -44,7 +43,7 @@ interface AlertData {
   alertColor: string;
 }
 
-export default function AddProjectLink({
+export default function AddProjectTeamMember({
   isOpen,
   isClosed,
   ProjectId,
@@ -56,7 +55,7 @@ export default function AddProjectLink({
     ProjectLinkTypeId: 0,
   });
 
-  const [linkTypes, setLinkTypes] = useState<ProjectLinkType[]>([]);
+  const [availableStaff, setAvailableStaff] = useState<Staffer[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>({
     isOpen: false,
@@ -66,10 +65,14 @@ export default function AddProjectLink({
   });
 
   useEffect(() => {
-    setNewLinkData({ ...newLinkData, ProjectId });
-    axios.get("/Project/GET/GetAllLinkType").then((res) => {
-      setLinkTypes(res.data);
-    });
+    axios
+      .get("/Project/GET/GetMembersNotInProjectTeam", {
+        params: { ProjectId: ProjectId },
+      })
+      .then((res) => {
+        console.log(res.data);
+        setAvailableStaff(res.data);
+      });
   }, [ProjectId]);
 
   function checkAllDataCompiled() {
@@ -165,63 +168,59 @@ export default function AddProjectLink({
           {(isClosed) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                <h3 className="text-xl font-semibold">
-                  Aggiungi un nuovo collegamento
-                </h3>
+                <h3 className="text-xl font-semibold">Aggiungi un membro</h3>
               </ModalHeader>
               <ModalBody>
                 <div className="grid grid-cols-6 gap-6">
                   <div className="col-span-6 sm:col-span-6">
                     <label
-                      htmlFor="project-name"
-                      className="block text-sm font-medium leading-6 text-gray-900"
-                    >
-                      Testo visualizzato
-                    </label>
-                    <Input
-                      variant="bordered"
-                      onChange={handleProjectLinkTitleChange}
-                      type="text"
-                      radius="sm"
-                      fullWidth
-                    />
-                  </div>
-
-                  <div className="col-span-6 sm:col-span-6">
-                    <label
                       htmlFor="project-description"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
-                      Tipo di collegamento
+                      Membro
                     </label>
                     <Autocomplete
-                      defaultItems={linkTypes}
-                      placeholder="Seleziona il tipo di collegamento"
+                      defaultItems={availableStaff}
+                      placeholder="Seleziona il membro da aggiungere"
                       onSelectionChange={handleProjectLinkTypeChange}
                       variant="bordered"
                       radius="sm"
                       aria-label="manager"
                       fullWidth
                     >
-                      {(link) => (
+                      {(staff) => (
                         <AutocompleteItem
-                          key={link.ProjectLinkTypeId}
-                          textValue={link.ProjectLinkTypeName}
+                          key={staff.StafferId}
+                          textValue={staff.StafferFullName}
                         >
-                          <div className="flex justify-between items-center">
-                            <div className="flex gap-2 items-center">
-                              <div className="flex flex-row gap-5 items-center">
-                                <Avatar
-                                  radius="full"
-                                  className="h-6 w-6 bg-white"
-                                  src={
-                                    API_URL_IMG +
+                          <div className="flex gap-2 items-center ml-2">
+                            <div className="flex flex-row gap-5 items-center">
+                              <Avatar
+                                radius="full"
+                                isBordered
+                                className="h-6 w-6 bg-white"
+                                name={staff.StafferFullName}
+                                src={
+                                  staff.StafferImageUrl &&
+                                  API_URL_IMG +
                                     "/linkIcons/" +
-                                    link.ProjectLinkTypeImage
-                                  }
-                                />
-                                <span className="text-small">
-                                  {link.ProjectLinkTypeName}
+                                    staff.StafferImageUrl
+                                }
+                              />
+                              <div className="flex flex-col">
+                                <span className="text-small flex flex-row gap-3 items-center">
+                                  {staff.StafferFullName}
+                                  <Chip
+                                    color="primary"
+                                    size="sm"
+                                    radius="sm"
+                                    variant="flat"
+                                  >
+                                    {staff.RoleName}
+                                  </Chip>
+                                </span>
+                                <span className="text-tiny text-default-400">
+                                  {staff.StafferEmail}
                                 </span>
                               </div>
                             </div>
@@ -229,23 +228,6 @@ export default function AddProjectLink({
                         </AutocompleteItem>
                       )}
                     </Autocomplete>
-                  </div>
-
-                  <div className="col-span-6 sm:col-span-6">
-                    <label
-                      htmlFor="project-description"
-                      className="block text-sm font-medium leading-6 text-gray-900"
-                    >
-                      URL
-                    </label>
-                    <Input
-                      variant="bordered"
-                      placeholder="https://www.spacedesign-italia.it"
-                      onChange={handleProjectLinkURLChange}
-                      type="text"
-                      radius="sm"
-                      fullWidth
-                    />
                   </div>
                 </div>
               </ModalBody>
@@ -260,8 +242,8 @@ export default function AddProjectLink({
                   onClick={handleCreateNewLink}
                 >
                   {isAddingData
-                    ? "Salvando il collegamento..."
-                    : "Salva collegamento"}
+                    ? "Aggiungendo il membro..."
+                    : "Aggiungi membro"}
                 </Button>
                 <Button variant="light" onClick={isClosed} radius="sm">
                   Annulla

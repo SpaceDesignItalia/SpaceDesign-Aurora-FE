@@ -117,9 +117,13 @@ export default function OverviewContainer({
               <div className="flex flex-col gap-3 items-start">
                 <h1 className="font-bold">Collegamenti esterni</h1>
                 <div className="flex flex-row flex-wrap gap-3 items-center">
-                  {links.map((link) => {
+                  {links.map((link, index) => {
                     return (
-                      <Tooltip content={link.ProjectLinkTitle} closeDelay={0}>
+                      <Tooltip
+                        content={link.ProjectLinkTitle}
+                        closeDelay={0}
+                        key={index}
+                      >
                         <Button
                           as={Link}
                           href={link.ProjectLinkUrl}
