@@ -46,8 +46,11 @@ export default function ChatTable() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    socket.on("message-update", (conversationId) => {
-      handleOpenChat(conversationId);
+    socket.on("message-update", (conversationIdWeb) => {
+      const conversationId = localStorage.getItem("conversationId");
+      if (conversationId !== null) {
+        handleOpenChat(parseInt(conversationId));
+      }
     });
   }, []);
 
@@ -59,7 +62,6 @@ export default function ChatTable() {
         setloggedStafferFullName(
           res.data.StafferName + " " + res.data.StafferSurname
         );
-        console.log(res.data);
         return axios.get("/Chat/GET/getConversationByStafferId", {
           params: { StafferId: res.data.StafferId },
         });
@@ -71,7 +73,7 @@ export default function ChatTable() {
         socket.emit("join", res.data[0].ConversationId);
         getLastMessageInfo();
       });
-  }, [conversations.length, messages.length]);
+  }, [conversations.length]);
 
   async function getLastMessageInfo() {
     conversations.map(async (conversation) => {
@@ -132,13 +134,12 @@ export default function ChatTable() {
 
   function handleOpenChat(conversationId: number) {
     try {
+      localStorage.setItem("conversationId", conversationId.toString());
       axios
         .get("/Chat/GET/GetMessagesByConversationId", {
           params: { ConversationId: conversationId },
         })
         .then((res) => {
-          console.log("conversationId: ", conversationId);
-          console.log("messaggi: ", res.data);
           setMessages(res.data);
           setConversationId(conversationId);
           socket.emit("join", conversationId);
@@ -149,11 +150,8 @@ export default function ChatTable() {
   }
 
   function handleSendMessage() {
-    if (newMessage === "") return;
+    if (newMessage.trim() === "") return;
     try {
-      console.log("conversationId: ", conversationId);
-      console.log("newMessage: ", newMessage);
-      console.log("loggedStafferId: ", loggedStafferId);
       axios
         .post("/Chat/POST/SendMessage", {
           ConversationId: conversationId,
@@ -204,7 +202,6 @@ export default function ChatTable() {
           Staffer2Id: employee.EmployeeId,
         })
         .then((res) => {
-          console.log(res.data);
           setConversationId(res.data.ConversationId);
           setConversations((prev) => [
             ...prev,
@@ -370,7 +367,7 @@ export default function ChatTable() {
               onClick={handleSendMessage}
               color="primary"
               isIconOnly
-              isDisabled={newMessage === "" ? true : false}
+              isDisabled={newMessage.trim() === "" ? true : false}
             >
               <SendRoundedIcon />
             </Button>

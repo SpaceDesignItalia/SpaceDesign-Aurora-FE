@@ -106,12 +106,13 @@ export default function TeamContainer({
         setloggedStafferFullName(
           res.data.StafferName + " " + res.data.StafferSurname
         );
-        console.log("Logged Staffer: " + loggedStafferFullName);
+        console.log("ProjectId: " + projectId);
         return axios.get("/Project/GET/GetConversationByProjectId", {
           params: { ProjectId: projectId },
         });
       })
       .then((res) => {
+        console.log("Data: ", res.data);
         if (res.data.length === 0) return;
         setConversationId(res.data[0].ConversationId);
         socket.emit("join", res.data[0].ConversationId);
@@ -138,7 +139,7 @@ export default function TeamContainer({
   }
 
   function handleSendMessage() {
-    if (newMessage === "") return;
+    if (newMessage.trim() === "") return;
     try {
       console.log("conversationId: ", conversationId);
       console.log("newMessage: ", newMessage);
@@ -196,7 +197,7 @@ export default function TeamContainer({
                   onClick={handleSendMessage}
                   color="primary"
                   isIconOnly
-                  isDisabled={newMessage === "" ? true : false}
+                  isDisabled={newMessage.trim() === "" ? true : false}
                 >
                   <SendRoundedIcon />
                 </Button>
