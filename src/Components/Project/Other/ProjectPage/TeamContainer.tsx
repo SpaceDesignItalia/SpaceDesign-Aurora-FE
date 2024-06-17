@@ -94,7 +94,7 @@ export default function TeamContainer({
 
   useEffect(() => {
     socket.on("message-update", (conversationId) => {
-      handleOpenChat(conversationId);
+      handleOpenChat(parseInt(localStorage.getItem("conversationId")!));
     });
   }, []);
 
@@ -122,6 +122,7 @@ export default function TeamContainer({
 
   function handleOpenChat(conversationId: number) {
     try {
+      localStorage.setItem("conversationId", conversationId.toString());
       axios
         .get("/Project/GET/GetMessagesByConversationId", {
           params: { ConversationId: conversationId },
