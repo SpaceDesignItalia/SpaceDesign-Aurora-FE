@@ -27,8 +27,10 @@ interface Project {
 
 interface Member {
   StafferId: number;
+  StafferImageUrl: string;
   StafferFullName: string;
   StafferEmail: string;
+  RoleName: string;
 }
 
 interface ModalData {
@@ -122,7 +124,11 @@ export default function TeamContainer({
           </div>
           <div className="grid grid-cols-2 gap-5">
             {members.map((member) => (
-              <ProjectTeamMemberCard MemberData={member} type={editTeam} />
+              <ProjectTeamMemberCard
+                MemberData={member}
+                ProjectId={projectData.ProjectId}
+                type={editTeam}
+              />
             ))}
           </div>
         </div>

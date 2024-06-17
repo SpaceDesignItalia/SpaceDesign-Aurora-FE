@@ -22,15 +22,9 @@ interface AddProjectLinkModalProps {
   ProjectId: number;
 }
 
-interface Link {
-  ProjectId: number;
-  ProjectLinkTitle: string;
-  ProjectLinkUrl: string;
-  ProjectLinkTypeId: number;
-}
-
 interface Staffer {
   StafferId: number;
+  StafferImageUrl: string;
   StafferFullName: string;
   StafferEmail: string;
   RoleName: string;
@@ -48,13 +42,7 @@ export default function AddProjectTeamMember({
   isClosed,
   ProjectId,
 }: AddProjectLinkModalProps) {
-  const [newLinkData, setNewLinkData] = useState<Link>({
-    ProjectId: ProjectId,
-    ProjectLinkTitle: "",
-    ProjectLinkUrl: "",
-    ProjectLinkTypeId: 0,
-  });
-
+  const [newTeamMember, setNewTeamMember] = useState<number>(0);
   const [availableStaff, setAvailableStaff] = useState<Staffer[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>({
@@ -64,6 +52,7 @@ export default function AddProjectTeamMember({
     alertColor: "",
   });
 
+  console.log(newTeamMember);
   useEffect(() => {
     axios
       .get("/Project/GET/GetMembersNotInProjectTeam", {
@@ -76,58 +65,30 @@ export default function AddProjectTeamMember({
   }, [ProjectId]);
 
   function checkAllDataCompiled() {
-    console.log(newLinkData);
-    if (
-      newLinkData.ProjectId != 0 &&
-      newLinkData.ProjectLinkTitle !== "" &&
-      newLinkData.ProjectLinkUrl !== "" &&
-      newLinkData.ProjectLinkTypeId != 0
-    ) {
+    if (newTeamMember !== 0) {
       return false;
     }
     return true;
   }
 
-  function handleProjectLinkTitleChange(
-    e: React.ChangeEvent<HTMLInputElement>
-  ) {
-    if (e.target.value.length <= 150) {
-      setNewLinkData({
-        ...newLinkData,
-        ProjectLinkTitle: e.target.value,
-      });
-    }
-  }
-
-  function handleProjectLinkTypeChange(e: React.Key) {
-    setNewLinkData({
-      ...newLinkData,
-      ProjectLinkTypeId: parseInt(e),
-    });
-  }
-
-  function handleProjectLinkURLChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 150) {
-      setNewLinkData({
-        ...newLinkData,
-        ProjectLinkUrl: e.target.value,
-      });
-    }
+  function handleProjectTeamMemberChange(e: React.Key) {
+    setNewTeamMember(parseInt(e));
   }
 
   async function handleCreateNewLink() {
     try {
       setIsAddingData(true);
 
-      const res = await axios.post("/Project/POST/AddProjectLink", {
-        ProjectLinkData: newLinkData,
+      const res = await axios.post("/Project/POST/AddProjectTeamMember", {
+        ProjectMemberId: newTeamMember,
+        ProjectId: ProjectId,
       });
 
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
           alertTitle: "Operazione completata",
-          alertDescription: "Il collegamento è stato creato con successo.",
+          alertDescription: "Il membro è stato aggiunto con successo.",
           alertColor: "green",
         });
         setTimeout(() => {
@@ -141,7 +102,7 @@ export default function AddProjectTeamMember({
         isOpen: true,
         alertTitle: "Errore durante l'operazione",
         alertDescription:
-          "Si è verificato un errore durante l'aggiunta del collegamento. Per favore, riprova più tardi.",
+          "Si è verificato un errore durante l'aggiunta del membro. Per favore, riprova più tardi.",
         alertColor: "red",
       });
 
@@ -182,7 +143,7 @@ export default function AddProjectTeamMember({
                     <Autocomplete
                       defaultItems={availableStaff}
                       placeholder="Seleziona il membro da aggiungere"
-                      onSelectionChange={handleProjectLinkTypeChange}
+                      onSelectionChange={handleProjectTeamMemberChange}
                       variant="bordered"
                       radius="sm"
                       aria-label="manager"
