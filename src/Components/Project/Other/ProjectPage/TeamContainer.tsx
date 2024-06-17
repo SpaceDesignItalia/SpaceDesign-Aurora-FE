@@ -7,9 +7,6 @@ import ChatMessage from "../ProjectTeamChat/ChatMessage";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
-import { useState, useEffect } from "react";
-import ChatKeyboard from "../ProjectTeamChat/ChatKeyboard";
-import axios from "axios";
 import AddProjectTeamMember from "../AddProjectTeamMember";
 
 const socket = io("http://localhost:3000");
@@ -35,15 +32,6 @@ interface Message {
   Text: string;
 }
 
-export default function TeamContainer() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loggedStafferId, setloggedStafferId] = useState<number>(0);
-  const [loggedStafferFullName, setloggedStafferFullName] =
-    useState<string>("");
-  const [newMessage, setNewMessage] = useState("");
-  const [conversationId, setConversationId] = useState<number>(-1);
-  const [emplyees, setEmployees] = useState<Employee[]>([]);
-  const [projectId, setProjectId] = useState<number>(1);
 interface Project {
   ProjectId: number;
   ProjectName: string;
@@ -78,9 +66,16 @@ export default function TeamContainer({
 }: {
   projectData: Project;
 }) {
-  const [messages, setMessages] = useState<string[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [editTeam, setEditTeam] = useState<boolean>(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loggedStafferId, setloggedStafferId] = useState<number>(0);
+  const [loggedStafferFullName, setloggedStafferFullName] =
+    useState<string>("");
+  const [newMessage, setNewMessage] = useState("");
+  const [conversationId, setConversationId] = useState<number>(-1);
+  const [emplyees, setEmployees] = useState<Employee[]>([]);
+  const [projectId, setProjectId] = useState<number>(1);
   const [modalData, setModalData] = useState<ModalData>({
     ProjectId: 0,
     open: false,
@@ -97,9 +92,6 @@ export default function TeamContainer({
       });
   }, [projectData.ProjectId]);
 
-  const handleSendMessage = (message: string) => {
-    setMessages([...messages, message]);
-  };
   useEffect(() => {
     socket.on("message-update", (conversationId) => {
       handleOpenChat(conversationId);
@@ -180,51 +172,41 @@ export default function TeamContainer({
       />
       <div className="grid grid-cols-2 gap-5">
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
-          <h1 className="font-bold">Team chat</h1>
-          <ScrollShadow className="w-full h-[500px]">
-            <div className="flex flex-col">
-              {messages.map((msg) => {
-                return <ChatMessage msg={msg} type="send" />;
-              })}
+          <div className="grid grid-cols-2 gap-5">
+            <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
+              <h1 className="font-bold">Team chat</h1>
+              <ScrollShadow className="w-full h-[500px]">
+                <div className="flex flex-col">
+                  {messages.map((message) => {
+                    if (message.StafferSenderId !== loggedStafferId) {
+                      return <ChatMessage message={message} type="recive" />;
+                    } else return <ChatMessage message={message} type="send" />;
+                  })}
+                </div>
+              </ScrollShadow>
+              <div className="flex flex-row items-center gap-3">
+                <Input
+                  variant="bordered"
+                  className="w-full"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Messaggio"
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  color="primary"
+                  isIconOnly
+                  isDisabled={newMessage === "" ? true : false}
+                >
+                  <SendRoundedIcon />
+                </Button>
+              </div>
             </div>
-          </ScrollShadow>
-          <ChatKeyboard onSendMessage={handleSendMessage} />
-        </div>
-    <div className="grid grid-cols-2 gap-5">
-      <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
-        <h1 className="font-bold">Team chat</h1>
-        <ScrollShadow className="w-full h-[500px]">
-          <div className="flex flex-col">
-            {messages.map((message) => {
-              if (message.StafferSenderId !== loggedStafferId) {
-                return <ChatMessage message={message} type="recive" />;
-              } else return <ChatMessage message={message} type="send" />;
-            })}
           </div>
-        </ScrollShadow>
-        <div className="flex flex-row items-center gap-3">
-          <Input
-            variant="bordered"
-            className="w-full"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Messaggio"
-          />
-          <Button
-            onClick={handleSendMessage}
-            color="primary"
-            isIconOnly
-            isDisabled={newMessage === "" ? true : false}
-          >
-            <SendRoundedIcon />
-          </Button>
         </div>
-      </div>
-
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
           <div className="flex flex-row justify-between items-center">
             <h1 className="font-bold">Membri del progetto</h1>
-
             <div className="flex flex-row gap-2">
               <Button
                 color="primary"
