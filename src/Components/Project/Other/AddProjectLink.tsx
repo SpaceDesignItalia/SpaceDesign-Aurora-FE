@@ -44,25 +44,6 @@ interface AlertData {
   alertColor: string;
 }
 
-export const CustomRadio = (props: any) => {
-  const { children, ...otherProps } = props;
-
-  return (
-    <Radio
-      {...otherProps}
-      classNames={{
-        base: cn(
-          "inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between",
-          "flex-row cursor-pointer rounded-lg border-2 border-transparent",
-          "data-[selected=true]:border-primary data-[selected=true]:bg-content2"
-        ),
-      }}
-    >
-      {children}
-    </Radio>
-  );
-};
-
 export default function AddProjectLink({
   isOpen,
   isClosed,
@@ -278,7 +259,9 @@ export default function AddProjectLink({
                   isLoading={isAddingData}
                   onClick={handleCreateNewLink}
                 >
-                  {isAddingData ? "Salvando il progetto..." : "Salva progetto"}
+                  {isAddingData
+                    ? "Salvando il collegamento..."
+                    : "Salva collegamento"}
                 </Button>
                 <Button variant="light" onClick={isClosed} radius="sm">
                   Annulla

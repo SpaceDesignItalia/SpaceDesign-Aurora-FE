@@ -7,6 +7,10 @@ import ChatMessage from "../ProjectTeamChat/ChatMessage";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
+import { useState, useEffect } from "react";
+import ChatKeyboard from "../ProjectTeamChat/ChatKeyboard";
+import axios from "axios";
+import AddProjectTeamMember from "../AddProjectTeamMember";
 
 const socket = io("http://localhost:3000");
 
@@ -40,7 +44,62 @@ export default function TeamContainer() {
   const [conversationId, setConversationId] = useState<number>(-1);
   const [emplyees, setEmployees] = useState<Employee[]>([]);
   const [projectId, setProjectId] = useState<number>(1);
+interface Project {
+  ProjectId: number;
+  ProjectName: string;
+  ProjectDescription: string;
+  ProjectCreationDate: Date;
+  ProjectEndDate: Date;
+  CompanyId: number;
+  ProjectBannerId: number;
+  ProjectBannerPath: string;
+  StatusName: string;
+  ProjectManagerId: number;
+  ProjectManagerFullName: string;
+  ProjectManagerEmail: string;
+  RoleName: string;
+}
 
+interface Member {
+  StafferId: number;
+  StafferImageUrl: string;
+  StafferFullName: string;
+  StafferEmail: string;
+  RoleName: string;
+}
+
+interface ModalData {
+  ProjectId: number;
+  open: boolean;
+}
+
+export default function TeamContainer({
+  projectData,
+}: {
+  projectData: Project;
+}) {
+  const [messages, setMessages] = useState<string[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [editTeam, setEditTeam] = useState<boolean>(false);
+  const [modalData, setModalData] = useState<ModalData>({
+    ProjectId: 0,
+    open: false,
+  });
+
+  useEffect(() => {
+    axios
+      .get("Project/GET/GetProjetTeamMembers", {
+        params: { ProjectId: projectData.ProjectId },
+      })
+      .then((res) => {
+        console.log(res.data);
+        setMembers(res.data);
+      });
+  }, [projectData.ProjectId]);
+
+  const handleSendMessage = (message: string) => {
+    setMessages([...messages, message]);
+  };
   useEffect(() => {
     socket.on("message-update", (conversationId) => {
       handleOpenChat(conversationId);
@@ -108,7 +167,29 @@ export default function TeamContainer() {
     }
   }
 
+  function handleEditTeam() {
+    setEditTeam(!editTeam);
+  }
+
   return (
+    <>
+      <AddProjectTeamMember
+        isOpen={modalData.open}
+        isClosed={() => setModalData({ ...modalData, open: false })}
+        ProjectId={modalData.ProjectId}
+      />
+      <div className="grid grid-cols-2 gap-5">
+        <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
+          <h1 className="font-bold">Team chat</h1>
+          <ScrollShadow className="w-full h-[500px]">
+            <div className="flex flex-col">
+              {messages.map((msg) => {
+                return <ChatMessage msg={msg} type="send" />;
+              })}
+            </div>
+          </ScrollShadow>
+          <ChatKeyboard onSendMessage={handleSendMessage} />
+        </div>
     <div className="grid grid-cols-2 gap-5">
       <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
         <h1 className="font-bold">Team chat</h1>
@@ -140,27 +221,49 @@ export default function TeamContainer() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
-        <div className="flex flex-row justify-between items-center">
-          <h1 className="font-bold">Membri del progetto</h1>
+        <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
+          <div className="flex flex-row justify-between items-center">
+            <h1 className="font-bold">Membri del progetto</h1>
 
-          <div className="flex flex-row gap-2">
-            <Button color="primary" radius="sm" size="sm" isIconOnly>
-              <AddRoundedIcon />
-            </Button>
-            <Button
-              color="warning"
-              radius="sm"
-              size="sm"
-              className="text-white"
-              isIconOnly
-            >
-              <EditRoundedIcon />
-            </Button>
+            <div className="flex flex-row gap-2">
+              <Button
+                color="primary"
+                radius="sm"
+                size="sm"
+                onClick={() =>
+                  setModalData({
+                    ...modalData,
+                    open: true,
+                    ProjectId: projectData.ProjectId,
+                  })
+                }
+                isIconOnly
+              >
+                <AddRoundedIcon />
+              </Button>
+              <Button
+                onClick={handleEditTeam}
+                color="warning"
+                radius="sm"
+                size="sm"
+                className="text-white"
+                isIconOnly
+              >
+                <EditRoundedIcon />
+              </Button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-5">
+            {members.map((member) => (
+              <ProjectTeamMemberCard
+                MemberData={member}
+                ProjectId={projectData.ProjectId}
+                type={editTeam}
+              />
+            ))}
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-5"></div>
       </div>
-    </div>
+    </>
   );
 }

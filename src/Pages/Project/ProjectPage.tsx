@@ -158,7 +158,7 @@ export default function ProjectPage() {
             {activeTab === "Tasks" && <div>Tasks content</div>}
             {activeTab === "Team" && (
               <div>
-                <TeamContainer />
+                <TeamContainer projectData={projectData} />
               </div>
             )}
             {activeTab === "Files" && <div>Files content</div>}

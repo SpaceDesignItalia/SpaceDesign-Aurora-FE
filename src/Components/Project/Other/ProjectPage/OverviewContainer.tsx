@@ -18,6 +18,7 @@ interface Project {
   ProjectBannerPath: string;
   StatusName: string;
   ProjectManagerId: number;
+  StafferImageUrl: string;
   ProjectManagerFullName: string;
   ProjectManagerEmail: string;
   RoleName: string;
@@ -104,7 +105,11 @@ export default function OverviewContainer({
                 name={projectData.ProjectManagerFullName}
                 description={projectData.RoleName}
                 avatarProps={{
-                  src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzRBByi3xv2bZU9I9HqYKxBvH9oT743D7-hg&s",
+                  src:
+                    projectData.StafferImageUrl &&
+                    API_URL_IMG +
+                      "/profileIcons/" +
+                      projectData.StafferImageUrl,
                 }}
               />
             </div>
@@ -117,9 +122,13 @@ export default function OverviewContainer({
               <div className="flex flex-col gap-3 items-start">
                 <h1 className="font-bold">Collegamenti esterni</h1>
                 <div className="flex flex-row flex-wrap gap-3 items-center">
-                  {links.map((link) => {
+                  {links.map((link, index) => {
                     return (
-                      <Tooltip content={link.ProjectLinkTitle} closeDelay={0}>
+                      <Tooltip
+                        content={link.ProjectLinkTitle}
+                        closeDelay={0}
+                        key={index}
+                      >
                         <Button
                           as={Link}
                           href={link.ProjectLinkUrl}
