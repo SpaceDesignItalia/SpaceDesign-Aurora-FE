@@ -24,6 +24,8 @@ import AddProjectPage from "./Pages/Project/AddProjectPage";
 import ProjectPage from "./Pages/Project/ProjectPage";
 import EditPermissionPage from "./Pages/Permission/EditPermissionPage";
 import AddPermissionPage from "./Pages/Permission/AddPermissionPage";
+import EditPermissionPage from "./Pages/Permission/EditPermissionPage";
+import AddPermissionPage from "./Pages/Permission/AddPermissionPage";
 
 
 const App: React.FC = () => {
@@ -150,6 +152,10 @@ const ProtectedRoutes: React.FC = () => {
         <Route
           element={<ProjectPage />}
           path="/projects/:CompanyName/:ProjectId/:ProjectName"
+        />
+        <Route
+          element={<EditPermissionPage />}
+          path="/administration/permission/edit-permission/:PermissionId"
         />
         <Route
           element={<EditPermissionPage />}
