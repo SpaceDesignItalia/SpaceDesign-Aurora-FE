@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
-import PermissionTable from "../../Components/Permission/Tables/RoleTable";
+import RoleTable from "../../Components/Permission/Tables/RoleTable";
+import PermissionTable from "../../Components/Permission/Tables/PermissionTable";
 
 export default function PermissionDashboard() {
   const { hasPermission } = usePermissions();
@@ -25,6 +26,14 @@ export default function PermissionDashboard() {
         </div>
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
+        <div className="py-6 lg:py-8">
+          <RoleTable />
+        </div>
+        <header>
+          <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+            Permessi
+          </h1>
+        </header>
         <div className="py-6 lg:py-8">
           <PermissionTable />
         </div>

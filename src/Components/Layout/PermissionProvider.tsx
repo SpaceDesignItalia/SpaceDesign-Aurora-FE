@@ -8,7 +8,7 @@ interface PermissionsContextType {
   permissions: Permission[];
   permissionsLoaded: boolean;
   loadPermissions: (stafferId: string) => Promise<void>;
-  hasPermission: (action: string) => Promise<boolean>; // Modifica qui
+  hasPermission: (action: string) => Promise<boolean>;
   setStafferId: (id: string) => void;
 }
 
@@ -28,25 +28,28 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({
   const [permissionsLoaded, setPermissionsLoaded] = useState<boolean>(false);
 
   const loadPermissions = async (id: string) => {
-    if (permissionsLoaded) return;
-
-    try {
-      const res = await axios.get("/Permission/GET/GetPermissionsByUserRole", {
-        params: { StafferId: id },
-      });
-      if (res.status === 200) {
-        console.log(res.data);
-        setPermissions(res.data);
-        setPermissionsLoaded(true);
+    if (!permissionsLoaded) {
+      try {
+        const res = await axios.get(
+          "/Permission/GET/GetPermissionsByUserRole",
+          {
+            params: { StafferId: id },
+          }
+        );
+        if (res.status === 200) {
+          setPermissions(res.data);
+          setPermissionsLoaded(true);
+        }
+      } catch (error) {
+        console.error("Errore nel caricamento dei permessi:", error);
       }
-    } catch (error) {
-      console.error("Errore nel caricamento dei permessi:", error);
     }
   };
 
   const hasPermission = async (action: string) => {
-    // Modifica qui
-    await loadPermissions(stafferId); // Assicurati che i permessi siano stati caricati
+    if (!permissionsLoaded) {
+      await loadPermissions(stafferId);
+    }
     return permissions.some(
       (permission) => permission.PermissionAction === action
     );

@@ -18,6 +18,8 @@ import AddEmployeePage from "./Pages/Employee/AddEmployeePage";
 import EditEmployeePage from "./Pages/Employee/EditEmployeePage";
 import Login from "./Pages/Login/Login";
 import EditRolePage from "./Pages/Permission/EditRolePage";
+import EditPermissionPage from "./Pages/Permission/EditPermissionPage";
+import AddPermissionPage from "./Pages/Permission/AddPermissionPage";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
@@ -127,8 +129,16 @@ const ProtectedRoutes: React.FC = () => {
           path="/administration/permission/add-role"
         />
         <Route
+          element={<AddPermissionPage />}
+          path="/administration/permission/add-permission"
+        />
+        <Route
           element={<EditRolePage />}
           path="/administration/permission/edit-role/:RoleId"
+        />
+        <Route
+          element={<EditPermissionPage />}
+          path="/administration/permission/edit-permission/:PermissionId"
         />
       </Route>
     </Routes>
