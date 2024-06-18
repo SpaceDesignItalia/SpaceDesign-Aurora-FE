@@ -22,6 +22,8 @@ import ChatDashboard from "./Pages/Chat/ChatDashboard";
 import ProjectDashboard from "./Pages/Project/ProjectDashboard";
 import AddProjectPage from "./Pages/Project/AddProjectPage";
 import ProjectPage from "./Pages/Project/ProjectPage";
+import EditPermissionPage from "./Pages/Permission/EditPermissionPage";
+import AddPermissionPage from "./Pages/Permission/AddPermissionPage";
 
 
 const App: React.FC = () => {
@@ -132,6 +134,10 @@ const ProtectedRoutes: React.FC = () => {
           path="/administration/permission/add-role"
         />
         <Route
+          element={<AddPermissionPage />}
+          path="/administration/permission/add-permission"
+        />
+        <Route
           element={<EditRolePage />}
           path="/administration/permission/edit-role/:RoleId"
         />
@@ -144,6 +150,10 @@ const ProtectedRoutes: React.FC = () => {
         <Route
           element={<ProjectPage />}
           path="/projects/:CompanyName/:ProjectId/:ProjectName"
+        />
+        <Route
+          element={<EditPermissionPage />}
+          path="/administration/permission/edit-permission/:PermissionId"
         />
       </Route>
     </Routes>

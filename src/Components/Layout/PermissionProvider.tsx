@@ -8,7 +8,7 @@ interface PermissionsContextType {
   permissions: Permission[];
   permissionsLoaded: boolean;
   loadPermissions: (stafferId: string) => Promise<void>;
-  hasPermission: (action: string) => Promise<boolean>; // Modifica qui
+  hasPermission: (action: string) => Promise<boolean>;
   setStafferId: (id: string) => void;
 }
 
@@ -38,14 +38,13 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({
         setPermissions(res.data);
         setPermissionsLoaded(true);
       }
-    } catch (error) {
-      console.error("Errore nel caricamento dei permessi:", error);
     }
   };
 
   const hasPermission = async (action: string) => {
-    // Modifica qui
-    await loadPermissions(stafferId); // Assicurati che i permessi siano stati caricati
+    if (!permissionsLoaded) {
+      await loadPermissions(stafferId);
+    }
     return permissions.some(
       (permission) => permission.PermissionAction === action
     );
