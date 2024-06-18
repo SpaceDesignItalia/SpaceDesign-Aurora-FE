@@ -8,8 +8,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import AddProjectTeamMember from "../AddProjectTeamMember";
+import { API_WEBSOCKET_URL } from "../../../../API/API";
 
-const socket = io("http://localhost:3000");
+const socket = io(API_WEBSOCKET_URL);
 
 interface Employee {
   EmployeeId: number;
@@ -174,35 +175,33 @@ export default function TeamContainer({
       />
       <div className="grid grid-cols-2 gap-5">
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
-          <div className="grid grid-cols-2 gap-5">
-            <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
-              <h1 className="font-bold">Team chat</h1>
-              <ScrollShadow className="w-full h-[500px]">
-                <div className="flex flex-col">
-                  {messages.map((message) => {
-                    if (message.StafferSenderId !== loggedStafferId) {
-                      return <ChatMessage message={message} type="recive" />;
-                    } else return <ChatMessage message={message} type="send" />;
-                  })}
-                </div>
-              </ScrollShadow>
-              <div className="flex flex-row items-center gap-3">
-                <Input
-                  variant="bordered"
-                  className="w-full"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Messaggio"
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  color="primary"
-                  isIconOnly
-                  isDisabled={newMessage.trim() === "" ? true : false}
-                >
-                  <SendRoundedIcon />
-                </Button>
+          <div className="flex flex-col gap-5">
+            <h1 className="font-bold">Team chat</h1>
+            <ScrollShadow className="w-full h-[500px]">
+              <div className="flex flex-col">
+                {messages.map((message) => {
+                  if (message.StafferSenderId !== loggedStafferId) {
+                    return <ChatMessage message={message} type="recive" />;
+                  } else return <ChatMessage message={message} type="send" />;
+                })}
               </div>
+            </ScrollShadow>
+            <div className="flex flex-row items-center gap-3 w-full">
+              <Input
+                variant="bordered"
+                className="w-full"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Messaggio"
+              />
+              <Button
+                onClick={handleSendMessage}
+                color="primary"
+                isIconOnly
+                isDisabled={newMessage.trim() === "" ? true : false}
+              >
+                <SendRoundedIcon />
+              </Button>
             </div>
           </div>
         </div>

@@ -26,12 +26,19 @@ import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import axios from "axios";
 import ViewPermissionModal from "../Other/ViewPermissionModal";
 import { usePermissions } from "../../Layout/PermissionProvider";
+import ConfirmDeletePermissionModal from "../Other/ConfirmDeletePermissionModal";
 
 interface Permission {
   PermissionId: number;
   PermissionName: string;
   PermissionDescription: string;
   PermissionGroup: PermissionGroup;
+}
+
+interface PermissionDelete {
+  PermissionId: number;
+  PermissionName: string;
+  PermissionDescription: string;
 }
 
 interface PermissionGroup {
@@ -49,6 +56,11 @@ interface ModalData {
       PermissionGroupName: string;
     };
   };
+  open: boolean;
+}
+
+interface ModalDeleteData {
+  Permission: PermissionDelete;
   open: boolean;
 }
 
@@ -71,36 +83,27 @@ export default function PermissionTable() {
     column: "age",
     direction: "ascending",
   });
-  const { hasPermission, loadPermissions, setStafferId } = usePermissions();
+  const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
+    Permission: {
+      PermissionId: 0,
+      PermissionName: "",
+      PermissionDescription: "",
+    },
+    open: false,
+  });
+
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
-    function checkPermissions() {
-      Promise.all([
-        hasPermission("CREATE_PERMISSION"),
-        hasPermission("EDIT_PERMISSION"),
-        hasPermission("DELETE_PERMISSION"),
-      ])
-        .then(([addPermission, editPermission, deletePermission]) => {
-          setAdminPermission({
-            addPermission,
-            editPermission,
-            deletePermission,
-          });
-        })
-        .catch((error) => {
-          console.error("Errore durante il controllo dei permessi:", error);
-        });
-    }
-
-    function initialize() {
-      setStafferId("someStafferId");
-      loadPermissions("someStafferId").then(() => {
-        checkPermissions();
-        fetchData();
+    async function checkPermissions() {
+      setAdminPermission({
+        addPermission: await hasPermission("CREATE_PERMISSION"),
+        editPermission: await hasPermission("EDIT_PERMISSION"),
+        deletePermission: await hasPermission("DELETE_PERMISSION"),
       });
     }
-
-    initialize();
+    checkPermissions();
+    fetchData();
   }, []);
 
   function fetchData() {
@@ -123,21 +126,22 @@ export default function PermissionTable() {
     open: false,
   });
 
-  function SearchPermission(e) {
+  async function SearchPermission(e: { target: { value: string } }) {
     const searchQuery = e.target.value.trim();
-    axios
-      .get("/Permission/GET/SearchPermissionByName", {
-        params: { PermissionName: searchQuery },
-      })
-      .then((response) => {
-        setPermissions(response.data);
-      })
-      .catch((error) => {
-        console.error("Errore durante la ricerca dei permessi:", error);
-      });
+    try {
+      const response = await axios.get(
+        "/Permission/GET/SearchPermissionByName",
+        {
+          params: { PermissionName: searchQuery },
+        }
+      );
+      setPermissions(response.data);
+    } catch (error) {
+      console.error("Errore durante la ricerca dei ruoli:", error);
+    }
   }
 
-  function deletePermission(PermissionId) {
+  function DeletePermission(PermissionId) {
     axios
       .delete("/Permission/DELETE/DeletePermission", {
         params: { PermissionId: PermissionId },
@@ -199,27 +203,38 @@ export default function PermissionTable() {
                   >
                     Visualizza
                   </DropdownItem>
-                  <DropdownItem
-                    color="warning"
-                    startContent={<ModeOutlinedIcon />}
-                    aria-label="Edit"
-                    aria-labelledby="Edit"
-                    href={
-                      "/administration/permission/edit-permission/" +
-                      permission.PermissionId
-                    }
-                  >
-                    Modifica
-                  </DropdownItem>
-                  <DropdownItem
-                    color="danger"
-                    startContent={<DeleteOutlinedIcon />}
-                    aria-label="Remove"
-                    aria-labelledby="Remove"
-                    onClick={() => deletePermission(permission.PermissionId)}
-                  >
-                    Rimuovi
-                  </DropdownItem>
+
+                  {adminPermission.editPermission && (
+                    <DropdownItem
+                      color="warning"
+                      startContent={<ModeOutlinedIcon />}
+                      aria-label="Edit"
+                      aria-labelledby="Edit"
+                      href={
+                        "/administration/permission/edit-permission/" +
+                        permission.PermissionId
+                      }
+                    >
+                      Modifica
+                    </DropdownItem>
+                  )}
+                  {adminPermission.deletePermission && (
+                    <DropdownItem
+                      color="danger"
+                      startContent={<DeleteOutlinedIcon />}
+                      aria-label="Remove"
+                      aria-labelledby="Remove"
+                      onClick={() =>
+                        setModalDeleteData({
+                          ...modalDeleteData,
+                          open: true,
+                          Permission: permission,
+                        })
+                      }
+                    >
+                      Rimuovi
+                    </DropdownItem>
+                  )}
                 </DropdownMenu>
               </Dropdown>
             </div>
@@ -304,7 +319,12 @@ export default function PermissionTable() {
         isClosed={() => setModalData({ ...modalData, open: false })}
         PermData={modalData.Permission}
       />
-
+      <ConfirmDeletePermissionModal
+        isOpen={modalDeleteData.open}
+        isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
+        PermissionData={modalDeleteData.Permission}
+        DeletePermission={DeletePermission}
+      />
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
