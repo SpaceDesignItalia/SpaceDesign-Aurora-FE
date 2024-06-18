@@ -171,7 +171,7 @@ export default function PermissionTable() {
         case "PermissionDescription":
           return (
             <div className="flex flex-col">
-              <p className="text-bold text-small capitalize">{cellValue}</p>
+              <p className="text-bold text-small">{cellValue}</p>
             </div>
           );
         case "actions":

@@ -38,6 +38,8 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({
         setPermissions(res.data);
         setPermissionsLoaded(true);
       }
+    } catch (error) {
+      console.error("Errore durante il recupero dei permessi:", error);
     }
   };
 
