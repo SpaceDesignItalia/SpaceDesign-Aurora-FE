@@ -8,7 +8,7 @@ import {
   Checkbox,
 } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
-import StatusAlert from "./StatusAlert";
+import StatusAlert from "../../Layout/StatusAlert";
 
 interface Role {
   RoleName: string;
@@ -123,7 +123,6 @@ export default function AddRoleModel() {
         setTimeout(() => {
           window.location.href = "/administration/permission";
         }, 2000);
-        console.log("Successo:", res.data);
       }
     } catch (error) {
       setAlertData({

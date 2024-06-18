@@ -19,8 +19,9 @@ import EngineeringOutlinedIcon from "@mui/icons-material/EngineeringOutlined";
 import FolderCopyOutlinedIcon from "@mui/icons-material/FolderCopyOutlined";
 import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
 import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
-import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumberOutlined";
+import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
+import QuestionAnswerOutlinedIcon from "@mui/icons-material/QuestionAnswerOutlined";
 
 interface NavigationItem {
   name: string;
@@ -130,12 +131,12 @@ export default function Sidebar() {
   const projectManagement: NavigationItem[] = [
     {
       name: "Progetti",
-      href: "#",
+      href: "/projects",
       icon: FolderCopyOutlinedIcon,
       requiredCondition: true,
       current: isSubRoute({
         currentUrl,
-        parentRoute: { href: "#", subRoutes: [] },
+        parentRoute: { href: "/projects", subRoutes: [] },
       }),
     },
   ];
@@ -152,6 +153,21 @@ export default function Sidebar() {
       href: "/tickets",
       icon: ConfirmationNumberOutlinedIcon,
       current: currentUrl === "/tickets",
+    },
+  ];
+
+  const comunications = [
+    {
+      name: "Chat",
+      href: "/comunications/chat",
+      icon: ChatBubbleOutlineRoundedIcon,
+      current: currentUrl === "/chat",
+    },
+    {
+      name: "Gruppi",
+      href: "/comunications/groups",
+      icon: QuestionAnswerOutlinedIcon,
+      current: currentUrl === "/groups",
     },
   ];
 
@@ -291,12 +307,44 @@ export default function Sidebar() {
 
                       <li>
                         <div className="text-xs font-semibold leading-6 text-gray-400">
+                          Comunicazioni
+                        </div>
+                        <ul role="list" className="-mx-2 mt-2 space-y-1">
+                          {comunications.map((item) => (
+                            <li key={item.name}>
+                              <a
+                                href={item.href}
+                                className={classNames(
+                                  item.current
+                                    ? "bg-gray-100 text-primary"
+                                    : "text-gray-700 hover:text-primary hover:bg-gray-100",
+                                  "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                )}
+                              >
+                                <item.icon
+                                  className={classNames(
+                                    item.current
+                                      ? "text-primary"
+                                      : "text-gray-400 group-hover:text-primary",
+                                    "h-6 w-6 shrink-0"
+                                  )}
+                                  aria-hidden="true"
+                                />
+                                {item.name}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+
+                      <li>
+                        <div className="text-xs font-semibold leading-6 text-gray-400">
                           Amministrazione
                         </div>
                         <ul role="list" className="-mx-2 mt-2 space-y-1">
-                          {administration.map((admin) => (
-                            <>
-                              {admin.requiredCondition && (
+                          {administration.map(
+                            (admin) =>
+                              admin.requiredCondition && (
                                 <li key={admin.name}>
                                   <a
                                     href={admin.href}
@@ -319,9 +367,8 @@ export default function Sidebar() {
                                     {admin.name}
                                   </a>
                                 </li>
-                              )}
-                            </>
-                          ))}
+                              )
+                          )}
                         </ul>
                       </li>
                       <li>
@@ -446,12 +493,43 @@ export default function Sidebar() {
               </li>
               <li>
                 <div className="text-xs font-semibold leading-6 text-gray-400">
+                  Comunicazioni
+                </div>
+                <ul role="list" className="-mx-2 mt-2 space-y-1">
+                  {comunications.map((item) => (
+                    <li key={item.name}>
+                      <a
+                        href={item.href}
+                        className={classNames(
+                          item.current
+                            ? "bg-gray-100 text-primary"
+                            : "text-gray-700 hover:text-primary hover:bg-gray-100",
+                          "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                        )}
+                      >
+                        <item.icon
+                          className={classNames(
+                            item.current
+                              ? "text-primary"
+                              : "text-gray-400 group-hover:text-primary",
+                            "h-6 w-6 shrink-0"
+                          )}
+                          aria-hidden="true"
+                        />
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+              <li>
+                <div className="text-xs font-semibold leading-6 text-gray-400">
                   Amministrazione
                 </div>
                 <ul role="list" className="-mx-2 mt-2 space-y-1">
-                  {administration.map((admin) => (
-                    <>
-                      {admin.requiredCondition && (
+                  {administration.map(
+                    (admin) =>
+                      admin.requiredCondition && (
                         <li key={admin.name}>
                           <a
                             href={admin.href}
@@ -474,9 +552,8 @@ export default function Sidebar() {
                             {admin.name}
                           </a>
                         </li>
-                      )}
-                    </>
-                  ))}
+                      )
+                  )}
                 </ul>
               </li>
               <li>

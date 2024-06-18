@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Input, Button } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
-import StatusAlert from "./StatusAlert";
+import StatusAlert from "../../Layout/StatusAlert";
 
 interface Company {
   companyName: string;
@@ -113,7 +113,7 @@ export default function AddCompanyModel() {
           <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
             <div>
               <h3 className="text-base font-semibold leading-6 text-gray-900">
-                Aggiungi azienda
+                Azienda
               </h3>
               <p className="mt-1 text-sm text-gray-500">
                 In questo pannello potrai aggiungere una nuova azienda al
