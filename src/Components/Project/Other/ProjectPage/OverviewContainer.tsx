@@ -65,7 +65,6 @@ export default function OverviewContainer({
         params: { ProjectId: projectData.ProjectId },
       })
       .then((res) => {
-        console.log(res.data);
         setLinks(res.data);
       });
   }, [projectData.ProjectId]);

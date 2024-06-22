@@ -19,13 +19,9 @@ interface Employee {
   EmployeePhone: string;
 }
 
-interface Conversation {
-  ConversationId: number;
-  ProjectId: number;
-}
-
 interface Message {
   MessageId: number;
+  StafferImageUrl: string;
   StafferSenderId: number;
   StafferSenderFullName: string;
   ConversationId: number;
@@ -71,12 +67,8 @@ export default function TeamContainer({
   const [editTeam, setEditTeam] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loggedStafferId, setloggedStafferId] = useState<number>(0);
-  const [loggedStafferFullName, setloggedStafferFullName] =
-    useState<string>("");
   const [newMessage, setNewMessage] = useState("");
   const [conversationId, setConversationId] = useState<number>(-1);
-  const [emplyees, setEmployees] = useState<Employee[]>([]);
-  const [projectId, setProjectId] = useState<number>(1);
   const [modalData, setModalData] = useState<ModalData>({
     ProjectId: 0,
     open: false,
@@ -88,7 +80,6 @@ export default function TeamContainer({
         params: { ProjectId: projectData.ProjectId },
       })
       .then((res) => {
-        console.log(res.data);
         setMembers(res.data);
       });
   }, [projectData.ProjectId]);
@@ -104,16 +95,12 @@ export default function TeamContainer({
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then(async (res) => {
         setloggedStafferId(res.data.StafferId);
-        setloggedStafferFullName(
-          res.data.StafferName + " " + res.data.StafferSurname
-        );
-        console.log("ProjectId: " + projectId);
+
         return axios.get("/Project/GET/GetConversationByProjectId", {
-          params: { ProjectId: projectId },
+          params: { ProjectId: projectData.ProjectId },
         });
       })
       .then((res) => {
-        console.log("Data: ", res.data);
         if (res.data.length === 0) return;
         setConversationId(res.data[0].ConversationId);
         socket.emit("join", res.data[0].ConversationId);
@@ -129,8 +116,6 @@ export default function TeamContainer({
           params: { ConversationId: conversationId },
         })
         .then((res) => {
-          console.log("conversationId: ", conversationId);
-          console.log("messaggi: ", res.data);
           setMessages(res.data);
           setConversationId(conversationId);
           socket.emit("join", conversationId);
@@ -143,9 +128,6 @@ export default function TeamContainer({
   function handleSendMessage() {
     if (newMessage.trim() === "") return;
     try {
-      console.log("conversationId: ", conversationId);
-      console.log("newMessage: ", newMessage);
-      console.log("loggedStafferId: ", loggedStafferId);
       axios
         .post("/Chat/POST/SendMessage", {
           ConversationId: conversationId,
