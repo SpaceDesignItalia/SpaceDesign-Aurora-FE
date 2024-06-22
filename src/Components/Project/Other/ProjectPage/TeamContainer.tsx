@@ -219,13 +219,21 @@ export default function TeamContainer({
             </div>
           </div>
           <div className="grid grid-cols-2 gap-5">
-            {members.map((member) => (
-              <ProjectTeamMemberCard
-                MemberData={member}
-                ProjectId={projectData.ProjectId}
-                type={editTeam}
-              />
-            ))}
+            {members.map((member) =>
+              member.StafferId !== projectData.ProjectManagerId ? (
+                <ProjectTeamMemberCard
+                  MemberData={member}
+                  ProjectId={projectData.ProjectId}
+                  type={editTeam}
+                />
+              ) : (
+                <ProjectTeamMemberCard
+                  MemberData={member}
+                  ProjectId={projectData.ProjectId}
+                  type={false}
+                />
+              )
+            )}
           </div>
         </div>
       </div>

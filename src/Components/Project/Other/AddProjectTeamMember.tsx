@@ -164,7 +164,7 @@ export default function AddProjectTeamMember({
                                 src={
                                   staff.StafferImageUrl &&
                                   API_URL_IMG +
-                                    "/linkIcons/" +
+                                    "/profileIcons/" +
                                     staff.StafferImageUrl
                                 }
                               />
