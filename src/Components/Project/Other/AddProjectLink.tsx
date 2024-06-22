@@ -73,7 +73,6 @@ export default function AddProjectLink({
   }, [ProjectId]);
 
   function checkAllDataCompiled() {
-    console.log(newLinkData);
     if (
       newLinkData.ProjectId != 0 &&
       newLinkData.ProjectLinkTitle !== "" &&

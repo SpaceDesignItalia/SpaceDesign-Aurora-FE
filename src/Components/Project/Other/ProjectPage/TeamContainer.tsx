@@ -163,8 +163,21 @@ export default function TeamContainer({
               <div className="flex flex-col">
                 {messages.map((message) => {
                   if (message.StafferSenderId !== loggedStafferId) {
-                    return <ChatMessage message={message} type="recive" />;
-                  } else return <ChatMessage message={message} type="send" />;
+                    return (
+                      <ChatMessage
+                        message={message}
+                        type="recive"
+                        key={message.MessageId}
+                      />
+                    );
+                  } else
+                    return (
+                      <ChatMessage
+                        message={message}
+                        type="send"
+                        key={message.MessageId}
+                      />
+                    );
                 })}
               </div>
             </ScrollShadow>
@@ -225,12 +238,14 @@ export default function TeamContainer({
                   MemberData={member}
                   ProjectId={projectData.ProjectId}
                   type={editTeam}
+                  key={member.StafferId}
                 />
               ) : (
                 <ProjectTeamMemberCard
                   MemberData={member}
                   ProjectId={projectData.ProjectId}
                   type={false}
+                  key={member.StafferId}
                 />
               )
             )}

@@ -18,7 +18,6 @@ export default function ChatMessage({
   message: Message;
   type: string;
 }) {
-  console.log(message);
   const formatDate = (dateStr: Date) => {
     if (dateStr === undefined) return undefined;
 
