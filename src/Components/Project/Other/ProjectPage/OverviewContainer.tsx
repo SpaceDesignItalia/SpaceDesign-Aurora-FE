@@ -69,6 +69,13 @@ export default function OverviewContainer({
       });
   }, [projectData.ProjectId]);
 
+  function calculateDeadline() {
+    if (daysUntilDeadline < 0) {
+      return <p className="text-red-500">Scaduto</p>;
+    }
+    return <>{daysUntilDeadline} g</>;
+  }
+
   return (
     <>
       <AddProjectLink
@@ -173,9 +180,15 @@ export default function OverviewContainer({
           <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
             <div className="flex justify-between items-center">
               <h1 className="text-xl font-bold mb-4">Completato</h1>
-              <span className="font-bold">{progressPercent}%</span>
+              <span className="font-bold">
+                {progressPercent >= 100 ? 100 : progressPercent}%
+              </span>
             </div>
-            <Progress value={progressPercent} color="primary" size="sm" />
+            <Progress
+              value={progressPercent >= 100 ? 100 : progressPercent}
+              color="primary"
+              size="sm"
+            />
           </div>
           <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
             <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
@@ -190,7 +203,7 @@ export default function OverviewContainer({
                     progressPercent >= 85 && "text-red-500"
                   )}
                 >
-                  {daysUntilDeadline} g
+                  {calculateDeadline()}
                 </span>
               </div>
               <TimerRoundedIcon className="text-gray-500" />
