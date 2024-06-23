@@ -13,6 +13,7 @@ import { useParams } from "react-router-dom";
 import ChangeProjectTheme from "../../Components/Project/Other/ChangeProjectTheme";
 import OverviewContainer from "../../Components/Project/Other/ProjectPage/OverviewContainer";
 import TeamContainer from "../../Components/Project/Other/ProjectPage/TeamContainer";
+import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContainer";
 
 interface Project {
   ProjectId: number;
@@ -28,6 +29,7 @@ interface Project {
   ProjectManagerFullName: string;
   ProjectManagerEmail: string;
   RoleName: string;
+  StafferImageUrl: string;
 }
 
 interface ModalData {
@@ -55,6 +57,7 @@ export default function ProjectPage() {
     ProjectManagerFullName: "",
     ProjectManagerEmail: "",
     RoleName: "",
+    StafferImageUrl: "",
   });
 
   const [modalData, setModalData] = useState<ModalData>({
@@ -154,7 +157,11 @@ export default function ProjectPage() {
             {activeTab === "Panoramica" && (
               <OverviewContainer projectData={projectData} />
             )}
-            {activeTab === "Tasks" && <div>Tasks content</div>}
+            {activeTab === "Tasks" && (
+              <div>
+                <TaskContainer projectData={projectData} />
+              </div>
+            )}
             {activeTab === "Team" && (
               <div>
                 <TeamContainer projectData={projectData} />
