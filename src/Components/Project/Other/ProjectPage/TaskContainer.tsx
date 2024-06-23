@@ -1,346 +1,172 @@
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import { useMemo, useState } from "react";
-import ColumnContainer from "../ColumnContainer";
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import { SortableContext, arrayMove } from "@dnd-kit/sortable";
-import { createPortal } from "react-dom";
-import TaskCard from "../TaskCard";
-import { Button } from "@nextui-org/react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
-type Id = string | number;
+// Define interfaces
+interface Status {
+  ProjectTaskStatusId: number;
+  ProjectTaskStatusName: string;
+}
 
-interface Column {
-  id: Id;
-  title: string;
+interface Tag {
+  ProjectTaskTagId: number;
+  ProjectTaskTagName: string;
+  ProjectTaskTagColor: string;
+}
+
+interface Member {
+  StafferId: number;
+  StafferFullName: string;
+  StafferEmail: string;
+  StafferImageUrl: string;
 }
 
 interface Task {
-  id: Id;
-  columnId: Id;
-  content: string;
+  ProjectTaskId: number;
+  ProjectTaskName: string;
+  ProjectTaskDescription?: string;
+  ProjectTaskExpiration: Date;
+  ProjectTaskStatusId: number;
+  ProjectTaskTags: Tag[];
+  ProjectTaskMembers: Member[];
 }
 
-const defaultCols: Column[] = [
-  {
-    id: "todo",
-    title: "Todo",
-  },
-  {
-    id: "doing",
-    title: "Work in progress",
-  },
-  {
-    id: "done",
-    title: "Done",
-  },
-];
+interface Project {
+  ProjectId: number;
+  ProjectName: string;
+  ProjectDescription: string;
+  ProjectCreationDate: Date;
+  ProjectEndDate: Date;
+  CompanyId: number;
+  ProjectBannerId: number;
+  ProjectBannerPath: string;
+  StatusName: string;
+  ProjectManagerId: number;
+  ProjectManagerFullName: string;
+  ProjectManagerEmail: string;
+  RoleName: string;
+}
 
-const defaultTasks: Task[] = [
-  {
-    id: "1",
-    columnId: "todo",
-    content: "List admin APIs for dashboard",
-  },
-  {
-    id: "2",
-    columnId: "todo",
-    content:
-      "Develop user registration functionality with OTP delivered on SMS after email confirmation and phone number confirmation",
-  },
-  {
-    id: "3",
-    columnId: "doing",
-    content: "Conduct security testing",
-  },
-  {
-    id: "4",
-    columnId: "doing",
-    content: "Analyze competitors",
-  },
-  {
-    id: "5",
-    columnId: "done",
-    content: "Create UI kit documentation",
-  },
-  {
-    id: "6",
-    columnId: "done",
-    content: "Dev meeting",
-  },
-  {
-    id: "7",
-    columnId: "done",
-    content: "Deliver dashboard prototype",
-  },
-  {
-    id: "8",
-    columnId: "todo",
-    content: "Optimize application performance",
-  },
-  {
-    id: "9",
-    columnId: "todo",
-    content: "Implement data validation",
-  },
-  {
-    id: "10",
-    columnId: "todo",
-    content: "Design database schema",
-  },
-  {
-    id: "11",
-    columnId: "todo",
-    content: "Integrate SSL web certificates into workflow",
-  },
-  {
-    id: "12",
-    columnId: "doing",
-    content: "Implement error logging and monitoring",
-  },
-  {
-    id: "13",
-    columnId: "doing",
-    content: "Design and implement responsive UI",
-  },
-];
+export default function TaskBoard({ projectData }: { projectData: Project }) {
+  const [columns, setColumns] = useState<Status[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [update, setUpdate] = useState(false);
+  const projectId = projectData.ProjectId;
 
-export default function TaskContainer() {
-  const [columns, setColumns] = useState<Column[]>(defaultCols);
-  const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
+  // Fetch columns and tasks data
+  useEffect(() => {
+    axios.get<Status[]>("/Project/GET/GetTaskStatuses").then((res) => {
+      setColumns(res.data);
+    });
 
-  const [tasks, setTasks] = useState<Task[]>(defaultTasks);
+    axios
+      .get<Task[]>("/Project/GET/GetTasksByProjectId", {
+        params: { ProjectId: projectId },
+      })
+      .then((res) => {
+        setTasks(res.data);
+      });
+  }, [update]);
 
-  const [activeColumn, setActiveColumn] = useState<Column | null>(null);
+  // Handler for drag end
+  const onDragEnd = (result: { source: any; destination: any }) => {
+    const { source, destination } = result;
 
-  const [activeTask, setActiveTask] = useState<Task | null>(null);
+    if (!destination) {
+      return;
+    }
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 10,
-      },
-    })
-  );
+    if (
+      source.droppableId !== destination.droppableId ||
+      source.index !== destination.index
+    ) {
+      const newTasks = Array.from(tasks);
+      const [reorderedItem] = newTasks.splice(source.index, 1);
+      reorderedItem.ProjectTaskStatusId = parseInt(destination.droppableId, 10);
+      newTasks.splice(destination.index, 0, reorderedItem);
+
+      setTasks(newTasks);
+      updateTaskStatus(
+        reorderedItem.ProjectTaskId,
+        reorderedItem.ProjectTaskStatusId
+      );
+    }
+  };
+
+  // Function to update task status
+  function updateTaskStatus(taskId: number, statusId: number) {
+    axios
+      .post("/Project/POST/UpdateTaskStatus", {
+        ProjectTaskId: taskId,
+        ProjectTaskStatusId: statusId,
+      })
+      .then((response) => {
+        console.log("Task status updated:", response.data);
+        setUpdate(!update);
+      })
+      .catch((error) => {
+        console.error("Error updating task status:", error);
+      });
+  }
 
   return (
-    <div
-      className="
-        m-auto
-        flex
-        min-h-screen
-        w-full
-        items-center
-        overflow-x-auto
-        overflow-y-hidden
-        px-[40px]
-    "
-    >
-      <DndContext
-        sensors={sensors}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        onDragOver={onDragOver}
-      >
-        <div className="m-auto flex gap-4">
-          <div className="flex gap-4">
-            <SortableContext items={columnsId}>
-              {columns.map((col) => (
-                <ColumnContainer
-                  key={col.id}
-                  column={col}
-                  deleteColumn={deleteColumn}
-                  updateColumn={updateColumn}
-                  createTask={createTask}
-                  deleteTask={deleteTask}
-                  updateTask={updateTask}
-                  tasks={tasks.filter((task) => task.columnId === col.id)}
-                />
-              ))}
-            </SortableContext>
-          </div>
-          <Button
-            onClick={() => {
-              createNewColumn();
-            }}
-            color="primary"
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div className="flex flex-row">
+        {columns.map((column) => (
+          <Droppable
+            key={column.ProjectTaskStatusId}
+            droppableId={column.ProjectTaskStatusId.toString()}
           >
-            <AddRoundedIcon />
-            Add Column
-          </Button>
-        </div>
-
-        {createPortal(
-          <DragOverlay>
-            {activeColumn && (
-              <ColumnContainer
-                column={activeColumn}
-                deleteColumn={deleteColumn}
-                updateColumn={updateColumn}
-                createTask={createTask}
-                deleteTask={deleteTask}
-                updateTask={updateTask}
-                tasks={tasks.filter(
-                  (task) => task.columnId === activeColumn.id
-                )}
-              />
+            {(provided, snapshot) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                style={{
+                  backgroundColor: snapshot.isDraggingOver
+                    ? "lightblue"
+                    : "lightgrey",
+                }}
+              >
+                <h2>{column.ProjectTaskStatusName}</h2>
+                {tasks
+                  .filter(
+                    (task) =>
+                      task.ProjectTaskStatusId === column.ProjectTaskStatusId
+                  )
+                  .map((task, index) => (
+                    <Draggable
+                      key={task.ProjectTaskId}
+                      draggableId={task.ProjectTaskId.toString()}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={{
+                            userSelect: "none",
+                            padding: 16,
+                            margin: "0 0 8px 0",
+                            minHeight: "50px",
+                            backgroundColor: snapshot.isDragging
+                              ? "#263B4A"
+                              : "#456C86",
+                            color: "white",
+                            ...provided.draggableProps.style,
+                          }}
+                        >
+                          {task.ProjectTaskName}
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                {provided.placeholder}
+              </div>
             )}
-            {activeTask && (
-              <TaskCard
-                task={activeTask}
-                deleteTask={deleteTask}
-                updateTask={updateTask}
-              />
-            )}
-          </DragOverlay>,
-          document.body
-        )}
-      </DndContext>
-    </div>
+          </Droppable>
+        ))}
+      </div>
+    </DragDropContext>
   );
-
-  function createTask(columnId: Id) {
-    const newTask: Task = {
-      id: generateId(),
-      columnId,
-      content: `Task ${tasks.length + 1}`,
-    };
-
-    setTasks([...tasks, newTask]);
-  }
-
-  function deleteTask(id: Id) {
-    const newTasks = tasks.filter((task) => task.id !== id);
-    setTasks(newTasks);
-  }
-
-  function updateTask(id: Id, content: string) {
-    const newTasks = tasks.map((task) => {
-      if (task.id !== id) return task;
-      return { ...task, content };
-    });
-
-    setTasks(newTasks);
-  }
-
-  function createNewColumn() {
-    const columnToAdd: Column = {
-      id: generateId(),
-      title: `Column ${columns.length + 1}`,
-    };
-
-    setColumns([...columns, columnToAdd]);
-  }
-
-  function deleteColumn(id: Id) {
-    const filteredColumns = columns.filter((col) => col.id !== id);
-    setColumns(filteredColumns);
-
-    const newTasks = tasks.filter((t) => t.columnId !== id);
-    setTasks(newTasks);
-  }
-
-  function updateColumn(id: Id, title: string) {
-    const newColumns = columns.map((col) => {
-      if (col.id !== id) return col;
-      return { ...col, title };
-    });
-
-    setColumns(newColumns);
-  }
-
-  function onDragStart(event: DragStartEvent) {
-    if (event.active.data.current?.type === "Column") {
-      setActiveColumn(event.active.data.current.column);
-      return;
-    }
-
-    if (event.active.data.current?.type === "Task") {
-      setActiveTask(event.active.data.current.task);
-      return;
-    }
-  }
-
-  function onDragEnd(event: DragEndEvent) {
-    setActiveColumn(null);
-    setActiveTask(null);
-
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeId = active.id;
-    const overId = over.id;
-
-    if (activeId === overId) return;
-
-    const isActiveAColumn = active.data.current?.type === "Column";
-    if (!isActiveAColumn) return;
-
-    console.log("DRAG END");
-
-    setColumns((columns) => {
-      const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
-
-      const overColumnIndex = columns.findIndex((col) => col.id === overId);
-
-      return arrayMove(columns, activeColumnIndex, overColumnIndex);
-    });
-  }
-
-  function onDragOver(event: DragOverEvent) {
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeId = active.id;
-    const overId = over.id;
-
-    if (activeId === overId) return;
-
-    const isActiveATask = active.data.current?.type === "Task";
-    const isOverATask = over.data.current?.type === "Task";
-
-    if (!isActiveATask) return;
-
-    // Im dropping a Task over another Task
-    if (isActiveATask && isOverATask) {
-      setTasks((tasks) => {
-        const activeIndex = tasks.findIndex((t) => t.id === activeId);
-        const overIndex = tasks.findIndex((t) => t.id === overId);
-
-        if (tasks[activeIndex].columnId != tasks[overIndex].columnId) {
-          // Fix introduced after video recording
-          tasks[activeIndex].columnId = tasks[overIndex].columnId;
-          return arrayMove(tasks, activeIndex, overIndex - 1);
-        }
-
-        return arrayMove(tasks, activeIndex, overIndex);
-      });
-    }
-
-    const isOverAColumn = over.data.current?.type === "Column";
-
-    // Im dropping a Task over a column
-    if (isActiveATask && isOverAColumn) {
-      setTasks((tasks) => {
-        const activeIndex = tasks.findIndex((t) => t.id === activeId);
-
-        tasks[activeIndex].columnId = overId;
-        console.log("DROPPING TASK OVER COLUMN", { activeIndex });
-        return arrayMove(tasks, activeIndex, activeIndex);
-      });
-    }
-  }
-}
-
-function generateId() {
-  /* Generate a random number between 0 and 10000 */
-  return Math.floor(Math.random() * 10001);
 }
