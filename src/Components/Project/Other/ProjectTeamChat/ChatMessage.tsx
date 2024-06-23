@@ -1,8 +1,10 @@
-import { Avatar } from "@nextui-org/react";
+import { Avatar, user } from "@nextui-org/react";
+import { API_URL_IMG } from "../../../../API/API";
 
 interface Message {
   MessageId: number;
   StafferSenderId: number;
+  StafferImageUrl: string;
   StafferSenderFullName: string;
   ConversationId: number;
   Date: Date;
@@ -48,22 +50,36 @@ export default function ChatMessage({
       {type == "send" && (
         <div className="flex flex-row justify-end items-end mb-4">
           <div className="flex flex-col items-end">
-            <div className="flex flex-col gap-2 justify-end bg-primary px-3 py-2 rounded-xl rounded-br-none text-white max-w-md">
+            <div className="flex flex-col justify-end bg-primary px-3 py-2 rounded-xl rounded-br-none text-white max-w-md">
               <span className="text-xs mt-1 text-right">
                 {message.StafferSenderFullName}
               </span>
-              <p className="break-all">{message.Text}</p>
+              <p className="break-all text-right">{message.Text}</p>
             </div>
             <span className="text-xs text-gray-500 mt-1 text-right">
               {formatDate(message.Date)}
             </span>
           </div>
-          <Avatar size="sm" className="ml-2" />
+          <Avatar
+            size="sm"
+            className="ml-2"
+            src={
+              message.StafferImageUrl &&
+              API_URL_IMG + "/profileIcons/" + message.StafferImageUrl
+            }
+          />
         </div>
       )}
       {type === "recive" && (
         <div className="flex flex-row justify-start items-end mb-4">
-          <Avatar size="sm" className="mr-2" />
+          <Avatar
+            size="sm"
+            className="mr-2"
+            src={
+              message.StafferImageUrl &&
+              API_URL_IMG + "/profileIcons/" + message.StafferImageUrl
+            }
+          />
           <div className="flex flex-col items-end">
             <div className="flex flex-col justify-end bg-gray-500 px-3 py-2 rounded-xl rounded-bl-none text-white max-w-md">
               <span className="text-xs mt-1 text-right">
@@ -71,7 +87,7 @@ export default function ChatMessage({
               </span>
               <p className="break-all">{message.Text}</p>
             </div>
-            <span className="text-xs text-gray-500 mt-1 text-left">
+            <span className="text-xs text-gray-500 mt-1 text-left w-full">
               {formatDate(message.Date)}
             </span>
           </div>

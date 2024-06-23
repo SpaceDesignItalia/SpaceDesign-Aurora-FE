@@ -79,7 +79,6 @@ export default function ProjectPage() {
         params: { ProjectId: ProjectId, ProjectName: ProjectName },
       })
       .then((res) => {
-        console.log(res.data);
         setProjectData(res.data);
       });
   }, [ProjectId, ProjectName]);

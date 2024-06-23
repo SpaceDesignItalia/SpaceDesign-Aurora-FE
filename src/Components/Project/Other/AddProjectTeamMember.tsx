@@ -52,14 +52,12 @@ export default function AddProjectTeamMember({
     alertColor: "",
   });
 
-  console.log(newTeamMember);
   useEffect(() => {
     axios
       .get("/Project/GET/GetMembersNotInProjectTeam", {
         params: { ProjectId: ProjectId },
       })
       .then((res) => {
-        console.log(res.data);
         setAvailableStaff(res.data);
       });
   }, [ProjectId]);
@@ -164,7 +162,7 @@ export default function AddProjectTeamMember({
                                 src={
                                   staff.StafferImageUrl &&
                                   API_URL_IMG +
-                                    "/linkIcons/" +
+                                    "/profileIcons/" +
                                     staff.StafferImageUrl
                                 }
                               />

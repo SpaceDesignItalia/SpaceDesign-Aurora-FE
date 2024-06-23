@@ -8,7 +8,7 @@ import {
   AutocompleteItem,
 } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
-import StatusAlert from "./StatusAlert";
+import StatusAlert from "../../Layout/StatusAlert";
 
 interface PermissionGroup {
   GroupName: string;

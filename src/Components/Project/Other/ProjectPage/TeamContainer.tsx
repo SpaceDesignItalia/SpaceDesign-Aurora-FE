@@ -8,8 +8,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import AddProjectTeamMember from "../AddProjectTeamMember";
+import { API_WEBSOCKET_URL } from "../../../../API/API";
 
-const socket = io("http://localhost:3000");
+const socket = io(API_WEBSOCKET_URL);
 
 interface Employee {
   EmployeeId: number;
@@ -18,13 +19,9 @@ interface Employee {
   EmployeePhone: string;
 }
 
-interface Conversation {
-  ConversationId: number;
-  ProjectId: number;
-}
-
 interface Message {
   MessageId: number;
+  StafferImageUrl: string;
   StafferSenderId: number;
   StafferSenderFullName: string;
   ConversationId: number;
@@ -70,12 +67,8 @@ export default function TeamContainer({
   const [editTeam, setEditTeam] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loggedStafferId, setloggedStafferId] = useState<number>(0);
-  const [loggedStafferFullName, setloggedStafferFullName] =
-    useState<string>("");
   const [newMessage, setNewMessage] = useState("");
   const [conversationId, setConversationId] = useState<number>(-1);
-  const [emplyees, setEmployees] = useState<Employee[]>([]);
-  const [projectId, setProjectId] = useState<number>(1);
   const [modalData, setModalData] = useState<ModalData>({
     ProjectId: 0,
     open: false,
@@ -87,7 +80,6 @@ export default function TeamContainer({
         params: { ProjectId: projectData.ProjectId },
       })
       .then((res) => {
-        console.log(res.data);
         setMembers(res.data);
       });
   }, [projectData.ProjectId]);
@@ -103,16 +95,12 @@ export default function TeamContainer({
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then(async (res) => {
         setloggedStafferId(res.data.StafferId);
-        setloggedStafferFullName(
-          res.data.StafferName + " " + res.data.StafferSurname
-        );
-        console.log("ProjectId: " + projectId);
+
         return axios.get("/Project/GET/GetConversationByProjectId", {
-          params: { ProjectId: projectId },
+          params: { ProjectId: projectData.ProjectId },
         });
       })
       .then((res) => {
-        console.log("Data: ", res.data);
         if (res.data.length === 0) return;
         setConversationId(res.data[0].ConversationId);
         socket.emit("join", res.data[0].ConversationId);
@@ -128,8 +116,6 @@ export default function TeamContainer({
           params: { ConversationId: conversationId },
         })
         .then((res) => {
-          console.log("conversationId: ", conversationId);
-          console.log("messaggi: ", res.data);
           setMessages(res.data);
           setConversationId(conversationId);
           socket.emit("join", conversationId);
@@ -142,9 +128,6 @@ export default function TeamContainer({
   function handleSendMessage() {
     if (newMessage.trim() === "") return;
     try {
-      console.log("conversationId: ", conversationId);
-      console.log("newMessage: ", newMessage);
-      console.log("loggedStafferId: ", loggedStafferId);
       axios
         .post("/Chat/POST/SendMessage", {
           ConversationId: conversationId,
@@ -174,35 +157,46 @@ export default function TeamContainer({
       />
       <div className="grid grid-cols-2 gap-5">
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
-          <div className="grid grid-cols-2 gap-5">
-            <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
-              <h1 className="font-bold">Team chat</h1>
-              <ScrollShadow className="w-full h-[500px]">
-                <div className="flex flex-col">
-                  {messages.map((message) => {
-                    if (message.StafferSenderId !== loggedStafferId) {
-                      return <ChatMessage message={message} type="recive" />;
-                    } else return <ChatMessage message={message} type="send" />;
-                  })}
-                </div>
-              </ScrollShadow>
-              <div className="flex flex-row items-center gap-3">
-                <Input
-                  variant="bordered"
-                  className="w-full"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Messaggio"
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  color="primary"
-                  isIconOnly
-                  isDisabled={newMessage.trim() === "" ? true : false}
-                >
-                  <SendRoundedIcon />
-                </Button>
+          <div className="flex flex-col gap-5">
+            <h1 className="font-bold">Team chat</h1>
+            <ScrollShadow className="w-full h-[500px]">
+              <div className="flex flex-col">
+                {messages.map((message) => {
+                  if (message.StafferSenderId !== loggedStafferId) {
+                    return (
+                      <ChatMessage
+                        message={message}
+                        type="recive"
+                        key={message.MessageId}
+                      />
+                    );
+                  } else
+                    return (
+                      <ChatMessage
+                        message={message}
+                        type="send"
+                        key={message.MessageId}
+                      />
+                    );
+                })}
               </div>
+            </ScrollShadow>
+            <div className="flex flex-row items-center gap-3 w-full">
+              <Input
+                variant="bordered"
+                className="w-full"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Messaggio"
+              />
+              <Button
+                onClick={handleSendMessage}
+                color="primary"
+                isIconOnly
+                isDisabled={newMessage.trim() === "" ? true : false}
+              >
+                <SendRoundedIcon />
+              </Button>
             </div>
           </div>
         </div>
@@ -238,13 +232,23 @@ export default function TeamContainer({
             </div>
           </div>
           <div className="grid grid-cols-2 gap-5">
-            {members.map((member) => (
-              <ProjectTeamMemberCard
-                MemberData={member}
-                ProjectId={projectData.ProjectId}
-                type={editTeam}
-              />
-            ))}
+            {members.map((member) =>
+              member.StafferId !== projectData.ProjectManagerId ? (
+                <ProjectTeamMemberCard
+                  MemberData={member}
+                  ProjectId={projectData.ProjectId}
+                  type={editTeam}
+                  key={member.StafferId}
+                />
+              ) : (
+                <ProjectTeamMemberCard
+                  MemberData={member}
+                  ProjectId={projectData.ProjectId}
+                  type={false}
+                  key={member.StafferId}
+                />
+              )
+            )}
           </div>
         </div>
       </div>

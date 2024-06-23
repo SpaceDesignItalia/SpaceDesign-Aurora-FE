@@ -12,7 +12,6 @@ import { useEffect, useState } from "react";
 import { API_URL_IMG } from "../../../API/API";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import ConfirmDeleteProjectModal from "./ConfirmDeleteProjectModal";
 
@@ -105,11 +104,11 @@ export default function TableCard({ project }: { project: Project }) {
     });
   }
 
-  async function DeleteProject(CompanyData: any) {
+  async function DeleteProject(ProjectData: Project) {
     try {
-      /* const res = await axios.delete("/Company/DELETE/DeleteCompany", {
-        params: { CompanyData },
-      }); */
+      const res = await axios.delete("/Project/DELETE/DeleteProject", {
+        params: { ProjectId: ProjectData.ProjectId },
+      });
 
       if (res.status === 200) {
         window.location.reload();

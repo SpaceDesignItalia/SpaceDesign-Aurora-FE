@@ -297,18 +297,6 @@ export default function AddProjectModel() {
                     value={newProjectData.ProjectEndDate}
                     onChange={handleProjectEndDateChange}
                   />
-                  <p className="text-default-500 text-sm mt-1">
-                    Data selezionata:{" "}
-                    {newProjectData.ProjectEndDate
-                      ? dayjs(
-                          formatter.format(
-                            newProjectData.ProjectEndDate.toDate(
-                              getLocalTimeZone()
-                            )
-                          )
-                        ).format("DD-MM-YYYY")
-                      : "--"}
-                  </p>
                 </I18nProvider>
               </div>
 

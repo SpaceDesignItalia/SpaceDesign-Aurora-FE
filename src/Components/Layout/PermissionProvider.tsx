@@ -28,21 +28,18 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({
   const [permissionsLoaded, setPermissionsLoaded] = useState<boolean>(false);
 
   const loadPermissions = async (id: string) => {
-    if (!permissionsLoaded) {
-      try {
-        const res = await axios.get(
-          "/Permission/GET/GetPermissionsByUserRole",
-          {
-            params: { StafferId: id },
-          }
-        );
-        if (res.status === 200) {
-          setPermissions(res.data);
-          setPermissionsLoaded(true);
-        }
-      } catch (error) {
-        console.error("Errore nel caricamento dei permessi:", error);
+    if (permissionsLoaded) return;
+
+    try {
+      const res = await axios.get("/Permission/GET/GetPermissionsByUserRole", {
+        params: { StafferId: id },
+      });
+      if (res.status === 200) {
+        setPermissions(res.data);
+        setPermissionsLoaded(true);
       }
+    } catch (error) {
+      console.error("Errore durante il recupero dei permessi:", error);
     }
   };
 
