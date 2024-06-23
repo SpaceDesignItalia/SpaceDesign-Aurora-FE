@@ -18,7 +18,6 @@ import AddEmployeePage from "./Pages/Employee/AddEmployeePage";
 import EditEmployeePage from "./Pages/Employee/EditEmployeePage";
 import Login from "./Pages/Login/Login";
 import EditRolePage from "./Pages/Permission/EditRolePage";
-<<<<<<<<< Temporary merge branch 1
 import ChatDashboard from "./Pages/Chat/ChatDashboard";
 import AddProjectPage from "./Pages/Project/AddProjectPage";
 import ProjectDashboard from "./Pages/Project/ProjectDashboard";
@@ -141,20 +140,16 @@ const ProtectedRoutes: React.FC = () => {
           element={<EditRolePage />}
           path="/administration/permission/edit-role/:RoleId"
         />
-        <Route
-<<<<<<<<< Temporary merge branch 1
-          element={<ChatDashboard />}
-          path="/comunications/chat"
-        />
+        <Route element={<ChatDashboard />} path="/comunications/chat" />
         <Route element={<ProjectDashboard />} path="/projects" />
         <Route element={<AddProjectPage />} path="/projects/add-project" />
         <Route
           element={<ProjectPage />}
           path="/projects/:CompanyName/:ProjectId/:ProjectName"
-=========
+        />
+        <Route
           element={<EditPermissionPage />}
           path="/administration/permission/edit-permission/:PermissionId"
->>>>>>>>> Temporary merge branch 2
         />
       </Route>
     </Routes>
