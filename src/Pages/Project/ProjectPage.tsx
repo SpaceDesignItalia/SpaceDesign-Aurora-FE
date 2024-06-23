@@ -1,4 +1,4 @@
-import { Tabs, Tab, Button, Tooltip } from "@nextui-org/react";
+import { Tabs, Tab, Button, Tooltip, Link } from "@nextui-org/react";
 import { API_URL_IMG } from "../../API/API";
 import FindInPageRoundedIcon from "@mui/icons-material/FindInPageRounded";
 import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
@@ -37,9 +37,10 @@ interface ModalData {
 }
 
 export default function ProjectPage() {
-  const { ProjectId, ProjectName } = useParams<{
+  const { ProjectId, ProjectName, CompanyName } = useParams<{
     ProjectId: string;
     ProjectName: string;
+    CompanyName: string;
   }>();
   const [projectData, setProjectData] = useState<Project>({
     ProjectId: 0,
@@ -145,7 +146,21 @@ export default function ProjectPage() {
                   placement="bottom"
                   closeDelay={0}
                 >
-                  <Button color="primary" radius="sm" isIconOnly>
+                  <Button
+                    as={Link}
+                    color="primary"
+                    radius="sm"
+                    href={
+                      "/projects/" +
+                      CompanyName +
+                      "/" +
+                      ProjectId +
+                      "/" +
+                      ProjectName +
+                      "/edit-project"
+                    }
+                    isIconOnly
+                  >
                     <TuneRoundedIcon />
                   </Button>
                 </Tooltip>

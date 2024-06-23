@@ -24,6 +24,7 @@ import AddProjectPage from "./Pages/Project/AddProjectPage";
 import ProjectPage from "./Pages/Project/ProjectPage";
 import EditPermissionPage from "./Pages/Permission/EditPermissionPage";
 import AddPermissionPage from "./Pages/Permission/AddPermissionPage";
+import EditProjectPage from "./Pages/Project/EditProjectPage";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
@@ -146,6 +147,10 @@ const ProtectedRoutes: React.FC = () => {
         <Route
           element={<ProjectPage />}
           path="/projects/:CompanyName/:ProjectId/:ProjectName"
+        />
+        <Route
+          element={<EditProjectPage />}
+          path="/projects/:CompanyName/:ProjectId/:ProjectName/edit-project"
         />
         <Route
           element={<EditPermissionPage />}
