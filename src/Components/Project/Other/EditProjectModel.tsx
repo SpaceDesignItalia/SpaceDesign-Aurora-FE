@@ -8,26 +8,18 @@ import {
   AutocompleteItem,
   Chip,
   DatePicker,
-  Avatar,
-  RadioGroup,
-  Radio,
-  cn,
 } from "@nextui-org/react";
 import { I18nProvider } from "@react-aria/i18n";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
-import { API_URL_IMG } from "../../../API/API";
-import {
-  DateValue,
-  parseDate,
-  getLocalTimeZone,
-} from "@internationalized/date";
+import { DateValue, parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
-import { useDateFormatter } from "@react-aria/i18n";
+import { useParams } from "react-router-dom";
 
 interface Project {
   ProjectName: string;
   ProjectDescription: string;
+  ProjectCreationDate: DateValue;
   ProjectEndDate: DateValue;
   ProjectManagerId: number;
   CompanyId: number;
@@ -47,11 +39,6 @@ interface Manager {
   RoleName: "CEO";
 }
 
-interface Banner {
-  ProjectBannerId: number;
-  ProjectBannerPath: string;
-}
-
 interface AlertData {
   isOpen: boolean;
   alertTitle: string;
@@ -60,15 +47,28 @@ interface AlertData {
 }
 
 export default function EditProjectModel() {
-  const [newProjectData, setNewProjectData] = useState<Project>({
+  const { ProjectId, ProjectName } = useParams<{
+    ProjectId: string;
+    ProjectName: string;
+  }>();
+  const [initialProjectData, setInitialProjectData] = useState<Project>({
     ProjectName: "",
     ProjectDescription: "",
+    ProjectCreationDate: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
     ProjectEndDate: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
     ProjectManagerId: 0,
     CompanyId: 0,
     ProjectBannerId: 0,
   });
-  const [banners, setBanners] = useState<Banner[]>([]);
+  const [newProjectData, setNewProjectData] = useState<Project>({
+    ProjectName: "",
+    ProjectDescription: "",
+    ProjectCreationDate: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+    ProjectEndDate: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+    ProjectManagerId: 0,
+    CompanyId: 0,
+    ProjectBannerId: 0,
+  });
   const [companies, setCompanies] = useState<Company[]>([]);
   const [managers, setManagers] = useState<Manager[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
@@ -80,20 +80,44 @@ export default function EditProjectModel() {
   });
 
   useEffect(() => {
-    axios.get("/Project/GET/GetAllBanners").then((res) => {
-      setBanners(res.data);
-    });
+    axios
+      .get("/Project/GET/GetProjectByIdAndName", {
+        params: { ProjectId, ProjectName },
+      })
+      .then((res) => {
+        // Assicurati di gestire correttamente le date ricevute dal backend
+        setInitialProjectData({
+          ...res.data,
+          ProjectEndDate: parseDate(
+            dayjs(res.data.ProjectEndDate).format("YYYY-MM-DD")
+          ),
+          ProjectCreationDate: parseDate(
+            dayjs(res.data.ProjectCreationDate).format("YYYY-MM-DD")
+          ),
+        });
+        setNewProjectData({
+          ...res.data,
+          ProjectEndDate: parseDate(
+            dayjs(res.data.ProjectEndDate).format("YYYY-MM-DD")
+          ),
+          ProjectCreationDate: parseDate(
+            dayjs(res.data.ProjectCreationDate).format("YYYY-MM-DD")
+          ),
+        });
+      })
+      .catch((error) => {
+        console.error(
+          "Errore durante il recupero dei dati del progetto:",
+          error
+        );
+      });
     axios.get("/Company/GET/GetAllCompany").then((res) => {
       setCompanies(res.data);
     });
     axios.get("/Project/GET/GetAllManagers").then((res) => {
       setManagers(res.data);
     });
-  }, []);
-
-  function handleProjectBannerChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setNewProjectData({ ...newProjectData, ProjectBannerId: e.target.value });
-  }
+  }, [ProjectId, ProjectName]);
 
   function handleProjectNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.value.length <= 200) {
@@ -119,26 +143,23 @@ export default function EditProjectModel() {
     });
   }
 
-  function handleProjectProjectManagerIdChange(e: React.Key) {
-    setNewProjectData({ ...newProjectData, ProjectManagerId: String(e) });
+  function handleProjectProjectManagerIdChange(e: React.Key | null) {
+    setNewProjectData({ ...newProjectData, ProjectManagerId: Number(e) });
   }
 
-  function handleProjectCompanyIdChange(e: React.Key) {
-    setNewProjectData({ ...newProjectData, CompanyId: String(e) });
+  function handleProjectCompanyIdChange(e: React.Key | null) {
+    setNewProjectData({ ...newProjectData, CompanyId: Number(e) });
   }
 
   function checkAllDataCompiled() {
-    if (
+    return !(
       newProjectData.ProjectName !== "" &&
       newProjectData.ProjectDescription !== "" &&
       newProjectData.ProjectEndDate !== null &&
       newProjectData.ProjectManagerId !== 0 &&
       newProjectData.CompanyId !== 0 &&
       newProjectData.ProjectBannerId !== 0
-    ) {
-      return false;
-    }
-    return true;
+    );
   }
 
   async function handleCreateNewCompany() {
@@ -147,9 +168,7 @@ export default function EditProjectModel() {
 
       // Formatta la data di fine progetto
       const formattedDate = dayjs(
-        formatter.format(
-          newProjectData.ProjectEndDate.toDate(getLocalTimeZone())
-        )
+        newProjectData.ProjectEndDate.toString()
       ).format("YYYY-MM-DD");
 
       // Crea una copia dei dati del progetto con la data formattata
@@ -170,7 +189,7 @@ export default function EditProjectModel() {
           alertColor: "green",
         });
 
-        axios.post("/Project/POST/CreateProjectConversation", {
+        await axios.post("/Project/POST/CreateProjectConversation", {
           ProjectId: res.data.ProjectId,
         });
 
@@ -194,10 +213,10 @@ export default function EditProjectModel() {
       }, 2000);
       console.error("Errore durante la creazione del progetto:", error);
       // Gestisci l'errore in modo appropriato, ad esempio mostrando un messaggio all'utente
+    } finally {
+      setIsAddingData(false);
     }
   }
-
-  let formatter = useDateFormatter({ dateStyle: "full" });
 
   return (
     <>
@@ -210,7 +229,8 @@ export default function EditProjectModel() {
                 Progetto
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                In questo pannello potrai creare un nuovo progetto nel database.
+                In questo pannello potrai modificare un progetto esistente nel
+                database.
               </p>
             </div>
 
@@ -242,8 +262,7 @@ export default function EditProjectModel() {
                   <DatePicker
                     variant="bordered"
                     radius="sm"
-                    value={newProjectData.ProjectEndDate}
-                    onChange={handleProjectEndDateChange}
+                    value={newProjectData.ProjectCreationDate}
                   />
                 </I18nProvider>
               </div>
@@ -290,6 +309,7 @@ export default function EditProjectModel() {
                   defaultItems={managers}
                   placeholder="Seleziona Project Manager"
                   onSelectionChange={handleProjectProjectManagerIdChange}
+                  selectedKey={newProjectData.ProjectManagerId}
                   variant="bordered"
                   radius="sm"
                   aria-label="manager"
@@ -335,6 +355,7 @@ export default function EditProjectModel() {
                   defaultItems={companies}
                   placeholder="Seleziona azienda"
                   onSelectionChange={handleProjectCompanyIdChange}
+                  selectedKey={newProjectData.CompanyId}
                   variant="bordered"
                   radius="sm"
                   aria-label="company"
