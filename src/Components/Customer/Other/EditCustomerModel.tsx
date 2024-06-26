@@ -104,8 +104,8 @@ export default function EditCustomerModel() {
     }
   }
 
-  function handleCustomerCompanyId(e: React.Key) {
-    setNewCustomerData({ ...newCustomerData, CompanyId: String(e) });
+  function handleCustomerCompanyId(e: React.Key | null) {
+    setNewCustomerData({ ...newCustomerData, CompanyId: Number(e) });
   }
 
   function checkAllDataCompiled() {
