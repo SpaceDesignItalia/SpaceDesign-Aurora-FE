@@ -19,8 +19,8 @@ import EditEmployeePage from "./Pages/Employee/EditEmployeePage";
 import Login from "./Pages/Login/Login";
 import EditRolePage from "./Pages/Permission/EditRolePage";
 import ChatDashboard from "./Pages/Chat/ChatDashboard";
-import ProjectDashboard from "./Pages/Project/ProjectDashboard";
 import AddProjectPage from "./Pages/Project/AddProjectPage";
+import ProjectDashboard from "./Pages/Project/ProjectDashboard";
 import ProjectPage from "./Pages/Project/ProjectPage";
 import EditPermissionPage from "./Pages/Permission/EditPermissionPage";
 import AddPermissionPage from "./Pages/Permission/AddPermissionPage";
@@ -151,10 +151,6 @@ const ProtectedRoutes: React.FC = () => {
         <Route
           element={<EditProjectPage />}
           path="/projects/:CompanyName/:ProjectId/:ProjectName/edit-project"
-        />
-        <Route
-          element={<EditPermissionPage />}
-          path="/administration/permission/edit-permission/:PermissionId"
         />
         <Route
           element={<EditPermissionPage />}
