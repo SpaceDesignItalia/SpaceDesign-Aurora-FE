@@ -136,6 +136,13 @@ export default function EditProjectModel() {
     }
   }
 
+  function handleProjectCreationDateChange(date: DateValue) {
+    setNewProjectData({
+      ...newProjectData,
+      ProjectCreationDate: date,
+    });
+  }
+
   function handleProjectEndDateChange(date: DateValue) {
     setNewProjectData({
       ...newProjectData,
@@ -152,32 +159,43 @@ export default function EditProjectModel() {
   }
 
   function checkAllDataCompiled() {
-    return !(
-      newProjectData.ProjectName !== "" &&
-      newProjectData.ProjectDescription !== "" &&
-      newProjectData.ProjectEndDate !== null &&
-      newProjectData.ProjectManagerId !== 0 &&
-      newProjectData.CompanyId !== 0 &&
-      newProjectData.ProjectBannerId !== 0
+    return (
+      newProjectData.ProjectName === initialProjectData.ProjectName &&
+      newProjectData.ProjectDescription ===
+        initialProjectData.ProjectDescription &&
+      dayjs(newProjectData.ProjectCreationDate.toString()).isSame(
+        dayjs(initialProjectData.ProjectCreationDate.toString())
+      ) &&
+      dayjs(newProjectData.ProjectEndDate.toString()).isSame(
+        dayjs(initialProjectData.ProjectEndDate.toString())
+      ) &&
+      newProjectData.ProjectManagerId === initialProjectData.ProjectManagerId &&
+      newProjectData.CompanyId === initialProjectData.CompanyId
     );
   }
 
-  async function handleCreateNewCompany() {
+  async function handleUpdateProject() {
     try {
       setIsAddingData(true);
 
+      // Formatta la data di inizio progetto
+      const formattedCreationDate = dayjs(
+        newProjectData.ProjectCreationDate.toString()
+      ).format("YYYY-MM-DD");
+
       // Formatta la data di fine progetto
-      const formattedDate = dayjs(
+      const formattedEndDate = dayjs(
         newProjectData.ProjectEndDate.toString()
       ).format("YYYY-MM-DD");
 
       // Crea una copia dei dati del progetto con la data formattata
       const formattedProjectData = {
         ...newProjectData,
-        ProjectEndDate: formattedDate,
+        ProjectCreationDate: formattedCreationDate,
+        ProjectEndDate: formattedEndDate,
       };
 
-      const res = await axios.post("/Project/POST/AddProject", {
+      const res = await axios.put("/Project/UPDATE/UpdateProjectData", {
         ProjectData: formattedProjectData,
       });
 
@@ -185,12 +203,8 @@ export default function EditProjectModel() {
         setAlertData({
           isOpen: true,
           alertTitle: "Operazione completata",
-          alertDescription: "Il progetto è stato aggiunto con successo.",
+          alertDescription: "Il progetto è stato aggiornato con successo.",
           alertColor: "green",
-        });
-
-        await axios.post("/Project/POST/CreateProjectConversation", {
-          ProjectId: res.data.ProjectId,
         });
 
         setTimeout(() => {
@@ -204,7 +218,7 @@ export default function EditProjectModel() {
         isOpen: true,
         alertTitle: "Errore durante l'operazione",
         alertDescription:
-          "Si è verificato un errore durante l'aggiunta del progetto. Per favore, riprova più tardi.",
+          "Si è verificato un errore durante l'aggiornamento del progetto. Per favore, riprova più tardi.",
         alertColor: "red",
       });
 
@@ -263,6 +277,7 @@ export default function EditProjectModel() {
                     variant="bordered"
                     radius="sm"
                     value={newProjectData.ProjectCreationDate}
+                    onChange={handleProjectCreationDateChange}
                   />
                 </I18nProvider>
               </div>
@@ -392,7 +407,7 @@ export default function EditProjectModel() {
               startContent={!isAddingData && <SaveIcon />}
               isDisabled={checkAllDataCompiled()}
               isLoading={isAddingData}
-              onClick={handleCreateNewCompany}
+              onClick={handleUpdateProject}
             >
               {isAddingData ? "Salvando il progetto..." : "Salva progetto"}
             </Button>
