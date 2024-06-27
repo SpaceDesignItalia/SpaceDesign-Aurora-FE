@@ -1,6 +1,7 @@
 import axios from "axios";
 import {
   Avatar,
+  AvatarGroup,
   Button,
   Dropdown,
   DropdownItem,
@@ -27,6 +28,14 @@ interface Project {
   StatusId: number;
 }
 
+interface Member {
+  StafferId: number;
+  StafferImageUrl: string;
+  StafferFullName: string;
+  StafferEmail: string;
+  RoleName: string;
+}
+
 interface Company {
   CompanyId: number;
   CompanyName: string;
@@ -51,6 +60,7 @@ export default function TableCard({ project }: { project: Project }) {
     CompnayPhoto: "",
   });
   const [statusList, setStatusList] = useState<Status[]>([]);
+  const [teamMembers, setTeamMembers] = useState<Member[]>([]);
   const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
     Project: {
       ProjectId: 0,
@@ -76,6 +86,14 @@ export default function TableCard({ project }: { project: Project }) {
       })
       .then((res) => {
         setCompany(res.data[0]);
+      });
+
+    axios
+      .get("/Project/GET/GetProjetTeamMembers", {
+        params: { ProjectId: project.ProjectId },
+      })
+      .then((res) => {
+        setTeamMembers(res.data);
       });
   }, []);
 
@@ -207,15 +225,24 @@ export default function TableCard({ project }: { project: Project }) {
           <div className="flex justify-between gap-x-4 py-3">
             <dt className="text-gray-500">Team</dt>
             <dd className="text-gray-700">
-              {/* <AvatarGroup isBordered max={2} total={10} size="sm">
-              {project.team !== undefined && (
-                <>
-                  {project.team.map((member: string, index: number) => (
-                    <Avatar key={index} src={member} />
+              <AvatarGroup
+                isBordered
+                max={4}
+                total={teamMembers.length - 4}
+                size="sm"
+              >
+                {teamMembers
+                  .slice(0, 4)
+                  .map((member: Member, index: number) => (
+                    <Avatar
+                      key={index}
+                      src={
+                        member.StafferImageUrl &&
+                        API_URL_IMG + "/profileIcons/" + member.StafferImageUrl
+                      }
+                    />
                   ))}
-                </>
-              )}
-            </AvatarGroup> */}
+              </AvatarGroup>
             </dd>
           </div>
           <div className="flex justify-between gap-x-4 py-3">
