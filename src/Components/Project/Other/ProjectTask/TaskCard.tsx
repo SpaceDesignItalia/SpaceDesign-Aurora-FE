@@ -22,6 +22,30 @@ import EditTaskModal from "../ProjectTask/EditTaskModal";
 import ConfirmDeleteTaskModal from "../ProjectTask/ConfirmDeleteTaskModal";
 import ViewTaskModal from "../ProjectTask/ViewTaskModal";
 import axios from "axios";
+import { useEffect } from "react";
+
+interface Tag {
+  ProjectTaskTagId: number;
+  ProjectTaskTagName: string;
+}
+
+interface Member {
+  StafferId: number;
+  StafferFullName: string;
+  StafferEmail: string;
+  StafferImageUrl: string;
+}
+
+interface Task {
+  ProjectTaskId: number;
+  ProjectTaskName: string;
+  ProjectTaskDescription?: string;
+  ProjectTaskExpiration: DateValue;
+  ProjectTaskStatusId: number;
+  ProjectTaskTags: Tag[];
+  ProjectTaskMembers: Member[];
+  ProjectId: number;
+}
 
 interface ModalData {
   Task: Task;
@@ -44,6 +68,16 @@ export default function TaskCard({
   task,
   setUpdate,
   update,
+  socket,
+  projectId,
+}: {
+  provided: any;
+  snapshot: any;
+  task: Task;
+  setUpdate: any;
+  update: any;
+  socket: any;
+  projectId: number;
 }) {
   const [modalData, setModalData] = useState<ModalData>({
     Task: {
@@ -82,6 +116,12 @@ export default function TaskCard({
     open: false,
   });
 
+  useEffect(() => {
+    socket.on("task-update", () => {
+      setUpdate(!update);
+    });
+  }, []);
+
   function formatDate(date: DateValue) {
     let formatter = useDateFormatter({ dateStyle: "full" });
     return dayjs(formatter.format(new Date(date.toString()))).format(
@@ -93,6 +133,7 @@ export default function TaskCard({
     await axios.delete("/Project/DELETE/DeleteTask", {
       params: { ProjectTaskId: taskId },
     });
+    socket.emit("task-news", projectId);
     setUpdate(!update);
   }
 
