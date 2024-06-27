@@ -12,13 +12,6 @@ import { API_WEBSOCKET_URL } from "../../../../API/API";
 
 const socket = io(API_WEBSOCKET_URL);
 
-interface Employee {
-  EmployeeId: number;
-  EmployeeFullName: string;
-  EmployeeEmail: string;
-  EmployeePhone: string;
-}
-
 interface Message {
   MessageId: number;
   StafferImageUrl: string;

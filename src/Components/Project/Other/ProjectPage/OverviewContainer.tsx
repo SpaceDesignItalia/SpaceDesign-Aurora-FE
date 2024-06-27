@@ -1,11 +1,13 @@
 import { Button, Progress, cn, User, Tooltip, Link } from "@nextui-org/react";
 import TimerRoundedIcon from "@mui/icons-material/TimerRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import ModeEditRoundedIcon from "@mui/icons-material/ModeEditRounded";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import AddProjectLink from "../AddProjectLink";
 import axios from "axios";
 import { API_URL_IMG } from "../../../../API/API";
+import DeleteLinkModal from "../DeleteLinkModal";
 
 interface Project {
   ProjectId: number;
@@ -29,6 +31,11 @@ interface ModalData {
   open: boolean;
 }
 
+interface ModalEditData {
+  Links: Link[];
+  open: boolean;
+}
+
 interface Link {
   ProjectId: number;
   ProjectLinkTitle: string;
@@ -42,11 +49,16 @@ export default function OverviewContainer({
 }: {
   projectData: Project;
 }) {
-  console.log(projectData);
   const [modalData, setModalData] = useState<ModalData>({
     ProjectId: 0,
     open: false,
   });
+
+  const [modalEditData, setModalEditData] = useState<ModalEditData>({
+    Links: new Array<Link>(),
+    open: false,
+  });
+
   const daysUntilDeadline =
     dayjs(projectData.ProjectEndDate).diff(dayjs(), "day") + 1;
   const totalDays =
@@ -77,12 +89,32 @@ export default function OverviewContainer({
     return <>{daysUntilDeadline} g</>;
   }
 
+  function DeleteLink(LinkId: number) {
+    axios
+      .delete("/Project/DELETE/RemoveLinkFromProject", {
+        params: { ProjectLinkId: LinkId, ProjectId: projectData.ProjectId },
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          window.location.reload();
+        }
+      });
+  }
+
   return (
     <>
       <AddProjectLink
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
         ProjectId={modalData.ProjectId}
+      />
+      <DeleteLinkModal
+        isOpen={modalEditData.open}
+        isClosed={() => {
+          setModalEditData({ ...modalEditData, open: false });
+        }}
+        LinkData={modalEditData.Links}
+        DeleteLink={DeleteLink}
       />
       <div className="grid grid-cols-1 sm:grid-cols-6 gap-5 h-screen">
         <div className="grid grid-cols-1 xl:grid-cols-6 gap-6 col-span-6 md:col-span-4">
@@ -126,8 +158,26 @@ export default function OverviewContainer({
         <div className="flex flex-col gap-5 col-span-6  md:col-span-2">
           <div className="grid grid-cols-1 2xl:grid-cols-1 gap-4">
             <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6">
-              <div className="flex flex-col gap-3 items-start">
-                <h1 className="font-bold">Collegamenti esterni</h1>
+              <div className="flex flex-col gap-3 items-start w-full">
+                <div className="flex flex-row justify-between w-full">
+                  <h1 className="font-bold">Collegamenti esterni</h1>
+                  <Button
+                    size="sm"
+                    color="warning"
+                    className="text-white"
+                    variant="solid"
+                    onClick={() =>
+                      setModalEditData({
+                        ...modalEditData,
+                        open: true,
+                        Links: links,
+                      })
+                    }
+                    isIconOnly
+                  >
+                    <ModeEditRoundedIcon />
+                  </Button>
+                </div>
                 <div className="flex flex-row flex-wrap gap-3 items-center">
                   {links.map((link, index) => {
                     return (
