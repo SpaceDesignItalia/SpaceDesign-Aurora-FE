@@ -23,6 +23,7 @@ import ViewTaskModal from "../ProjectTask/ViewTaskModal";
 import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 import { useDateFormatter } from "@react-aria/i18n";
+import AddTaskModal from "../ProjectTask/AddTaskModal";
 
 // Define interfaces
 interface Status {
@@ -85,6 +86,11 @@ interface ModalEditData {
   open: boolean;
 }
 
+interface ModalAddData {
+  ProjectId: number;
+  open: boolean;
+}
+
 export default function TaskBoard({ projectData }: { projectData: Project }) {
   const [columns, setColumns] = useState<Status[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -124,6 +130,10 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
       ProjectTaskMembers: [],
       ProjectId: 0,
     },
+    open: false,
+  });
+  const [modalAddData, setModalAddData] = useState<ModalAddData>({
+    ProjectId: projectId,
     open: false,
   });
 
@@ -214,8 +224,7 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
         ProjectTaskId: taskId,
         ProjectTaskStatusId: statusId,
       })
-      .then((response) => {
-        console.log("Task status updated:", response.data);
+      .then(() => {
         setUpdate(!update);
       })
       .catch((error) => {
@@ -241,6 +250,11 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
         isOpen={modalEditData.open}
         isClosed={() => setModalEditData({ ...modalEditData, open: false })}
         TaskData={modalEditData.Task}
+      />
+      <AddTaskModal
+        isOpen={modalAddData.open}
+        isClosed={() => setModalAddData({ ...modalAddData, open: false })}
+        ProjectId={modalAddData.ProjectId}
       />
       <ConfirmDeleteTaskModal
         isOpen={modalDeleteData.open}
@@ -299,12 +313,9 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
                                   {task.ProjectTaskTags.map((tag) => (
                                     <p
                                       key={tag.ProjectTaskTagId}
-                                      className={cn(
-                                        "p-1 m-1 rounded-md",
-                                        tag.ProjectTaskTagColor !== ""
-                                          ? `bg-${tag.ProjectTaskTagColor}-400`
-                                          : "bg-gray-400"
-                                      )}
+                                      className={
+                                        "p-1 m-1 rounded-md bg-gray-400"
+                                      }
                                     >
                                       {tag.ProjectTaskTagName}
                                     </p>
@@ -401,6 +412,13 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
           ))}
         </div>
       </DragDropContext>
+      <Button>
+        <Button
+          onClick={() => setModalAddData({ ...modalAddData, open: true })}
+        >
+          Aggiungi Task
+        </Button>
+      </Button>
     </>
   );
 }

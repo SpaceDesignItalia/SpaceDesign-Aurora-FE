@@ -49,99 +49,53 @@ interface Task {
   ProjectId: number;
 }
 
-export default function EditTaskModal({
+export default function AddTaskModal({
   isOpen,
   isClosed,
-  TaskData,
+  ProjectId,
 }: {
   isOpen: boolean;
   isClosed: () => void;
-  TaskData: Task;
+  ProjectId: number;
 }) {
-  const [newTask, setNewTask] = useState<Task>(TaskData);
+  const [newTask, setNewTask] = useState<Task>({
+    ProjectTaskId: 0,
+    ProjectTaskName: "",
+    ProjectTaskDescription: "",
+    ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
+    ProjectTaskStatusId: 0,
+    ProjectTaskTags: [],
+    ProjectTaskMembers: [],
+    ProjectId: ProjectId,
+  });
   const [members, setMembers] = useState<Member[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [update, setUpdate] = useState(false);
 
   useEffect(() => {
-    setNewTask({
-      ProjectTaskId: TaskData.ProjectTaskId,
-      ProjectTaskName: TaskData.ProjectTaskName,
-      ProjectTaskDescription: TaskData.ProjectTaskDescription,
-      ProjectTaskExpiration: parseDate(
-        dayjs(new Date(TaskData.ProjectTaskExpiration.toString())).format(
-          "YYYY-MM-DD"
-        )
-      ),
-      ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
-      ProjectTaskTags:
-        TaskData.ProjectTaskTags.length === 0 ? [] : TaskData.ProjectTaskTags,
-      ProjectTaskMembers:
-        TaskData.ProjectTaskMembers.length === 0
-          ? []
-          : TaskData.ProjectTaskMembers,
-      ProjectId: TaskData.ProjectId,
-    });
-  }, [TaskData]);
-
-  useEffect(() => {
     axios
-      .get("/Project/GET/GetMembersNotInTask", {
-        params: { TaskData: newTask },
+      .get("Project/GET/GetProjetTeamMembers", {
+        params: { ProjectId: ProjectId },
       })
       .then((res) => {
-        setMembers(res.data);
-      });
-
-    axios
-      .get("/Project/GET/GetTagsNotInTask", {
-        params: { TaskData: newTask },
-      })
-      .then((res) => {
-        setTags(res.data);
-      });
-  }, [newTask, update]);
-
-  useEffect(() => {
-    axios
-      .get<Task>("/Project/GET/GetTaskByTaskId", {
-        params: { ProjectTaskId: TaskData.ProjectTaskId },
-      })
-      .then(async (res) => {
-        const fetchedTask = res.data;
-
-        const tagsResponse = await axios.get<Tag[]>(
-          "/Project/GET/GetTagsByTaskId",
-          {
-            params: { ProjectTaskId: TaskData.ProjectTaskId },
-          }
-        );
-
-        const membersResponse = await axios.get<Member[]>(
-          "/Project/GET/GetMembersByTaskId",
-          {
-            params: { ProjectTaskId: TaskData.ProjectTaskId },
-          }
-        );
-
-        setNewTask({
-          ProjectTaskId: fetchedTask.ProjectTaskId,
-          ProjectTaskName: fetchedTask.ProjectTaskName,
-          ProjectTaskDescription: fetchedTask.ProjectTaskDescription,
-          ProjectTaskExpiration: parseDate(
-            dayjs(
-              new Date(fetchedTask.ProjectTaskExpiration.toString())
-            ).format("YYYY-MM-DD")
-          ),
-          ProjectTaskStatusId: fetchedTask.ProjectTaskStatusId,
-          ProjectTaskTags:
-            tagsResponse.data.length === 0 ? [] : tagsResponse.data,
-          ProjectTaskMembers:
-            membersResponse.data.length === 0 ? [] : membersResponse.data,
-          ProjectId: TaskData.ProjectId,
+        const filteredMembers = res.data.filter((member: Member) => {
+          return !newTask.ProjectTaskMembers.some(
+            (taskMember) => taskMember.StafferId === member.StafferId
+          );
         });
+        setMembers(filteredMembers);
       });
-  }, [TaskData, update]);
+
+    axios.get("/Project/GET/GetAllTags").then((res) => {
+      setTags(
+        res.data.filter((tag: Tag) => {
+          return !newTask.ProjectTaskTags.some(
+            (taskTag) => taskTag.ProjectTaskTagId === tag.ProjectTaskTagId
+          );
+        })
+      );
+    });
+  }, [newTask, update]);
 
   const memberPopoverContent = (
     <PopoverContent className="w-[240px]">
@@ -210,10 +164,10 @@ export default function EditTaskModal({
     </PopoverContent>
   );
 
-  function handleUpdate() {
+  function handleAddTask() {
     const formattedDate = new Date(newTask.ProjectTaskExpiration.toString());
     axios
-      .post("/Project/POST/UpdateTask", {
+      .post("/Project/POST/AddTask", {
         FormattedDate: formattedDate,
         TaskData: newTask,
       })
@@ -224,51 +178,35 @@ export default function EditTaskModal({
   }
 
   function addTaskMember(member: Member) {
-    axios
-      .post("/Project/POST/AddTaskMember", {
-        TaskData: newTask,
-        MemberData: member,
-      })
-      .then(() => {
-        setUpdate(!update);
-      });
+    setNewTask({
+      ...newTask,
+      ProjectTaskMembers: [...newTask.ProjectTaskMembers, member],
+    });
   }
 
   function addTaskTag(tag: Tag) {
-    axios
-      .post("/Project/POST/AddTaskTag", {
-        TaskData: newTask,
-        TagData: tag,
-      })
-      .then(() => {
-        setUpdate(!update);
-      });
+    setNewTask({
+      ...newTask,
+      ProjectTaskTags: [...newTask.ProjectTaskTags, tag],
+    });
   }
 
   function deleteTaskMember(stafferId: number) {
-    axios
-      .delete("/Project/DELETE/DeleteTaskMember", {
-        params: {
-          ProjectTaskId: newTask.ProjectTaskId,
-          StafferId: stafferId,
-        },
-      })
-      .then(() => {
-        setUpdate(!update);
-      });
+    setNewTask({
+      ...newTask,
+      ProjectTaskMembers: newTask.ProjectTaskMembers.filter(
+        (member) => member.StafferId !== stafferId
+      ),
+    });
   }
 
   function deleteTaskTag(tagId: number) {
-    axios
-      .delete("/Project/DELETE/DeleteTaskTag", {
-        params: {
-          ProjectTaskId: newTask.ProjectTaskId,
-          ProjectTaskTagId: tagId,
-        },
-      })
-      .then(() => {
-        setUpdate(!update);
-      });
+    setNewTask({
+      ...newTask,
+      ProjectTaskTags: newTask.ProjectTaskTags.filter(
+        (tag) => tag.ProjectTaskTagId !== tagId
+      ),
+    });
   }
 
   return (
@@ -284,7 +222,7 @@ export default function EditTaskModal({
         {() => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              Modifica della task: {TaskData.ProjectTaskName}
+              Inserimento della task: {newTask.ProjectTaskName}
             </ModalHeader>
             <ModalBody>
               <div className="mt-6 border-t border-gray-100">
@@ -446,10 +384,10 @@ export default function EditTaskModal({
               <Button
                 color="success"
                 variant="light"
-                onClick={handleUpdate}
+                onClick={handleAddTask}
                 radius="sm"
               >
-                Aggiorna
+                Inserisci
               </Button>
             </ModalFooter>
           </>

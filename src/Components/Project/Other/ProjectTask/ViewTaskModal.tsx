@@ -9,7 +9,6 @@ import {
   ModalFooter,
   ModalHeader,
   Tooltip,
-  cn,
 } from "@nextui-org/react";
 import { API_URL_IMG } from "../../../../API/API";
 import { useDateFormatter } from "@react-aria/i18n";
@@ -137,12 +136,7 @@ export default function ViewTaskModal({
                           {TaskData.ProjectTaskTags.map((tag) => (
                             <div
                               key={tag.ProjectTaskTagId}
-                              className={cn(
-                                "p-1 m-1 rounded-md",
-                                tag.ProjectTaskTagColor !== ""
-                                  ? `bg-${tag.ProjectTaskTagColor}-400`
-                                  : "bg-gray-400"
-                              )}
+                              className={"p-1 m-1 rounded-md bg-gray-400"}
                             >
                               {tag.ProjectTaskTagName}
                             </div>
