@@ -170,48 +170,51 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex flex-row justify-between h-screen border border-gray p-5">
           {columns.map((column) => (
-            <Droppable
-              key={column.ProjectTaskStatusId}
-              droppableId={column.ProjectTaskStatusId.toString()}
-              direction="vertical"
-              type="TASK"
-            >
-              {(provided, snapshot) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className={cn(
-                    "w-1/3 p-2 ",
-                    snapshot.isDraggingOver ? "bg-lightblue" : "bg-lightgrey"
-                  )}
-                >
-                  <h2 className="text-xl font-bold mb-4">
-                    {column.ProjectTaskStatusName}
-                  </h2>
-                  {tasks
-                    .filter(
-                      (task) =>
-                        task.ProjectTaskStatusId === column.ProjectTaskStatusId
-                    )
-                    .map((task, index) => (
-                      <Draggable
-                        key={task.ProjectTaskId}
-                        draggableId={task.ProjectTaskId.toString()}
-                        index={index}
-                      >
-                        {(provided, snapshot) => (
-                          <TaskCard
-                            provided={provided}
-                            snapshot={snapshot}
-                            task={task}
-                          />
-                        )}
-                      </Draggable>
-                    ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
+            <div className="flex flex-col gap-5 w-full">
+              <h2 className="text-xl font-bold mb-4">
+                {column.ProjectTaskStatusName}
+              </h2>
+              <Droppable
+                key={column.ProjectTaskStatusId}
+                droppableId={column.ProjectTaskStatusId.toString()}
+                direction="vertical"
+                type="TASK"
+              >
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={cn(
+                      "w-full p-2 flex flex-col gap-5",
+                      snapshot.isDraggingOver ? "bg-primary" : "bg-lightgrey"
+                    )}
+                  >
+                    {tasks
+                      .filter(
+                        (task) =>
+                          task.ProjectTaskStatusId ===
+                          column.ProjectTaskStatusId
+                      )
+                      .map((task, index) => (
+                        <Draggable
+                          key={task.ProjectTaskId}
+                          draggableId={task.ProjectTaskId.toString()}
+                          index={index}
+                        >
+                          {(provided, snapshot) => (
+                            <TaskCard
+                              provided={provided}
+                              snapshot={snapshot}
+                              task={task}
+                            />
+                          )}
+                        </Draggable>
+                      ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
           ))}
         </div>
       </DragDropContext>

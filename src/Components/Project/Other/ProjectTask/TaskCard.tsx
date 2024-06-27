@@ -8,6 +8,11 @@ import {
   DropdownMenu,
   cn,
   DateValue,
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Chip,
 } from "@nextui-org/react";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
@@ -85,7 +90,7 @@ export default function TaskCard({
   function formatDate(date: DateValue) {
     let formatter = useDateFormatter({ dateStyle: "full" });
     return dayjs(formatter.format(new Date(date.toString()))).format(
-      "YYYY-MM-DD"
+      "DD/MM/YYYY"
     );
   }
 
@@ -118,42 +123,28 @@ export default function TaskCard({
         ref={provided.innerRef}
         {...provided.draggableProps}
         {...provided.dragHandleProps}
-        className={cn(
-          "flex flex-row p-3 text-black rounded-md m-2 transition-transform duration-300",
-          {
-            "bg-blue-400": snapshot.isDragging,
-            "bg-blue-300": !snapshot.isDragging,
-            "shadow-lg z-10": snapshot.isDragging,
-          }
-        )}
       >
-        <div className="flex flex-row">
-          <div className="flex flex-col">
-            <h2 className="text-md font-bold">{task.ProjectTaskName}</h2>
-            <div className="flex flex-row">
-              {task.ProjectTaskTags.map((tag) => (
-                <p
-                  key={tag.ProjectTaskTagId}
-                  className="p-1 m-1 rounded-md bg-gray-400"
-                >
-                  {tag.ProjectTaskTagName}
-                </p>
-              ))}
-              <AvatarGroup isBordered>
-                {task.ProjectTaskMembers.map((member) => (
-                  <Avatar
-                    key={member.StafferId}
-                    src={
-                      API_URL_IMG + "/profileIcons/" + member.StafferImageUrl
-                    }
-                    alt={member.StafferFullName}
-                  />
+        <Card className="h-full" radius="sm">
+          <CardHeader className="justify-between">
+            <div className="flex gap-5">
+              <div className="flex flex-col gap-3 items-start justify-center">
+                {task.ProjectTaskTags.map((tag) => (
+                  <Chip
+                    key={tag.ProjectTaskTagId}
+                    size="sm"
+                    className="mr-1"
+                    color="primary"
+                    variant="faded"
+                    radius="sm"
+                  >
+                    {tag.ProjectTaskTagName}
+                  </Chip>
                 ))}
-              </AvatarGroup>
+                <h1 className="text-sm font-bold leading-none text-default-600">
+                  {task.ProjectTaskName}
+                </h1>
+              </div>
             </div>
-            <p>{formatDate(task.ProjectTaskExpiration)}</p>
-          </div>
-          <div>
             <Dropdown radius="sm">
               <DropdownTrigger>
                 <Button isIconOnly size="sm" variant="light">
@@ -210,8 +201,28 @@ export default function TaskCard({
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>
-          </div>
-        </div>
+          </CardHeader>
+          <CardBody className="px-3 py-0 text-small text-default-400">
+            <p>{task.ProjectTaskDescription}</p>
+          </CardBody>
+          <CardFooter className="gap-3 flex flex-col items-start">
+            <AvatarGroup isBordered>
+              {task.ProjectTaskMembers.map((member) => (
+                <Avatar
+                  size="sm"
+                  key={member.StafferId}
+                  src={API_URL_IMG + "/profileIcons/" + member.StafferImageUrl}
+                  alt={member.StafferFullName}
+                />
+              ))}
+            </AvatarGroup>
+            <div className="flex flex-row items-center gap-3 w-full">
+              <span className="font-semibold">
+                {formatDate(task.ProjectTaskExpiration)}
+              </span>
+            </div>
+          </CardFooter>
+        </Card>
       </div>
     </>
   );
