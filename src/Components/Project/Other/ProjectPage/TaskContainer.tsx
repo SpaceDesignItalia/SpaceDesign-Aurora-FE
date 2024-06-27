@@ -234,7 +234,7 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
 
   async function DeleteTask(taskId: number) {
     await axios.delete("/Project/DELETE/DeleteTask", {
-      params: { taskId },
+      params: { ProjectTaskId: taskId },
     });
     setUpdate(!update);
   }
