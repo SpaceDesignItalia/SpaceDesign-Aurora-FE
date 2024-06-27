@@ -15,6 +15,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Textarea,
   Tooltip,
 } from "@nextui-org/react";
 import { API_URL_IMG } from "../../../../API/API";
@@ -24,6 +25,7 @@ import dayjs from "dayjs";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import axios from "axios";
+import { I18nProvider } from "@react-aria/i18n";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -293,7 +295,9 @@ export default function EditTaskModal({
                       Titolo
                     </dt>
                     <Input
-                      className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0"
+                      className=" sm:col-span-2 sm:mt-0"
+                      variant="bordered"
+                      radius="sm"
                       value={newTask.ProjectTaskName}
                       onChange={(e) =>
                         setNewTask({
@@ -307,8 +311,10 @@ export default function EditTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Descrizione
                     </dt>
-                    <Input
-                      className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0"
+                    <Textarea
+                      className="sm:col-span-2 sm:mt-0"
+                      variant="bordered"
+                      radius="sm"
                       value={newTask.ProjectTaskDescription}
                       onChange={(e) =>
                         setNewTask({
@@ -322,16 +328,20 @@ export default function EditTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Scadenza
                     </dt>
-                    <DatePicker
-                      className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0"
-                      value={newTask.ProjectTaskExpiration}
-                      onChange={(e) =>
-                        setNewTask({
-                          ...newTask,
-                          ProjectTaskExpiration: e,
-                        })
-                      }
-                    />
+                    <I18nProvider locale="it-GB">
+                      <DatePicker
+                        className="sm:col-span-2 sm:mt-0"
+                        value={newTask.ProjectTaskExpiration}
+                        variant="bordered"
+                        radius="sm"
+                        onChange={(e) =>
+                          setNewTask({
+                            ...newTask,
+                            ProjectTaskExpiration: e,
+                          })
+                        }
+                      />
+                    </I18nProvider>
                   </div>
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt className="text-sm font-medium leading-6 text-gray-900">

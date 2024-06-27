@@ -169,19 +169,21 @@ export default function TaskCard({
           <CardHeader className="justify-between">
             <div className="flex gap-5">
               <div className="flex flex-col gap-3 items-start justify-center">
-                {task.ProjectTaskTags.map((tag) => (
-                  <Chip
-                    key={tag.ProjectTaskTagId}
-                    size="sm"
-                    className="mr-1"
-                    color="primary"
-                    variant="faded"
-                    radius="sm"
-                  >
-                    {tag.ProjectTaskTagName}
-                  </Chip>
-                ))}
-                <h1 className="text-sm font-bold leading-none text-default-600">
+                <div className="flex flex-row gap-2">
+                  {task.ProjectTaskTags.map((tag) => (
+                    <Chip
+                      key={tag.ProjectTaskTagId}
+                      size="sm"
+                      className="mr-1"
+                      color="primary"
+                      variant="faded"
+                      radius="sm"
+                    >
+                      {tag.ProjectTaskTagName}
+                    </Chip>
+                  ))}
+                </div>
+                <h1 className="text-normal font-bold leading-none text-default-600">
                   {task.ProjectTaskName}
                 </h1>
               </div>
