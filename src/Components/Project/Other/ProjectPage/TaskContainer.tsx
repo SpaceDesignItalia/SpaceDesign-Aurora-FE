@@ -4,6 +4,10 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { Button, DateValue, cn } from "@nextui-org/react";
 import AddTaskModal from "../ProjectTask/AddTaskModal";
 import TaskCard from "../ProjectTask/TaskCard";
+import { io } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../../API/API";
+
+const socket = io(API_WEBSOCKET_URL);
 
 // Define interfaces
 interface Status {
@@ -67,6 +71,12 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
   });
 
   useEffect(() => {
+    socket.on("task-update", () => {
+      setUpdate(!update);
+    });
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       const statusResponse = await axios.get<Status[]>(
         "/Project/GET/GetTaskStatuses"
@@ -79,6 +89,7 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
         })
         .then(async (res) => {
           const fetchedTasks = res.data;
+          socket.emit("join", projectId);
 
           const updatedTasks = await Promise.all(
             fetchedTasks.map(async (task: Task) => {
@@ -138,18 +149,14 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
     }
   };
 
-  function updateTaskStatus(
-    taskId: number,
-    statusId: number,
-    setUpdate: void,
-    update: boolean
-  ) {
+  function updateTaskStatus(taskId: number, statusId: number) {
     axios
       .post("/Project/POST/UpdateTaskStatus", {
         ProjectTaskId: taskId,
         ProjectTaskStatusId: statusId,
       })
       .then(() => {
+        socket.emit("task-news", projectId);
         setUpdate(!update);
       })
       .catch((error) => {
@@ -163,8 +170,6 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
         isOpen={modalAddData.open}
         isClosed={() => setModalAddData({ ...modalAddData, open: false })}
         ProjectId={modalAddData.ProjectId}
-        setUpdate={setUpdate}
-        update={update}
       />
 
       <DragDropContext onDragEnd={onDragEnd}>
@@ -203,9 +208,13 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
                         >
                           {(provided, snapshot) => (
                             <TaskCard
-                              provided={provided}
-                              snapshot={snapshot}
-                              task={task}
+                            provided={provided}
+                            snapshot={snapshot}
+                            task={task}
+                            setUpdate={setUpdate}
+                            update={update}
+                            socket={socket}
+                            projectId={projectId}
                             />
                           )}
                         </Draggable>
@@ -215,6 +224,7 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
                 )}
               </Droppable>
             </div>
+                          
           ))}
         </div>
       </DragDropContext>
