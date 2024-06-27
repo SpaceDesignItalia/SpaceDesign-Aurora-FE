@@ -23,6 +23,7 @@ import { useState, useEffect } from "react";
 import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import axios from "axios";
 
 interface Tag {
@@ -84,9 +85,6 @@ export default function EditTaskModal({
     });
   }, [TaskData]);
 
-  console.log("TaskData", TaskData);
-  console.log("newTask", newTask);
-
   useEffect(() => {
     axios
       .get<Task>("/Project/GET/GetTaskByTaskId", {
@@ -125,9 +123,6 @@ export default function EditTaskModal({
             membersResponse.data.length === 0 ? [] : membersResponse.data,
           ProjectId: TaskData.ProjectId,
         });
-      })
-      .catch((error) => {
-        console.error("Error fetching tasks:", error);
       });
   }, [TaskData, update]);
 
@@ -243,6 +238,10 @@ export default function EditTaskModal({
     </PopoverContent>
   );
 
+  function handleUpdate() {
+    window.location.reload();
+  }
+
   function addTaskMember(member: Member) {
     axios
       .post("/Project/POST/AddTaskMember", {
@@ -265,6 +264,32 @@ export default function EditTaskModal({
       });
   }
 
+  function deleteTaskMember(stafferId: number) {
+    axios
+      .delete("/Project/DELETE/DeleteTaskMember", {
+        params: {
+          ProjectTaskId: newTask.ProjectTaskId,
+          StafferId: stafferId,
+        },
+      })
+      .then(() => {
+        setUpdate(!update);
+      });
+  }
+
+  function deleteTaskTag(tagId: number) {
+    axios
+      .delete("/Project/DELETE/DeleteTaskTag", {
+        params: {
+          ProjectTaskId: newTask.ProjectTaskId,
+          ProjectTaskTagId: tagId,
+        },
+      })
+      .then(() => {
+        setUpdate(!update);
+      });
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -275,10 +300,10 @@ export default function EditTaskModal({
       backdrop="blur"
     >
       <ModalContent>
-        {(isClosed) => (
+        {() => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              Anteprima {TaskData.ProjectTaskName}
+              Modifica della task: {TaskData.ProjectTaskName}
             </ModalHeader>
             <ModalBody>
               <div className="mt-6 border-t border-gray-100">
@@ -340,7 +365,20 @@ export default function EditTaskModal({
                           {newTask.ProjectTaskMembers.map((member) => (
                             <Tooltip
                               key={member.StafferId}
-                              content={member.StafferFullName}
+                              content={
+                                <div className="flex flex-row">
+                                  <p>{member.StafferFullName}</p>
+                                  <Button
+                                    color="danger"
+                                    isIconOnly
+                                    onClick={() =>
+                                      deleteTaskMember(member.StafferId)
+                                    }
+                                  >
+                                    <DeleteOutlineRoundedIcon />
+                                  </Button>
+                                </div>
+                              }
                             >
                               <Avatar
                                 src={
@@ -379,17 +417,29 @@ export default function EditTaskModal({
                       ) : (
                         <div className="flex flex-wrap gap-2">
                           {newTask.ProjectTaskTags.map((tag) => (
-                            <div
+                            <Tooltip
                               key={tag.ProjectTaskTagId}
-                              className={cn(
-                                "p-1 m-1 rounded-md",
-                                tag.ProjectTaskTagColor !== ""
-                                  ? `bg-${tag.ProjectTaskTagColor}-400`
-                                  : "bg-gray-400"
-                              )}
+                              content={
+                                <div className="flex flex-row">
+                                  <Button
+                                    color="danger"
+                                    isIconOnly
+                                    onClick={() =>
+                                      deleteTaskTag(tag.ProjectTaskTagId)
+                                    }
+                                  >
+                                    <DeleteOutlineRoundedIcon />
+                                  </Button>
+                                </div>
+                              }
                             >
-                              {tag.ProjectTaskTagName}
-                            </div>
+                              <div
+                                key={tag.ProjectTaskTagId}
+                                className={cn("p-1 m-1 rounded-md bg-gray-400")}
+                              >
+                                {tag.ProjectTaskTagName}
+                              </div>
+                            </Tooltip>
                           ))}
                         </div>
                       )}
@@ -415,7 +465,7 @@ export default function EditTaskModal({
               <Button
                 color="success"
                 variant="light"
-                onClick={isClosed}
+                onClick={handleUpdate}
                 radius="sm"
               >
                 Aggiorna

@@ -68,7 +68,7 @@ export default function ViewTaskModal({
         {(isClosed) => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              Anteprima {TaskData.ProjectTaskName}
+              Anteprima della task: {TaskData.ProjectTaskName}
             </ModalHeader>
             <ModalBody>
               <div className="mt-6 border-t border-gray-100">
