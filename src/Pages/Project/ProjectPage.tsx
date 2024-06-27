@@ -1,4 +1,4 @@
-import { Tabs, Tab, Button, Tooltip, Link } from "@nextui-org/react";
+import { Tabs, Tab, Button, Tooltip, Link, Chip } from "@nextui-org/react";
 import { API_URL_IMG } from "../../API/API";
 import FindInPageRoundedIcon from "@mui/icons-material/FindInPageRounded";
 import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
@@ -25,6 +25,7 @@ interface Project {
   ProjectBannerPath: string;
   StatusName: string;
   ProjectManagerId: number;
+  StafferImageUrl: string;
   ProjectManagerFullName: string;
   ProjectManagerEmail: string;
   RoleName: string;
@@ -53,17 +54,16 @@ export default function ProjectPage() {
     ProjectBannerPath: "",
     StatusName: "",
     ProjectManagerId: 0,
+    StafferImageUrl: "",
     ProjectManagerFullName: "",
     ProjectManagerEmail: "",
     RoleName: "",
   });
-
   const [modalData, setModalData] = useState<ModalData>({
     ProjectId: 0,
     ProjectBannerId: 0,
     open: false,
   });
-
   const [activeTab, setActiveTab] = useState("Panoramica");
 
   const tabs = [
@@ -115,9 +115,15 @@ export default function ProjectPage() {
 
           <div className="flex flex-col gap-5 py-6 lg:py-8">
             <header className="flex flex-col xl:flex-row xl:justify-between w-full gap-5">
-              <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
-                {projectData.ProjectName}
-              </h1>
+              <div className="flex flex-col gap-3">
+                <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+                  {projectData.ProjectName}
+                </h1>
+                <Chip color="primary" radius="sm">
+                  {projectData.StatusName}
+                </Chip>
+              </div>
+
               <div className="flex flex-col sm:flex-row items-center gap-5">
                 <Tabs
                   aria-label="Options"

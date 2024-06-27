@@ -42,6 +42,7 @@ export default function OverviewContainer({
 }: {
   projectData: Project;
 }) {
+  console.log(projectData);
   const [modalData, setModalData] = useState<ModalData>({
     ProjectId: 0,
     open: false,

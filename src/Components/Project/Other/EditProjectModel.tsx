@@ -24,6 +24,13 @@ interface Project {
   ProjectManagerId: number;
   CompanyId: number;
   ProjectBannerId: number;
+  StatusId: number;
+}
+
+interface Status {
+  StatusId: number;
+  StatusName: string;
+  StatusColor: string;
 }
 
 interface Company {
@@ -59,6 +66,7 @@ export default function EditProjectModel() {
     ProjectManagerId: 0,
     CompanyId: 0,
     ProjectBannerId: 0,
+    StatusId: 0,
   });
   const [newProjectData, setNewProjectData] = useState<Project>({
     ProjectName: "",
@@ -68,10 +76,12 @@ export default function EditProjectModel() {
     ProjectManagerId: 0,
     CompanyId: 0,
     ProjectBannerId: 0,
+    StatusId: 0,
   });
   const [companies, setCompanies] = useState<Company[]>([]);
   const [managers, setManagers] = useState<Manager[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
+  const [statusList, setStatusList] = useState<Status[]>([]);
   const [alertData, setAlertData] = useState<AlertData>({
     isOpen: false,
     alertTitle: "",
@@ -80,44 +90,55 @@ export default function EditProjectModel() {
   });
 
   useEffect(() => {
-    axios
-      .get("/Project/GET/GetProjectByIdAndName", {
-        params: { ProjectId, ProjectName },
-      })
-      .then((res) => {
-        // Assicurati di gestire correttamente le date ricevute dal backend
-        setInitialProjectData({
-          ...res.data,
+    const fetchProjectData = async () => {
+      try {
+        // Esegui tutte le chiamate API correlate in parallelo
+        const [
+          projectResponse,
+          statusResponse,
+          companiesResponse,
+          managersResponse,
+          statusListResponse,
+        ] = await Promise.all([
+          axios.get("/Project/GET/GetProjectByIdAndName", {
+            params: { ProjectId, ProjectName },
+          }),
+          axios.get("/Project/GET/GetProjectStatus", { params: { ProjectId } }),
+          axios.get("/Company/GET/GetAllCompany"),
+          axios.get("/Project/GET/GetAllManagers"),
+          axios.get("/Project/GET/GetAllStatus"),
+        ]);
+
+        const projectData = projectResponse.data;
+        const formattedProjectData = {
+          ...projectData,
           ProjectEndDate: parseDate(
-            dayjs(res.data.ProjectEndDate).format("YYYY-MM-DD")
+            dayjs(projectData.ProjectEndDate).format("YYYY-MM-DD")
           ),
           ProjectCreationDate: parseDate(
-            dayjs(res.data.ProjectCreationDate).format("YYYY-MM-DD")
+            dayjs(projectData.ProjectCreationDate).format("YYYY-MM-DD")
           ),
-        });
-        setNewProjectData({
-          ...res.data,
-          ProjectEndDate: parseDate(
-            dayjs(res.data.ProjectEndDate).format("YYYY-MM-DD")
-          ),
-          ProjectCreationDate: parseDate(
-            dayjs(res.data.ProjectCreationDate).format("YYYY-MM-DD")
-          ),
-        });
-      })
-      .catch((error) => {
+          StatusId: statusResponse.data.StatusId,
+        };
+
+        // Aggiorna lo stato combinando i dati
+        setInitialProjectData(formattedProjectData);
+        setNewProjectData(formattedProjectData);
+        setCompanies(companiesResponse.data);
+        setManagers(managersResponse.data);
+        setStatusList(statusListResponse.data);
+      } catch (error) {
         console.error(
           "Errore durante il recupero dei dati del progetto:",
           error
         );
-      });
-    axios.get("/Company/GET/GetAllCompany").then((res) => {
-      setCompanies(res.data);
-    });
-    axios.get("/Project/GET/GetAllManagers").then((res) => {
-      setManagers(res.data);
-    });
+      }
+    };
+
+    fetchProjectData();
   }, [ProjectId, ProjectName]);
+
+  console.log(newProjectData);
 
   function handleProjectNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.value.length <= 200) {
@@ -158,6 +179,10 @@ export default function EditProjectModel() {
     setNewProjectData({ ...newProjectData, CompanyId: Number(e) });
   }
 
+  function handleProjectStatusChange(e: React.Key | null) {
+    setNewProjectData({ ...newProjectData, StatusId: Number(e) });
+  }
+
   function checkAllDataCompiled() {
     return (
       newProjectData.ProjectName === initialProjectData.ProjectName &&
@@ -170,7 +195,8 @@ export default function EditProjectModel() {
         dayjs(initialProjectData.ProjectEndDate.toString())
       ) &&
       newProjectData.ProjectManagerId === initialProjectData.ProjectManagerId &&
-      newProjectData.CompanyId === initialProjectData.CompanyId
+      newProjectData.CompanyId === initialProjectData.CompanyId &&
+      newProjectData.StatusId === initialProjectData.StatusId
     );
   }
 
@@ -324,7 +350,7 @@ export default function EditProjectModel() {
                   defaultItems={managers}
                   placeholder="Seleziona Project Manager"
                   onSelectionChange={handleProjectProjectManagerIdChange}
-                  selectedKey={newProjectData.ProjectManagerId}
+                  selectedKey={newProjectData.ProjectManagerId.toString()}
                   variant="bordered"
                   radius="sm"
                   aria-label="manager"
@@ -370,7 +396,7 @@ export default function EditProjectModel() {
                   defaultItems={companies}
                   placeholder="Seleziona azienda"
                   onSelectionChange={handleProjectCompanyIdChange}
-                  selectedKey={newProjectData.CompanyId}
+                  selectedKey={newProjectData.CompanyId.toString()}
                   variant="bordered"
                   radius="sm"
                   aria-label="company"
@@ -393,6 +419,34 @@ export default function EditProjectModel() {
                           </div>
                         </div>
                       </div>
+                    </AutocompleteItem>
+                  )}
+                </Autocomplete>
+              </div>
+              <div className="col-span-6 sm:col-span-3">
+                <label
+                  htmlFor="company"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Stato progetto
+                </label>
+
+                <Autocomplete
+                  defaultItems={statusList}
+                  placeholder="Seleziona stato"
+                  onSelectionChange={handleProjectStatusChange}
+                  selectedKey={newProjectData.StatusId.toString()}
+                  variant="bordered"
+                  radius="sm"
+                  aria-label="status"
+                  fullWidth
+                >
+                  {(status) => (
+                    <AutocompleteItem
+                      key={status.StatusId}
+                      value={status.StatusId}
+                    >
+                      {status.StatusName}
                     </AutocompleteItem>
                   )}
                 </Autocomplete>

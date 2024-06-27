@@ -148,6 +148,12 @@ export default function TeamContainer({
     setEditTeam(!editTeam);
   }
 
+  function handleKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      handleSendMessage();
+    }
+  }
+
   return (
     <>
       <AddProjectTeamMember
@@ -187,6 +193,7 @@ export default function TeamContainer({
                 className="w-full"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
                 placeholder="Messaggio"
               />
               <Button
