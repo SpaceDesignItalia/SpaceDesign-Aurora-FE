@@ -12,13 +12,6 @@ import { API_WEBSOCKET_URL } from "../../../../API/API";
 
 const socket = io(API_WEBSOCKET_URL);
 
-interface Employee {
-  EmployeeId: number;
-  EmployeeFullName: string;
-  EmployeeEmail: string;
-  EmployeePhone: string;
-}
-
 interface Message {
   MessageId: number;
   StafferImageUrl: string;
@@ -148,6 +141,12 @@ export default function TeamContainer({
     setEditTeam(!editTeam);
   }
 
+  function handleKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      handleSendMessage();
+    }
+  }
+
   return (
     <>
       <AddProjectTeamMember
@@ -187,6 +186,7 @@ export default function TeamContainer({
                 className="w-full"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
                 placeholder="Messaggio"
               />
               <Button

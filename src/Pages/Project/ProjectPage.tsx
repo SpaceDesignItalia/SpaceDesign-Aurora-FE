@@ -1,4 +1,4 @@
-import { Tabs, Tab, Button, Tooltip } from "@nextui-org/react";
+import { Tabs, Tab, Button, Tooltip, Link, Chip } from "@nextui-org/react";
 import { API_URL_IMG } from "../../API/API";
 import FindInPageRoundedIcon from "@mui/icons-material/FindInPageRounded";
 import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
@@ -26,6 +26,7 @@ interface Project {
   ProjectBannerPath: string;
   StatusName: string;
   ProjectManagerId: number;
+  StafferImageUrl: string;
   ProjectManagerFullName: string;
   ProjectManagerEmail: string;
   RoleName: string;
@@ -39,9 +40,10 @@ interface ModalData {
 }
 
 export default function ProjectPage() {
-  const { ProjectId, ProjectName } = useParams<{
+  const { ProjectId, ProjectName, CompanyName } = useParams<{
     ProjectId: string;
     ProjectName: string;
+    CompanyName: string;
   }>();
   const [projectData, setProjectData] = useState<Project>({
     ProjectId: 0,
@@ -54,18 +56,17 @@ export default function ProjectPage() {
     ProjectBannerPath: "",
     StatusName: "",
     ProjectManagerId: 0,
+    StafferImageUrl: "",
     ProjectManagerFullName: "",
     ProjectManagerEmail: "",
     RoleName: "",
     StafferImageUrl: "",
   });
-
   const [modalData, setModalData] = useState<ModalData>({
     ProjectId: 0,
     ProjectBannerId: 0,
     open: false,
   });
-
   const [activeTab, setActiveTab] = useState("Panoramica");
 
   const tabs = [
@@ -117,9 +118,15 @@ export default function ProjectPage() {
 
           <div className="flex flex-col gap-5 py-6 lg:py-8">
             <header className="flex flex-col xl:flex-row xl:justify-between w-full gap-5">
-              <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
-                {projectData.ProjectName}
-              </h1>
+              <div className="flex flex-col gap-3">
+                <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+                  {projectData.ProjectName}
+                </h1>
+                <Chip color="primary" radius="sm">
+                  {projectData.StatusName}
+                </Chip>
+              </div>
+
               <div className="flex flex-col sm:flex-row items-center gap-5">
                 <Tabs
                   aria-label="Options"
@@ -148,7 +155,21 @@ export default function ProjectPage() {
                   placement="bottom"
                   closeDelay={0}
                 >
-                  <Button color="primary" radius="sm" isIconOnly>
+                  <Button
+                    as={Link}
+                    color="primary"
+                    radius="sm"
+                    href={
+                      "/projects/" +
+                      CompanyName +
+                      "/" +
+                      ProjectId +
+                      "/" +
+                      ProjectName +
+                      "/edit-project"
+                    }
+                    isIconOnly
+                  >
                     <TuneRoundedIcon />
                   </Button>
                 </Tooltip>

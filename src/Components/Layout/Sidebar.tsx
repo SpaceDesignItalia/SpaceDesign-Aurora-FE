@@ -7,10 +7,7 @@ import {
   Cog6ToothIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import {
-  ChevronDownIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/20/solid";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
 import Logo from "../../assets/SpaceDesignLogo.png";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
@@ -22,6 +19,9 @@ import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
 import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumberOutlined";
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import QuestionAnswerOutlinedIcon from "@mui/icons-material/QuestionAnswerOutlined";
+import axios from "axios";
+import { API_URL_IMG } from "../../API/API";
+import { Avatar, Skeleton } from "@nextui-org/react";
 
 interface NavigationItem {
   name: string;
@@ -31,6 +31,15 @@ interface NavigationItem {
   current: boolean;
 }
 
+interface Employee {
+  EmployeeId: number;
+  StafferName: string;
+  StafferSurname: string;
+  EmployeeEmail: string;
+  EmployeePhone: string;
+  StafferImageUrl: string;
+}
+
 export default function Sidebar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUrl = window.location.pathname;
@@ -38,64 +47,77 @@ export default function Sidebar() {
   const { hasPermission } = usePermissions();
 
   const [administration, setAdministration] = useState<NavigationItem[]>([]);
+  const [userData, setUserData] = useState<Employee>({
+    EmployeeId: 0,
+    StafferName: "",
+    StafferSurname: "",
+    EmployeeEmail: "",
+    EmployeePhone: "",
+    StafferImageUrl: "",
+  });
 
   useEffect(() => {
-    async function fetchPermissions() {
-      setAdministration([
-        {
-          name: "Clienti",
-          href: "/administration/customer",
-          icon: PeopleAltOutlinedIcon,
-          requiredCondition:
-            (await hasPermission("VIEW_CUSTOMER")) ||
-            (await hasPermission("VIEW_COMPANY")),
-          current: isSubRoute({
-            currentUrl,
-            parentRoute: {
-              href: "/administration/customer",
-              subRoutes: [
-                "/administration/customer/add-customer",
-                "/administration/customer/edit-customer",
-                "/administration/customer/add-company",
-                "/administration/customer/edit-company",
-              ],
-            },
-          }),
-        },
-        {
-          name: "Dipendenti",
-          href: "/administration/employee",
-          icon: EngineeringOutlinedIcon,
-          requiredCondition: await hasPermission("VIEW_EMPLOYEE"),
-          current: isSubRoute({
-            currentUrl,
-            parentRoute: {
-              href: "/administration/employee",
-              subRoutes: [
-                "/administration/employee/add-employee",
-                "/administration/employee/edit-employee",
-              ],
-            },
-          }),
-        },
-        {
-          name: "Permessi",
-          href: "/administration/permission",
-          icon: VpnKeyOutlinedIcon,
-          requiredCondition: await hasPermission("VIEW_ROLE"),
-          current: isSubRoute({
-            currentUrl,
-            parentRoute: {
-              href: "/administration/permission",
-              subRoutes: ["/administration/permission/edit-role"],
-            },
-          }),
-        },
-      ]);
-    }
-
+    axios
+      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
+      .then((res) => {
+        setUserData(res.data);
+      });
     fetchPermissions();
   }, [currentUrl]);
+
+  async function fetchPermissions() {
+    setAdministration([
+      {
+        name: "Clienti",
+        href: "/administration/customer",
+        icon: PeopleAltOutlinedIcon,
+        requiredCondition:
+          (await hasPermission("VIEW_CUSTOMER")) ||
+          (await hasPermission("VIEW_COMPANY")),
+        current: isSubRoute({
+          currentUrl,
+          parentRoute: {
+            href: "/administration/customer",
+            subRoutes: [
+              "/administration/customer/add-customer",
+              "/administration/customer/edit-customer",
+              "/administration/customer/add-company",
+              "/administration/customer/edit-company",
+            ],
+          },
+        }),
+      },
+      {
+        name: "Dipendenti",
+        href: "/administration/employee",
+        icon: EngineeringOutlinedIcon,
+        requiredCondition: await hasPermission("VIEW_EMPLOYEE"),
+        current: isSubRoute({
+          currentUrl,
+          parentRoute: {
+            href: "/administration/employee",
+            subRoutes: [
+              "/administration/employee/add-employee",
+              "/administration/employee/edit-employee",
+            ],
+          },
+        }),
+      },
+      {
+        name: "Permessi",
+        href: "/administration/permission",
+        icon: VpnKeyOutlinedIcon,
+        requiredCondition: await hasPermission("VIEW_ROLE"),
+        current: isSubRoute({
+          currentUrl,
+          parentRoute: {
+            href: "/administration/permission",
+            subRoutes: ["/administration/permission/edit-role"],
+          },
+        }),
+      },
+    ]);
+  }
 
   function isSubRoute({
     currentUrl,
@@ -136,7 +158,7 @@ export default function Sidebar() {
       requiredCondition: true,
       current: isSubRoute({
         currentUrl,
-        parentRoute: { href: "/projects", subRoutes: [] },
+        parentRoute: { href: "/projects", subRoutes: ["/projects/"] },
       }),
     },
   ];
@@ -605,8 +627,8 @@ export default function Sidebar() {
       </div>
 
       <div className="lg:pl-72">
-        <div className="sticky top-0 z-40 lg:mx-auto lg:max-w-7xl lg:px-8">
-          <div className="flex h-16 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-0 lg:shadow-none">
+        <div className="sticky top-0 z-40 lg:mx-auto border-b border-gray-200 lg:px-8">
+          <div className="flex h-16 items-center gap-x-4 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-0 lg:shadow-none">
             <button
               type="button"
               className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
@@ -622,23 +644,7 @@ export default function Sidebar() {
               aria-hidden="true"
             />
 
-            <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-              <form className="relative flex flex-1" action="#" method="GET">
-                <label htmlFor="search-field" className="sr-only">
-                  Search
-                </label>
-                <MagnifyingGlassIcon
-                  className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400"
-                  aria-hidden="true"
-                />
-                <input
-                  id="search-field"
-                  className="block h-full w-full border-0 py-0 pl-8 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
-                  placeholder="Search..."
-                  type="search"
-                  name="search"
-                />
-              </form>
+            <div className="flex flex-1 justify-end gap-x-4 self-stretch lg:gap-x-6">
               <div className="flex items-center gap-x-4 lg:gap-x-6">
                 <button
                   type="button"
@@ -658,9 +664,13 @@ export default function Sidebar() {
                 <Menu as="div" className="relative">
                   <Menu.Button className="-m-1.5 flex items-center p-1.5">
                     <span className="sr-only">Open user menu</span>
-                    <img
+                    <Avatar
                       className="h-8 w-8 rounded-full bg-gray-100"
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                      src={
+                        API_URL_IMG +
+                        "/profileIcons/" +
+                        userData.StafferImageUrl
+                      }
                       alt=""
                     />
                     <span className="hidden lg:flex lg:items-center">
@@ -668,7 +678,11 @@ export default function Sidebar() {
                         className="ml-4 text-sm font-semibold leading-6 text-gray-900"
                         aria-hidden="true"
                       >
-                        Tom Cook
+                        {userData.EmployeeId !== 0 ? (
+                          userData.StafferName + " " + userData.StafferSurname
+                        ) : (
+                          <Skeleton className="h-3 rounded-lg" />
+                        )}
                       </span>
                       <ChevronDownIcon
                         className="ml-2 h-5 w-5 text-gray-400"

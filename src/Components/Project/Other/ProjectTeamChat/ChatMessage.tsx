@@ -82,7 +82,7 @@ export default function ChatMessage({
           />
           <div className="flex flex-col items-end">
             <div className="flex flex-col justify-end bg-gray-500 px-3 py-2 rounded-xl rounded-bl-none text-white max-w-md">
-              <span className="text-xs mt-1 text-right">
+              <span className="text-xs mt-1 text-left">
                 {message.StafferSenderFullName}
               </span>
               <p className="break-all">{message.Text}</p>
