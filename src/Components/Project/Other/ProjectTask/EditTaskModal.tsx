@@ -87,62 +87,28 @@ export default function EditTaskModal({
 
   useEffect(() => {
     axios
-      .get("/Project/GET/GetMembersNotInTask", {
-        params: { TaskData: newTask },
+      .get("Project/GET/GetProjetTeamMembers", {
+        params: { ProjectId: TaskData.ProjectId },
       })
       .then((res) => {
-        setMembers(res.data);
-      });
-
-    axios
-      .get("/Project/GET/GetTagsNotInTask", {
-        params: { TaskData: newTask },
-      })
-      .then((res) => {
-        setTags(res.data);
-      });
-  }, [newTask, update]);
-
-  useEffect(() => {
-    axios
-      .get<Task>("/Project/GET/GetTaskByTaskId", {
-        params: { ProjectTaskId: TaskData.ProjectTaskId },
-      })
-      .then(async (res) => {
-        const fetchedTask = res.data;
-
-        const tagsResponse = await axios.get<Tag[]>(
-          "/Project/GET/GetTagsByTaskId",
-          {
-            params: { ProjectTaskId: TaskData.ProjectTaskId },
-          }
-        );
-
-        const membersResponse = await axios.get<Member[]>(
-          "/Project/GET/GetMembersByTaskId",
-          {
-            params: { ProjectTaskId: TaskData.ProjectTaskId },
-          }
-        );
-
-        setNewTask({
-          ProjectTaskId: fetchedTask.ProjectTaskId,
-          ProjectTaskName: fetchedTask.ProjectTaskName,
-          ProjectTaskDescription: fetchedTask.ProjectTaskDescription,
-          ProjectTaskExpiration: parseDate(
-            dayjs(
-              new Date(fetchedTask.ProjectTaskExpiration.toString())
-            ).format("YYYY-MM-DD")
-          ),
-          ProjectTaskStatusId: fetchedTask.ProjectTaskStatusId,
-          ProjectTaskTags:
-            tagsResponse.data.length === 0 ? [] : tagsResponse.data,
-          ProjectTaskMembers:
-            membersResponse.data.length === 0 ? [] : membersResponse.data,
-          ProjectId: TaskData.ProjectId,
+        const filteredMembers = res.data.filter((member: Member) => {
+          return !newTask.ProjectTaskMembers.some(
+            (taskMember) => taskMember.StafferId === member.StafferId
+          );
         });
+        setMembers(filteredMembers);
       });
-  }, [TaskData, update]);
+
+    axios.get("/Project/GET/GetAllTags").then((res) => {
+      setTags(
+        res.data.filter((tag: Tag) => {
+          return !newTask.ProjectTaskTags.some(
+            (taskTag) => taskTag.ProjectTaskTagId === tag.ProjectTaskTagId
+          );
+        })
+      );
+    });
+  }, [newTask, update]);
 
   const memberPopoverContent = (
     <PopoverContent className="w-[240px]">
@@ -213,6 +179,7 @@ export default function EditTaskModal({
 
   function handleUpdate() {
     const formattedDate = new Date(newTask.ProjectTaskExpiration.toString());
+    console.log(newTask.ProjectTaskMembers);
     axios
       .post("/Project/POST/UpdateTask", {
         FormattedDate: formattedDate,
@@ -225,51 +192,35 @@ export default function EditTaskModal({
   }
 
   function addTaskMember(member: Member) {
-    axios
-      .post("/Project/POST/AddTaskMember", {
-        TaskData: newTask,
-        MemberData: member,
-      })
-      .then(() => {
-        setUpdate(!update);
-      });
+    setNewTask({
+      ...newTask,
+      ProjectTaskMembers: [...newTask.ProjectTaskMembers, member],
+    });
   }
 
   function addTaskTag(tag: Tag) {
-    axios
-      .post("/Project/POST/AddTaskTag", {
-        TaskData: newTask,
-        TagData: tag,
-      })
-      .then(() => {
-        setUpdate(!update);
-      });
+    setNewTask({
+      ...newTask,
+      ProjectTaskTags: [...newTask.ProjectTaskTags, tag],
+    });
   }
 
   function deleteTaskMember(stafferId: number) {
-    axios
-      .delete("/Project/DELETE/DeleteTaskMember", {
-        params: {
-          ProjectTaskId: newTask.ProjectTaskId,
-          StafferId: stafferId,
-        },
-      })
-      .then(() => {
-        setUpdate(!update);
-      });
+    setNewTask({
+      ...newTask,
+      ProjectTaskMembers: newTask.ProjectTaskMembers.filter(
+        (member) => member.StafferId !== stafferId
+      ),
+    });
   }
 
   function deleteTaskTag(tagId: number) {
-    axios
-      .delete("/Project/DELETE/DeleteTaskTag", {
-        params: {
-          ProjectTaskId: newTask.ProjectTaskId,
-          ProjectTaskTagId: tagId,
-        },
-      })
-      .then(() => {
-        setUpdate(!update);
-      });
+    setNewTask({
+      ...newTask,
+      ProjectTaskTags: newTask.ProjectTaskTags.filter(
+        (tag) => tag.ProjectTaskTagId !== tagId
+      ),
+    });
   }
 
   return (
