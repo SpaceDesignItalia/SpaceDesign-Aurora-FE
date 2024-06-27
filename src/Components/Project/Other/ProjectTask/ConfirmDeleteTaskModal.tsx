@@ -1,3 +1,5 @@
+import { DateValue } from "@nextui-org/react";
+
 interface Tag {
   ProjectTaskTagId: number;
   ProjectTaskTagName: string;
@@ -15,7 +17,7 @@ interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
-  ProjectTaskExpiration: Date;
+  ProjectTaskExpiration: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];

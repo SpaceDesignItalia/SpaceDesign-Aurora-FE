@@ -5,6 +5,7 @@ import {
   Avatar,
   AvatarGroup,
   Button,
+  DateValue,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -19,6 +20,9 @@ import { API_URL_IMG } from "../../../../API/API";
 import EditTaskModal from "../ProjectTask/EditTaskModal";
 import ConfirmDeleteTaskModal from "../ProjectTask/ConfirmDeleteTaskModal";
 import ViewTaskModal from "../ProjectTask/ViewTaskModal";
+import { parseDate } from "@internationalized/date";
+import dayjs from "dayjs";
+import { useDateFormatter } from "@react-aria/i18n";
 
 // Define interfaces
 interface Status {
@@ -43,10 +47,11 @@ interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
-  ProjectTaskExpiration: Date;
+  ProjectTaskExpiration: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
+  ProjectId: number;
 }
 
 interface Project {
@@ -89,10 +94,11 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
     Task: {
       ProjectTaskId: 0,
       ProjectTaskName: "",
-      ProjectTaskExpiration: new Date(),
+      ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
+      ProjectId: 0,
     },
     open: false,
   });
@@ -100,10 +106,11 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
     Task: {
       ProjectTaskId: 0,
       ProjectTaskName: "",
-      ProjectTaskExpiration: new Date(),
+      ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
+      ProjectId: 0,
     },
     open: false,
   });
@@ -111,13 +118,22 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
     Task: {
       ProjectTaskId: 0,
       ProjectTaskName: "",
-      ProjectTaskExpiration: new Date(),
+      ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
+      ProjectId: 0,
     },
     open: false,
   });
+
+  let formatter = useDateFormatter({ dateStyle: "full" });
+
+  function formatDate(date: DateValue) {
+    return dayjs(formatter.format(new Date(date.toString()))).format(
+      "YYYY-MM-DD"
+    );
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -156,7 +172,6 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
               };
             })
           );
-
           setTasks(updatedTasks);
         })
         .catch((error) => {
@@ -284,7 +299,12 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
                                   {task.ProjectTaskTags.map((tag) => (
                                     <p
                                       key={tag.ProjectTaskTagId}
-                                      className="bg-gray-300 p-1 m-1 rounded-md"
+                                      className={cn(
+                                        "p-1 m-1 rounded-md",
+                                        tag.ProjectTaskTagColor !== ""
+                                          ? `bg-${tag.ProjectTaskTagColor}-400`
+                                          : "bg-gray-400"
+                                      )}
                                     >
                                       {tag.ProjectTaskTagName}
                                     </p>
@@ -303,11 +323,7 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
                                     ))}
                                   </AvatarGroup>
                                 </div>
-                                <p>
-                                  {new Date(
-                                    task.ProjectTaskExpiration
-                                  ).toLocaleDateString()}
-                                </p>
+                                <p>{formatDate(task.ProjectTaskExpiration)}</p>
                               </div>
                               <div>
                                 <Dropdown radius="sm">
