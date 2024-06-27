@@ -34,7 +34,6 @@ interface Status {
 interface Tag {
   ProjectTaskTagId: number;
   ProjectTaskTagName: string;
-  ProjectTaskTagColor: string;
 }
 
 interface Member {

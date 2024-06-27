@@ -17,7 +17,6 @@ import dayjs from "dayjs";
 interface Tag {
   ProjectTaskTagId: number;
   ProjectTaskTagName: string;
-  ProjectTaskTagColor: string;
 }
 
 interface Member {
