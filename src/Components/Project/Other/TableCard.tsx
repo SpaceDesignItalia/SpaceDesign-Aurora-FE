@@ -59,6 +59,7 @@ export default function TableCard({ project }: { project: Project }) {
     CompanyName: "",
     CompnayPhoto: "",
   });
+  const [toDoTasks, setToDoTasks] = useState<number>(0);
   const [statusList, setStatusList] = useState<Status[]>([]);
   const [teamMembers, setTeamMembers] = useState<Member[]>([]);
   const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
@@ -94,6 +95,13 @@ export default function TableCard({ project }: { project: Project }) {
       })
       .then((res) => {
         setTeamMembers(res.data);
+      });
+    axios
+      .get("/Project/GET/GetTaskToDo", {
+        params: { ProjectId: project.ProjectId },
+      })
+      .then((res) => {
+        setToDoTasks(res.data[0].TasksNumber);
       });
   }, []);
 
@@ -220,7 +228,7 @@ export default function TableCard({ project }: { project: Project }) {
         <dl className="-my-3 divide-y divide-gray-100 px-6 py-4 text-sm leading-6">
           <div className="flex justify-between gap-x-4 py-3">
             <dt className="text-gray-500">Task da fare</dt>
-            <dd className="text-gray-700">1</dd>
+            <dd className="text-gray-700">{toDoTasks}</dd>
           </div>
           <div className="flex justify-between gap-x-4 py-3">
             <dt className="text-gray-500">Team</dt>
