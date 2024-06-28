@@ -4,6 +4,7 @@ import {
   Avatar,
   AvatarGroup,
   Button,
+  Chip,
   DatePicker,
   DateValue,
   Input,
@@ -15,9 +16,10 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-  Textarea,
   Tooltip,
 } from "@nextui-org/react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css"; // Import styles
 import { API_URL_IMG } from "../../../../API/API";
 import { useState, useEffect } from "react";
 import { parseDate } from "@internationalized/date";
@@ -111,7 +113,7 @@ export default function EditTaskModal({
   }, [newTask, update]);
 
   const memberPopoverContent = (
-    <PopoverContent className="w-[240px]">
+    <PopoverContent className="w-[350px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
           <h2 className="text-small font-bold text-foreground" {...titleProps}>
@@ -147,7 +149,7 @@ export default function EditTaskModal({
   );
 
   const tagPopoverContent = (
-    <PopoverContent className="w-[240px]">
+    <PopoverContent className="w-[350px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
           <h2 className="text-small font-bold text-foreground" {...titleProps}>
@@ -162,7 +164,6 @@ export default function EditTaskModal({
               {(tag) => (
                 <AutocompleteItem
                   key={tag.ProjectTaskTagId}
-                  className={"bg-gray-400"}
                   onClick={() => {
                     addTaskTag(tag);
                   }}
@@ -262,19 +263,19 @@ export default function EditTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Descrizione
                     </dt>
-                    <Textarea
+                    <ReactQuill
                       className="sm:col-span-2 sm:mt-0"
-                      variant="bordered"
-                      radius="sm"
+                      theme="snow"
                       value={newTask.ProjectTaskDescription}
-                      onChange={(e) =>
+                      onChange={(value) =>
                         setNewTask({
                           ...newTask,
-                          ProjectTaskDescription: e.target.value,
+                          ProjectTaskDescription: value,
                         })
                       }
                     />
                   </div>
+
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Scadenza
@@ -298,7 +299,7 @@ export default function EditTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Dipendenti associati
                     </dt>
-                    <dd className="flex flex-row mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 gap-5">
+                    <dd className="flex flex-row mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 gap-5 items-center">
                       {newTask.ProjectTaskMembers.length === 0 ? (
                         <p>Nessun membro trovato</p>
                       ) : (
@@ -307,10 +308,11 @@ export default function EditTaskModal({
                             <Tooltip
                               key={member.StafferId}
                               content={
-                                <div className="flex flex-row">
-                                  <p>{member.StafferFullName}</p>
+                                <div className="flex flex-row items-center gap-2">
                                   <Button
                                     color="danger"
+                                    size="sm"
+                                    radius="sm"
                                     isIconOnly
                                     onClick={() =>
                                       deleteTaskMember(member.StafferId)
@@ -318,6 +320,7 @@ export default function EditTaskModal({
                                   >
                                     <DeleteOutlineRoundedIcon />
                                   </Button>
+                                  <p>{member.StafferFullName}</p>
                                 </div>
                               }
                             >
@@ -352,7 +355,7 @@ export default function EditTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Tag associati
                     </dt>
-                    <dd className="flex flex-row mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 gap-5">
+                    <dd className="flex flex-row mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 gap-5 items-center">
                       {newTask.ProjectTaskTags.length === 0 ? (
                         <p>Nessun tag trovato</p>
                       ) : (
@@ -360,10 +363,13 @@ export default function EditTaskModal({
                           {newTask.ProjectTaskTags.map((tag) => (
                             <Tooltip
                               key={tag.ProjectTaskTagId}
+                              radius="sm"
                               content={
-                                <div className="flex flex-row">
+                                <div className="flex flex-row items-center gap-2">
                                   <Button
                                     color="danger"
+                                    radius="sm"
+                                    size="sm"
                                     isIconOnly
                                     onClick={() =>
                                       deleteTaskTag(tag.ProjectTaskTagId)
@@ -371,15 +377,18 @@ export default function EditTaskModal({
                                   >
                                     <DeleteOutlineRoundedIcon />
                                   </Button>
+                                  Rimuovi tag
                                 </div>
                               }
                             >
-                              <div
+                              <Chip
                                 key={tag.ProjectTaskTagId}
-                                className={"p-1 m-1 rounded-md bg-gray-400"}
+                                color="primary"
+                                variant="faded"
+                                radius="sm"
                               >
                                 {tag.ProjectTaskTagName}
-                              </div>
+                              </Chip>
                             </Tooltip>
                           ))}
                         </div>
