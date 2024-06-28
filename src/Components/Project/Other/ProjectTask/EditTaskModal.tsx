@@ -132,7 +132,10 @@ export default function EditTaskModal({
                 <AutocompleteItem
                   startContent={
                     <Avatar
-                      src={`${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`}
+                      src={
+                        member.StafferImageUrl &&
+                        API_URL_IMG + "/profileIcons/" + member.StafferImageUrl
+                      }
                       alt={member.StafferFullName}
                     />
                   }
@@ -332,9 +335,10 @@ export default function EditTaskModal({
                             >
                               <Avatar
                                 src={
+                                  member.StafferImageUrl &&
                                   API_URL_IMG +
-                                  "/profileIcons/" +
-                                  member.StafferImageUrl
+                                    "/profileIcons/" +
+                                    member.StafferImageUrl
                                 }
                                 alt={member.StafferFullName}
                               />

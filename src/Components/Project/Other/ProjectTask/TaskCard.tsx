@@ -258,7 +258,10 @@ export default function TaskCard({
                 <Avatar
                   size="sm"
                   key={member.StafferId}
-                  src={API_URL_IMG + "/profileIcons/" + member.StafferImageUrl}
+                  src={
+                    member.StafferImageUrl &&
+                    API_URL_IMG + "/profileIcons/" + member.StafferImageUrl
+                  }
                   alt={member.StafferFullName}
                 />
               ))}
