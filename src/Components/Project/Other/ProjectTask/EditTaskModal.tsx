@@ -125,6 +125,8 @@ export default function EditTaskModal({
               defaultItems={members}
               placeholder="Cerca per nome..."
               className="max-w-xs"
+              variant="bordered"
+              radius="sm"
             >
               {(member) => (
                 <AutocompleteItem
@@ -161,6 +163,8 @@ export default function EditTaskModal({
               defaultItems={tags}
               placeholder="Cerca per nome..."
               className="max-w-xs"
+              variant="bordered"
+              radius="sm"
             >
               {(tag) => (
                 <AutocompleteItem

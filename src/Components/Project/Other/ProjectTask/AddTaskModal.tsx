@@ -112,6 +112,8 @@ export default function AddTaskModal({
               defaultItems={members}
               placeholder="Cerca per nome..."
               className="max-w-xs"
+              variant="bordered"
+              radius="sm"
             >
               {(member) => (
                 <AutocompleteItem
@@ -148,6 +150,8 @@ export default function AddTaskModal({
               defaultItems={tags}
               placeholder="Cerca per nome..."
               className="max-w-xs"
+              variant="bordered"
+              radius="sm"
             >
               {(tag) => (
                 <AutocompleteItem
