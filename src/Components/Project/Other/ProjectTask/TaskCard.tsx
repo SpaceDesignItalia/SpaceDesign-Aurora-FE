@@ -168,8 +168,8 @@ export default function TaskCard({
         <Card className="h-full" radius="sm">
           <CardHeader className="justify-between">
             <div className="flex gap-5">
-              <div className="flex flex-col gap-3 items-start justify-center">
-                <div className="flex flex-row gap-2">
+              <div className="flex flex-col gap-3 items-start justify-center w-auto h-fit">
+                <div className="flex flex-row flex-wrap gap-2">
                   {task.ProjectTaskTags.map((tag) => (
                     <Chip
                       key={tag.ProjectTaskTagId}
