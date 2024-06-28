@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import LibraryAddRoundedIcon from "@mui/icons-material/LibraryAddRounded";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -60,7 +60,11 @@ interface ModalAddData {
   open: boolean;
 }
 
-export default function TaskBoard({ projectData }: { projectData: Project }) {
+export default function TaskContainer({
+  projectData,
+}: {
+  projectData: Project;
+}) {
   const [columns, setColumns] = useState<Status[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [update, setUpdate] = useState(false);
@@ -73,7 +77,7 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
 
   useEffect(() => {
     socket.on("task-update", () => {
-      setUpdate(!update);
+      setUpdate((prev) => !prev);
     });
   }, []);
 
@@ -164,12 +168,23 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
       })
       .then(() => {
         socket.emit("task-news", projectId);
-        setUpdate(!update);
+        setUpdate((prev) => !prev);
       })
       .catch((error) => {
         console.error("Error updating task status:", error);
       });
   }
+
+  // Use useMemo to calculate the tasks for each column
+  const columnTasks = useMemo(() => {
+    const tasksByColumn: { [key: number]: Task[] } = {};
+    columns.forEach((column) => {
+      tasksByColumn[column.ProjectTaskStatusId] = tasks.filter(
+        (task) => task.ProjectTaskStatusId === column.ProjectTaskStatusId
+      );
+    });
+    return tasksByColumn;
+  }, [tasks, columns]);
 
   return (
     <>
@@ -193,14 +208,15 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-4 justify-between p-5 gap-5">
           {columns.map((column) => {
-            const columnTasks = tasks.filter(
-              (task) => task.ProjectTaskStatusId === column.ProjectTaskStatusId
-            );
+            const columnTaskList =
+              columnTasks[column.ProjectTaskStatusId] || [];
             return (
               <div
                 key={column.ProjectTaskStatusId}
                 className={`flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center h-fit transition-height duration-300 ${
-                  columnTasks.length === 0 ? "min-h-[100px]" : "min-h-[200px]"
+                  columnTaskList.length === 0
+                    ? "min-h-[100px]"
+                    : "min-h-[200px]"
                 }`}
               >
                 <h2 className="text-xl font-bold p-3">
@@ -222,7 +238,7 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
                           : "bg-lightgrey"
                       )}
                     >
-                      {columnTasks.map((task, index) => (
+                      {columnTaskList.map((task, index) => (
                         <Draggable
                           key={task.ProjectTaskId}
                           draggableId={task.ProjectTaskId.toString()}
