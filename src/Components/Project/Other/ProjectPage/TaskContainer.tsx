@@ -126,8 +126,13 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
   }, [update]);
 
   // Handler for drag end
-  const onDragEnd = (result: { source: any; destination: any }) => {
+  const onDragEnd = (result: {
+    source: any;
+    destination: any;
+    draggableId: any;
+  }) => {
     const { source, destination } = result;
+    console.log(result);
 
     if (!destination) {
       return;
@@ -140,6 +145,7 @@ export default function TaskBoard({ projectData }: { projectData: Project }) {
       const newTasks = Array.from(tasks);
       const [reorderedItem] = newTasks.splice(source.index, 1);
       reorderedItem.ProjectTaskStatusId = parseInt(destination.droppableId, 10);
+      reorderedItem.ProjectTaskId = parseInt(result.draggableId, 10);
       newTasks.splice(destination.index, 0, reorderedItem);
 
       setTasks(newTasks);
