@@ -182,7 +182,7 @@ export default function EditTaskModal({
     const formattedDate = new Date(newTask.ProjectTaskExpiration.toString());
     console.log(newTask.ProjectTaskMembers);
     axios
-      .post("/Project/POST/UpdateTask", {
+      .put("/Project/UPDATE/UpdateTask", {
         FormattedDate: formattedDate,
         TaskData: newTask,
       })
@@ -224,6 +224,7 @@ export default function EditTaskModal({
     });
   }
 
+  console.log(newTask);
   return (
     <Modal
       isOpen={isOpen}
@@ -264,13 +265,13 @@ export default function EditTaskModal({
                       Descrizione
                     </dt>
                     <ReactQuill
-                      className="sm:col-span-2 sm:mt-0"
+                      className="sm:col-span-2 sm:mt-0 h-fit"
                       theme="snow"
                       value={newTask.ProjectTaskDescription}
-                      onChange={(value) =>
+                      onChange={(e) =>
                         setNewTask({
                           ...newTask,
-                          ProjectTaskDescription: value,
+                          ProjectTaskDescription: e,
                         })
                       }
                     />

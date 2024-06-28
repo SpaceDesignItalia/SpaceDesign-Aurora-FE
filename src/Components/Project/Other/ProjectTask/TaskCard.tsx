@@ -246,7 +246,11 @@ export default function TaskCard({
             </Dropdown>
           </CardHeader>
           <CardBody className="px-3 py-0 text-small text-default-400">
-            <p>{task.ProjectTaskDescription}</p>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: task.ProjectTaskDescription,
+              }}
+            />
           </CardBody>
           <CardFooter className="gap-3 flex flex-col items-start">
             <AvatarGroup isBordered>
