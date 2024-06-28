@@ -71,20 +71,21 @@ export default function EditTaskModal({
       ProjectTaskId: TaskData.ProjectTaskId,
       ProjectTaskName: TaskData.ProjectTaskName,
       ProjectTaskDescription: TaskData.ProjectTaskDescription,
+      ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
+      ProjectId: TaskData.ProjectId,
       ProjectTaskExpiration: parseDate(
         dayjs(new Date(TaskData.ProjectTaskExpiration.toString())).format(
           "YYYY-MM-DD"
         )
       ),
-      ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
       ProjectTaskTags:
         TaskData.ProjectTaskTags.length === 0 ? [] : TaskData.ProjectTaskTags,
       ProjectTaskMembers:
         TaskData.ProjectTaskMembers.length === 0
           ? []
           : TaskData.ProjectTaskMembers,
-      ProjectId: TaskData.ProjectId,
     });
+    console.log(TaskData);
   }, [TaskData]);
 
   useEffect(() => {
