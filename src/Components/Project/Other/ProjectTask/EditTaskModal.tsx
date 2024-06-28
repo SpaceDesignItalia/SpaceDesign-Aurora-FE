@@ -4,6 +4,7 @@ import {
   Avatar,
   AvatarGroup,
   Button,
+  Chip,
   DatePicker,
   DateValue,
   Input,
@@ -17,6 +18,8 @@ import {
   PopoverTrigger,
   Tooltip,
 } from "@nextui-org/react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css"; // Import styles
 import { API_URL_IMG } from "../../../../API/API";
 import { useState, useEffect } from "react";
 import { parseDate } from "@internationalized/date";
@@ -24,6 +27,7 @@ import dayjs from "dayjs";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import axios from "axios";
+import { I18nProvider } from "@react-aria/i18n";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -67,83 +71,50 @@ export default function EditTaskModal({
       ProjectTaskId: TaskData.ProjectTaskId,
       ProjectTaskName: TaskData.ProjectTaskName,
       ProjectTaskDescription: TaskData.ProjectTaskDescription,
+      ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
+      ProjectId: TaskData.ProjectId,
       ProjectTaskExpiration: parseDate(
         dayjs(new Date(TaskData.ProjectTaskExpiration.toString())).format(
           "YYYY-MM-DD"
         )
       ),
-      ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
       ProjectTaskTags:
         TaskData.ProjectTaskTags.length === 0 ? [] : TaskData.ProjectTaskTags,
       ProjectTaskMembers:
         TaskData.ProjectTaskMembers.length === 0
           ? []
           : TaskData.ProjectTaskMembers,
-      ProjectId: TaskData.ProjectId,
     });
+    console.log(TaskData);
   }, [TaskData]);
 
   useEffect(() => {
     axios
-      .get("/Project/GET/GetMembersNotInTask", {
-        params: { TaskData: newTask },
+      .get("Project/GET/GetProjetTeamMembers", {
+        params: { ProjectId: TaskData.ProjectId },
       })
       .then((res) => {
-        setMembers(res.data);
+        const filteredMembers = res.data.filter((member: Member) => {
+          return !newTask.ProjectTaskMembers.some(
+            (taskMember) => taskMember.StafferId === member.StafferId
+          );
+        });
+        setMembers(filteredMembers);
       });
 
-    axios
-      .get("/Project/GET/GetTagsNotInTask", {
-        params: { TaskData: newTask },
-      })
-      .then((res) => {
-        setTags(res.data);
-      });
+    axios.get("/Project/GET/GetAllTags").then((res) => {
+      setTags(
+        res.data.filter((tag: Tag) => {
+          return !newTask.ProjectTaskTags.some(
+            (taskTag) => taskTag.ProjectTaskTagId === tag.ProjectTaskTagId
+          );
+        })
+      );
+    });
   }, [newTask, update]);
 
-  useEffect(() => {
-    axios
-      .get<Task>("/Project/GET/GetTaskByTaskId", {
-        params: { ProjectTaskId: TaskData.ProjectTaskId },
-      })
-      .then(async (res) => {
-        const fetchedTask = res.data;
-
-        const tagsResponse = await axios.get<Tag[]>(
-          "/Project/GET/GetTagsByTaskId",
-          {
-            params: { ProjectTaskId: TaskData.ProjectTaskId },
-          }
-        );
-
-        const membersResponse = await axios.get<Member[]>(
-          "/Project/GET/GetMembersByTaskId",
-          {
-            params: { ProjectTaskId: TaskData.ProjectTaskId },
-          }
-        );
-
-        setNewTask({
-          ProjectTaskId: fetchedTask.ProjectTaskId,
-          ProjectTaskName: fetchedTask.ProjectTaskName,
-          ProjectTaskDescription: fetchedTask.ProjectTaskDescription,
-          ProjectTaskExpiration: parseDate(
-            dayjs(
-              new Date(fetchedTask.ProjectTaskExpiration.toString())
-            ).format("YYYY-MM-DD")
-          ),
-          ProjectTaskStatusId: fetchedTask.ProjectTaskStatusId,
-          ProjectTaskTags:
-            tagsResponse.data.length === 0 ? [] : tagsResponse.data,
-          ProjectTaskMembers:
-            membersResponse.data.length === 0 ? [] : membersResponse.data,
-          ProjectId: TaskData.ProjectId,
-        });
-      });
-  }, [TaskData, update]);
-
   const memberPopoverContent = (
-    <PopoverContent className="w-[240px]">
+    <PopoverContent className="w-[350px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
           <h2 className="text-small font-bold text-foreground" {...titleProps}>
@@ -154,12 +125,17 @@ export default function EditTaskModal({
               defaultItems={members}
               placeholder="Cerca per nome..."
               className="max-w-xs"
+              variant="bordered"
+              radius="sm"
             >
               {(member) => (
                 <AutocompleteItem
                   startContent={
                     <Avatar
-                      src={`${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`}
+                      src={
+                        member.StafferImageUrl &&
+                        API_URL_IMG + "/profileIcons/" + member.StafferImageUrl
+                      }
                       alt={member.StafferFullName}
                     />
                   }
@@ -179,7 +155,7 @@ export default function EditTaskModal({
   );
 
   const tagPopoverContent = (
-    <PopoverContent className="w-[240px]">
+    <PopoverContent className="w-[350px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
           <h2 className="text-small font-bold text-foreground" {...titleProps}>
@@ -190,11 +166,12 @@ export default function EditTaskModal({
               defaultItems={tags}
               placeholder="Cerca per nome..."
               className="max-w-xs"
+              variant="bordered"
+              radius="sm"
             >
               {(tag) => (
                 <AutocompleteItem
                   key={tag.ProjectTaskTagId}
-                  className={"bg-gray-400"}
                   onClick={() => {
                     addTaskTag(tag);
                   }}
@@ -211,8 +188,9 @@ export default function EditTaskModal({
 
   function handleUpdate() {
     const formattedDate = new Date(newTask.ProjectTaskExpiration.toString());
+    console.log(newTask.ProjectTaskMembers);
     axios
-      .post("/Project/POST/UpdateTask", {
+      .put("/Project/UPDATE/UpdateTask", {
         FormattedDate: formattedDate,
         TaskData: newTask,
       })
@@ -223,53 +201,38 @@ export default function EditTaskModal({
   }
 
   function addTaskMember(member: Member) {
-    axios
-      .post("/Project/POST/AddTaskMember", {
-        TaskData: newTask,
-        MemberData: member,
-      })
-      .then(() => {
-        setUpdate(!update);
-      });
+    setNewTask({
+      ...newTask,
+      ProjectTaskMembers: [...newTask.ProjectTaskMembers, member],
+    });
   }
 
   function addTaskTag(tag: Tag) {
-    axios
-      .post("/Project/POST/AddTaskTag", {
-        TaskData: newTask,
-        TagData: tag,
-      })
-      .then(() => {
-        setUpdate(!update);
-      });
+    setNewTask({
+      ...newTask,
+      ProjectTaskTags: [...newTask.ProjectTaskTags, tag],
+    });
   }
 
   function deleteTaskMember(stafferId: number) {
-    axios
-      .delete("/Project/DELETE/DeleteTaskMember", {
-        params: {
-          ProjectTaskId: newTask.ProjectTaskId,
-          StafferId: stafferId,
-        },
-      })
-      .then(() => {
-        setUpdate(!update);
-      });
+    setNewTask({
+      ...newTask,
+      ProjectTaskMembers: newTask.ProjectTaskMembers.filter(
+        (member) => member.StafferId !== stafferId
+      ),
+    });
   }
 
   function deleteTaskTag(tagId: number) {
-    axios
-      .delete("/Project/DELETE/DeleteTaskTag", {
-        params: {
-          ProjectTaskId: newTask.ProjectTaskId,
-          ProjectTaskTagId: tagId,
-        },
-      })
-      .then(() => {
-        setUpdate(!update);
-      });
+    setNewTask({
+      ...newTask,
+      ProjectTaskTags: newTask.ProjectTaskTags.filter(
+        (tag) => tag.ProjectTaskTagId !== tagId
+      ),
+    });
   }
 
+  console.log(newTask);
   return (
     <Modal
       isOpen={isOpen}
@@ -293,7 +256,9 @@ export default function EditTaskModal({
                       Titolo
                     </dt>
                     <Input
-                      className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0"
+                      className=" sm:col-span-2 sm:mt-0"
+                      variant="bordered"
+                      radius="sm"
                       value={newTask.ProjectTaskName}
                       onChange={(e) =>
                         setNewTask({
@@ -307,37 +272,43 @@ export default function EditTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Descrizione
                     </dt>
-                    <Input
-                      className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0"
+                    <ReactQuill
+                      className="sm:col-span-2 sm:mt-0 h-fit"
+                      theme="snow"
                       value={newTask.ProjectTaskDescription}
                       onChange={(e) =>
                         setNewTask({
                           ...newTask,
-                          ProjectTaskDescription: e.target.value,
+                          ProjectTaskDescription: e,
                         })
                       }
                     />
                   </div>
+
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Scadenza
                     </dt>
-                    <DatePicker
-                      className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0"
-                      value={newTask.ProjectTaskExpiration}
-                      onChange={(e) =>
-                        setNewTask({
-                          ...newTask,
-                          ProjectTaskExpiration: e,
-                        })
-                      }
-                    />
+                    <I18nProvider locale="it-GB">
+                      <DatePicker
+                        className="sm:col-span-2 sm:mt-0"
+                        value={newTask.ProjectTaskExpiration}
+                        variant="bordered"
+                        radius="sm"
+                        onChange={(e) =>
+                          setNewTask({
+                            ...newTask,
+                            ProjectTaskExpiration: e,
+                          })
+                        }
+                      />
+                    </I18nProvider>
                   </div>
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Dipendenti associati
                     </dt>
-                    <dd className="flex flex-row mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 gap-5">
+                    <dd className="flex flex-row mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 gap-5 items-center">
                       {newTask.ProjectTaskMembers.length === 0 ? (
                         <p>Nessun membro trovato</p>
                       ) : (
@@ -346,10 +317,11 @@ export default function EditTaskModal({
                             <Tooltip
                               key={member.StafferId}
                               content={
-                                <div className="flex flex-row">
-                                  <p>{member.StafferFullName}</p>
+                                <div className="flex flex-row items-center gap-2">
                                   <Button
                                     color="danger"
+                                    size="sm"
+                                    radius="sm"
                                     isIconOnly
                                     onClick={() =>
                                       deleteTaskMember(member.StafferId)
@@ -357,14 +329,16 @@ export default function EditTaskModal({
                                   >
                                     <DeleteOutlineRoundedIcon />
                                   </Button>
+                                  <p>{member.StafferFullName}</p>
                                 </div>
                               }
                             >
                               <Avatar
                                 src={
+                                  member.StafferImageUrl &&
                                   API_URL_IMG +
-                                  "/profileIcons/" +
-                                  member.StafferImageUrl
+                                    "/profileIcons/" +
+                                    member.StafferImageUrl
                                 }
                                 alt={member.StafferFullName}
                               />
@@ -391,7 +365,7 @@ export default function EditTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Tag associati
                     </dt>
-                    <dd className="flex flex-row mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 gap-5">
+                    <dd className="flex flex-row mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 gap-5 items-center">
                       {newTask.ProjectTaskTags.length === 0 ? (
                         <p>Nessun tag trovato</p>
                       ) : (
@@ -399,10 +373,13 @@ export default function EditTaskModal({
                           {newTask.ProjectTaskTags.map((tag) => (
                             <Tooltip
                               key={tag.ProjectTaskTagId}
+                              radius="sm"
                               content={
-                                <div className="flex flex-row">
+                                <div className="flex flex-row items-center gap-2">
                                   <Button
                                     color="danger"
+                                    radius="sm"
+                                    size="sm"
                                     isIconOnly
                                     onClick={() =>
                                       deleteTaskTag(tag.ProjectTaskTagId)
@@ -410,15 +387,18 @@ export default function EditTaskModal({
                                   >
                                     <DeleteOutlineRoundedIcon />
                                   </Button>
+                                  Rimuovi tag
                                 </div>
                               }
                             >
-                              <div
+                              <Chip
                                 key={tag.ProjectTaskTagId}
-                                className={"p-1 m-1 rounded-md bg-gray-400"}
+                                color="primary"
+                                variant="faded"
+                                radius="sm"
                               >
                                 {tag.ProjectTaskTagName}
-                              </div>
+                              </Chip>
                             </Tooltip>
                           ))}
                         </div>

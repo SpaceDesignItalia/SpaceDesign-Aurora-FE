@@ -2,6 +2,7 @@ import {
   Avatar,
   AvatarGroup,
   Button,
+  Chip,
   DateValue,
   Modal,
   ModalBody,
@@ -49,7 +50,7 @@ export default function ViewTaskModal({
 
   function formatDate(date: DateValue) {
     return dayjs(formatter.format(new Date(date.toString()))).format(
-      "YYYY-MM-DD"
+      "DD/MM/YYYY"
     );
   }
 
@@ -84,7 +85,11 @@ export default function ViewTaskModal({
                       Descrizione
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                      {TaskData.ProjectTaskDescription}
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: TaskData.ProjectTaskDescription,
+                        }}
+                      />
                     </dd>
                   </div>
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -99,7 +104,7 @@ export default function ViewTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Dipendenti associati
                     </dt>
-                    <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                    <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
                       {TaskData.ProjectTaskMembers.length === 0 ? (
                         <p>Nessun membro trovato</p>
                       ) : (
@@ -127,18 +132,20 @@ export default function ViewTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Tag associati
                     </dt>
-                    <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                    <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
                       {TaskData.ProjectTaskTags.length === 0 ? (
                         <p>Nessun tag trovato</p>
                       ) : (
                         <div className="flex flex-wrap gap-2">
                           {TaskData.ProjectTaskTags.map((tag) => (
-                            <div
+                            <Chip
                               key={tag.ProjectTaskTagId}
-                              className={"p-1 m-1 rounded-md bg-gray-400"}
+                              color="primary"
+                              variant="faded"
+                              radius="sm"
                             >
                               {tag.ProjectTaskTagName}
-                            </div>
+                            </Chip>
                           ))}
                         </div>
                       )}

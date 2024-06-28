@@ -168,20 +168,22 @@ export default function TaskCard({
         <Card className="h-full" radius="sm">
           <CardHeader className="justify-between">
             <div className="flex gap-5">
-              <div className="flex flex-col gap-3 items-start justify-center">
-                {task.ProjectTaskTags.map((tag) => (
-                  <Chip
-                    key={tag.ProjectTaskTagId}
-                    size="sm"
-                    className="mr-1"
-                    color="primary"
-                    variant="faded"
-                    radius="sm"
-                  >
-                    {tag.ProjectTaskTagName}
-                  </Chip>
-                ))}
-                <h1 className="text-sm font-bold leading-none text-default-600">
+              <div className="flex flex-col gap-3 items-start justify-center w-auto h-fit">
+                <div className="flex flex-row flex-wrap gap-2">
+                  {task.ProjectTaskTags.map((tag) => (
+                    <Chip
+                      key={tag.ProjectTaskTagId}
+                      size="sm"
+                      className="mr-1"
+                      color="primary"
+                      variant="faded"
+                      radius="sm"
+                    >
+                      {tag.ProjectTaskTagName}
+                    </Chip>
+                  ))}
+                </div>
+                <h1 className="text-normal font-bold leading-none text-default-600">
                   {task.ProjectTaskName}
                 </h1>
               </div>
@@ -244,7 +246,11 @@ export default function TaskCard({
             </Dropdown>
           </CardHeader>
           <CardBody className="px-3 py-0 text-small text-default-400">
-            <p>{task.ProjectTaskDescription}</p>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: task.ProjectTaskDescription,
+              }}
+            />
           </CardBody>
           <CardFooter className="gap-3 flex flex-col items-start">
             <AvatarGroup isBordered>
@@ -252,7 +258,10 @@ export default function TaskCard({
                 <Avatar
                   size="sm"
                   key={member.StafferId}
-                  src={API_URL_IMG + "/profileIcons/" + member.StafferImageUrl}
+                  src={
+                    member.StafferImageUrl &&
+                    API_URL_IMG + "/profileIcons/" + member.StafferImageUrl
+                  }
                   alt={member.StafferFullName}
                 />
               ))}
