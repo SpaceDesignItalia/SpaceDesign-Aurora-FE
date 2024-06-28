@@ -4,6 +4,7 @@ import {
   Avatar,
   AvatarGroup,
   Button,
+  Chip,
   DatePicker,
   DateValue,
   Input,
@@ -100,7 +101,7 @@ export default function AddTaskModal({
   }, [newTask, update]);
 
   const memberPopoverContent = (
-    <PopoverContent className="w-[240px]">
+    <PopoverContent className="w-[350px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
           <h2 className="text-small font-bold text-foreground" {...titleProps}>
@@ -136,7 +137,7 @@ export default function AddTaskModal({
   );
 
   const tagPopoverContent = (
-    <PopoverContent className="w-[240px]">
+    <PopoverContent className="w-[350px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
           <h2 className="text-small font-bold text-foreground" {...titleProps}>
@@ -151,7 +152,6 @@ export default function AddTaskModal({
               {(tag) => (
                 <AutocompleteItem
                   key={tag.ProjectTaskTagId}
-                  className={"bg-gray-400"}
                   onClick={() => {
                     addTaskTag(tag);
                   }}
@@ -287,7 +287,7 @@ export default function AddTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Dipendenti associati
                     </dt>
-                    <dd className="flex flex-row mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 gap-5">
+                    <dd className="flex flex-row mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 gap-5 items-center">
                       {newTask.ProjectTaskMembers.length === 0 ? (
                         <p>Nessun membro trovato</p>
                       ) : (
@@ -296,10 +296,11 @@ export default function AddTaskModal({
                             <Tooltip
                               key={member.StafferId}
                               content={
-                                <div className="flex flex-row">
-                                  <p>{member.StafferFullName}</p>
+                                <div className="flex flex-row items-center gap-2">
                                   <Button
                                     color="danger"
+                                    size="sm"
+                                    radius="sm"
                                     isIconOnly
                                     onClick={() =>
                                       deleteTaskMember(member.StafferId)
@@ -307,6 +308,7 @@ export default function AddTaskModal({
                                   >
                                     <DeleteOutlineRoundedIcon />
                                   </Button>
+                                  <p>{member.StafferFullName}</p>
                                 </div>
                               }
                             >
@@ -341,7 +343,7 @@ export default function AddTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Tag associati
                     </dt>
-                    <dd className="flex flex-row mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 gap-5">
+                    <dd className="flex flex-row mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 gap-5 items-center">
                       {newTask.ProjectTaskTags.length === 0 ? (
                         <p>Nessun tag trovato</p>
                       ) : (
@@ -350,9 +352,11 @@ export default function AddTaskModal({
                             <Tooltip
                               key={tag.ProjectTaskTagId}
                               content={
-                                <div className="flex flex-row">
+                                <div className="flex flex-row items-center gap-2">
                                   <Button
                                     color="danger"
+                                    size="sm"
+                                    radius="sm"
                                     isIconOnly
                                     onClick={() =>
                                       deleteTaskTag(tag.ProjectTaskTagId)
@@ -360,15 +364,18 @@ export default function AddTaskModal({
                                   >
                                     <DeleteOutlineRoundedIcon />
                                   </Button>
+                                  Rimuovi tag
                                 </div>
                               }
                             >
-                              <div
+                              <Chip
                                 key={tag.ProjectTaskTagId}
-                                className={"p-1 m-1 rounded-md bg-gray-400"}
+                                color="primary"
+                                variant="faded"
+                                radius="sm"
                               >
                                 {tag.ProjectTaskTagName}
-                              </div>
+                              </Chip>
                             </Tooltip>
                           ))}
                         </div>
