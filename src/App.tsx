@@ -26,6 +26,9 @@ import EditPermissionPage from "./Employee/Pages/Permission/EditPermissionPage";
 import AddPermissionPage from "./Employee/Pages/Permission/AddPermissionPage";
 import EditProjectPage from "./Employee/Pages/Project/EditProjectPage";
 
+import DashboardCustomer from "./Customer/Pages/Dashboard/DashboardCustomer";
+import SidebarCustomer from "./Customer/Components/Layout/SidebarCustomer";
+
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
   const [isAuth, setIsAuth] = useState<boolean>(false);
@@ -48,7 +51,6 @@ const App: React.FC = () => {
               withCredentials: true,
             }
           );
-          console.log(isStaffer);
           if (
             sessionRes.status === 200 &&
             sessionRes.data &&
@@ -82,7 +84,8 @@ const App: React.FC = () => {
 
   return (
     <>
-      {isAuth && <Sidebar />}
+      {isAuth && isStaffer && <Sidebar />}
+      {isAuth && !isStaffer && <SidebarCustomer />}
       <Routes>
         <Route element={<Login />} path="/login" />
         <Route
@@ -92,7 +95,7 @@ const App: React.FC = () => {
               isStaffer ? (
                 <EmployeeProtectedRoutes />
               ) : (
-                <Navigate to="/CustomerPage" replace />
+                <CustomerProtectedRoutes />
               )
             ) : (
               <Navigate to="/login" replace />
@@ -108,36 +111,7 @@ const CustomerProtectedRoutes: React.FC = () => {
   return (
     <Routes>
       <Route element={<Outlet />}>
-        <Route element={<Dashboard />} path="/" />
-        <Route
-          element={<CustomerDashboard />}
-          path="/administration/customer"
-        />
-        <Route
-          element={<AddCustomerPage />}
-          path="/administration/customer/add-customer"
-        />
-        <Route
-          element={<EditCustomerPage />}
-          path="/administration/customer/edit-customer/:CustomerId"
-        />
-        <Route
-          element={<AddCompanyPage />}
-          path="/administration/customer/add-company"
-        />
-        <Route
-          element={<EditCompanyPage />}
-          path="/administration/customer/edit-company/:CompanyId/:CompanyName"
-        />
-        <Route element={<ProjectDashboard />} path="/projects" />
-        <Route
-          element={<ProjectPage />}
-          path="/projects/:CompanyName/:ProjectId/:ProjectName"
-        />
-        <Route
-          element={<EditProjectPage />}
-          path="/projects/:CompanyName/:ProjectId/:ProjectName/edit-project"
-        />
+        <Route element={<DashboardCustomer />} path="/" />
       </Route>
     </Routes>
   );
