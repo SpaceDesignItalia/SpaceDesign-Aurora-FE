@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import AddProjectLink from "../AddProjectLink";
 import axios from "axios";
-import { API_URL_IMG } from "../../../../API/API";
+import { API_URL_IMG } from "../../../../../API/API";
 import DeleteLinkModal from "../DeleteLinkModal";
 
 interface Project {

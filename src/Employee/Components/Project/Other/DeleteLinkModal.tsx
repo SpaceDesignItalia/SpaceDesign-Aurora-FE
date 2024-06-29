@@ -9,7 +9,7 @@ import {
   RadioGroup,
   Tooltip,
 } from "@nextui-org/react";
-import { API_URL_IMG } from "../../../API/API";
+import { API_URL_IMG } from "../../../../API/API";
 import { useState } from "react";
 
 interface Link {

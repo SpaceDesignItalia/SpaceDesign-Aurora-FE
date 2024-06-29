@@ -10,7 +10,7 @@ import {
   Link,
 } from "@nextui-org/react";
 import { useEffect, useState } from "react";
-import { API_URL_IMG } from "../../../API/API";
+import { API_URL_IMG } from "../../../../API/API";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";

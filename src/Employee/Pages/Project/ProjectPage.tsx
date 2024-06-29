@@ -1,5 +1,5 @@
 import { Tabs, Tab, Button, Tooltip, Link, Chip } from "@nextui-org/react";
-import { API_URL_IMG } from "../../API/API";
+import { API_URL_IMG } from "../../../API/API";
 import FindInPageRoundedIcon from "@mui/icons-material/FindInPageRounded";
 import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
 import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";

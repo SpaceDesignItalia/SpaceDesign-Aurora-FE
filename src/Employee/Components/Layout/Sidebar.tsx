@@ -9,7 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
-import Logo from "../../assets/SpaceDesignLogo.png";
+import Logo from "../../../assets/SpaceDesignLogo.png";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import EngineeringOutlinedIcon from "@mui/icons-material/EngineeringOutlined";
@@ -20,7 +20,7 @@ import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumb
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import QuestionAnswerOutlinedIcon from "@mui/icons-material/QuestionAnswerOutlined";
 import axios from "axios";
-import { API_URL_IMG } from "../../API/API";
+import { API_URL_IMG } from "../../../API/API";
 import { Avatar, Skeleton } from "@nextui-org/react";
 
 interface NavigationItem {

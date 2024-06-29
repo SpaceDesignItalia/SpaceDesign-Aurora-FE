@@ -13,7 +13,7 @@ import {
 import axios from "axios";
 import { useState, useEffect } from "react";
 import SaveIcon from "@mui/icons-material/Save";
-import { API_URL_IMG } from "../../../API/API";
+import { API_URL_IMG } from "../../../../API/API";
 import StatusAlert from "../../Layout/StatusAlert";
 
 interface AddProjectLinkModalProps {

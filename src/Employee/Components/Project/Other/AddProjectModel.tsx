@@ -16,7 +16,7 @@ import {
 import { I18nProvider } from "@react-aria/i18n";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
-import { API_URL_IMG } from "../../../API/API";
+import { API_URL_IMG } from "../../../../API/API";
 import {
   DateValue,
   parseDate,

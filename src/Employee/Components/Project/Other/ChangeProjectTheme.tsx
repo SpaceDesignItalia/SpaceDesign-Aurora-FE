@@ -12,7 +12,7 @@ import {
 } from "@nextui-org/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { API_URL_IMG } from "../../../API/API";
+import { API_URL_IMG } from "../../../../API/API";
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;

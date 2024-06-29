@@ -6,7 +6,7 @@ import { Button, DateValue, cn } from "@nextui-org/react";
 import AddTaskModal from "../ProjectTask/AddTaskModal";
 import TaskCard from "../ProjectTask/TaskCard";
 import { io } from "socket.io-client";
-import { API_WEBSOCKET_URL } from "../../../../API/API";
+import { API_WEBSOCKET_URL } from "../../../../../API/API";
 
 const socket = io(API_WEBSOCKET_URL);
 

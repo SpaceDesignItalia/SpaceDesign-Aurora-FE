@@ -18,14 +18,14 @@ import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import { API_URL_IMG } from "../../../../API/API";
+import { API_URL_IMG } from "../../../../../API/API";
 import dayjs from "dayjs";
 import { useDateFormatter } from "@react-aria/i18n";
 import { useState } from "react";
 import { parseDate } from "@internationalized/date";
-import EditTaskModal from "../ProjectTask/EditTaskModal";
-import ConfirmDeleteTaskModal from "../ProjectTask/ConfirmDeleteTaskModal";
-import ViewTaskModal from "../ProjectTask/ViewTaskModal";
+import EditTaskModal from "./EditTaskModal";
+import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
+import ViewTaskModal from "./ViewTaskModal";
 import axios from "axios";
 import { useEffect } from "react";
 

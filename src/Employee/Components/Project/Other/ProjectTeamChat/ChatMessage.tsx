@@ -1,5 +1,5 @@
 import { Avatar, user } from "@nextui-org/react";
-import { API_URL_IMG } from "../../../../API/API";
+import { API_URL_IMG } from "../../../../../API/API";
 
 interface Message {
   MessageId: number;

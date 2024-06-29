@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardBody, Badge, User, Chip } from "@nextui-org/react";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
-import { API_URL_IMG } from "../../../API/API";
+import { API_URL_IMG } from "../../../../API/API";
 import axios from "axios";
 import StatusAlert from "../../Layout/StatusAlert";
 

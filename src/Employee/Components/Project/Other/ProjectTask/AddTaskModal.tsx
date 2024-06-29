@@ -20,7 +20,7 @@ import {
 } from "@nextui-org/react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import styles
-import { API_URL_IMG } from "../../../../API/API";
+import { API_URL_IMG } from "../../../../../API/API";
 import { useState, useEffect } from "react";
 import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
@@ -52,46 +52,33 @@ interface Task {
   ProjectId: number;
 }
 
-export default function EditTaskModal({
+export default function AddTaskModal({
   isOpen,
   isClosed,
-  TaskData,
+  ProjectId,
 }: {
   isOpen: boolean;
   isClosed: () => void;
-  TaskData: Task;
+  ProjectId: number;
 }) {
-  const [newTask, setNewTask] = useState<Task>(TaskData);
+  const [newTask, setNewTask] = useState<Task>({
+    ProjectTaskId: 0,
+    ProjectTaskName: "",
+    ProjectTaskDescription: "",
+    ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
+    ProjectTaskStatusId: 0,
+    ProjectTaskTags: [],
+    ProjectTaskMembers: [],
+    ProjectId: ProjectId,
+  });
   const [members, setMembers] = useState<Member[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [update, setUpdate] = useState(false);
 
   useEffect(() => {
-    setNewTask({
-      ProjectTaskId: TaskData.ProjectTaskId,
-      ProjectTaskName: TaskData.ProjectTaskName,
-      ProjectTaskDescription: TaskData.ProjectTaskDescription,
-      ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
-      ProjectId: TaskData.ProjectId,
-      ProjectTaskExpiration: parseDate(
-        dayjs(new Date(TaskData.ProjectTaskExpiration.toString())).format(
-          "YYYY-MM-DD"
-        )
-      ),
-      ProjectTaskTags:
-        TaskData.ProjectTaskTags.length === 0 ? [] : TaskData.ProjectTaskTags,
-      ProjectTaskMembers:
-        TaskData.ProjectTaskMembers.length === 0
-          ? []
-          : TaskData.ProjectTaskMembers,
-    });
-    console.log(TaskData);
-  }, [TaskData]);
-
-  useEffect(() => {
     axios
       .get("Project/GET/GetProjetTeamMembers", {
-        params: { ProjectId: TaskData.ProjectId },
+        params: { ProjectId: ProjectId },
       })
       .then((res) => {
         const filteredMembers = res.data.filter((member: Member) => {
@@ -186,11 +173,10 @@ export default function EditTaskModal({
     </PopoverContent>
   );
 
-  function handleUpdate() {
+  function handleAddTask() {
     const formattedDate = new Date(newTask.ProjectTaskExpiration.toString());
-    console.log(newTask.ProjectTaskMembers);
     axios
-      .put("/Project/UPDATE/UpdateTask", {
+      .post("/Project/POST/AddTask", {
         FormattedDate: formattedDate,
         TaskData: newTask,
       })
@@ -232,7 +218,6 @@ export default function EditTaskModal({
     });
   }
 
-  console.log(newTask);
   return (
     <Modal
       isOpen={isOpen}
@@ -246,7 +231,7 @@ export default function EditTaskModal({
         {() => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              Modifica della task: {TaskData.ProjectTaskName}
+              Inserimento della task: {newTask.ProjectTaskName}
             </ModalHeader>
             <ModalBody>
               <div className="mt-6 border-t border-gray-100">
@@ -256,6 +241,7 @@ export default function EditTaskModal({
                       Titolo
                     </dt>
                     <Input
+                      placeholder="Es. Task 1"
                       className=" sm:col-span-2 sm:mt-0"
                       variant="bordered"
                       radius="sm"
@@ -272,6 +258,7 @@ export default function EditTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Descrizione
                     </dt>
+
                     <ReactQuill
                       className="sm:col-span-2 sm:mt-0 h-fit"
                       theme="snow"
@@ -284,17 +271,16 @@ export default function EditTaskModal({
                       }
                     />
                   </div>
-
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Scadenza
                     </dt>
                     <I18nProvider locale="it-GB">
                       <DatePicker
-                        className="sm:col-span-2 sm:mt-0"
-                        value={newTask.ProjectTaskExpiration}
+                        className=" sm:col-span-2 sm:mt-0"
                         variant="bordered"
                         radius="sm"
+                        value={newTask.ProjectTaskExpiration}
                         onChange={(e) =>
                           setNewTask({
                             ...newTask,
@@ -373,13 +359,12 @@ export default function EditTaskModal({
                           {newTask.ProjectTaskTags.map((tag) => (
                             <Tooltip
                               key={tag.ProjectTaskTagId}
-                              radius="sm"
                               content={
                                 <div className="flex flex-row items-center gap-2">
                                   <Button
                                     color="danger"
-                                    radius="sm"
                                     size="sm"
+                                    radius="sm"
                                     isIconOnly
                                     onClick={() =>
                                       deleteTaskTag(tag.ProjectTaskTagId)
@@ -425,10 +410,10 @@ export default function EditTaskModal({
               <Button
                 color="success"
                 variant="light"
-                onClick={handleUpdate}
+                onClick={handleAddTask}
                 radius="sm"
               >
-                Aggiorna
+                Inserisci
               </Button>
             </ModalFooter>
           </>

@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import AddProjectTeamMember from "../AddProjectTeamMember";
-import { API_WEBSOCKET_URL } from "../../../../API/API";
+import { API_WEBSOCKET_URL } from "../../../../../API/API";
 
 const socket = io(API_WEBSOCKET_URL);
 

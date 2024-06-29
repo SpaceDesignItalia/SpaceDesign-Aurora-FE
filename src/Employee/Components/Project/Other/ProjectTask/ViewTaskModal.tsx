@@ -11,7 +11,7 @@ import {
   ModalHeader,
   Tooltip,
 } from "@nextui-org/react";
-import { API_URL_IMG } from "../../../../API/API";
+import { API_URL_IMG } from "../../../../../API/API";
 import { useDateFormatter } from "@react-aria/i18n";
 import dayjs from "dayjs";
 
