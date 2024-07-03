@@ -1,35 +1,39 @@
 import React, { useState, useEffect } from "react";
-import { usePermissions } from "./Components/Layout/PermissionProvider";
+import { usePermissions } from "./Employee/Components/Layout/PermissionProvider";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { Spinner } from "@nextui-org/react";
 import axios from "axios";
 import { API_URL } from "./API/API";
-import Dashboard from "./Pages/Dashboard/Dashboard";
-import Sidebar from "./Components/Layout/Sidebar";
-import CustomerDashboard from "./Pages/Customer/CustomerDashboard";
-import PermissionDashboard from "./Pages/Permission/PermissionDashboard";
-import AddCustomerPage from "./Pages/Customer/AddCustomerPage";
-import AddCompanyPage from "./Pages/Customer/AddCompanyPage";
-import EditCompanyPage from "./Pages/Customer/EditCompanyPage";
-import EditCustomerPage from "./Pages/Customer/EditCustomerPage";
-import AddRolePage from "./Pages/Permission/AddRolePage";
-import EmployeeDashboard from "./Pages/Employee/EmployeeDashboard";
-import AddEmployeePage from "./Pages/Employee/AddEmployeePage";
-import EditEmployeePage from "./Pages/Employee/EditEmployeePage";
-import Login from "./Pages/Login/Login";
-import EditRolePage from "./Pages/Permission/EditRolePage";
-import ChatDashboard from "./Pages/Chat/ChatDashboard";
-import AddProjectPage from "./Pages/Project/AddProjectPage";
-import ProjectDashboard from "./Pages/Project/ProjectDashboard";
-import ProjectPage from "./Pages/Project/ProjectPage";
-import EditPermissionPage from "./Pages/Permission/EditPermissionPage";
-import AddPermissionPage from "./Pages/Permission/AddPermissionPage";
-import EditProjectPage from "./Pages/Project/EditProjectPage";
+import Dashboard from "./Employee/Pages/Dashboard/Dashboard";
+import Sidebar from "./Employee/Components/Layout/Sidebar";
+import CustomerDashboard from "./Employee/Pages/Customer/CustomerDashboard";
+import PermissionDashboard from "./Employee/Pages/Permission/PermissionDashboard";
+import AddCustomerPage from "./Employee/Pages/Customer/AddCustomerPage";
+import AddCompanyPage from "./Employee/Pages/Customer/AddCompanyPage";
+import EditCompanyPage from "./Employee/Pages/Customer/EditCompanyPage";
+import EditCustomerPage from "./Employee/Pages/Customer/EditCustomerPage";
+import AddRolePage from "./Employee/Pages/Permission/AddRolePage";
+import EmployeeDashboard from "./Employee/Pages/Employee/EmployeeDashboard";
+import AddEmployeePage from "./Employee/Pages/Employee/AddEmployeePage";
+import EditEmployeePage from "./Employee/Pages/Employee/EditEmployeePage";
+import Login from "./Employee/Pages/Login/Login";
+import EditRolePage from "./Employee/Pages/Permission/EditRolePage";
+import ChatDashboard from "./Employee/Pages/Chat/ChatDashboard";
+import AddProjectPage from "./Employee/Pages/Project/AddProjectPage";
+import ProjectDashboard from "./Employee/Pages/Project/ProjectDashboard";
+import ProjectPage from "./Employee/Pages/Project/ProjectPage";
+import EditPermissionPage from "./Employee/Pages/Permission/EditPermissionPage";
+import AddPermissionPage from "./Employee/Pages/Permission/AddPermissionPage";
+import EditProjectPage from "./Employee/Pages/Project/EditProjectPage";
+
+import DashboardCustomer from "./Customer/Pages/Dashboard/DashboardCustomer";
+import SidebarCustomer from "./Customer/Components/Layout/SidebarCustomer";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
   const [isAuth, setIsAuth] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isStaffer, setIsStaffer] = useState<boolean>(false);
   const { loadPermissions, setStafferId, permissionsLoaded } = usePermissions();
 
   useEffect(() => {
@@ -47,7 +51,13 @@ const App: React.FC = () => {
               withCredentials: true,
             }
           );
-          if (sessionRes.status === 200 && sessionRes.data) {
+          if (
+            sessionRes.status === 200 &&
+            sessionRes.data &&
+            sessionRes.data.IsStaffer
+          ) {
+            setIsStaffer(sessionRes.data.IsStaffer);
+            console.log(isStaffer);
             await loadPermissions(sessionRes.data.StafferId);
           }
         } else {
@@ -74,13 +84,22 @@ const App: React.FC = () => {
 
   return (
     <>
-      {isAuth && <Sidebar />}
+      {isAuth && isStaffer && <Sidebar />}
+      {isAuth && !isStaffer && <SidebarCustomer />}
       <Routes>
         <Route element={<Login />} path="/login" />
         <Route
           path="/*"
           element={
-            isAuth ? <ProtectedRoutes /> : <Navigate to="/login" replace />
+            isAuth ? (
+              isStaffer ? (
+                <EmployeeProtectedRoutes />
+              ) : (
+                <CustomerProtectedRoutes />
+              )
+            ) : (
+              <Navigate to="/login" replace />
+            )
           }
         />
       </Routes>
@@ -88,7 +107,17 @@ const App: React.FC = () => {
   );
 };
 
-const ProtectedRoutes: React.FC = () => {
+const CustomerProtectedRoutes: React.FC = () => {
+  return (
+    <Routes>
+      <Route element={<Outlet />}>
+        <Route element={<DashboardCustomer />} path="/" />
+      </Route>
+    </Routes>
+  );
+};
+
+const EmployeeProtectedRoutes: React.FC = () => {
   return (
     <Routes>
       <Route element={<Outlet />}>
