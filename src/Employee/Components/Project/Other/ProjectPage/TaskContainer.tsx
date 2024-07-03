@@ -136,7 +136,6 @@ export default function TaskContainer({
     draggableId: any;
   }) => {
     const { source, destination } = result;
-    console.log(result);
 
     if (!destination) {
       return;
@@ -152,7 +151,7 @@ export default function TaskContainer({
       reorderedItem.ProjectTaskId = parseInt(result.draggableId, 10);
       newTasks.splice(destination.index, 0, reorderedItem);
 
-      setTasks(newTasks);
+      setTasks(newTasks); // Update the UI immediately
       updateTaskStatus(
         reorderedItem.ProjectTaskId,
         reorderedItem.ProjectTaskStatusId
@@ -168,7 +167,7 @@ export default function TaskContainer({
       })
       .then(() => {
         socket.emit("task-news", projectId);
-        setUpdate((prev) => !prev);
+        setUpdate((prev) => !prev); // Optionally update to refresh tasks
       })
       .catch((error) => {
         console.error("Error updating task status:", error);
@@ -185,6 +184,19 @@ export default function TaskContainer({
     });
     return tasksByColumn;
   }, [tasks, columns]);
+
+  // Function to count tasks by column
+  const countTasksByColumn = () => {
+    const taskCounts: { [key: number]: number } = {};
+    columns.forEach((column) => {
+      taskCounts[column.ProjectTaskStatusId] =
+        columnTasks[column.ProjectTaskStatusId]?.length || 0;
+    });
+    return taskCounts;
+  };
+
+  // Get the task counts
+  const taskCounts = countTasksByColumn();
 
   return (
     <>
@@ -220,7 +232,8 @@ export default function TaskContainer({
                 }`}
               >
                 <h2 className="text-xl font-bold p-3">
-                  {column.ProjectTaskStatusName}
+                  {column.ProjectTaskStatusName} (
+                  {taskCounts[column.ProjectTaskStatusId]})
                 </h2>
                 <Droppable
                   droppableId={column.ProjectTaskStatusId.toString()}
@@ -232,9 +245,9 @@ export default function TaskContainer({
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                       className={cn(
-                        "w-full p-2 flex flex-col gap-5",
+                        "w-full p-2 flex flex-col gap-5 h-auto",
                         snapshot.isDraggingOver
-                          ? "bg-primary opacity-35 rounded-b-lg"
+                          ? "bg-gray-200 opacity-35 rounded-b-lg border-2 border-dashed border-gray-500"
                           : "bg-lightgrey"
                       )}
                     >

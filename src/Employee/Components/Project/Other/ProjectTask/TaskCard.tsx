@@ -245,7 +245,7 @@ export default function TaskCard({
               </DropdownMenu>
             </Dropdown>
           </CardHeader>
-          <CardBody className="px-3 py-0 text-small text-default-400">
+          <CardBody className="px-3 py-0 text-small">
             <div
               dangerouslySetInnerHTML={{
                 __html: task.ProjectTaskDescription,
