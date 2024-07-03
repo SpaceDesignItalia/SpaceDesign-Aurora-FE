@@ -26,7 +26,6 @@ interface Project {
   ProjectBannerPath: string;
   StatusName: string;
   ProjectManagerId: number;
-  StafferImageUrl: string;
   ProjectManagerFullName: string;
   ProjectManagerEmail: string;
   RoleName: string;
@@ -60,7 +59,6 @@ export default function ProjectPage() {
     ProjectManagerFullName: "",
     ProjectManagerEmail: "",
     RoleName: "",
-    StafferImageUrl: "",
   });
   const [modalData, setModalData] = useState<ModalData>({
     ProjectId: 0,

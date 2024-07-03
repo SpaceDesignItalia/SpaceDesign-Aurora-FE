@@ -28,9 +28,10 @@ export default function ProjectTable() {
   async function SearchProject(e: { target: { value: string } }) {
     const searchQuery = e.target.value.trim(); // Otteniamo il valore di ricerca e rimuoviamo gli spazi vuoti
     try {
-      /* const response = await axios.get("/Customer/GET/SearchCustomerByEmail", {
-        params: { CustomerEmail: searchQuery },
-      }); */
+      const res = await axios.get("/Project/GET/SearchProjectByName", {
+        params: { ProjectName: searchQuery },
+      });
+      setProjects(res.data);
     } catch (error) {
       console.error("Errore durante la ricerca delle aziende:", error);
     }

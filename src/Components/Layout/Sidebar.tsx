@@ -18,7 +18,6 @@ import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
 import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
 import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumberOutlined";
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
-import QuestionAnswerOutlinedIcon from "@mui/icons-material/QuestionAnswerOutlined";
 import axios from "axios";
 import { API_URL_IMG } from "../../API/API";
 import { Avatar, Skeleton } from "@nextui-org/react";
@@ -184,12 +183,6 @@ export default function Sidebar() {
       href: "/comunications/chat",
       icon: ChatBubbleOutlineRoundedIcon,
       current: currentUrl === "/chat",
-    },
-    {
-      name: "Gruppi",
-      href: "/comunications/groups",
-      icon: QuestionAnswerOutlinedIcon,
-      current: currentUrl === "/groups",
     },
   ];
 
