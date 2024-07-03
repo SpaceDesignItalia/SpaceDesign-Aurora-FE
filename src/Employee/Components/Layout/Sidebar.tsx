@@ -46,6 +46,9 @@ export default function Sidebar() {
   const { hasPermission } = usePermissions();
 
   const [administration, setAdministration] = useState<NavigationItem[]>([]);
+  const [projectManagement, setProjectManagement] = useState<NavigationItem[]>(
+    []
+  );
   const [userData, setUserData] = useState<Employee>({
     EmployeeId: 0,
     StafferName: "",
@@ -116,6 +119,18 @@ export default function Sidebar() {
         }),
       },
     ]);
+    setProjectManagement([
+      {
+        name: "Progetti",
+        href: "/projects",
+        icon: FolderCopyOutlinedIcon,
+        requiredCondition: await hasPermission("VIEW_PROJECT"),
+        current: isSubRoute({
+          currentUrl,
+          parentRoute: { href: "/projects", subRoutes: ["/projects/"] },
+        }),
+      },
+    ]);
   }
 
   function isSubRoute({
@@ -145,19 +160,6 @@ export default function Sidebar() {
       current: isSubRoute({
         currentUrl,
         parentRoute: { href: "/", subRoutes: [] },
-      }),
-    },
-  ];
-
-  const projectManagement: NavigationItem[] = [
-    {
-      name: "Progetti",
-      href: "/projects",
-      icon: FolderCopyOutlinedIcon,
-      requiredCondition: true,
-      current: isSubRoute({
-        currentUrl,
-        parentRoute: { href: "/projects", subRoutes: ["/projects/"] },
       }),
     },
   ];
@@ -391,30 +393,33 @@ export default function Sidebar() {
                           Progetti
                         </div>
                         <ul role="list" className="-mx-2 mt-2 space-y-1">
-                          {projectManagement.map((project) => (
-                            <li key={project.name}>
-                              <a
-                                href={project.href}
-                                className={classNames(
-                                  project.current
-                                    ? "bg-gray-100 text-primary"
-                                    : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                                  "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                )}
-                              >
-                                <project.icon
-                                  className={classNames(
-                                    project.current
-                                      ? "text-primary"
-                                      : "text-gray-400 group-hover:text-primary",
-                                    "h-6 w-6 shrink-0"
-                                  )}
-                                  aria-hidden="true"
-                                />
-                                {project.name}
-                              </a>
-                            </li>
-                          ))}
+                          {projectManagement.map(
+                            (project) =>
+                              project.requiredCondition && (
+                                <li key={project.name}>
+                                  <a
+                                    href={project.href}
+                                    className={classNames(
+                                      project.current
+                                        ? "bg-gray-100 text-primary"
+                                        : "text-gray-700 hover:text-primary hover:bg-gray-100",
+                                      "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                    )}
+                                  >
+                                    <project.icon
+                                      className={classNames(
+                                        project.current
+                                          ? "text-primary"
+                                          : "text-gray-400 group-hover:text-primary",
+                                        "h-6 w-6 shrink-0"
+                                      )}
+                                      aria-hidden="true"
+                                    />
+                                    {project.name}
+                                  </a>
+                                </li>
+                              )
+                          )}
                         </ul>
                       </li>
                       <li className="mt-auto">
@@ -576,30 +581,33 @@ export default function Sidebar() {
                   Progetti
                 </div>
                 <ul role="list" className="-mx-2 mt-2 space-y-1">
-                  {projectManagement.map((project) => (
-                    <li key={project.name}>
-                      <a
-                        href={project.href}
-                        className={classNames(
-                          project.current
-                            ? "bg-gray-100 text-primary"
-                            : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                          "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                        )}
-                      >
-                        <project.icon
-                          className={classNames(
-                            project.current
-                              ? "text-primary"
-                              : "text-gray-400 group-hover:text-primary",
-                            "h-6 w-6 shrink-0"
-                          )}
-                          aria-hidden="true"
-                        />
-                        {project.name}
-                      </a>
-                    </li>
-                  ))}
+                  {projectManagement.map(
+                    (project) =>
+                      project.requiredCondition && (
+                        <li key={project.name}>
+                          <a
+                            href={project.href}
+                            className={classNames(
+                              project.current
+                                ? "bg-gray-100 text-primary"
+                                : "text-gray-700 hover:text-primary hover:bg-gray-100",
+                              "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                            )}
+                          >
+                            <project.icon
+                              className={classNames(
+                                project.current
+                                  ? "text-primary"
+                                  : "text-gray-400 group-hover:text-primary",
+                                "h-6 w-6 shrink-0"
+                              )}
+                              aria-hidden="true"
+                            />
+                            {project.name}
+                          </a>
+                        </li>
+                      )
+                  )}
                 </ul>
               </li>
               <li className="mt-auto">

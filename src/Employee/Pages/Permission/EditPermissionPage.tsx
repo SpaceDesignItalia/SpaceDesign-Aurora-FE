@@ -7,7 +7,7 @@ import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
 
 export default function EditPermissionPage() {
-  const { PermissionId } = useParams<{ PermissionId: string }>();
+  const { PermissionId } = useParams();
   const { hasPermission } = usePermissions();
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function EditPermissionPage() {
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
         <div className="py-6 lg:py-8">
-          <EditPermissionModel PermissionId={parseInt(PermissionId)} />
+          <EditPermissionModel PermissionId={PermissionId} />
         </div>
       </main>
     </div>

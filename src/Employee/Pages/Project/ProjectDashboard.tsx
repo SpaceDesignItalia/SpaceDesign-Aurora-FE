@@ -3,18 +3,18 @@ import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import ProjectTable from "../../Components/Project/Table/ProjectTable";
 
 export default function ProjectDashboard() {
-  /* const { hasPermission } = usePermissions();
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     async function fetchData() {
-      const permission = await hasPermission("VIEW_ROLE");
+      const permission = await hasPermission("VIEW_PROJECT");
 
       if (!permission) {
         return (window.location.href = "/");
       }
     }
     fetchData();
-  }, [hasPermission]); */
+  }, [hasPermission]);
   return (
     <div className="py-10 m-0 lg:ml-72">
       <header>

@@ -127,7 +127,6 @@ export default function EditPermissionModel({
     try {
       setIsUpdatingData(true);
       const res = await axios.put("/Permission/UPDATE/UpdatePermission", {
-        PermissionId: currentPermission.PermissionId,
         PermissionData: currentPermission,
       });
 
