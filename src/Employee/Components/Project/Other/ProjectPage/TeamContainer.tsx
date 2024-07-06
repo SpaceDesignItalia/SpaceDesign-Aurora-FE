@@ -9,6 +9,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import AddProjectTeamMember from "../AddProjectTeamMember";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
+import { usePermissions } from "../../../Layout/PermissionProvider";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -66,6 +67,10 @@ export default function TeamContainer({
     ProjectId: 0,
     open: false,
   });
+  const [adminPermission, setAdminPermission] = useState({
+    editProject: false,
+  });
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     axios
@@ -75,13 +80,16 @@ export default function TeamContainer({
       .then((res) => {
         setMembers(res.data);
       });
-  }, [projectData.ProjectId]);
-
-  useEffect(() => {
     socket.on("message-update", (conversationId) => {
       handleOpenChat(parseInt(localStorage.getItem("conversationId")!));
     });
-  }, []);
+    async function checkPermissions() {
+      setAdminPermission({
+        editProject: await hasPermission("EDIT_PROJECT"),
+      });
+    }
+    checkPermissions();
+  }, [projectData.ProjectId]);
 
   useEffect(() => {
     axios
@@ -204,31 +212,35 @@ export default function TeamContainer({
           <div className="flex flex-row justify-between items-center">
             <h1 className="font-bold">Membri del progetto</h1>
             <div className="flex flex-row gap-2">
-              <Button
-                color="primary"
-                radius="sm"
-                size="sm"
-                onClick={() =>
-                  setModalData({
-                    ...modalData,
-                    open: true,
-                    ProjectId: projectData.ProjectId,
-                  })
-                }
-                isIconOnly
-              >
-                <AddRoundedIcon />
-              </Button>
-              <Button
-                onClick={handleEditTeam}
-                color="warning"
-                radius="sm"
-                size="sm"
-                className="text-white"
-                isIconOnly
-              >
-                <EditRoundedIcon />
-              </Button>
+              {adminPermission.editProject && (
+                <>
+                  <Button
+                    color="primary"
+                    radius="sm"
+                    size="sm"
+                    onClick={() =>
+                      setModalData({
+                        ...modalData,
+                        open: true,
+                        ProjectId: projectData.ProjectId,
+                      })
+                    }
+                    isIconOnly
+                  >
+                    <AddRoundedIcon />
+                  </Button>
+                  <Button
+                    onClick={handleEditTeam}
+                    color="warning"
+                    radius="sm"
+                    size="sm"
+                    className="text-white"
+                    isIconOnly
+                  >
+                    <EditRoundedIcon />
+                  </Button>
+                </>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-5">

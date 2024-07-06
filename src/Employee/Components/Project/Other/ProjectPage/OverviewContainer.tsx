@@ -8,6 +8,7 @@ import AddProjectLink from "../AddProjectLink";
 import axios from "axios";
 import { API_URL_IMG } from "../../../../../API/API";
 import DeleteLinkModal from "../DeleteLinkModal";
+import { usePermissions } from "../../../Layout/PermissionProvider";
 
 interface Project {
   ProjectId: number;
@@ -58,6 +59,10 @@ export default function OverviewContainer({
     Links: new Array<Link>(),
     open: false,
   });
+  const [adminPermission, setAdminPermission] = useState({
+    editProject: false,
+  });
+  const { hasPermission } = usePermissions();
 
   const daysUntilDeadline =
     dayjs(projectData.ProjectEndDate).diff(dayjs(), "day") + 1;
@@ -80,6 +85,12 @@ export default function OverviewContainer({
       .then((res) => {
         setLinks(res.data);
       });
+    async function checkPermissions() {
+      setAdminPermission({
+        editProject: await hasPermission("EDIT_PROJECT"),
+      });
+    }
+    checkPermissions();
   }, [projectData.ProjectId]);
 
   function calculateDeadline() {
@@ -161,22 +172,24 @@ export default function OverviewContainer({
               <div className="flex flex-col gap-3 items-start w-full">
                 <div className="flex flex-row justify-between w-full">
                   <h1 className="font-bold">Collegamenti esterni</h1>
-                  <Button
-                    size="sm"
-                    color="warning"
-                    className="text-white"
-                    variant="solid"
-                    onClick={() =>
-                      setModalEditData({
-                        ...modalEditData,
-                        open: true,
-                        Links: links,
-                      })
-                    }
-                    isIconOnly
-                  >
-                    <ModeEditRoundedIcon />
-                  </Button>
+                  {adminPermission.editProject && (
+                    <Button
+                      size="sm"
+                      color="warning"
+                      className="text-white"
+                      variant="solid"
+                      onClick={() =>
+                        setModalEditData({
+                          ...modalEditData,
+                          open: true,
+                          Links: links,
+                        })
+                      }
+                      isIconOnly
+                    >
+                      <ModeEditRoundedIcon />
+                    </Button>
+                  )}
                 </div>
                 <div className="flex flex-row flex-wrap gap-3 items-center">
                   {links.map((link, index) => {
@@ -206,23 +219,26 @@ export default function OverviewContainer({
                       </Tooltip>
                     );
                   })}
-                  <Tooltip content="Aggiungi un nuovo link" closeDelay={0}>
-                    <Button
-                      size="sm"
-                      color="primary"
-                      variant="solid"
-                      onClick={() =>
-                        setModalData({
-                          ...modalData,
-                          open: true,
-                          ProjectId: projectData.ProjectId,
-                        })
-                      }
-                      isIconOnly
-                    >
-                      <AddRoundedIcon />
-                    </Button>
-                  </Tooltip>
+
+                  {adminPermission.editProject && (
+                    <Tooltip content="Aggiungi un nuovo link" closeDelay={0}>
+                      <Button
+                        size="sm"
+                        color="primary"
+                        variant="solid"
+                        onClick={() =>
+                          setModalData({
+                            ...modalData,
+                            open: true,
+                            ProjectId: projectData.ProjectId,
+                          })
+                        }
+                        isIconOnly
+                      >
+                        <AddRoundedIcon />
+                      </Button>
+                    </Tooltip>
+                  )}
                 </div>
               </div>
             </div>
