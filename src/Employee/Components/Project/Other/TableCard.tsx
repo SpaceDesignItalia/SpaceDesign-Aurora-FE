@@ -15,6 +15,7 @@ import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import ConfirmDeleteProjectModal from "./ConfirmDeleteProjectModal";
+import { usePermissions } from "../../Layout/PermissionProvider";
 
 interface Project {
   ProjectId: number;
@@ -76,6 +77,10 @@ export default function TableCard({ project }: { project: Project }) {
     },
     open: false,
   });
+  const [adminPermission, setAdminPermission] = useState({
+    deleteProject: false,
+  });
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     axios.get("/Project/GET/GetAllStatus").then((res) => {
@@ -103,6 +108,12 @@ export default function TableCard({ project }: { project: Project }) {
       .then((res) => {
         setToDoTasks(res.data[0].TasksNumber);
       });
+    async function checkPermissions() {
+      setAdminPermission({
+        deleteProject: await hasPermission("DELETE_PROJECT"),
+      });
+    }
+    checkPermissions();
   }, []);
 
   const statuses = [
@@ -206,22 +217,23 @@ export default function TableCard({ project }: { project: Project }) {
               >
                 Visualizza
               </DropdownItem>
-
-              <DropdownItem
-                color="danger"
-                startContent={<DeleteOutlinedIcon />}
-                aria-label="Remove"
-                aria-labelledby="Remove"
-                onClick={() =>
-                  setModalDeleteData({
-                    ...modalDeleteData,
-                    open: true,
-                    Project: project,
-                  })
-                }
-              >
-                Rimuovi
-              </DropdownItem>
+              {adminPermission.deleteProject && (
+                <DropdownItem
+                  color="danger"
+                  startContent={<DeleteOutlinedIcon />}
+                  aria-label="Remove"
+                  aria-labelledby="Remove"
+                  onClick={() =>
+                    setModalDeleteData({
+                      ...modalDeleteData,
+                      open: true,
+                      Project: project,
+                    })
+                  }
+                >
+                  Rimuovi
+                </DropdownItem>
+              )}
             </DropdownMenu>
           </Dropdown>
         </div>

@@ -14,6 +14,7 @@ import ChangeProjectTheme from "../../Components/Project/Other/ChangeProjectThem
 import OverviewContainer from "../../Components/Project/Other/ProjectPage/OverviewContainer";
 import TeamContainer from "../../Components/Project/Other/ProjectPage/TeamContainer";
 import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContainer";
+import { usePermissions } from "../../Components/Layout/PermissionProvider";
 
 interface Project {
   ProjectId: number;
@@ -66,6 +67,10 @@ export default function ProjectPage() {
     open: false,
   });
   const [activeTab, setActiveTab] = useState("Panoramica");
+  const [adminPermission, setAdminPermission] = useState({
+    editProject: false,
+  });
+  const { hasPermission } = usePermissions();
 
   const tabs = [
     { title: "Panoramica", icon: FindInPageRoundedIcon },
@@ -83,6 +88,12 @@ export default function ProjectPage() {
       .then((res) => {
         setProjectData(res.data);
       });
+    async function checkPermissions() {
+      setAdminPermission({
+        editProject: await hasPermission("EDIT_PROJECT"),
+      });
+    }
+    checkPermissions();
   }, [ProjectId, ProjectName]);
 
   return (
@@ -102,15 +113,17 @@ export default function ProjectPage() {
               alt="Banner del progetto"
             />
             <div className="absolute top-2 right-2">
-              <Button
-                color="primary"
-                radius="sm"
-                size="sm"
-                isIconOnly
-                onClick={() => setModalData({ ...modalData, open: true })}
-              >
-                <ModeOutlinedIcon />
-              </Button>
+              {adminPermission.editProject && (
+                <Button
+                  color="primary"
+                  radius="sm"
+                  size="sm"
+                  isIconOnly
+                  onClick={() => setModalData({ ...modalData, open: true })}
+                >
+                  <ModeOutlinedIcon />
+                </Button>
+              )}
             </div>
           </div>
 
@@ -147,30 +160,32 @@ export default function ProjectPage() {
                     />
                   ))}
                 </Tabs>
-                <Tooltip
-                  content="Impostazioni progetto"
-                  color="primary"
-                  placement="bottom"
-                  closeDelay={0}
-                >
-                  <Button
-                    as={Link}
+                {adminPermission.editProject && (
+                  <Tooltip
+                    content="Impostazioni progetto"
                     color="primary"
-                    radius="sm"
-                    href={
-                      "/projects/" +
-                      CompanyName +
-                      "/" +
-                      ProjectId +
-                      "/" +
-                      ProjectName +
-                      "/edit-project"
-                    }
-                    isIconOnly
+                    placement="bottom"
+                    closeDelay={0}
                   >
-                    <TuneRoundedIcon />
-                  </Button>
-                </Tooltip>
+                    <Button
+                      as={Link}
+                      color="primary"
+                      radius="sm"
+                      href={
+                        "/projects/" +
+                        CompanyName +
+                        "/" +
+                        ProjectId +
+                        "/" +
+                        ProjectName +
+                        "/edit-project"
+                      }
+                      isIconOnly
+                    >
+                      <TuneRoundedIcon />
+                    </Button>
+                  </Tooltip>
+                )}
               </div>
             </header>
             {activeTab === "Panoramica" && (
