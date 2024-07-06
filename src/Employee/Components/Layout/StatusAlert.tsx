@@ -17,7 +17,7 @@ export default function StatusAlert({ AlertData }: { AlertData: AlertData }) {
           sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
           open={AlertData.isOpen}
         >
-          <Spinner size="lg" color="primary" />
+          <Spinner size="lg" color="danger" />
           <div
             className={`absolute top-20 right-0 w-1/4 rounded-md bg-${AlertData.alertColor}-50 p-4`}
           >

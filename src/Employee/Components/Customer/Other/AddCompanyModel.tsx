@@ -18,62 +18,47 @@ interface AlertData {
   alertColor: string;
 }
 
-export default function AddCompanyModel() {
-  const [newCompanyData, setNewCompanyData] = useState<Company>({
-    companyName: "",
-    companyAddress: "",
-    companyEmail: "",
-    companyPhone: null,
-  });
+const initialCompanyData: Company = {
+  companyName: "",
+  companyAddress: "",
+  companyEmail: "",
+  companyPhone: "",
+};
+
+const initialAlertData: AlertData = {
+  isOpen: false,
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "",
+};
+
+const AddCompanyModel: React.FC = () => {
+  const [newCompanyData, setNewCompanyData] =
+    useState<Company>(initialCompanyData);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
 
-  function handleCompanyNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 150) {
-      setNewCompanyData({ ...newCompanyData, companyName: e.target.value });
-    }
-  }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewCompanyData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
-  function handleCompanyAddressChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 150) {
-      setNewCompanyData({ ...newCompanyData, companyAddress: e.target.value });
-    }
-  }
+  const checkAllDataCompiled = () => {
+    return !(
+      newCompanyData.companyName &&
+      newCompanyData.companyAddress &&
+      newCompanyData.companyEmail
+    );
+  };
 
-  function handleCompanyEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 100) {
-      setNewCompanyData({ ...newCompanyData, companyEmail: e.target.value });
-    }
-  }
-
-  function handleCompanyPhoneChange(e) {
-    const input = e.target.value.replace(/\D/g, ""); // Rimuove tutti i caratteri non numerici
-    if (input.length <= 15) {
-      setNewCompanyData({ ...newCompanyData, companyPhone: input });
-    }
-  }
-
-  function checkAllDataCompiled() {
-    if (
-      newCompanyData.companyName !== "" &&
-      newCompanyData.companyAddress !== "" &&
-      newCompanyData.companyEmail !== ""
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  async function handleCreateNewCompany() {
+  const handleCreateNewCompany = async () => {
     try {
-      const res = await axios
-        .post("/Company/POST/AddCompany", newCompanyData)
-        .then(setIsAddingData(true));
+      setIsAddingData(true);
+
+      const res = await axios.post("/Company/POST/AddCompany", newCompanyData);
 
       if (res.status === 200) {
         setAlertData({
@@ -85,9 +70,7 @@ export default function AddCompanyModel() {
         setTimeout(() => {
           window.location.href = "/administration/customer";
         }, 2000);
-        console.log("Successo:", res.data);
       }
-      // Esegui altre azioni dopo la creazione dell'azienda, se necessario
     } catch (error) {
       setAlertData({
         isOpen: true,
@@ -96,14 +79,11 @@ export default function AddCompanyModel() {
           "Si è verificato un errore durante l'aggiunta dell'azienda. Per favore, riprova più tardi.",
         alertColor: "red",
       });
-
-      setTimeout(() => {
-        window.location.href = "/administration/customer";
-      }, 2000);
       console.error("Errore durante la creazione dell'azienda:", error);
-      // Gestisci l'errore in modo appropriato, ad esempio mostrando un messaggio all'utente
+    } finally {
+      setIsAddingData(false);
     }
-  }
+  };
 
   return (
     <>
@@ -124,58 +104,65 @@ export default function AddCompanyModel() {
             <div className="grid grid-cols-6 gap-6">
               <div className="col-span-6 sm:col-span-6">
                 <label
-                  htmlFor="email-address"
+                  htmlFor="companyName"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Nome azienda
+                  Nome azienda <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Input
                   variant="bordered"
                   type="text"
                   radius="sm"
+                  name="companyName"
+                  placeholder="Inserisci la ragione sociale"
                   value={newCompanyData.companyName}
-                  onChange={handleCompanyNameChange}
+                  onChange={handleChange}
                   fullWidth
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="email-address"
+                  htmlFor="companyAddress"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Indirizzo
+                  Indirizzo <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Input
                   variant="bordered"
                   type="text"
                   radius="sm"
+                  name="companyAddress"
+                  placeholder="Inserisci l'indirizzo dell'azienda"
                   value={newCompanyData.companyAddress}
-                  onChange={handleCompanyAddressChange}
+                  onChange={handleChange}
                   fullWidth
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="email-address"
+                  htmlFor="companyEmail"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Email azienda
+                  Email azienda{" "}
+                  <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Input
                   variant="bordered"
                   type="email"
                   radius="sm"
+                  name="companyEmail"
+                  placeholder="Inserisci l'email aziendale"
                   value={newCompanyData.companyEmail}
-                  onChange={handleCompanyEmailChange}
+                  onChange={handleChange}
                   fullWidth
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="email-address"
+                  htmlFor="companyPhone"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
                   Numero di telefono
@@ -184,8 +171,10 @@ export default function AddCompanyModel() {
                   variant="bordered"
                   type="text"
                   radius="sm"
+                  name="companyPhone"
+                  placeholder="Inserisci il numero di telefono aziendale"
                   value={newCompanyData.companyPhone}
-                  onChange={handleCompanyPhoneChange}
+                  onChange={handleChange}
                   fullWidth
                 />
               </div>
@@ -208,4 +197,6 @@ export default function AddCompanyModel() {
       </div>
     </>
   );
-}
+};
+
+export default AddCompanyModel;
