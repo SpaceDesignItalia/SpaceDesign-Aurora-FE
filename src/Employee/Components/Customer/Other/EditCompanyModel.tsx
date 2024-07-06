@@ -149,7 +149,7 @@ const EditCompanyModel: React.FC = () => {
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
                   htmlFor="CompanyAddress"
                   className="block text-sm font-medium leading-6 text-gray-900"
@@ -167,7 +167,7 @@ const EditCompanyModel: React.FC = () => {
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
                   htmlFor="CompanyEmail"
                   className="block text-sm font-medium leading-6 text-gray-900"
@@ -186,7 +186,7 @@ const EditCompanyModel: React.FC = () => {
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
                   htmlFor="CompanyPhone"
                   className="block text-sm font-medium leading-6 text-gray-900"
