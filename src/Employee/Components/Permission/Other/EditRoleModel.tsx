@@ -236,7 +236,7 @@ export default function EditRoleModel() {
                 >
                   Permessi associati
                 </label>
-                <div className="flex flex-col xl:flex-row flex-wrap gap-5 sm:gap-0 justify-between mt-3 md:w-1/2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-0 justify-between mt-3">
                   {permissionGroup.map((group) => {
                     const groupPermissions = permissions.filter(
                       (permission) => permission.GroupName === group.GroupName

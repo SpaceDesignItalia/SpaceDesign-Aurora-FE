@@ -162,7 +162,7 @@ export default function TeamContainer({
         isClosed={() => setModalData({ ...modalData, open: false })}
         ProjectId={modalData.ProjectId}
       />
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
           <div className="flex flex-col gap-5">
             <h1 className="font-bold">Team chat</h1>
