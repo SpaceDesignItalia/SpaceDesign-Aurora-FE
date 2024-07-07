@@ -9,6 +9,7 @@ import {
 } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
+
 interface PermissionGroup {
   GroupName: string;
   PermissionGroupId: number;
@@ -25,105 +26,94 @@ interface EditPermissionModelProps {
   PermissionId: number;
 }
 
-export default function EditPermissionModel({
+const initialPermissionState = {
+  PermissionId: null,
+  PermissionName: "",
+  PermissionDescription: "",
+  PermissionAction: "",
+  PermissionGroupId: 0,
+};
+
+const initialAlertData: AlertData = {
+  isOpen: false,
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "",
+};
+
+const EditPermissionModel: React.FC<EditPermissionModelProps> = ({
   PermissionId,
-}: EditPermissionModelProps) {
+}) => {
   const [permissionGroup, setPermissionGroup] = useState<PermissionGroup[]>([]);
-  const [initialPermission, setInitialPermission] = useState({
-    PermissionId: PermissionId,
-    PermissionName: "",
-    PermissionDescription: "",
-    PermissionAction: "",
-    PermissionGroupId: null,
-  });
+  const [initialPermission, setInitialPermission] = useState(
+    initialPermissionState
+  );
   const [currentPermission, setCurrentPermission] = useState({
-    PermissionId: PermissionId,
-    PermissionName: "",
-    PermissionDescription: "",
-    PermissionAction: "",
-    PermissionGroupId: null,
+    ...initialPermissionState,
+    PermissionId,
   });
   const [isUpdatingData, setIsUpdatingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
 
   useEffect(() => {
-    // Fetch permission groups
-    axios.get("/Permission/GET/GetPermissionGroups").then((res) => {
-      setPermissionGroup(res.data);
-    });
-
-    // Fetch current permission data by ID
-    axios
-      .get("/Permission/GET/GetPermissionById", {
-        params: { PermissionId: PermissionId },
-      })
-      .then((res) => {
-        const permissionData = res.data[0];
+    const fetchData = async () => {
+      try {
+        const [groupsRes, permissionRes] = await Promise.all([
+          axios.get("/Permission/GET/GetPermissionGroups"),
+          axios.get("/Permission/GET/GetPermissionById", {
+            params: { PermissionId },
+          }),
+        ]);
+        setPermissionGroup(groupsRes.data);
+        const permissionData = permissionRes.data[0];
         setCurrentPermission(permissionData);
         setInitialPermission(permissionData);
-      });
+      } catch (error) {
+        console.error("Errore nel recupero dei dati:", error);
+      }
+    };
+
+    fetchData();
   }, [PermissionId]);
 
-  function handlePermissionNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setCurrentPermission({
-      ...currentPermission,
-      PermissionName: e.target.value,
-    });
-  }
+  const handleInputChange =
+    (key: string) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setCurrentPermission({
+        ...currentPermission,
+        [key]: e.target.value,
+      });
+    };
 
-  function handlePermissionDescriptionChange(
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) {
-    setCurrentPermission({
-      ...currentPermission,
-      PermissionDescription: e.target.value,
-    });
-  }
-
-  function handlePermissionGroupChange(selected: React.Key) {
+  const handleGroupChange = (selected: React.Key | null) => {
     setCurrentPermission({
       ...currentPermission,
       PermissionGroupId: selected as number,
     });
-  }
+  };
 
-  function handlePermissionActionChange(
-    e: React.ChangeEvent<HTMLInputElement>
-  ) {
-    const transformedValue = e.target.value.replace(/\s+/g, "_").toUpperCase();
-    setCurrentPermission({
-      ...currentPermission,
-      PermissionAction: transformedValue,
-    });
-  }
-
-  function checkAllDataCompiled() {
-    return (
-      currentPermission.PermissionName === "" ||
-      currentPermission.PermissionDescription === "" ||
-      currentPermission.PermissionGroupId === null ||
-      currentPermission.PermissionAction === ""
+  const checkAllDataCompiled = () => {
+    const {
+      PermissionName,
+      PermissionDescription,
+      PermissionAction,
+      PermissionGroupId,
+    } = currentPermission;
+    return !(
+      PermissionName &&
+      PermissionDescription &&
+      PermissionAction &&
+      PermissionGroupId
     );
-  }
+  };
 
-  function hasChanges() {
+  const hasChanges = () => {
     return (
-      currentPermission.PermissionName !== initialPermission.PermissionName ||
-      currentPermission.PermissionDescription !==
-        initialPermission.PermissionDescription ||
-      currentPermission.PermissionAction !==
-        initialPermission.PermissionAction ||
-      currentPermission.PermissionGroupId !==
-        initialPermission.PermissionGroupId
+      JSON.stringify(currentPermission) !== JSON.stringify(initialPermission)
     );
-  }
+  };
 
-  async function handleUpdatePermission() {
+  const handleUpdatePermission = async () => {
     try {
       setIsUpdatingData(true);
       const res = await axios.put("/Permission/UPDATE/UpdatePermission", {
@@ -149,14 +139,10 @@ export default function EditPermissionModel({
           "Si è verificato un errore durante l'aggiornamento del permesso. Per favore, riprova più tardi.",
         alertColor: "red",
       });
-
-      setTimeout(() => {
-        setAlertData({ ...alertData, isOpen: false });
-      }, 2000);
     } finally {
       setIsUpdatingData(false);
     }
-  }
+  };
 
   return (
     <>
@@ -175,12 +161,13 @@ export default function EditPermissionModel({
             </div>
 
             <div className="grid grid-cols-6 gap-6">
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6">
                 <label
                   htmlFor="permission-name"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Nome permesso
+                  Nome permesso{" "}
+                  <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Input
                   id="permission-name"
@@ -188,34 +175,36 @@ export default function EditPermissionModel({
                   type="text"
                   radius="sm"
                   value={currentPermission.PermissionName}
-                  onChange={handlePermissionNameChange}
+                  onChange={handleInputChange("PermissionName")}
                   fullWidth
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6">
                 <label
                   htmlFor="permission-description"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Descrizione permesso
+                  Descrizione permesso{" "}
+                  <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Textarea
                   id="permission-description"
                   variant="bordered"
                   radius="sm"
                   value={currentPermission.PermissionDescription}
-                  onChange={handlePermissionDescriptionChange}
+                  onChange={handleInputChange("PermissionDescription")}
                   fullWidth
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
                   htmlFor="permission-action"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Azione permesso
+                  Azione permesso{" "}
+                  <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Input
                   id="permission-action"
@@ -223,17 +212,18 @@ export default function EditPermissionModel({
                   type="text"
                   radius="sm"
                   value={currentPermission.PermissionAction}
-                  onChange={handlePermissionActionChange}
+                  onChange={handleInputChange("PermissionAction")}
                   fullWidth
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
                   htmlFor="permission-group"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Gruppo permesso
+                  Gruppo permesso{" "}
+                  <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Autocomplete
                   items={permissionGroup.map((group) => ({
@@ -241,21 +231,17 @@ export default function EditPermissionModel({
                     label: group.GroupName,
                   }))}
                   placeholder="Seleziona gruppo"
-                  onSelectionChange={handlePermissionGroupChange}
+                  onSelectionChange={handleGroupChange}
                   variant="bordered"
                   radius="sm"
                   aria-label="permission-group"
                   fullWidth
-                  selectedKey={currentPermission.PermissionGroupId}
+                  selectedKey={String(currentPermission.PermissionGroupId)}
                 >
                   {(item) => (
                     <AutocompleteItem key={item.key} textValue={item.label}>
                       <div className="flex justify-between items-center">
-                        <div className="flex gap-2 items-center">
-                          <div className="flex flex-col">
-                            <span className="text-small">{item.label}</span>
-                          </div>
-                        </div>
+                        <span className="text-small">{item.label}</span>
                       </div>
                     </AutocompleteItem>
                   )}
@@ -280,4 +266,6 @@ export default function EditPermissionModel({
       </div>
     </>
   );
-}
+};
+
+export default EditPermissionModel;

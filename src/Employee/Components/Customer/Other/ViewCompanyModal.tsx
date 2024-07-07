@@ -10,7 +10,29 @@ import { Accordion, AccordionItem } from "@nextui-org/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function ViewCompanyModal({ isOpen, isClosed, CompanyData }) {
+interface Company {
+  CompanyId: number;
+  CompanyName: string;
+  CompanyAddress: string;
+  CompanyEmail: string;
+  CompanyPhone: string;
+}
+interface Member {
+  customerfullname: string;
+  CustomerEmail: string;
+  CustomerPhone: string | null;
+}
+interface ViewCompanyModalProps {
+  isOpen: boolean;
+  isClosed: () => void;
+  CompanyData: Company;
+}
+
+export default function ViewCompanyModal({
+  isOpen,
+  isClosed,
+  CompanyData,
+}: ViewCompanyModalProps) {
   const [companyMembers, setCompanyMembers] = useState([]);
 
   useEffect(() => {
@@ -84,44 +106,50 @@ export default function ViewCompanyModal({ isOpen, isClosed, CompanyData }) {
                         <p>Nessun membro trovato</p>
                       ) : (
                         <Accordion variant="bordered" isCompact>
-                          {companyMembers.map((member) => (
-                            <AccordionItem
-                              key="1"
-                              aria-label={member.customerfullname}
-                              title={member.customerfullname}
-                            >
-                              <div class="border-t border-gray-100">
-                                <dl class="divide-y divide-gray-100">
-                                  <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                                    <dt class="text-sm font-medium leading-6 text-gray-900">
-                                      Nome Cliente
-                                    </dt>
-                                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                                      {member.customerfullname}
-                                    </dd>
-                                  </div>
-                                  <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                                    <dt class="text-sm font-medium leading-6 text-gray-900">
-                                      Email Cliente
-                                    </dt>
-                                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                                      {member.CustomerEmail}
-                                    </dd>
-                                  </div>
-                                  {member.CustomerPhone !== null && (
-                                    <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                                      <dt class="text-sm font-medium leading-6 text-gray-900">
-                                        Telefono Cliente
+                          {companyMembers.map(
+                            (member: Member, index: number) => (
+                              <AccordionItem
+                                key={index}
+                                aria-label={member.customerfullname}
+                                title={
+                                  <p className="font-semibold">
+                                    {member.customerfullname}
+                                  </p>
+                                }
+                              >
+                                <div className="border-t border-gray-100">
+                                  <dl className="divide-y divide-gray-100">
+                                    <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                      <dt className="text-sm font-medium leading-6 text-gray-900">
+                                        Nome Cliente
                                       </dt>
-                                      <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                                        {member.CustomerPhone}
+                                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                        {member.customerfullname}
                                       </dd>
                                     </div>
-                                  )}
-                                </dl>
-                              </div>
-                            </AccordionItem>
-                          ))}
+                                    <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                      <dt className="text-sm font-medium leading-6 text-gray-900">
+                                        Email Cliente
+                                      </dt>
+                                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                        {member.CustomerEmail}
+                                      </dd>
+                                    </div>
+                                    {member.CustomerPhone !== null && (
+                                      <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                        <dt className="text-sm font-medium leading-6 text-gray-900">
+                                          Telefono Cliente
+                                        </dt>
+                                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                          {member.CustomerPhone}
+                                        </dd>
+                                      </div>
+                                    )}
+                                  </dl>
+                                </div>
+                              </AccordionItem>
+                            )
+                          )}
                         </Accordion>
                       )}
                     </dd>

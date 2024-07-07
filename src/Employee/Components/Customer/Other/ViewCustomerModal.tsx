@@ -9,7 +9,32 @@ import {
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function ViewCustomerModal({ isOpen, isClosed, CustomerData }) {
+interface Customer {
+  CustomerId: number;
+  CustomerFullName: string;
+  CustomerEmail: string;
+  CustomerPhone: string;
+}
+
+interface Company {
+  CompanyId: number;
+  CompanyName: string;
+  CompanyAddress: string;
+  CompanyEmail: string;
+  CompanyPhone: string;
+}
+
+interface ViewCustomerModalProps {
+  isOpen: boolean;
+  isClosed: () => void;
+  CustomerData: Customer;
+}
+
+export default function ViewCustomerModal({
+  isOpen,
+  isClosed,
+  CustomerData,
+}: ViewCustomerModalProps) {
   const [customerCompanies, setCustomerCompanies] = useState([]);
 
   useEffect(() => {
@@ -73,7 +98,7 @@ export default function ViewCustomerModal({ isOpen, isClosed, CustomerData }) {
                       </dt>
                       <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                         <ul>
-                          {customerCompanies.map((company) => {
+                          {customerCompanies.map((company: Company) => {
                             return <li>{company.CompanyName}</li>;
                           })}
                         </ul>

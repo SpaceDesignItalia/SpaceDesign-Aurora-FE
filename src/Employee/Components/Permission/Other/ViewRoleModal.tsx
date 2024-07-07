@@ -19,16 +19,34 @@ interface Role {
   RoleId: number;
   RoleName: string;
   RoleDescription: string;
+}
+
+interface RoleModal {
+  RoleId: number;
+  RoleName: string;
+  RoleDescription: string;
   permissions: Permission[];
 }
 
-export default function ViewRoleModal({ isOpen, isClosed, RoleData }) {
-  const [Role, setRole] = useState<Role>({
-    RoleId: 0,
-    RoleName: "",
-    RoleDescription: "",
-    permissions: [],
-  });
+interface ViewRoleModalProps {
+  isOpen: boolean;
+  isClosed: () => void;
+  RoleData: Role;
+}
+
+const initialRoleData: RoleModal = {
+  RoleId: 0,
+  RoleName: "",
+  RoleDescription: "",
+  permissions: [],
+};
+
+export default function ViewRoleModal({
+  isOpen,
+  isClosed,
+  RoleData,
+}: ViewRoleModalProps) {
+  const [Role, setRole] = useState<RoleModal>(initialRoleData);
 
   useEffect(() => {
     if (isOpen && RoleData.RoleId) {

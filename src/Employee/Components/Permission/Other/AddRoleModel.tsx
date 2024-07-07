@@ -36,88 +36,81 @@ interface AlertData {
   alertColor: string;
 }
 
-export default function AddRoleModel() {
+const initialRoleData: Role = {
+  RoleName: "",
+  RoleDescription: "",
+};
+
+const initialAlertData: AlertData = {
+  isOpen: false,
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "",
+};
+
+const AddRoleModel: React.FC = () => {
   const [permissionGroup, setPermissionGroup] = useState<PermissionGroup[]>([]);
   const [permissions, setPermissions] = useState<Permissions[]>([]);
-  const [newRole, setNewRole] = useState<Role>({
-    RoleName: "",
-    RoleDescription: "",
-  });
+  const [newRole, setNewRole] = useState<Role>(initialRoleData);
   const [newRolePermissions, setNewRolePermissions] = useState<
     RolePermission[]
   >([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
 
   useEffect(() => {
-    axios.get("/Permission/GET/GetPermissionGroups").then((res) => {
-      setPermissionGroup(res.data);
-    });
+    const fetchPermissions = async () => {
+      try {
+        const [groupsRes, permsRes] = await Promise.all([
+          axios.get("/Permission/GET/GetPermissionGroups"),
+          axios.get("/Permission/GET/GetAllPermissions"),
+        ]);
+        setPermissionGroup(groupsRes.data);
+        setPermissions(permsRes.data);
+      } catch (error) {
+        console.error("Errore nel recupero dei permessi:", error);
+      }
+    };
 
-    axios.get("/Permission/GET/GetAllPermissions").then((res) => {
-      setPermissions(res.data);
-    });
+    fetchPermissions();
   }, []);
 
-  function handleRoleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 150) {
-      setNewRole({ ...newRole, RoleName: e.target.value });
-    }
-  }
+  const handleRoleChange =
+    (key: keyof Role) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setNewRole((prevRole) => ({ ...prevRole, [key]: e.target.value }));
+    };
 
-  function handleRoleDescriptionChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 150) {
-      setNewRole({ ...newRole, RoleDescription: e.target.value });
-    }
-  }
+  const handleCheckboxChange = (value: string, checked: boolean) => {
+    setNewRolePermissions((prevPermissions) =>
+      checked
+        ? [...prevPermissions, { PermissionId: parseInt(value) }]
+        : prevPermissions.filter(
+            (permission) => permission.PermissionId !== parseInt(value)
+          )
+    );
+  };
 
-  function handleCheckboxChange(value: string, checked: boolean) {
-    if (checked) {
-      // Aggiungi il valore del checkbox selezionato all'array
-      setNewRolePermissions([
-        ...newRolePermissions,
-        { PermissionId: parseInt(value) },
-      ]);
-    } else {
-      // Rimuovi il valore del checkbox deselezionato dall'array
-      setNewRolePermissions(
-        newRolePermissions.filter(
-          (permission) => permission.PermissionId !== parseInt(value)
-        )
-      );
-    }
-  }
+  const checkAllDataCompiled = () => {
+    return !(
+      newRole.RoleName &&
+      newRole.RoleDescription &&
+      newRolePermissions.length
+    );
+  };
 
-  function checkAllDataCompiled() {
-    if (
-      newRole.RoleName !== "" &&
-      newRole.RoleDescription !== "" &&
-      newRolePermissions.length !== 0
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  async function handleCreateNewRole() {
+  const handleCreateNewRole = async () => {
     try {
-      const res = await axios
-        .post("/Permission/POST/AddRole", {
-          RoleData: newRole,
-          RolePermissionData: newRolePermissions,
-        })
-        .then(setIsAddingData(true));
+      setIsAddingData(true);
+      const res = await axios.post("/Permission/POST/AddRole", {
+        RoleData: newRole,
+        RolePermissionData: newRolePermissions,
+      });
 
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
           alertTitle: "Operazione completata",
-          alertDescription: "Il ruolo è stata aggiunto con successo.",
+          alertDescription: "Il ruolo è stato aggiunto con successo.",
           alertColor: "green",
         });
         setTimeout(() => {
@@ -129,16 +122,14 @@ export default function AddRoleModel() {
         isOpen: true,
         alertTitle: "Errore durante l'operazione",
         alertDescription:
-          "Si è verificato un errore durante l'aggiunta del ruolo Per favore, riprova più tardi.",
+          "Si è verificato un errore durante l'aggiunta del ruolo. Per favore, riprova più tardi.",
         alertColor: "red",
       });
-
-      setTimeout(() => {
-        window.location.href = "/administration/permission";
-      }, 2000);
-      console.error("Errore durante la creazione dell'azienda:", error);
+      console.error("Errore durante la creazione del ruolo:", error);
+    } finally {
+      setIsAddingData(false);
     }
-  }
+  };
 
   return (
     <>
@@ -158,46 +149,48 @@ export default function AddRoleModel() {
             <div className="grid grid-cols-6 gap-6">
               <div className="col-span-6 sm:col-span-6">
                 <label
-                  htmlFor="email-address"
+                  htmlFor="role-name"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Nome ruolo
+                  Nome ruolo <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Input
+                  id="role-name"
                   variant="bordered"
                   type="text"
                   radius="sm"
                   value={newRole.RoleName}
-                  onChange={handleRoleNameChange}
+                  onChange={handleRoleChange("RoleName")}
                   fullWidth
                 />
               </div>
 
               <div className="col-span-6 sm:col-span-6">
                 <label
-                  htmlFor="email-address"
+                  htmlFor="role-description"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Descrizione
+                  Descrizione <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Textarea
+                  id="role-description"
                   variant="bordered"
-                  type="text"
                   radius="sm"
                   value={newRole.RoleDescription}
-                  onChange={handleRoleDescriptionChange}
+                  onChange={handleRoleChange("RoleDescription")}
                   fullWidth
                 />
               </div>
 
               <div className="col-span-6 sm:col-span-6">
                 <label
-                  htmlFor="email-address"
+                  htmlFor="role-permissions"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Permessi associati
+                  Permessi associati{" "}
+                  <span className="text-red-600 font-bold">*</span>
                 </label>
-                <div className="flex flex-col xl:flex-row flex-wrap gap-5 sm:gap-0 justify-between mt-3 md:w-1/2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-0 justify-between mt-3">
                   {permissionGroup.map((group) => {
                     const groupPermissions = permissions.filter(
                       (permission) => permission.GroupName === group.GroupName
@@ -215,8 +208,8 @@ export default function AddRoleModel() {
                       >
                         {groupPermissions.map((permission) => (
                           <Checkbox
-                            value={String(permission.PermissionId)}
                             key={permission.PermissionId}
+                            value={String(permission.PermissionId)}
                             onChange={(e) =>
                               handleCheckboxChange(
                                 e.target.value,
@@ -251,4 +244,6 @@ export default function AddRoleModel() {
       </div>
     </>
   );
-}
+};
+
+export default AddRoleModel;

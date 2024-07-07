@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, ChangeEvent } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import {
@@ -14,10 +14,6 @@ import StatusAlert from "../../Layout/StatusAlert";
 interface Role {
   RoleName: string;
   RoleDescription: string;
-}
-
-interface RolePermission {
-  PermissionId: number;
 }
 
 interface PermissionGroup {
@@ -37,55 +33,43 @@ interface AlertData {
   alertColor: string;
 }
 
-export default function EditRoleModel() {
+const initialRoleDataStruct: Role = { RoleName: "", RoleDescription: "" };
+
+const initialAlertData: AlertData = {
+  isOpen: false,
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "",
+};
+
+const EditRoleModel: React.FC = () => {
   const { RoleId } = useParams<{ RoleId: string }>();
   const [permissionGroup, setPermissionGroup] = useState<PermissionGroup[]>([]);
   const [permissions, setPermissions] = useState<Permissions[]>([]);
-  const [roleData, setRoleData] = useState<Role>({
-    RoleName: "",
-    RoleDescription: "",
-  });
-  const [initialRoleData, setInitialRoleData] = useState<Role>({
-    RoleName: "",
-    RoleDescription: "",
-  });
+  const [roleData, setRoleData] = useState<Role>(initialRoleDataStruct);
+  const [initialRoleData, setInitialRoleData] = useState<Role>(
+    initialRoleDataStruct
+  );
   const [rolePermissions, setRolePermissions] = useState<number[]>([]);
   const [initialRolePermissions, setInitialRolePermissions] = useState<
     number[]
   >([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
 
   useEffect(() => {
-    axios
-      .get("/Permission/GET/GetPermissionGroups")
-      .then((res) => {
-        setPermissionGroup(res.data);
-      })
-      .catch((error) => {
-        console.error("Errore durante il fetch dei gruppi di permessi:", error);
-      });
+    const fetchData = async () => {
+      try {
+        const [groupsRes, permsRes, roleRes] = await Promise.all([
+          axios.get("/Permission/GET/GetPermissionGroups"),
+          axios.get("/Permission/GET/GetAllPermissions"),
+          axios.get(`/Permission/GET/GetRoleById`, { params: { RoleId } }),
+        ]);
 
-    axios
-      .get("/Permission/GET/GetAllPermissions")
-      .then((res) => {
-        setPermissions(res.data);
-      })
-      .catch((error) => {
-        console.error("Errore durante il fetch di tutti i permessi:", error);
-      });
+        setPermissionGroup(groupsRes.data);
+        setPermissions(permsRes.data);
 
-    axios
-      .get(`/Permission/GET/GetRoleById`, {
-        params: { RoleId: RoleId },
-      })
-      .then((res) => {
-        const role = res.data;
+        const role = roleRes.data;
         if (role) {
           setRoleData({
             RoleName: role.RoleName,
@@ -97,41 +81,35 @@ export default function EditRoleModel() {
           });
 
           const permissionIds = role.permissions.map(
-            (perm: any) => perm.PermissionId
+            (perm: { PermissionId: number }) => perm.PermissionId
           );
           setRolePermissions(permissionIds);
           setInitialRolePermissions(permissionIds);
         }
-      })
-      .catch((error) => {
-        console.error("Errore durante il fetch dei dati del ruolo:", error);
-      });
+      } catch (error) {
+        console.error("Errore durante il fetch dei dati:", error);
+      }
+    };
+
+    fetchData();
   }, [RoleId]);
 
-  function handleRoleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 150) {
-      setRoleData({ ...roleData, RoleName: e.target.value });
-    }
-  }
+  const handleRoleChange =
+    (key: keyof Role) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setRoleData({ ...roleData, [key]: e.target.value });
+    };
 
-  function handleRoleDescriptionChange(
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) {
-    if (e.target.value.length <= 150) {
-      setRoleData({ ...roleData, RoleDescription: e.target.value });
-    }
-  }
-
-  function handleCheckboxChange(value: string, checked: boolean) {
+  const handleCheckboxChange = (value: string, checked: boolean) => {
     const permissionId = parseInt(value);
-    if (checked) {
-      setRolePermissions((prev) => [...prev, permissionId]);
-    } else {
-      setRolePermissions((prev) => prev.filter((id) => id !== permissionId));
-    }
-  }
+    setRolePermissions((prev) =>
+      checked
+        ? [...prev, permissionId]
+        : prev.filter((id) => id !== permissionId)
+    );
+  };
 
-  function checkAllDataCompiled() {
+  const checkAllDataCompiled = () => {
     return (
       rolePermissions.length === 0 ||
       (roleData.RoleName === initialRoleData.RoleName &&
@@ -139,13 +117,13 @@ export default function EditRoleModel() {
         rolePermissions.length === initialRolePermissions.length &&
         rolePermissions.every((id) => initialRolePermissions.includes(id)))
     );
-  }
+  };
 
-  async function handleUpdateRole() {
+  const handleUpdateRole = async () => {
     try {
       setIsAddingData(true);
       const res = await axios.put("/Permission/UPDATE/UpdateRole", {
-        RoleId: RoleId,
+        RoleId,
         RoleData: roleData,
         RolePermissionData: rolePermissions.map((id) => ({ PermissionId: id })),
       });
@@ -169,14 +147,11 @@ export default function EditRoleModel() {
           "Si è verificato un errore durante l'aggiornamento del ruolo. Per favore, riprova più tardi.",
         alertColor: "red",
       });
-
-      setTimeout(() => {
-        window.location.href = "/administration/permission";
-      }, 2000);
+      console.error("Errore durante l'aggiornamento del ruolo:", error);
     } finally {
       setIsAddingData(false);
     }
-  }
+  };
 
   return (
     <>
@@ -203,11 +178,12 @@ export default function EditRoleModel() {
                   Nome ruolo
                 </label>
                 <Input
+                  id="role-name"
                   variant="bordered"
                   type="text"
                   radius="sm"
                   value={roleData.RoleName}
-                  onChange={handleRoleNameChange}
+                  onChange={handleRoleChange("RoleName")}
                   fullWidth
                 />
               </div>
@@ -220,11 +196,11 @@ export default function EditRoleModel() {
                   Descrizione
                 </label>
                 <Textarea
+                  id="role-description"
                   variant="bordered"
-                  type="text"
                   radius="sm"
                   value={roleData.RoleDescription}
-                  onChange={handleRoleDescriptionChange}
+                  onChange={handleRoleChange("RoleDescription")}
                   fullWidth
                 />
               </div>
@@ -236,15 +212,13 @@ export default function EditRoleModel() {
                 >
                   Permessi associati
                 </label>
-                <div className="flex flex-col xl:flex-row flex-wrap gap-5 sm:gap-0 justify-between mt-3 md:w-1/2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-0 justify-between mt-3">
                   {permissionGroup.map((group) => {
                     const groupPermissions = permissions.filter(
                       (permission) => permission.GroupName === group.GroupName
                     );
 
-                    if (groupPermissions.length === 0) {
-                      return null;
-                    }
+                    if (groupPermissions.length === 0) return null;
 
                     return (
                       <CheckboxGroup
@@ -255,11 +229,11 @@ export default function EditRoleModel() {
                       >
                         {groupPermissions.map((permission) => (
                           <Checkbox
+                            key={permission.PermissionId}
+                            value={String(permission.PermissionId)}
                             isSelected={rolePermissions.includes(
                               permission.PermissionId
                             )}
-                            value={String(permission.PermissionId)}
-                            key={permission.PermissionId}
                             onChange={(e) =>
                               handleCheckboxChange(
                                 e.target.value,
@@ -294,4 +268,6 @@ export default function EditRoleModel() {
       </div>
     </>
   );
-}
+};
+
+export default EditRoleModel;

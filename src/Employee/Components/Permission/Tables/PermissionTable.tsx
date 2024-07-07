@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect, useState } from "react";
 import {
   Table,
@@ -141,10 +142,10 @@ export default function PermissionTable() {
     }
   }
 
-  function DeletePermission(PermissionId) {
+  function DeletePermission(PermissionData) {
     axios
       .delete("/Permission/DELETE/DeletePermission", {
-        params: { PermissionId: PermissionId },
+        params: { PermissionId: PermissionData.PermissionId },
       })
       .then((res) => {
         if (res.status === 200) {

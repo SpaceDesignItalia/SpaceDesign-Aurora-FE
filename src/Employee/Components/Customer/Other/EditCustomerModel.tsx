@@ -182,7 +182,7 @@ export default function EditCustomerModel() {
                     htmlFor="Name"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Nome
+                    Nome <span className="text-red-600 font-bold">*</span>
                   </label>
                   <Input
                     variant="bordered"
@@ -198,7 +198,7 @@ export default function EditCustomerModel() {
                     htmlFor="last-name"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Cognome
+                    Cognome <span className="text-red-600 font-bold">*</span>
                   </label>
                   <Input
                     variant="bordered"
@@ -214,7 +214,7 @@ export default function EditCustomerModel() {
                     htmlFor="email-address"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Email
+                    Email <span className="text-red-600 font-bold">*</span>
                   </label>
                   <Input
                     variant="bordered"
@@ -249,14 +249,14 @@ export default function EditCustomerModel() {
                     htmlFor="company"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Azienda
+                    Azienda <span className="text-red-600 font-bold">*</span>
                   </label>
                   <div className="flex flex-col md:flex-row gap-4">
                     <Autocomplete
                       defaultItems={company}
                       placeholder="Seleziona azienda"
                       onSelectionChange={handleCustomerCompanyId}
-                      selectedKey={newCustomerData.CompanyId}
+                      selectedKey={String(newCustomerData.CompanyId)}
                       variant="bordered"
                       radius="sm"
                       aria-label="company"

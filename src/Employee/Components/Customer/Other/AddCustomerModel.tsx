@@ -1,31 +1,28 @@
+import { useEffect, useState, ChangeEvent } from "react";
+import axios from "axios";
 import {
   Input,
   Autocomplete,
   AutocompleteItem,
   Button,
-  Link,
 } from "@nextui-org/react";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import SaveIcon from "@mui/icons-material/Save";
-import { useEffect, useState } from "react";
-import axios from "axios";
 import StatusAlert from "../../Layout/StatusAlert";
+import { useParams } from "react-router-dom";
+
+interface Customer {
+  CustomerId: number;
+  CustomerName: string;
+  CustomerSurname: string;
+  CustomerEmail: string;
+  CustomerPhone: string | null;
+  CompanyId: number;
+}
 
 interface Company {
   CompanyId: number;
   CompanyName: string;
   CompanyAddress: string;
-  CompanyEmail: string;
-  CompanyPhone: string;
-}
-
-interface Customer {
-  CustomerName: string;
-  CustomerSurname: string;
-  CustomerEmail: string;
-  CustomerPhone: string;
-  CustomerPassword: string;
-  CompanyId: string;
 }
 
 interface AlertData {
@@ -35,17 +32,21 @@ interface AlertData {
   alertColor: string;
 }
 
-export default function AddCustomerModel() {
-  const [company, setCompany] = useState<Company[]>([]);
-  const [customerData, setCustomerData] = useState<Customer>({
-    CustomerName: "",
-    CustomerSurname: "",
-    CustomerEmail: "",
-    CustomerPhone: null,
-    CustomerPassword: "",
-    CompanyId: "",
-  });
-  const [isAddingData, setIsAddingData] = useState<boolean>(false);
+const initialCustomerData: Customer = {
+  CustomerId: 0,
+  CustomerName: "",
+  CustomerSurname: "",
+  CustomerEmail: "",
+  CustomerPhone: null,
+  CompanyId: 0,
+};
+
+export default function EditCustomerModel() {
+  const { CustomerId } = useParams();
+  const [customerData, setCustomerData] =
+    useState<Customer>(initialCustomerData);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>({
     isOpen: false,
     alertTitle: "",
@@ -54,71 +55,70 @@ export default function AddCustomerModel() {
   });
 
   useEffect(() => {
-    axios.get("/Company/GET/GetAllCompany").then((res) => {
-      setCompany(res.data);
-    });
-  }, []);
+    axios
+      .get(`/Customer/GET/GetCustomerById?CustomerId=${CustomerId}`)
+      .then((res) => {
+        const customer = res.data[0];
+        setCustomerData(customer);
+      })
+      .catch((error) => {
+        console.error("Errore nel recupero del cliente:", error);
+      });
 
-  function handleCustomerNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 150) {
-      setCustomerData({ ...customerData, CustomerName: e.target.value });
+    axios
+      .get("/Company/GET/GetAllCompany")
+      .then((res) => {
+        setCompanies(res.data);
+      })
+      .catch((error) => {
+        console.error("Errore nel recupero delle aziende:", error);
+      });
+  }, [CustomerId]);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const newValue =
+      name === "CustomerPhone"
+        ? value.replace(/\D/g, "").slice(0, 15) || null
+        : value.slice(0, 150);
+    setCustomerData((prevData) => ({ ...prevData, [name]: newValue }));
+  };
+
+  const handleCompanyIdChange = (key: string | number | null) => {
+    if (key !== null) {
+      setCustomerData((prevData) => ({ ...prevData, CompanyId: Number(key) }));
     }
-  }
+  };
 
-  function handleCustomerSurnameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 150) {
-      setCustomerData({ ...customerData, CustomerSurname: e.target.value });
-    }
-  }
+  const checkAllDataCompiled = () => {
+    return !(
+      customerData.CustomerName &&
+      customerData.CustomerSurname &&
+      customerData.CustomerEmail &&
+      customerData.CompanyId
+    );
+  };
 
-  function handleCustomerEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 100) {
-      setCustomerData({ ...customerData, CustomerEmail: e.target.value });
-    }
-  }
-
-  function handleCustomerPhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const input = e.target.value.replace(/\D/g, ""); // Rimuove tutti i caratteri non numerici
-    if (input.length <= 15) {
-      setCustomerData({ ...customerData, CustomerPhone: input });
-    }
-  }
-
-  function handleCustomerCompanyId(e: React.Key) {
-    setCustomerData({ ...customerData, CompanyId: String(e) });
-  }
-
-  function checkAllDataCompiled() {
-    if (
-      customerData.CustomerName !== "" &&
-      customerData.CustomerSurname !== "" &&
-      customerData.CustomerEmail !== "" &&
-      customerData.CompanyId !== ""
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  async function generateRandomPassword(length: number) {
+  const generatePassword = (): string => {
     const charset =
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+{}[]|;:,.<>?";
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const passwordLength = 8;
     let password = "";
-    for (let i = 0; i < length; i++) {
+    for (let i = 0; i < passwordLength; i++) {
       const randomIndex = Math.floor(Math.random() * charset.length);
       password += charset[randomIndex];
     }
     return password;
-  }
+  };
 
-  async function handleCreateNewCustomer() {
+  const handleUpdateCustomer = async () => {
     try {
-      setIsAddingData(true);
-
-      const password = await generateRandomPassword(14);
-
+      setIsSaving(true);
       const res = await axios.post("/Customer/POST/AddCustomer", {
-        customerData: { ...customerData, CustomerPassword: password },
+        CustomerData: {
+          ...customerData,
+          CustomerPassword: generatePassword(), // Assign the generated password
+        },
       });
 
       if (res.status === 200) {
@@ -131,10 +131,7 @@ export default function AddCustomerModel() {
         setTimeout(() => {
           window.location.href = "/administration/customer";
         }, 2000);
-        console.log("Successo:", res.data);
       }
-
-      // Esegui altre azioni dopo la creazione dell'azienda, se necessario
     } catch (error) {
       setAlertData({
         isOpen: true,
@@ -143,86 +140,87 @@ export default function AddCustomerModel() {
           "Si è verificato un errore durante l'aggiunta del cliente. Per favore, riprova più tardi.",
         alertColor: "red",
       });
-
-      setTimeout(() => {
-        window.location.href = "/administration/customer";
-      }, 2000);
-      console.error("Errore durante la creazione del cliente:", error);
-      // Gestisci l'errore in modo appropriato, ad esempio mostrando un messaggio all'utente
+    } finally {
+      setIsSaving(false);
     }
-  }
+  };
 
   return (
     <>
       <StatusAlert AlertData={alertData} />
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
-        <form action="#" method="POST">
+        <form>
           <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
             <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
               <div>
                 <h3 className="text-base font-semibold leading-6 text-gray-900">
-                  Cliente
+                  Modifica Cliente
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  In questo pannello potrai aggiungere un nuovo cliente al
-                  database.
+                  Modifica le informazioni del cliente dal database.
                 </p>
               </div>
-
               <div className="grid grid-cols-6 gap-6">
                 <div className="col-span-6 sm:col-span-3">
                   <label
-                    htmlFor="Name"
+                    htmlFor="CustomerName"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Nome
+                    Nome <span className="text-red-600 font-bold">*</span>
                   </label>
                   <Input
                     variant="bordered"
                     type="text"
                     radius="sm"
+                    name="CustomerName"
+                    placeholder="Inserisci il nome"
                     value={customerData.CustomerName}
-                    onChange={handleCustomerNameChange}
+                    onChange={handleChange}
+                    aria-label="Nome"
+                    fullWidth
                   />
                 </div>
-
                 <div className="col-span-6 sm:col-span-3">
                   <label
-                    htmlFor="last-name"
+                    htmlFor="CustomerSurname"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Cognome
+                    Cognome <span className="text-red-600 font-bold">*</span>
                   </label>
                   <Input
                     variant="bordered"
                     type="text"
                     radius="sm"
+                    name="CustomerSurname"
+                    placeholder="Inserisci il cognome"
                     value={customerData.CustomerSurname}
-                    onChange={handleCustomerSurnameChange}
+                    onChange={handleChange}
+                    aria-label="Cognome"
+                    fullWidth
                   />
                 </div>
-
                 <div className="col-span-6 sm:col-span-6">
                   <label
-                    htmlFor="email-address"
+                    htmlFor="CustomerEmail"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Email
+                    Email <span className="text-red-600 font-bold">*</span>
                   </label>
                   <Input
                     variant="bordered"
                     type="email"
                     radius="sm"
+                    name="CustomerEmail"
+                    placeholder="Inserisci l'email"
                     value={customerData.CustomerEmail}
-                    onChange={handleCustomerEmailChange}
+                    onChange={handleChange}
                     aria-label="Email"
                     fullWidth
                   />
                 </div>
-
                 <div className="col-span-6 sm:col-span-6">
                   <label
-                    htmlFor="email-address"
+                    htmlFor="CustomerPhone"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Numero di telefono
@@ -231,24 +229,27 @@ export default function AddCustomerModel() {
                     variant="bordered"
                     type="text"
                     radius="sm"
-                    value={customerData.CustomerPhone}
-                    onChange={handleCustomerPhoneChange}
+                    name="CustomerPhone"
+                    placeholder="Inserisci il numero di telefono"
+                    value={customerData.CustomerPhone || ""}
+                    onChange={handleChange}
+                    aria-label="Numero di telefono"
                     fullWidth
                   />
                 </div>
-
                 <div className="col-span-6 sm:col-span-6">
                   <label
                     htmlFor="company"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Azienda
+                    Azienda <span className="text-red-600 font-bold">*</span>
                   </label>
                   <div className="flex flex-col md:flex-row gap-4">
                     <Autocomplete
-                      defaultItems={company}
+                      defaultItems={companies}
                       placeholder="Seleziona azienda"
-                      onSelectionChange={handleCustomerCompanyId}
+                      onSelectionChange={handleCompanyIdChange}
+                      selectedKey={String(customerData.CompanyId)}
                       variant="bordered"
                       radius="sm"
                       aria-label="company"
@@ -260,29 +261,18 @@ export default function AddCustomerModel() {
                           textValue={company.CompanyName}
                         >
                           <div className="flex justify-between items-center">
-                            <div className="flex gap-2 items-center">
-                              <div className="flex flex-col">
-                                <span className="text-small">
-                                  {company.CompanyName}
-                                </span>
-                                <span className="text-tiny text-default-400">
-                                  {company.CompanyAddress}
-                                </span>
-                              </div>
+                            <div className="flex flex-col">
+                              <span className="text-small">
+                                {company.CompanyName}
+                              </span>
+                              <span className="text-tiny text-default-400">
+                                {company.CompanyAddress}
+                              </span>
                             </div>
                           </div>
                         </AutocompleteItem>
                       )}
                     </Autocomplete>
-                    <Button
-                      as={Link}
-                      href="/administration/customer/add-company"
-                      color="primary"
-                      radius="sm"
-                      startContent={<AddRoundedIcon />}
-                    >
-                      Aggiungi azienda
-                    </Button>
                   </div>
                 </div>
               </div>
@@ -294,10 +284,10 @@ export default function AddCustomerModel() {
                 radius="sm"
                 startContent={<SaveIcon />}
                 isDisabled={checkAllDataCompiled()}
-                isLoading={isAddingData}
-                onClick={handleCreateNewCustomer}
+                isLoading={isSaving}
+                onClick={handleUpdateCustomer}
               >
-                {isAddingData ? "Salvando il cliente..." : "Salva cliente"}
+                {isSaving ? "Salvando il cliente..." : "Salva cliente"}
               </Button>
             </div>
           </div>

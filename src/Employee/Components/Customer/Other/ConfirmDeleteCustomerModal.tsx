@@ -8,17 +8,31 @@ import {
   ModalHeader,
 } from "@nextui-org/react";
 
+interface Customer {
+  CustomerId: number;
+  CustomerFullName: string;
+  CustomerEmail: string;
+  CustomerPhone: string;
+}
+
+interface ConfirmDeleteCustomerModalProps {
+  isOpen: boolean;
+  isClosed: () => void;
+  CustomerData: Customer;
+  DeleteCustomer: (CustomerData: Customer) => void;
+}
+
 export default function ConfirmDeleteCustomerModal({
   isOpen,
   isClosed,
   CustomerData,
   DeleteCustomer,
-}) {
+}: ConfirmDeleteCustomerModalProps) {
   return (
     <Modal
       isOpen={isOpen}
       onOpenChange={isClosed}
-      size="2xl"
+      size="xl"
       scrollBehavior="inside"
       placement="center"
       backdrop="blur"
@@ -41,13 +55,11 @@ export default function ConfirmDeleteCustomerModal({
             <ModalFooter className="flex sm:flex-row flex-col">
               <Button
                 color="success"
-                variant="light"
                 onClick={() => {
                   DeleteCustomer(CustomerData);
                   isClosed();
                 }}
                 radius="sm"
-                className="mr-2"
               >
                 Conferma eliminazione
               </Button>

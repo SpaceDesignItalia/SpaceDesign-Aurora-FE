@@ -8,12 +8,26 @@ import {
   ModalHeader,
 } from "@nextui-org/react";
 
+interface Company {
+  CompanyName: string;
+  CompanyAddress: string;
+  CompanyEmail: string;
+  CompanyPhone: string;
+}
+
+interface ConfirmDeleteCompanyModalProps {
+  isOpen: boolean;
+  isClosed: () => void;
+  CompanyData: Company;
+  DeleteCompany: (CompanyData: Company) => void;
+}
+
 export default function ConfirmDeleteCompanyModal({
   isOpen,
   isClosed,
   CompanyData,
   DeleteCompany,
-}) {
+}: ConfirmDeleteCompanyModalProps) {
   return (
     <Modal
       isOpen={isOpen}
@@ -41,13 +55,11 @@ export default function ConfirmDeleteCompanyModal({
             <ModalFooter className="flex sm:flex-row flex-col">
               <Button
                 color="success"
-                variant="light"
                 onClick={() => {
                   DeleteCompany(CompanyData);
                   isClosed();
                 }}
                 radius="sm"
-                className="mr-2"
               >
                 Conferma eliminazione
               </Button>

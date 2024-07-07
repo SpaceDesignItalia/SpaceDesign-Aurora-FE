@@ -88,15 +88,8 @@ export default function ProjectTeamMemberCard({
           <Card className="w-full" radius="sm">
             <CardBody className="flex flex-row justify-start items-center">
               <User
-                name={
-                  <>
-                    {MemberData.StafferFullName}{" "}
-                    <Chip color="primary" size="sm" radius="sm" variant="flat">
-                      {MemberData.RoleName}
-                    </Chip>
-                  </>
-                }
-                description={MemberData.StafferEmail}
+                name={MemberData.StafferFullName}
+                description={MemberData.RoleName}
                 avatarProps={{
                   src:
                     MemberData.StafferImageUrl &&
@@ -111,15 +104,8 @@ export default function ProjectTeamMemberCard({
         <Card className="w-full" radius="sm">
           <CardBody className="flex flex-row justify-start items-center">
             <User
-              name={
-                <>
-                  {MemberData.StafferFullName}{" "}
-                  <Chip color="primary" size="sm" radius="sm" variant="flat">
-                    {MemberData.RoleName}
-                  </Chip>
-                </>
-              }
-              description={MemberData.StafferEmail}
+              name={<>{MemberData.StafferFullName} </>}
+              description={MemberData.RoleName}
               avatarProps={{
                 src:
                   MemberData.StafferImageUrl &&

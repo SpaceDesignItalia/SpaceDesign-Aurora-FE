@@ -218,7 +218,7 @@ export default function TaskContainer({
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-4 justify-between p-5 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-between p-5 gap-5">
           {columns.map((column) => {
             const columnTaskList =
               columnTasks[column.ProjectTaskStatusId] || [];
