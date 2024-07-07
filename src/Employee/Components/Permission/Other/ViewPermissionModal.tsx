@@ -5,6 +5,7 @@ import {
   ModalBody,
   ModalFooter,
   Button,
+  Spinner,
 } from "@nextui-org/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -18,10 +19,16 @@ interface Permission {
   GroupName: string;
 }
 
+interface ViewPermission {
+  PermissionId: number;
+  PermissionName: string;
+  PermissionDescription: string;
+}
+
 interface ViewPermissionModalProps {
   isOpen: boolean;
   isClosed: () => void;
-  PermData: Permission;
+  PermData: ViewPermission;
 }
 
 export default function ViewPermissionModal({
@@ -105,7 +112,7 @@ export default function ViewPermissionModal({
                   </dl>
                 </div>
               ) : (
-                <div>Caricamento...</div>
+                <Spinner label="Caricamento..." color="danger" />
               )}
             </ModalBody>
             <ModalFooter>

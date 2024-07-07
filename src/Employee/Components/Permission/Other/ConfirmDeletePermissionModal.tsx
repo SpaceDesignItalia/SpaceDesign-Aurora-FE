@@ -8,17 +8,30 @@ import {
   ModalHeader,
 } from "@nextui-org/react";
 
+interface Permission {
+  PermissionId: number;
+  PermissionName: string;
+  PermissionDescription: string;
+}
+
+interface ConfirmDeletePermissionModalProps {
+  isOpen: boolean;
+  isClosed: () => void;
+  PermissionData: Permission;
+  DeletePermission: (PermissionId: Permission) => void;
+}
+
 export default function ConfirmDeletePermissionModal({
   isOpen,
   isClosed,
   PermissionData,
   DeletePermission,
-}) {
+}: ConfirmDeletePermissionModalProps) {
   return (
     <Modal
       isOpen={isOpen}
       onOpenChange={isClosed}
-      size="2xl"
+      size="xl"
       scrollBehavior="inside"
       placement="center"
       backdrop="blur"
@@ -42,13 +55,11 @@ export default function ConfirmDeletePermissionModal({
             <ModalFooter className="flex sm:flex-row flex-col">
               <Button
                 color="success"
-                variant="light"
                 onClick={() => {
-                  DeletePermission(PermissionData.PermissionId);
+                  DeletePermission(PermissionData);
                   isClosed();
                 }}
                 radius="sm"
-                className="mr-2"
               >
                 Conferma eliminazione
               </Button>

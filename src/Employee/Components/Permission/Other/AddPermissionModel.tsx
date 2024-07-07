@@ -22,73 +22,85 @@ interface AlertData {
   alertColor: string;
 }
 
+const initialPermissionData = {
+  PermissionName: "",
+  PermissionDescription: "",
+  PermissionAction: "",
+  PermissionGroupId: null as number | null,
+};
+
+const initialAlertData: AlertData = {
+  isOpen: false,
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "",
+};
+
 export default function AddPermissionModel() {
-  const [permissionGroup, setPermissionGroup] = useState<PermissionGroup[]>([]);
-  const [permissions, setPermissions] = useState<Permissions[]>([]);
-  const [newPermission, setNewPermission] = useState({
-    PermissionName: "",
-    PermissionDescription: "",
-    PermissionAction: "",
-    PermissionGroupId: null,
-  });
-  const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "",
-  });
+  const [permissionGroups, setPermissionGroups] = useState<PermissionGroup[]>(
+    []
+  );
+  const [newPermission, setNewPermission] = useState(initialPermissionData);
+  const [isAddingData, setIsAddingData] = useState(false);
+  const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
 
   useEffect(() => {
-    axios.get("/Permission/GET/GetPermissionGroups").then((res) => {
-      setPermissionGroup(res.data);
-    });
-
-    axios.get("/Permission/GET/GetAllPermissions").then((res) => {
-      setPermissions(res.data);
-    });
+    axios
+      .get("/Permission/GET/GetPermissionGroups")
+      .then((res) => {
+        setPermissionGroups(res.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching permission groups:", error);
+      });
   }, []);
 
-  function handlePermissionNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setNewPermission({ ...newPermission, PermissionName: e.target.value });
-  }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    if (name === "PermissionAction") {
+      const transformedValue = value.replace(/\s+/g, "_").toUpperCase();
+      setNewPermission((prev) => ({
+        ...prev,
+        [name]: transformedValue,
+      }));
+    } else {
+      setNewPermission((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
 
-  function handlePermissionDescriptionChange(
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) {
-    setNewPermission({
-      ...newPermission,
-      PermissionDescription: e.target.value,
-    });
-  }
+  const handlePermissionGroupChange = (key: string | number | null) => {
+    if (key !== null) {
+      setNewPermission((prev) => ({
+        ...prev,
+        PermissionGroupId: Number(key),
+      }));
+    }
+  };
 
-  function handlePermissionGroupChange(selected: Set<React.Key>) {
-    const groupId = Array.from(selected)[0] as number;
-    setNewPermission({ ...newPermission, PermissionGroupId: groupId });
-  }
-
-  function handlePermissionActionChange(
-    e: React.ChangeEvent<HTMLInputElement>
-  ) {
-    const transformedValue = e.target.value.replace(/\s+/g, "_").toUpperCase();
-    setNewPermission({
-      ...newPermission,
-      PermissionAction: transformedValue,
-    });
-  }
-
-  function checkAllDataCompiled() {
+  const isDataIncomplete = () => {
+    const {
+      PermissionName,
+      PermissionDescription,
+      PermissionAction,
+      PermissionGroupId,
+    } = newPermission;
     return (
-      newPermission.PermissionName === "" ||
-      newPermission.PermissionDescription === "" ||
-      newPermission.PermissionGroupId === null ||
-      newPermission.PermissionAction === ""
+      !PermissionName ||
+      !PermissionDescription ||
+      !PermissionAction ||
+      PermissionGroupId === null
     );
-  }
+  };
 
-  async function handleCreateNewPermission() {
+  const handleCreateNewPermission = async () => {
     try {
       setIsAddingData(true);
+
       const res = await axios.post("/Permission/POST/AddPermission", {
         PermissionData: newPermission,
       });
@@ -114,12 +126,12 @@ export default function AddPermissionModel() {
       });
 
       setTimeout(() => {
-        setAlertData({ ...alertData, isOpen: false });
+        setAlertData((prev) => ({ ...prev, isOpen: false }));
       }, 2000);
     } finally {
       setIsAddingData(false);
     }
-  }
+  };
 
   return (
     <>
@@ -138,74 +150,73 @@ export default function AddPermissionModel() {
             </div>
 
             <div className="grid grid-cols-6 gap-6">
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6">
                 <label
-                  htmlFor="permission-name"
+                  htmlFor="PermissionName"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Nome permesso
+                  Nome permesso{" "}
+                  <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Input
-                  id="permission-name"
+                  id="PermissionName"
+                  name="PermissionName"
                   variant="bordered"
-                  type="text"
                   radius="sm"
                   value={newPermission.PermissionName}
-                  onChange={handlePermissionNameChange}
+                  onChange={handleChange}
                   fullWidth
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6">
                 <label
-                  htmlFor="permission-description"
+                  htmlFor="PermissionDescription"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Descrizione permesso
+                  Descrizione permesso{" "}
+                  <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Textarea
-                  id="permission-description"
+                  id="PermissionDescription"
+                  name="PermissionDescription"
                   variant="bordered"
                   radius="sm"
                   value={newPermission.PermissionDescription}
-                  onChange={handlePermissionDescriptionChange}
+                  onChange={handleChange}
                   fullWidth
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="permission-action"
+                  htmlFor="PermissionAction"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Azione permesso
+                  Azione permesso{" "}
+                  <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Input
-                  id="permission-action"
+                  id="PermissionAction"
+                  name="PermissionAction"
                   variant="bordered"
-                  type="text"
                   radius="sm"
                   value={newPermission.PermissionAction}
-                  onChange={handlePermissionActionChange}
+                  onChange={handleChange}
                   fullWidth
-                  onInput={(e) => {
-                    const input = e.target as HTMLInputElement;
-                    input.value = input.value
-                      .replace(/\s+/g, "_")
-                      .toUpperCase();
-                  }}
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="permission-group"
+                  htmlFor="PermissionGroup"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Gruppo permesso
+                  Gruppo permesso{" "}
+                  <span className="text-red-600 font-bold">*</span>
                 </label>
                 <Autocomplete
-                  items={permissionGroup.map((group) => ({
+                  items={permissionGroups.map((group) => ({
                     key: group.PermissionGroupId,
                     label: group.GroupName,
                   }))}
@@ -213,7 +224,7 @@ export default function AddPermissionModel() {
                   onSelectionChange={handlePermissionGroupChange}
                   variant="bordered"
                   radius="sm"
-                  aria-label="permission-group"
+                  aria-label="PermissionGroup"
                   fullWidth
                 >
                   {(item) => (
@@ -237,7 +248,7 @@ export default function AddPermissionModel() {
               className="text-white"
               radius="sm"
               startContent={!isAddingData && <SaveIcon />}
-              isDisabled={checkAllDataCompiled()}
+              isDisabled={isDataIncomplete()}
               isLoading={isAddingData}
               onClick={handleCreateNewPermission}
             >
