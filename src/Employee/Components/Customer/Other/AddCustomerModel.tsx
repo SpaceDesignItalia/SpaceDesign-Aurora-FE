@@ -15,7 +15,7 @@ interface Customer {
   CustomerName: string;
   CustomerSurname: string;
   CustomerEmail: string;
-  CustomerPhone: string;
+  CustomerPhone: string | null;
   CompanyId: number;
 }
 
@@ -37,7 +37,7 @@ const initialCustomerData: Customer = {
   CustomerName: "",
   CustomerSurname: "",
   CustomerEmail: "",
-  CustomerPhone: "",
+  CustomerPhone: null,
   CompanyId: 0,
 };
 
@@ -79,7 +79,7 @@ export default function EditCustomerModel() {
     const { name, value } = e.target;
     const newValue =
       name === "CustomerPhone"
-        ? value.replace(/\D/g, "").slice(0, 15)
+        ? value.replace(/\D/g, "").slice(0, 15) || null
         : value.slice(0, 150);
     setCustomerData((prevData) => ({ ...prevData, [name]: newValue }));
   };
@@ -99,19 +99,33 @@ export default function EditCustomerModel() {
     );
   };
 
+  const generatePassword = (): string => {
+    const charset =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const passwordLength = 8;
+    let password = "";
+    for (let i = 0; i < passwordLength; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+    return password;
+  };
+
   const handleUpdateCustomer = async () => {
     try {
       setIsSaving(true);
-      const res = await axios.put("/Customer/UPDATE/UpdateCustomerData", {
-        CustomerData: customerData,
-        OldCompanyId: initialCustomerData.CompanyId,
+      const res = await axios.post("/Customer/POST/AddCustomer", {
+        CustomerData: {
+          ...customerData,
+          CustomerPassword: generatePassword(), // Assign the generated password
+        },
       });
 
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
           alertTitle: "Operazione completata",
-          alertDescription: "Il cliente è stato modificato con successo.",
+          alertDescription: "Il cliente è stato aggiunto con successo.",
           alertColor: "green",
         });
         setTimeout(() => {
@@ -123,7 +137,7 @@ export default function EditCustomerModel() {
         isOpen: true,
         alertTitle: "Errore durante l'operazione",
         alertDescription:
-          "Si è verificato un errore durante la modifica del cliente. Per favore, riprova più tardi.",
+          "Si è verificato un errore durante l'aggiunta del cliente. Per favore, riprova più tardi.",
         alertColor: "red",
       });
     } finally {
@@ -217,7 +231,7 @@ export default function EditCustomerModel() {
                     radius="sm"
                     name="CustomerPhone"
                     placeholder="Inserisci il numero di telefono"
-                    value={customerData.CustomerPhone}
+                    value={customerData.CustomerPhone || ""}
                     onChange={handleChange}
                     aria-label="Numero di telefono"
                     fullWidth
@@ -235,7 +249,7 @@ export default function EditCustomerModel() {
                       defaultItems={companies}
                       placeholder="Seleziona azienda"
                       onSelectionChange={handleCompanyIdChange}
-                      selectedKey={customerData.CompanyId}
+                      selectedKey={String(customerData.CompanyId)}
                       variant="bordered"
                       radius="sm"
                       aria-label="company"

@@ -256,7 +256,7 @@ export default function EditCustomerModel() {
                       defaultItems={company}
                       placeholder="Seleziona azienda"
                       onSelectionChange={handleCustomerCompanyId}
-                      selectedKey={newCustomerData.CompanyId}
+                      selectedKey={String(newCustomerData.CompanyId)}
                       variant="bordered"
                       radius="sm"
                       aria-label="company"

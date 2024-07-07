@@ -1,12 +1,12 @@
-import SaveIcon from "@mui/icons-material/Save";
+import { useEffect, useState, ChangeEvent } from "react";
+import axios from "axios";
 import {
+  Input,
   Autocomplete,
   AutocompleteItem,
   Button,
-  Input,
 } from "@nextui-org/react";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
 
 interface Employee {
@@ -23,10 +23,6 @@ interface Role {
   RoleDescription: string;
 }
 
-interface SelectedRole {
-  RoleId: number;
-}
-
 interface AlertData {
   isOpen: boolean;
   alertTitle: string;
@@ -34,95 +30,78 @@ interface AlertData {
   alertColor: string;
 }
 
+const initialEmployeeData: Employee = {
+  EmployeeName: "",
+  EmployeeSurname: "",
+  EmployeeEmail: "",
+  EmployeePhone: "",
+  EmployeePassword: "",
+};
+
+const initialAlertData: AlertData = {
+  isOpen: false,
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "",
+};
+
 export default function AddEmployeeModel() {
-  const [employeeData, setEmployeeData] = useState<Employee>({
-    EmployeeName: "",
-    EmployeeSurname: "",
-    EmployeeEmail: "",
-    EmployeePhone: "",
-    EmployeePassword: "",
-  });
-  const [selectedRole, setSelectedRole] = useState<SelectedRole>({
-    RoleId: 0,
-  });
+  const [employeeData, setEmployeeData] =
+    useState<Employee>(initialEmployeeData);
+  const [selectedRole, setSelectedRole] = useState<number>(0);
   const [roles, setRoles] = useState<Role[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
 
   useEffect(() => {
-    axios.get("/Permission/GET/GetAllRoles").then((res) => {
-      setRoles(res.data);
-    });
+    axios
+      .get("/Permission/GET/GetAllRoles")
+      .then((res) => setRoles(res.data))
+      .catch((error) => console.error("Errore nel recupero dei ruoli:", error));
   }, []);
 
-  function handleEmployeeNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 150) {
-      setEmployeeData({ ...employeeData, EmployeeName: e.target.value });
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const newValue =
+      name === "EmployeePhone"
+        ? value.replace(/\D/g, "").slice(0, 10)
+        : value.slice(0, 150);
+    setEmployeeData((prevData) => ({ ...prevData, [name]: newValue }));
+  };
+
+  const handleRoleChange = (key: string | number | null) => {
+    if (key !== null) {
+      setSelectedRole(Number(key));
     }
-  }
+  };
 
-  function handleEmployeeSurnameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 150) {
-      setEmployeeData({ ...employeeData, EmployeeSurname: e.target.value });
-    }
-  }
+  const checkAllDataCompiled = () => {
+    return !(
+      employeeData.EmployeeName &&
+      employeeData.EmployeeSurname &&
+      employeeData.EmployeeEmail &&
+      employeeData.EmployeePhone &&
+      selectedRole !== 0
+    );
+  };
 
-  function handleEmployeeEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 100) {
-      setEmployeeData({ ...employeeData, EmployeeEmail: e.target.value });
-    }
-  }
-
-  function handleEmployeePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const input = e.target.value.replace(/\D/g, ""); // Rimuove tutti i caratteri non numerici
-    if (input.length <= 15) {
-      setEmployeeData({ ...employeeData, EmployeePhone: input });
-    }
-  }
-
-  function handleEmployeeRoleId(e: React.Key) {
-    setSelectedRole({ ...selectedRole, RoleId: parseInt(String(e)) });
-  }
-
-  function checkAllDataCompiled() {
-    if (
-      employeeData.EmployeeName !== "" &&
-      employeeData.EmployeeSurname !== "" &&
-      employeeData.EmployeeEmail !== "" &&
-      employeeData.EmployeePhone !== "" &&
-      selectedRole.RoleId !== 0 &&
-      !isNaN(selectedRole.RoleId)
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  async function generateRandomPassword(length: number) {
+  const generateRandomPassword = (length: number) => {
     const charset =
       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+{}[]|;:,.<>?";
-    let password = "";
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * charset.length);
-      password += charset[randomIndex];
-    }
-    return password;
-  }
+    return Array.from(
+      { length },
+      () => charset[Math.floor(Math.random() * charset.length)]
+    ).join("");
+  };
 
-  async function handleCreateNewEmployee() {
+  const handleCreateNewEmployee = async () => {
     try {
       setIsAddingData(true);
-
-      const password = await generateRandomPassword(14);
+      const password = generateRandomPassword(14);
 
       const res = await axios.post("/Staffer/POST/AddStaffer", {
         EmployeeData: { ...employeeData, EmployeePassword: password },
-        SelectedRole: selectedRole,
+        SelectedRole: { RoleId: selectedRole },
       });
 
       if (res.status === 200) {
@@ -135,7 +114,6 @@ export default function AddEmployeeModel() {
         setTimeout(() => {
           window.location.href = "/administration/employee";
         }, 2000);
-        console.log("Successo:", res.data);
       }
     } catch (error) {
       setAlertData({
@@ -145,15 +123,13 @@ export default function AddEmployeeModel() {
           "Si è verificato un errore durante l'aggiunta del dipendente. Per favore, riprova più tardi.",
         alertColor: "red",
       });
-
       setTimeout(() => {
         window.location.href = "/administration/employee";
       }, 2000);
-      console.error("Errore durante la creazione del dipendente:", error);
     } finally {
       setIsAddingData(false);
     }
-  }
+  };
 
   return (
     <>
@@ -171,11 +147,10 @@ export default function AddEmployeeModel() {
                   database.
                 </p>
               </div>
-
               <div className="grid grid-cols-6 gap-6">
                 <div className="col-span-6 sm:col-span-3">
                   <label
-                    htmlFor="Name"
+                    htmlFor="EmployeeName"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Nome
@@ -184,14 +159,16 @@ export default function AddEmployeeModel() {
                     variant="bordered"
                     type="text"
                     radius="sm"
+                    name="EmployeeName"
                     value={employeeData.EmployeeName}
-                    onChange={handleEmployeeNameChange}
+                    onChange={handleChange}
+                    aria-label="Nome"
+                    fullWidth
                   />
                 </div>
-
                 <div className="col-span-6 sm:col-span-3">
                   <label
-                    htmlFor="last-name"
+                    htmlFor="EmployeeSurname"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Cognome
@@ -200,14 +177,16 @@ export default function AddEmployeeModel() {
                     variant="bordered"
                     type="text"
                     radius="sm"
+                    name="EmployeeSurname"
                     value={employeeData.EmployeeSurname}
-                    onChange={handleEmployeeSurnameChange}
+                    onChange={handleChange}
+                    aria-label="Cognome"
+                    fullWidth
                   />
                 </div>
-
                 <div className="col-span-6 sm:col-span-6">
                   <label
-                    htmlFor="email-address"
+                    htmlFor="EmployeeEmail"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Email
@@ -216,16 +195,16 @@ export default function AddEmployeeModel() {
                     variant="bordered"
                     type="email"
                     radius="sm"
+                    name="EmployeeEmail"
                     value={employeeData.EmployeeEmail}
-                    onChange={handleEmployeeEmailChange}
+                    onChange={handleChange}
                     aria-label="Email"
                     fullWidth
                   />
                 </div>
-
                 <div className="col-span-6 sm:col-span-6">
                   <label
-                    htmlFor="email-address"
+                    htmlFor="EmployeePhone"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Numero di telefono
@@ -234,49 +213,45 @@ export default function AddEmployeeModel() {
                     variant="bordered"
                     type="text"
                     radius="sm"
+                    name="EmployeePhone"
                     value={employeeData.EmployeePhone}
-                    onChange={handleEmployeePhoneChange}
+                    onChange={handleChange}
+                    aria-label="Numero di telefono"
                     fullWidth
                   />
                 </div>
-
                 <div className="col-span-6 sm:col-span-6">
                   <label
-                    htmlFor="company"
+                    htmlFor="role"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Ruolo
                   </label>
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <Autocomplete
-                      placeholder="Seleziona ruolo"
-                      onSelectionChange={handleEmployeeRoleId}
-                      variant="bordered"
-                      radius="sm"
-                      aria-label="company"
-                      fullWidth
-                    >
-                      {roles.map((role) => (
-                        <AutocompleteItem
-                          key={role.RoleId}
-                          textValue={role.RoleName}
-                        >
-                          <div className="flex justify-between items-center">
-                            <div className="flex gap-2 items-center">
-                              <div className="flex flex-col">
-                                <span className="text-small">
-                                  {role.RoleName}
-                                </span>
-                                <span className="text-tiny text-default-400">
-                                  {role.RoleDescription}
-                                </span>
-                              </div>
-                            </div>
+                  <Autocomplete
+                    placeholder="Seleziona ruolo"
+                    onSelectionChange={handleRoleChange}
+                    selectedKey={selectedRole}
+                    variant="bordered"
+                    radius="sm"
+                    aria-label="Ruolo"
+                    fullWidth
+                  >
+                    {roles.map((role) => (
+                      <AutocompleteItem
+                        key={role.RoleId}
+                        textValue={role.RoleName}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex flex-col">
+                            <span className="text-small">{role.RoleName}</span>
+                            <span className="text-tiny text-default-400">
+                              {role.RoleDescription}
+                            </span>
                           </div>
-                        </AutocompleteItem>
-                      ))}
-                    </Autocomplete>
-                  </div>
+                        </div>
+                      </AutocompleteItem>
+                    ))}
+                  </Autocomplete>
                 </div>
               </div>
             </div>

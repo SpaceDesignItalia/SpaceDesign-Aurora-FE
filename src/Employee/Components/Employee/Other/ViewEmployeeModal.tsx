@@ -7,7 +7,24 @@ import {
   ModalHeader,
 } from "@nextui-org/react";
 
-export default function ViewEmployeeModal({ isOpen, isClosed, EmployeeData }) {
+interface Employee {
+  EmployeeId: number;
+  EmployeeFullName: string;
+  EmployeeEmail: string;
+  EmployeePhone: string;
+}
+
+interface ViewEmployeeModalProps {
+  isOpen: boolean;
+  isClosed: () => void;
+  EmployeeData: Employee;
+}
+
+export default function ViewEmployeeModal({
+  isOpen,
+  isClosed,
+  EmployeeData,
+}: ViewEmployeeModalProps) {
   return (
     <Modal
       isOpen={isOpen}

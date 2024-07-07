@@ -8,17 +8,31 @@ import {
   ModalHeader,
 } from "@nextui-org/react";
 
+interface Employee {
+  EmployeeId: number;
+  EmployeeFullName: string;
+  EmployeeEmail: string;
+  EmployeePhone: string;
+}
+
+interface ConfirmDeleteModalProps {
+  isOpen: boolean;
+  isClosed: () => void;
+  EmployeeData: Employee;
+  DeleteEmployee: (EmployeeData: Employee) => void;
+}
+
 export default function ConfirmDeleteModal({
   isOpen,
   isClosed,
   EmployeeData,
   DeleteEmployee,
-}) {
+}: ConfirmDeleteModalProps) {
   return (
     <Modal
       isOpen={isOpen}
       onOpenChange={isClosed}
-      size="2xl"
+      size="xl"
       scrollBehavior="inside"
       placement="center"
       backdrop="blur"
@@ -41,13 +55,11 @@ export default function ConfirmDeleteModal({
             <ModalFooter className="flex sm:flex-row flex-col">
               <Button
                 color="success"
-                variant="light"
                 onClick={() => {
                   DeleteEmployee(EmployeeData);
                   isClosed();
                 }}
                 radius="sm"
-                className="mr-2"
               >
                 Conferma eliminazione
               </Button>
