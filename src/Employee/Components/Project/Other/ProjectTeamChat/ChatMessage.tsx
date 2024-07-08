@@ -24,17 +24,18 @@ export default function ChatMessage({
     const now = new Date();
     const date = new Date(dateStr);
 
-    const diffTime = Math.abs(now.getDay() - date.getDay());
+    let diffTime = Math.abs(now.getTime() - date.getTime());
+    diffTime = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    switch (diffTime) {
-      case 0:
+    switch (true) {
+      case diffTime === 0:
         return date.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         });
-      case 1:
+      case diffTime === 1:
         return "Ieri";
-      case Number(diffTime < 7):
+      case diffTime < 7:
         return date.toLocaleDateString([], { weekday: "long" });
       default:
         return date.toLocaleDateString([], {

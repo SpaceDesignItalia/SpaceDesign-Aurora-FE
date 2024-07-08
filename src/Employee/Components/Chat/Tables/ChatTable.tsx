@@ -153,7 +153,6 @@ export default function ChatTable() {
   }
 
   function handleOpenChat(conversationId: number) {
-    console.log("HandleOpenChat: ", conversationId);
     try {
       localStorage.setItem("conversationId", conversationId.toString());
       axios
