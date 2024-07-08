@@ -1,7 +1,7 @@
 import { Avatar, Button, Input, ScrollShadow, cn } from "@nextui-org/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
@@ -53,6 +53,16 @@ export default function ChatTable() {
   const [conversationId, setConversationId] = useState<number>(-1);
   const [emplyees, setEmployees] = useState<Employee[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      (scrollRef.current as HTMLElement).scrollTop = (
+        scrollRef.current as HTMLElement
+      ).scrollHeight;
+    }
+  }, [messages]);
 
   useEffect(() => {
     socket.on("message-update", () => {
@@ -311,7 +321,7 @@ export default function ChatTable() {
 
         <div className="flex flex-col w-full mx-auto px-4 py-2 gap-5">
           <div className="flex flex-col space-y-2">
-            <ScrollShadow>
+            <ScrollShadow ref={scrollRef}>
               {searchQuery === "" &&
                 messages.map((message) => {
                   if (message.StafferSenderId !== loggedStafferId) {

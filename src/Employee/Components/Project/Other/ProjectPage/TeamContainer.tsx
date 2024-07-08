@@ -4,7 +4,7 @@ import ProjectTeamMemberCard from "../ProjectTeamMemberCard";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import ChatMessage from "../ProjectTeamChat/ChatMessage";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import AddProjectTeamMember from "../AddProjectTeamMember";
@@ -71,6 +71,16 @@ export default function TeamContainer({
     editProject: false,
   });
   const { hasPermission } = usePermissions();
+
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      (scrollRef.current as HTMLElement).scrollTop = (
+        scrollRef.current as HTMLElement
+      ).scrollHeight;
+    }
+  }, [messages]);
 
   useEffect(() => {
     axios
@@ -166,7 +176,7 @@ export default function TeamContainer({
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
           <div className="flex flex-col gap-5">
             <h1 className="font-bold">Team chat</h1>
-            <ScrollShadow className="w-full h-[500px]">
+            <ScrollShadow className="w-full h-[500px]" ref={scrollRef}>
               <div className="flex flex-col">
                 {messages.map((message) => {
                   if (message.StafferSenderId !== loggedStafferId) {
