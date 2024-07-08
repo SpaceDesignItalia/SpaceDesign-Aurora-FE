@@ -176,7 +176,11 @@ export default function TeamContainer({
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
           <div className="flex flex-col gap-5">
             <h1 className="font-bold">Team chat</h1>
-            <ScrollShadow className="w-full h-[500px]" ref={scrollRef}>
+            <ScrollShadow
+              className="w-full h-[500px]"
+              ref={scrollRef}
+              hideScrollBar
+            >
               <div className="flex flex-col">
                 {messages.map((message) => {
                   if (message.StafferSenderId !== loggedStafferId) {

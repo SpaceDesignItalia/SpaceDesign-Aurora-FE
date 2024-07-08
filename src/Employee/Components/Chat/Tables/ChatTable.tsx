@@ -321,7 +321,7 @@ export default function ChatTable() {
 
         <div className="flex flex-col w-full mx-auto px-4 py-2 gap-5">
           <div className="flex flex-col space-y-2">
-            <ScrollShadow ref={scrollRef}>
+            <ScrollShadow ref={scrollRef} hideScrollBar>
               {searchQuery === "" &&
                 messages.map((message) => {
                   if (message.StafferSenderId !== loggedStafferId) {
