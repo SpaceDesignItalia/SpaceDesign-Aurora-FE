@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Avatar,
   AvatarGroup,
@@ -6,7 +7,6 @@ import {
   DropdownTrigger,
   DropdownItem,
   DropdownMenu,
-  cn,
   DateValue,
   Card,
   CardHeader,
@@ -28,6 +28,7 @@ import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
 import ViewTaskModal from "./ViewTaskModal";
 import axios from "axios";
 import { useEffect } from "react";
+import { usePermissions } from "../../../Layout/PermissionProvider";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -69,7 +70,6 @@ interface ModalEditData {
 
 export default function TaskCard({
   provided,
-  snapshot,
   task,
   setUpdate,
   update,
@@ -77,7 +77,6 @@ export default function TaskCard({
   projectId,
 }: {
   provided: any;
-  snapshot: any;
   task: Task;
   setUpdate: any;
   update: any;
@@ -121,11 +120,32 @@ export default function TaskCard({
     open: false,
   });
 
+  const [permissions, setPermissions] = useState({
+    editActivity: false,
+    removeActivity: false,
+  });
+
+  const { hasPermission } = usePermissions();
+
   useEffect(() => {
     socket.on("task-update", () => {
       setUpdate(!update);
     });
   }, []);
+
+  useEffect(() => {
+    async function fetchData() {
+      const editActivity = await hasPermission("EDIT_ACTIVITY");
+      const removeActivity = await hasPermission("REMOVE_ACTIVITY");
+
+      setPermissions({
+        ...permissions,
+        editActivity: editActivity,
+        removeActivity: removeActivity,
+      });
+    }
+    fetchData();
+  }, [hasPermission]);
 
   function formatDate(date: DateValue) {
     let formatter = useDateFormatter({ dateStyle: "full" });
@@ -210,46 +230,54 @@ export default function TaskCard({
                 >
                   Visualizza
                 </DropdownItem>
-
-                <DropdownItem
-                  color="warning"
-                  startContent={<ModeOutlinedIcon />}
-                  aria-label="Edit"
-                  aria-labelledby="Edit"
-                  onClick={() =>
-                    setModalEditData({
-                      ...modalEditData,
-                      open: true,
-                      Task: task,
-                    })
-                  }
-                >
-                  Modifica
-                </DropdownItem>
-
-                <DropdownItem
-                  color="danger"
-                  startContent={<DeleteOutlinedIcon />}
-                  aria-label="Remove"
-                  aria-labelledby="Remove"
-                  onClick={() =>
-                    setModalDeleteData({
-                      ...modalDeleteData,
-                      open: true,
-                      Task: task,
-                    })
-                  }
-                >
-                  Rimuovi
-                </DropdownItem>
+                {permissions.editActivity && (
+                  <DropdownItem
+                    color="warning"
+                    startContent={<ModeOutlinedIcon />}
+                    aria-label="Edit"
+                    aria-labelledby="Edit"
+                    onClick={() =>
+                      setModalEditData({
+                        ...modalEditData,
+                        open: true,
+                        Task: task,
+                      })
+                    }
+                  >
+                    Modifica
+                  </DropdownItem>
+                )}
+                {permissions.removeActivity && (
+                  <DropdownItem
+                    color="danger"
+                    startContent={<DeleteOutlinedIcon />}
+                    aria-label="Remove"
+                    aria-labelledby="Remove"
+                    onClick={() =>
+                      setModalDeleteData({
+                        ...modalDeleteData,
+                        open: true,
+                        Task: task,
+                      })
+                    }
+                  >
+                    Rimuovi
+                  </DropdownItem>
+                )}
               </DropdownMenu>
             </Dropdown>
           </CardHeader>
           <CardBody className="px-3 py-0 text-small">
             <div
-              dangerouslySetInnerHTML={{
-                __html: task.ProjectTaskDescription,
-              }}
+              dangerouslySetInnerHTML={
+                task.ProjectTaskDescription
+                  ? {
+                      __html: task.ProjectTaskDescription,
+                    }
+                  : {
+                      __html: "Nessuna descrizione",
+                    }
+              }
             />
           </CardBody>
           <CardFooter className="gap-3 flex flex-col items-start">

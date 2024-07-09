@@ -68,7 +68,7 @@ export default function TeamContainer({
     open: false,
   });
   const [adminPermission, setAdminPermission] = useState({
-    editProject: false,
+    editTeamMember: false,
   });
   const { hasPermission } = usePermissions();
 
@@ -95,7 +95,7 @@ export default function TeamContainer({
     });
     async function checkPermissions() {
       setAdminPermission({
-        editProject: await hasPermission("EDIT_PROJECT"),
+        editTeamMember: await hasPermission("MANAGE_TEAM_MEMBER"),
       });
     }
     checkPermissions();
@@ -226,7 +226,7 @@ export default function TeamContainer({
           <div className="flex flex-row justify-between items-center">
             <h1 className="font-bold">Membri del progetto</h1>
             <div className="flex flex-row gap-2">
-              {adminPermission.editProject && (
+              {adminPermission.editTeamMember && (
                 <>
                   <Button
                     color="primary"

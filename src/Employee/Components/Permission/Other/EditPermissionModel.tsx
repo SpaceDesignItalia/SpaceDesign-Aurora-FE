@@ -79,9 +79,13 @@ const EditPermissionModel: React.FC<EditPermissionModelProps> = ({
   const handleInputChange =
     (key: string) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      let value = e.target.value;
+      if (key === "PermissionAction") {
+        value = value.replace(/\s+/g, "_").toUpperCase();
+      }
       setCurrentPermission({
         ...currentPermission,
-        [key]: e.target.value,
+        [key]: value,
       });
     };
 

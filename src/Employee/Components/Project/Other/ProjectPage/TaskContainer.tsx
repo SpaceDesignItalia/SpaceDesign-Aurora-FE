@@ -7,6 +7,7 @@ import AddTaskModal from "../ProjectTask/AddTaskModal";
 import TaskCard from "../ProjectTask/TaskCard";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
+import { usePermissions } from "../../../Layout/PermissionProvider";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -74,12 +75,26 @@ export default function TaskContainer({
     ProjectId: projectId,
     open: false,
   });
+  const [permissions, setPermissions] = useState({
+    assignActivity: false,
+  });
+
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     socket.on("task-update", () => {
       setUpdate((prev) => !prev);
     });
   }, []);
+
+  useEffect(() => {
+    async function fetchData() {
+      const permission = await hasPermission("ASSIGN_ACTIVITY");
+
+      setPermissions({ ...permissions, assignActivity: permission });
+    }
+    fetchData();
+  }, [hasPermission]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -207,14 +222,16 @@ export default function TaskContainer({
       />
 
       <div className="w-full flex justify-end">
-        <Button
-          color="primary"
-          radius="sm"
-          onClick={() => setModalAddData({ ...modalAddData, open: true })}
-          startContent={<LibraryAddRoundedIcon />}
-        >
-          Aggiungi Task
-        </Button>
+        {permissions.assignActivity && (
+          <Button
+            color="primary"
+            radius="sm"
+            onClick={() => setModalAddData({ ...modalAddData, open: true })}
+            startContent={<LibraryAddRoundedIcon />}
+          >
+            Aggiungi Task
+          </Button>
+        )}
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
@@ -257,10 +274,9 @@ export default function TaskContainer({
                           draggableId={task.ProjectTaskId.toString()}
                           index={index}
                         >
-                          {(provided, snapshot) => (
+                          {(provided) => (
                             <TaskCard
                               provided={provided}
-                              snapshot={snapshot}
                               task={task}
                               setUpdate={setUpdate}
                               update={update}
