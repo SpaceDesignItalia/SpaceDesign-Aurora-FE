@@ -638,12 +638,15 @@ export default function Sidebar() {
               <span className="sr-only">Open sidebar</span>
               <Bars3Icon className="h-6 w-6" aria-hidden="true" />
             </button>
-
             {/* Separator */}
             <div
               className="h-6 w-px bg-gray-200 lg:hidden"
               aria-hidden="true"
             />
+            <p className="hidden sm:flex">
+              <strong>Ciao,</strong>{" "}
+              {userData.StafferName + " " + userData.StafferSurname} 👋
+            </p>
 
             <div className="flex flex-1 justify-end gap-x-4 self-stretch lg:gap-x-6">
               <div className="flex items-center gap-x-4 lg:gap-x-6">
