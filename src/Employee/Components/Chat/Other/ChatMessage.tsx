@@ -1,8 +1,11 @@
 import { Avatar } from "@nextui-org/react";
+import { API_URL_IMG } from "../../../../API/API";
+import dayjs from "dayjs";
 
 interface Message {
   MessageId: number;
   StafferSenderId: number;
+  StafferImageUrl: string;
   ConversationId: number;
   Date: Date;
   Text: string;
@@ -15,31 +18,29 @@ export default function ChatMessage({
   message: Message;
   type: string;
 }) {
-  const formatDate = (dateStr: Date) => {
-    if (dateStr === undefined) return undefined;
+  const formatDate = (dateStr: Date | undefined): string => {
+    if (!dateStr) return "";
 
-    const now = new Date();
-    const date = new Date(dateStr);
+    const messageDate = dayjs(dateStr);
 
-    const diffTime = Math.abs(now.getDay() - date.getDay());
+    // Data attuale
+    const now = dayjs();
 
-    switch (diffTime) {
-      case 0:
-        return date.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      case 1:
-        return "Ieri";
-      case Number(diffTime < 7):
-        return date.toLocaleDateString([], { weekday: "long" });
-      default:
-        return date.toLocaleDateString([], {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        });
+    // Data di ieri a mezzanotte
+    const yesterday = now.subtract(1, "day").startOf("day");
+
+    // Se la data è oggi
+    if (messageDate.isSame(now, "day")) {
+      return messageDate.format("HH:mm"); // Orario nel formato "HH:mm"
     }
+
+    // Se la data è ieri
+    if (messageDate.isSame(yesterday, "day")) {
+      return "Ieri";
+    }
+
+    // Altrimenti, formattazione completa della data
+    return messageDate.format("DD/MM/YYYY");
   };
 
   return (
@@ -54,12 +55,26 @@ export default function ChatMessage({
               </span>
             </div>
           </div>
-          <Avatar size="sm" className="ml-2" />
+          <Avatar
+            size="sm"
+            className="ml-2"
+            src={
+              message.StafferImageUrl &&
+              API_URL_IMG + "/profileIcons/" + message.StafferImageUrl
+            }
+          />
         </div>
       )}
       {type === "recive" && (
         <div className="flex flex-row justify-start items-end mb-4">
-          <Avatar size="sm" className="mr-2" />
+          <Avatar
+            size="sm"
+            className="mr-2"
+            src={
+              message.StafferImageUrl &&
+              API_URL_IMG + "/profileIcons/" + message.StafferImageUrl
+            }
+          />
           <div className="flex flex-col items-end">
             <div className="flex flex-col justify-end bg-gray-500 px-3 py-2 rounded-xl rounded-bl-none text-white max-w-md">
               <p className="break-all">{message.Text}</p>

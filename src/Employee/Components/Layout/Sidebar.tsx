@@ -213,7 +213,7 @@ export default function Sidebar() {
       name: "Chat",
       href: "/comunications/chat",
       icon: ChatBubbleOutlineRoundedIcon,
-      current: currentUrl === "/chat",
+      current: currentUrl === "/comunications/chat",
     },
   ];
 
@@ -759,8 +759,8 @@ export default function Sidebar() {
               aria-hidden="true"
             />
             <p className="hidden sm:flex">
-              <strong>Ciao,</strong>{" "}
-              {userData.StafferName + " " + userData.StafferSurname} 👋
+              Ciao,
+              {" " + userData.StafferName + " " + userData.StafferSurname} 👋
             </p>
 
             <div className="flex flex-1 justify-end gap-x-4 self-stretch lg:gap-x-6">

@@ -18,6 +18,7 @@ import axios from "axios";
 interface Project {
   ProjectId: number;
   ProjectName: string;
+  CompanyName: string;
 }
 
 const columns = [
@@ -79,8 +80,8 @@ export default function ProjectsTable() {
   }, [page, projects, rowsPerPage]);
 
   const renderCell = React.useCallback(
-    (projects: Project, columnKey: React.Key) => {
-      const cellValue = projects[columnKey as keyof Project];
+    (project: Project, columnKey: React.Key) => {
+      const cellValue = project[columnKey as keyof Project];
 
       switch (columnKey) {
         case "CustomerPhone":
@@ -94,7 +95,20 @@ export default function ProjectsTable() {
         case "actions":
           return (
             <div className="relative flex justify-center items-center gap-2">
-              <Button color="primary" size="sm" isIconOnly>
+              <Button
+                as={Link}
+                color="primary"
+                size="sm"
+                isIconOnly
+                href={
+                  "/projects/" +
+                  project.CompanyName +
+                  "/" +
+                  project.ProjectId +
+                  "/" +
+                  project.ProjectName
+                }
+              >
                 <OpenInNewRoundedIcon />
               </Button>
             </div>
