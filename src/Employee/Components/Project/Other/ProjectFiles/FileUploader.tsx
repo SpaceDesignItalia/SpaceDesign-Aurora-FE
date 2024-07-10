@@ -1,11 +1,17 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { io } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../../../API/API";
+
+const socket = io(API_WEBSOCKET_URL);
 
 export default function FileUploader({ ProjectId }: { ProjectId: number }) {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<
     "initial" | "uploading" | "success" | "fail"
   >("initial");
+
+  socket.emit("join", ProjectId);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -29,6 +35,7 @@ export default function FileUploader({ ProjectId }: { ProjectId: number }) {
           },
         });
         setStatus("success");
+        socket.emit("file-update", ProjectId);
       } catch (error) {
         console.error(error);
         setStatus("fail");

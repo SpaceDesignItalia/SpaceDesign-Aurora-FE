@@ -1,3 +1,4 @@
+import FileList from "../ProjectFiles/FileList";
 import FileUploader from "../ProjectFiles/FileUploader";
 
 interface Project {
@@ -22,8 +23,9 @@ export default function FilesContainer({
   projectData: Project;
 }) {
   return (
-    <div>
+    <div className="flex flex-row gap-10">
       <FileUploader ProjectId={projectData.ProjectId} />
+      <FileList ProjectId={projectData.ProjectId} />
     </div>
   );
 }
