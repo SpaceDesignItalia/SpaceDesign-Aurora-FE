@@ -87,7 +87,9 @@ export default function ViewTaskModal({
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                       <div
                         dangerouslySetInnerHTML={{
-                          __html: TaskData.ProjectTaskDescription,
+                          __html: TaskData.ProjectTaskDescription
+                            ? TaskData.ProjectTaskDescription
+                            : "Nessuna descrizione",
                         }}
                       />
                     </dd>
@@ -116,9 +118,10 @@ export default function ViewTaskModal({
                             >
                               <Avatar
                                 src={
+                                  member.StafferImageUrl &&
                                   API_URL_IMG +
-                                  "/profileIcons/" +
-                                  member.StafferImageUrl
+                                    "/profileIcons/" +
+                                    member.StafferImageUrl
                                 }
                                 alt={member.StafferFullName}
                               />

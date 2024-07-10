@@ -1,5 +1,7 @@
-import { Avatar, user } from "@nextui-org/react";
+import { Avatar } from "@nextui-org/react";
 import { API_URL_IMG } from "../../../../../API/API";
+import dayjs from "dayjs";
+import "dayjs/locale/it";
 
 interface Message {
   MessageId: number;
@@ -18,34 +20,30 @@ export default function ChatMessage({
   message: Message;
   type: string;
 }) {
-  const formatDate = (dateStr: Date) => {
-    if (dateStr === undefined) return undefined;
+  const formatDate = (dateStr: Date | undefined): string => {
+    if (!dateStr) return "";
 
-    const now = new Date();
-    const date = new Date(dateStr);
+    const messageDate = dayjs(dateStr);
 
-    let diffTime = Math.abs(now.getTime() - date.getTime());
-    diffTime = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    // Data attuale
+    const now = dayjs();
 
-    switch (true) {
-      case diffTime === 0:
-        return date.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      case diffTime === 1:
-        return "Ieri";
-      case diffTime < 7:
-        return date.toLocaleDateString([], { weekday: "long" });
-      default:
-        return date.toLocaleDateString([], {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        });
+    // Data di ieri a mezzanotte
+    const yesterday = now.subtract(1, "day").startOf("day");
+
+    // Se la data è oggi
+    if (messageDate.isSame(now, "day")) {
+      return messageDate.format("HH:mm"); // Orario nel formato "HH:mm"
     }
-  };
 
+    // Se la data è ieri
+    if (messageDate.isSame(yesterday, "day")) {
+      return "Ieri";
+    }
+
+    // Altrimenti, formattazione completa della data
+    return messageDate.format("DD/MM/YYYY");
+  };
   return (
     <>
       {type == "send" && (

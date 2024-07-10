@@ -2,21 +2,20 @@ import { Avatar, Button, Input, ScrollShadow, cn } from "@nextui-org/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
+import Groups2RoundedIcon from "@mui/icons-material/Groups2Rounded";
 import ChatMessage from "../Other/ChatMessage";
 import AddConversationModal from "../Other/AddConversationModal";
+import { API_URL_IMG, API_WEBSOCKET_URL } from "../../../../API/API";
+import dayjs from "dayjs";
+import "dayjs/locale/it";
 
-const socket = io("http://localhost:3000");
+dayjs.locale("it");
 
-interface Employee {
-  EmployeeId: number;
-  EmployeeFullName: string;
-  EmployeeEmail: string;
-  EmployeePhone: string;
-}
+const socket: Socket = io(API_WEBSOCKET_URL);
 
 interface Conversation {
   ConversationId: number;
@@ -24,6 +23,8 @@ interface Conversation {
   Staffer2Id: number;
   Staffer1FullName: string;
   Staffer2FullName: string;
+  Staffer1ImageUrl: string;
+  Staffer2ImageUrl: string;
   lastMessage: string;
   lastMessageDate?: Date;
 }
@@ -31,6 +32,7 @@ interface Conversation {
 interface Message {
   MessageId: number;
   StafferSenderId: number;
+  StafferImageUrl: string;
   ConversationId: number;
   Date: Date;
   Text: string;
@@ -48,308 +50,429 @@ export default function ChatTable() {
   });
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [loggedStafferId, setloggedStafferId] = useState<number>(0);
+  const [loggedStafferId, setLoggedStafferId] = useState<number>(0);
   const [newMessage, setNewMessage] = useState("");
-  const [conversationId, setConversationId] = useState<number>(-1);
-  const [emplyees, setEmployees] = useState<Employee[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedConversationId, setSelectedConversationId] = useState<
+    number | null
+  >(null);
+  const [selectedConversation, setSelectedConversation] =
+    useState<Conversation | null>(null); // State to hold selected conversation details
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [messagesLoaded, setMessagesLoaded] = useState<boolean>(false); // State to track if messages are already loaded
 
-  const scrollRef = useRef(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Scroll to bottom when messages change
     if (scrollRef.current) {
-      (scrollRef.current as HTMLElement).scrollTop = (
-        scrollRef.current as HTMLElement
-      ).scrollHeight;
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
   useEffect(() => {
-    socket.on("message-update", () => {
-      const conversationId = localStorage.getItem("conversationId");
-      if (conversationId !== null) {
-        handleOpenChat(parseInt(conversationId));
+    // Connect to socket and handle message updates
+    socket.on("message-update", (updatedMessage: Message) => {
+      if (
+        selectedConversationId &&
+        updatedMessage.ConversationId === selectedConversationId
+      ) {
+        setMessages((prevMessages) => [...prevMessages, updatedMessage]);
       }
     });
-  }, []);
+
+    return () => {
+      socket.off("message-update");
+    };
+  }, [selectedConversationId]);
 
   useEffect(() => {
+    // Fetch logged in staffer's data and conversations
     axios
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then(async (res) => {
-        setloggedStafferId(res.data.StafferId);
-        setModalAddData({
-          ...modalAddData,
-          loggedStafferId: res.data.StafferId,
-        });
-        return axios.get("/Chat/GET/getConversationByStafferId", {
-          params: { StafferId: res.data.StafferId },
-        });
+        const stafferId = res.data.StafferId;
+        setLoggedStafferId(stafferId);
+        setModalAddData({ ...modalAddData, loggedStafferId: stafferId });
+
+        const response = await axios.get(
+          "/Chat/GET/getConversationByStafferId",
+          {
+            params: { StafferId: stafferId },
+          }
+        );
+
+        const convData = response.data;
+        if (convData.length > 0) {
+          setConversations(convData);
+        }
       })
-      .then((res) => {
-        if (res.data.length === 0) return;
-        setConversations(res.data);
-        setConversationId(res.data[0].ConversationId);
-        socket.emit("join", res.data[0].ConversationId);
-        getLastMessageInfo();
+      .catch((error) => {
+        console.error("Error fetching session data:", error);
       });
-  }, [conversations.length]);
+  }, []); // This effect should run only once when component mounts
 
-  async function getLastMessageInfo() {
-    conversations.map(async (conversation) => {
-      await axios
-        .get("/Chat/GET/GetMessagesByConversationId", {
-          params: { ConversationId: conversation.ConversationId },
-        })
-        .then((res) => {
-          setConversations((prev) =>
-            prev.map((conv) =>
-              conv.ConversationId === conversation.ConversationId &&
-              res.data.length > 0
-                ? {
-                    ...conv,
-                    lastMessage: res.data[res.data.length - 1].Text,
-                    lastMessageDate: res.data[res.data.length - 1].Date,
-                  }
-                : conv
-            )
-          );
-          handleOpenChat(conversationId);
-          setConversations((prev) => {
-            const sortedConversations = [...prev];
-            sortedConversations.sort((a, b) => {
-              if (a.lastMessageDate && b.lastMessageDate) {
-                return (
-                  new Date(b.lastMessageDate).getTime() -
-                  new Date(a.lastMessageDate).getTime()
-                );
-              }
-              return 0;
-            });
-            return sortedConversations;
-          });
-        });
-    });
-  }
+  useEffect(() => {
+    // Fetch last messages for all conversations initially
+    if (conversations.length > 0 && !messagesLoaded) {
+      getLastMessageInfo(conversations);
+      setMessagesLoaded(true);
+    }
+  }, [conversations, messagesLoaded]);
 
-  async function SearchEmployee(e: { target: { value: string } }) {
-    setSearchQuery(e.target.value.trim()); // Otteniamo il valore di ricerca e rimuoviamo gli spazi vuoti
+  async function getLastMessageInfo(conversations: Conversation[]) {
+    // Fetch last messages for each conversation
     try {
-      if (searchQuery.length === 0) {
-        setEmployees([]);
-        return;
-      }
-      await axios
-        .get("/Staffer/GET/SearchStafferByEmail", {
-          params: { EmployeeEmail: searchQuery },
-        })
-        .then((res) => {
-          setMessages([]);
-          setEmployees(res.data);
-        });
+      const fetchMessages = conversations.map(async (conversation) => {
+        const response = await axios.get(
+          "/Chat/GET/GetMessagesByConversationId",
+          {
+            params: { ConversationId: conversation.ConversationId },
+          }
+        );
+
+        const messagesData = response.data;
+        if (messagesData.length > 0) {
+          const lastMessage = messagesData[messagesData.length - 1];
+          return {
+            ...conversation,
+            lastMessage: lastMessage.Text,
+            lastMessageDate: new Date(lastMessage.Date),
+          };
+        }
+        return conversation;
+      });
+
+      const updatedConversations = await Promise.all(fetchMessages);
+      updatedConversations.sort((a, b) =>
+        b.lastMessageDate && a.lastMessageDate
+          ? b.lastMessageDate.getTime() - a.lastMessageDate.getTime()
+          : 0
+      );
+      setConversations(updatedConversations);
     } catch (error) {
-      console.error("Errore durante la ricerca del dipendente:", error);
+      console.error("Error fetching last message info:", error);
     }
   }
 
-  function handleOpenChat(conversationId: number) {
+  async function handleOpenChat(conversationId: number) {
+    // Handle opening a conversation
     try {
-      localStorage.setItem("conversationId", conversationId.toString());
-      axios
-        .get("/Chat/GET/GetMessagesByConversationId", {
+      setSelectedConversationId(conversationId);
+
+      const response = await axios.get(
+        "/Chat/GET/GetMessagesByConversationId",
+        {
           params: { ConversationId: conversationId },
-        })
-        .then((res) => {
-          setMessages(res.data);
-          setConversationId(conversationId);
-          socket.emit("join", conversationId);
-        });
+        }
+      );
+
+      setMessages(response.data);
+      socket.emit("join", conversationId);
+
+      // Find the selected conversation details
+      const selectedConv = conversations.find(
+        (conv) => conv.ConversationId === conversationId
+      );
+      if (selectedConv) {
+        setSelectedConversation(selectedConv);
+      }
     } catch (error) {
-      console.error("Errore durante l'apertura della chat:", error);
+      console.error("Error opening chat:", error);
     }
   }
 
   function handleSendMessage() {
+    // Handle sending a message
     if (newMessage.trim() === "") return;
+
     try {
       axios
         .post("/Chat/POST/SendMessage", {
-          ConversationId: conversationId,
+          ConversationId: selectedConversationId!,
           StafferSenderId: loggedStafferId,
           Text: newMessage,
         })
         .then(() => {
-          socket.emit("message", conversationId);
-          setConversationId(conversationId);
+          socket.emit("message", selectedConversationId!);
           setNewMessage("");
         });
     } catch (error) {
-      console.error("Errore durante l'invio del messaggio:", error);
+      console.error("Error sending message:", error);
     }
   }
 
   async function handleDeleteConversation(conversation: Conversation) {
+    // Handle deleting a conversation
     try {
-      axios
-        .delete("/Chat/DELETE/deleteConversationByConversationId", {
-          params: { ConversationId: conversation.ConversationId },
-        })
-        .then(() => {
-          setConversations((prev) =>
-            prev.filter(
-              (conv) => conv.ConversationId !== conversation.ConversationId
-            )
-          );
-          setMessages([]);
-        });
-    } catch (error) {
-      console.error(
-        "Errore durante l'eliminazione della conversazione:",
-        error
+      await axios.delete("/Chat/DELETE/deleteConversationByConversationId", {
+        params: { ConversationId: conversation.ConversationId },
+      });
+
+      setConversations((prevConversations) =>
+        prevConversations.filter(
+          (conv) => conv.ConversationId !== conversation.ConversationId
+        )
       );
+      setMessages([]);
+      setSelectedConversationId(null); // Reset selected conversation
+      setSelectedConversation(null);
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
     }
   }
 
   const formatDate = (dateStr: Date) => {
-    if (dateStr === undefined) return undefined;
+    // Format date for display
+    const date = dayjs(dateStr);
+    const now = dayjs();
 
-    const now = new Date();
-    const date = new Date(dateStr);
-
-    const diffTime = Math.abs(now.getDay() - date.getDay());
-
-    switch (diffTime) {
-      case 0:
-        return date.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      case 1:
-        return "Ieri";
-      case Number(diffTime < 7):
-        return date.toLocaleDateString([], { weekday: "long" });
-      default:
-        return date.toLocaleDateString([], {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        });
+    if (now.isSame(date, "day")) {
+      return date.format("HH:mm");
+    } else if (now.subtract(1, "day").isSame(date, "day")) {
+      return "Ieri";
+    } else if (now.diff(date, "day") < 7) {
+      return date.format("dddd");
+    } else {
+      return date.format("DD/MM/YYYY");
     }
   };
 
+  function handleKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      handleSendMessage();
+    }
+  }
+
   return (
-    <>
+    <div className="flex w-full h-screen">
       <AddConversationModal
         isOpen={modalAddData.open}
         isClosed={() => setModalAddData({ ...modalAddData, open: false })}
         loggedStafferId={modalAddData.loggedStafferId}
-        handleOpenChat={(conversationId: number) =>
-          handleOpenChat(conversationId)
-        }
+        handleOpenChat={handleOpenChat}
       />
-      <div className="flex flex-row w-full">
-        <div className="w-1/3">
-          <div className="flex flex-row gap-2 bg-white px-4 py-5 sm:px-6">
-            <Input
-              radius="sm"
-              variant="bordered"
-              startContent={<SearchOutlinedIcon />}
-              value={searchQuery}
-              onChange={SearchEmployee}
-              placeholder="Cerca dipendente per email..."
-            />
-            <Button
-              isIconOnly
-              color="primary"
-              onClick={() => setModalAddData({ ...modalAddData, open: true })}
-            >
-              <AddRoundedIcon />
-            </Button>
-          </div>
-          <div className="flex flex-col gap-2 bg-white px-4 py-5 sm:px-6">
-            {searchQuery !== ""
-              ? emplyees.map((employee) => (
-                  <div
-                    key={employee.EmployeeEmail}
-                    className="grid grid-cols-5 items-center border border-gray-200 rounded-xl p-5"
-                  >
-                    <Avatar src="https://miro.medium.com/v2/resize:fit:1224/1*XKpA4-JcY06QcMOiPB1zaQ.jpeg" />
-                    <div className="flex flex-col justify-start col-span-3">
-                      <h2 className="font-bold">{employee.EmployeeFullName}</h2>
-                    </div>
-                  </div>
-                ))
-              : conversations.map((conversation) => (
+
+      {conversations.length > 0 ? (
+        <>
+          <div className="w-1/2 bg-white">
+            <div className="flex flex-row justify-between gap-3 px-4 py-5 sm:px-6">
+              <Input
+                radius="sm"
+                variant="bordered"
+                startContent={<SearchOutlinedIcon />}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cerca conversazione"
+              />
+              <Button
+                isIconOnly
+                color="primary"
+                radius="sm"
+                onClick={() => setModalAddData({ ...modalAddData, open: true })}
+              >
+                <AddCommentRoundedIcon />
+              </Button>
+            </div>
+            <div className="overflow-y-auto flex-1">
+              {conversations
+                .filter(
+                  (conversation) =>
+                    conversation.Staffer1FullName.toLowerCase().includes(
+                      searchQuery.toLowerCase()
+                    ) ||
+                    conversation.Staffer2FullName.toLowerCase().includes(
+                      searchQuery.toLowerCase()
+                    )
+                )
+                .map((conversation) => (
                   <div
                     key={conversation.ConversationId}
                     className={cn(
-                      "grid grid-cols-5 items-center border border-gray-200 rounded-xl p-5",
-                      conversationId === conversation.ConversationId &&
-                        "bg-blue-400"
+                      "flex flex-row items-center p-3 cursor-pointer transition duration-300 ease-in-out border-b border-t",
+                      selectedConversationId === conversation.ConversationId &&
+                        "bg-gray-100 border-0 border-r-3 border-primary"
                     )}
                     onClick={() => handleOpenChat(conversation.ConversationId)}
                   >
-                    <Avatar src="https://miro.medium.com/v2/resize:fit:1224/1*XKpA4-JcY06QcMOiPB1zaQ.jpeg" />
-                    <div className="flex flex-col justify-start col-span-3">
-                      <h2 className="font-bold">
-                        {conversation.Staffer1Id === loggedStafferId
-                          ? conversation.Staffer2FullName
-                          : conversation.Staffer1FullName}
-                      </h2>
-                      <p className="text-gray-500">
-                        {conversation.lastMessage}
-                      </p>
-                    </div>
-                    <div className="flex flex-col justify-center items-center">
-                      <Button
-                        isIconOnly
-                        color="danger"
-                        onClick={() => handleDeleteConversation(conversation)}
-                      >
-                        <DeleteOutlinedIcon />
-                      </Button>
-                      <p className="flex justify-end text-sm">
-                        {conversation.lastMessageDate &&
-                          formatDate(conversation.lastMessageDate)}
-                      </p>
+                    <Avatar
+                      src={
+                        conversation.Staffer1Id === loggedStafferId
+                          ? API_URL_IMG +
+                            "/profileIcons/" +
+                            conversation.Staffer2ImageUrl
+                          : API_URL_IMG +
+                            "/profileIcons/" +
+                            conversation.Staffer1ImageUrl
+                      }
+                      size="lg"
+                    />
+                    <div className="ml-4 flex-1">
+                      <div className="flex items-center justify-between">
+                        <h2 className="font-bold text-lg">
+                          {conversation.Staffer1Id === loggedStafferId
+                            ? conversation.Staffer2FullName
+                            : conversation.Staffer1FullName}
+                        </h2>
+                        {conversation.lastMessageDate && (
+                          <p className="text-sm text-gray-500">
+                            {formatDate(conversation.lastMessageDate)}
+                          </p>
+                        )}
+                      </div>
+                      {conversation.lastMessage && (
+                        <p className="text-gray-500 truncate">
+                          {conversation.lastMessage}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
-          </div>
-        </div>
-
-        <div className="flex flex-col w-full mx-auto px-4 py-2 gap-5">
-          <div className="flex flex-col space-y-2">
-            <ScrollShadow ref={scrollRef} hideScrollBar>
-              {searchQuery === "" &&
-                messages.map((message) => {
-                  if (message.StafferSenderId !== loggedStafferId) {
-                    return <ChatMessage message={message} type="recive" />;
-                  } else return <ChatMessage message={message} type="send" />;
-                })}
-            </ScrollShadow>
-          </div>
-          {conversationId != -1 && (
-            <div className="flex flex-row items-center gap-3">
-              <Input
-                variant="bordered"
-                className="w-full"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Messaggio"
-              />
-              <Button
-                onClick={handleSendMessage}
-                color="primary"
-                isIconOnly
-                isDisabled={newMessage.trim() === "" ? true : false}
-              >
-                <SendRoundedIcon />
-              </Button>
+              {searchQuery !== "" &&
+                !conversations.some(
+                  (conversation) =>
+                    conversation.Staffer1FullName.toLowerCase().includes(
+                      searchQuery.toLowerCase()
+                    ) ||
+                    conversation.Staffer2FullName.toLowerCase().includes(
+                      searchQuery.toLowerCase()
+                    )
+                ) && (
+                  <div className="flex justify-center items-center py-4">
+                    <p className="text-gray-500">
+                      Nessuna conversazione trovata!
+                    </p>
+                  </div>
+                )}
             </div>
-          )}
+          </div>
+
+          <div className="flex flex-col w-full mx-auto py-2 border-l">
+            {selectedConversation ? (
+              <>
+                <div className="flex justify-between items-center mb-3 px-4 py-2 border-b">
+                  <div className="flex flex-row gap-2 justify-center items-center">
+                    <Avatar
+                      src={
+                        selectedConversation.Staffer1Id === loggedStafferId
+                          ? selectedConversation.Staffer2ImageUrl &&
+                            API_URL_IMG +
+                              "/profileIcons/" +
+                              selectedConversation.Staffer2ImageUrl
+                          : selectedConversation.Staffer1ImageUrl &&
+                            API_URL_IMG +
+                              "/profileIcons/" +
+                              selectedConversation.Staffer1ImageUrl
+                      }
+                      size="lg"
+                    />
+                    <h2 className="ml-2 font-bold">
+                      {selectedConversation.Staffer1Id === loggedStafferId
+                        ? selectedConversation.Staffer2FullName
+                        : selectedConversation.Staffer1FullName}
+                    </h2>
+                  </div>
+                  <Button
+                    size="sm"
+                    isIconOnly
+                    color="danger"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteConversation(selectedConversation);
+                    }}
+                  >
+                    <DeleteOutlinedIcon />
+                  </Button>
+                </div>
+
+                <div
+                  className="flex flex-col flex-1 space-y-2 overflow-y-auto mt-3 px-4"
+                  ref={scrollRef}
+                >
+                  <ScrollShadow hideScrollBar>
+                    {messages.map((message) =>
+                      message.StafferSenderId !== loggedStafferId ? (
+                        <ChatMessage
+                          key={message.MessageId}
+                          message={message}
+                          type="recive"
+                        />
+                      ) : (
+                        <ChatMessage
+                          key={message.MessageId}
+                          message={message}
+                          type="send"
+                        />
+                      )
+                    )}
+                  </ScrollShadow>
+                </div>
+
+                <div className="flex flex-row items-center gap-3 w-full px-4">
+                  <Input
+                    variant="bordered"
+                    className="w-full"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Messaggio"
+                  />
+                  <Button
+                    onClick={handleSendMessage}
+                    color="primary"
+                    isIconOnly
+                    isDisabled={newMessage.trim() === "" ? true : false}
+                  >
+                    <SendRoundedIcon />
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col h-screen justify-center items-center">
+                <Groups2RoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-base font-semibold text-gray-900">
+                  Nessuna conversazione selezionata
+                </h3>
+                <p className="mt-1 text-base text-gray-500">
+                  Inizia selezionando una conversazione dall'elenco o crea una
+                  nuova conversazione.
+                </p>
+                <div className="mt-6">
+                  <Button
+                    startContent={<AddCommentRoundedIcon />}
+                    color="primary"
+                    radius="sm"
+                    onClick={() =>
+                      setModalAddData({ ...modalAddData, open: true })
+                    }
+                  >
+                    Crea una nuova conversazione
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="w-full flex flex-col h-screen justify-center items-center">
+          <Groups2RoundedIcon sx={{ fontSize: 50 }} />
+          <h3 className="mt-2 text-base font-semibold text-gray-900">
+            Nessuna conversazione trovata!
+          </h3>
+          <p className="mt-1 text-base text-gray-500">
+            Inizia creando una nuova conversazione.
+          </p>
+          <div className="mt-6">
+            <Button
+              startContent={<AddCommentRoundedIcon />}
+              color="primary"
+              radius="sm"
+              onClick={() => setModalAddData({ ...modalAddData, open: true })}
+            >
+              Crea una nuova conversazione
+            </Button>
+          </div>
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

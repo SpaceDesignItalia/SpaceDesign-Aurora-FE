@@ -1,6 +1,4 @@
-import { useEffect } from "react";
-import ProfileInfo from "../../Components/Dashboard/Other/ProfileInfo";
-import Projects from "../../Components/Dashboard/Other/Projects";
+import ProjectsTable from "../../Components/Dashboard/Tables/ProjectsTable";
 
 export default function Dashboard() {
   return (
@@ -13,12 +11,10 @@ export default function Dashboard() {
         </div>
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
-        <div className="py-6 lg:py-8">
-          <ProfileInfo />
+        <div className="py-6 lg:py-8 grid grid-cols-2">
+          <ProjectsTable />
         </div>
-        <div className="py-6 lg:py-8">
-          <Projects />
-        </div>
+        <div className="py-6 lg:py-8"></div>
       </main>
     </div>
   );
