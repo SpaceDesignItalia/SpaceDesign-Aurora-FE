@@ -1,31 +1,50 @@
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
 
 const socket = io(API_WEBSOCKET_URL);
 
 export default function FileUploader({ ProjectId }: { ProjectId: number }) {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<
     "initial" | "uploading" | "success" | "fail"
   >("initial");
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const dropRef = useRef<HTMLDivElement | null>(null);
 
   socket.emit("join", ProjectId);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setStatus("initial");
-      setFile(e.target.files[0]);
+      setFiles(Array.from(e.target.files));
     }
   };
 
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.files) {
+      setStatus("initial");
+      setFiles(Array.from(e.dataTransfer.files));
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const handleUpload = async () => {
-    if (file) {
+    if (files.length > 0) {
       setStatus("uploading");
 
       const formData = new FormData();
-      formData.append("file", file);
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
       formData.append("ProjectId", ProjectId.toString());
 
       try {
@@ -44,42 +63,63 @@ export default function FileUploader({ ProjectId }: { ProjectId: number }) {
   };
 
   return (
-    <>
-      <div className="input-group">
-        <label htmlFor="file" className="sr-only">
-          Choose a file
-        </label>
-        <input name="file" id="file" type="file" onChange={handleFileChange} />
+    <div className="max-w-lg mx-auto p-4 border rounded-lg shadow-lg">
+      <input
+        name="file"
+        id="file"
+        type="file"
+        multiple
+        onChange={handleFileChange}
+        ref={fileInputRef}
+        className="hidden"
+      />
+      <div
+        className="border-2 border-dashed border-blue-500 p-4 rounded-lg cursor-pointer hover:bg-blue-50"
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        ref={dropRef}
+        onClick={() => fileInputRef.current?.click()} // Add this line
+      >
+        <p className="text-blue-500">
+          Drag & Drop files here or click to select files
+        </p>
       </div>
-      {file && (
-        <section>
-          File details:
-          <ul>
-            <li>Name: {file.name}</li>
-            <li>Type: {file.type}</li>
-            <li>Size: {file.size} bytes</li>
+      {files.length > 0 && (
+        <section className="mt-4 text-left">
+          <h4 className="font-bold">File details:</h4>
+          <ul className="list-disc ml-5">
+            {files.map((file, index) => (
+              <li key={index}>
+                {file.name} - {file.type} - {file.size} bytes
+              </li>
+            ))}
           </ul>
         </section>
       )}
-
-      {file && (
-        <button onClick={handleUpload} className="submit">
-          Upload a file
+      {files.length > 0 && (
+        <button
+          onClick={handleUpload}
+          className="mt-4 py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Upload files
         </button>
       )}
-
       <Result status={status} />
-    </>
+    </div>
   );
 }
 
 const Result = ({ status }: { status: string }) => {
   if (status === "success") {
-    return <p>✅ File uploaded successfully!</p>;
+    return (
+      <p className="mt-4 text-green-500">✅ Files uploaded successfully!</p>
+    );
   } else if (status === "fail") {
-    return <p>❌ File upload failed!</p>;
+    return <p className="mt-4 text-red-500">❌ File upload failed!</p>;
   } else if (status === "uploading") {
-    return <p>⏳ Uploading selected file...</p>;
+    return (
+      <p className="mt-4 text-yellow-500">⏳ Uploading selected files...</p>
+    );
   } else {
     return null;
   }
