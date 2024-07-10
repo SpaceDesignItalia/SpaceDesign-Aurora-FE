@@ -63,9 +63,10 @@ export default function ChatTable() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Scroll to bottom when messages change
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      (scrollRef.current as HTMLElement).scrollTop = (
+        scrollRef.current as HTMLElement
+      ).scrollHeight;
     }
   }, [messages]);
 
@@ -239,7 +240,7 @@ export default function ChatTable() {
   }
 
   return (
-    <div className="flex w-full h-screen">
+    <div className="flex w-full h-[650px]">
       <AddConversationModal
         isOpen={modalAddData.open}
         isClosed={() => setModalAddData({ ...modalAddData, open: false })}
@@ -383,7 +384,7 @@ export default function ChatTable() {
                   className="flex flex-col flex-1 space-y-2 overflow-y-auto mt-3 px-4"
                   ref={scrollRef}
                 >
-                  <ScrollShadow hideScrollBar>
+                  <ScrollShadow ref={scrollRef} hideScrollBar>
                     {messages.map((message) =>
                       message.StafferSenderId !== loggedStafferId ? (
                         <ChatMessage
