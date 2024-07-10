@@ -57,7 +57,7 @@ export default function ProjectsTable() {
     checkPermissions();
   }, []);
 
-  function fetchData(StafferId) {
+  function fetchData(StafferId: number) {
     axios
       .get("/Project/GET/GetProjectInTeam", {
         params: { StafferId: StafferId },

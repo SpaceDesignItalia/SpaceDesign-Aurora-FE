@@ -39,6 +39,29 @@ interface Employee {
   StafferImageUrl: string;
 }
 
+interface Project {
+  ProjectId: number;
+  ProjectName: string;
+  CompanyName: string;
+}
+
+const USERDATA_VALUE: Employee = {
+  EmployeeId: 0,
+  StafferName: "",
+  StafferSurname: "",
+  EmployeeEmail: "",
+  EmployeePhone: "",
+  StafferImageUrl: "",
+};
+
+const PROJECT_DATA: Project[] = [
+  {
+    ProjectId: 0,
+    ProjectName: "",
+    CompanyName: "",
+  },
+];
+
 export default function Sidebar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUrl = window.location.pathname;
@@ -49,21 +72,17 @@ export default function Sidebar() {
   const [projectManagement, setProjectManagement] = useState<NavigationItem[]>(
     []
   );
-  const [userData, setUserData] = useState<Employee>({
-    EmployeeId: 0,
-    StafferName: "",
-    StafferSurname: "",
-    EmployeeEmail: "",
-    EmployeePhone: "",
-    StafferImageUrl: "",
-  });
+  const [userData, setUserData] = useState<Employee>(USERDATA_VALUE);
+  const [projects, setProjects] = useState<Project[]>(PROJECT_DATA);
 
   useEffect(() => {
     axios
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then((res) => {
         setUserData(res.data);
+        fetchProjects(res.data.StafferId);
       });
+
     fetchPermissions();
   }, [currentUrl]);
 
@@ -133,6 +152,16 @@ export default function Sidebar() {
     ]);
   }
 
+  function fetchProjects(StafferId: number) {
+    axios
+      .get("/Project/GET/GetProjectInTeam", {
+        params: { StafferId: StafferId },
+      })
+      .then((res) => {
+        setProjects(res.data);
+      });
+  }
+
   function isSubRoute({
     currentUrl,
     parentRoute,
@@ -197,6 +226,7 @@ export default function Sidebar() {
     return classes.filter(Boolean).join(" ");
   }
 
+  console.log(administration.every((admin) => admin.requiredCondition));
   return (
     <div>
       <Transition.Root show={sidebarOpen} as={Fragment}>
@@ -290,6 +320,7 @@ export default function Sidebar() {
                           ))}
                         </ul>
                       </li>
+
                       <li>
                         <div className="text-xs font-semibold leading-6 text-gray-400">
                           Richieste
@@ -354,74 +385,117 @@ export default function Sidebar() {
                         </ul>
                       </li>
 
-                      <li>
-                        <div className="text-xs font-semibold leading-6 text-gray-400">
-                          Amministrazione
-                        </div>
-                        <ul role="list" className="-mx-2 mt-2 space-y-1">
-                          {administration.map(
-                            (admin) =>
-                              admin.requiredCondition && (
-                                <li key={admin.name}>
-                                  <a
-                                    href={admin.href}
-                                    className={classNames(
-                                      admin.current
-                                        ? "bg-gray-100 text-primary"
-                                        : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                                      "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                    )}
-                                  >
-                                    <admin.icon
-                                      className={classNames(
-                                        admin.current
-                                          ? "text-primary"
-                                          : "text-gray-400 group-hover:text-primary",
-                                        "h-6 w-6 shrink-0"
-                                      )}
-                                      aria-hidden="true"
-                                    />
-                                    {admin.name}
-                                  </a>
-                                </li>
-                              )
-                          )}
-                        </ul>
-                      </li>
-                      <li>
-                        <div className="text-xs font-semibold leading-6 text-gray-400">
-                          Progetti
-                        </div>
-                        <ul role="list" className="-mx-2 mt-2 space-y-1">
-                          {projectManagement.map(
-                            (project) =>
-                              project.requiredCondition && (
-                                <li key={project.name}>
-                                  <a
-                                    href={project.href}
-                                    className={classNames(
-                                      project.current
-                                        ? "bg-gray-100 text-primary"
-                                        : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                                      "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                    )}
-                                  >
-                                    <project.icon
-                                      className={classNames(
-                                        project.current
-                                          ? "text-primary"
-                                          : "text-gray-400 group-hover:text-primary",
-                                        "h-6 w-6 shrink-0"
-                                      )}
-                                      aria-hidden="true"
-                                    />
-                                    {project.name}
-                                  </a>
-                                </li>
-                              )
-                          )}
-                        </ul>
-                      </li>
+                      {administration &&
+                        administration.some(
+                          (admin) => admin.requiredCondition
+                        ) && (
+                          <li>
+                            <div className="text-xs font-semibold leading-6 text-gray-400">
+                              Amministrazione
+                            </div>
+                            <ul role="list" className="-mx-2 mt-2 space-y-1">
+                              {administration.map(
+                                (admin) =>
+                                  admin.requiredCondition && (
+                                    <li key={admin.name}>
+                                      <a
+                                        href={admin.href}
+                                        className={classNames(
+                                          admin.current
+                                            ? "bg-gray-100 text-primary"
+                                            : "text-gray-700 hover:text-primary hover:bg-gray-100",
+                                          "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                        )}
+                                      >
+                                        <admin.icon
+                                          className={classNames(
+                                            admin.current
+                                              ? "text-primary"
+                                              : "text-gray-400 group-hover:text-primary",
+                                            "h-6 w-6 shrink-0"
+                                          )}
+                                          aria-hidden="true"
+                                        />
+                                        {admin.name}
+                                      </a>
+                                    </li>
+                                  )
+                              )}
+                            </ul>
+                          </li>
+                        )}
+
+                      {projectManagement &&
+                        projectManagement.some(
+                          (project) => project.requiredCondition
+                        ) && (
+                          <li>
+                            <div className="text-xs font-semibold leading-6 text-gray-400">
+                              Gestione Progetti
+                            </div>
+                            <ul role="list" className="-mx-2 mt-2 space-y-1">
+                              {projectManagement.map(
+                                (project) =>
+                                  project.requiredCondition && (
+                                    <li key={project.name}>
+                                      <a
+                                        href={project.href}
+                                        className={classNames(
+                                          project.current
+                                            ? "bg-gray-100 text-primary"
+                                            : "text-gray-700 hover:text-primary hover:bg-gray-100",
+                                          "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                        )}
+                                      >
+                                        <project.icon
+                                          className={classNames(
+                                            project.current
+                                              ? "text-primary"
+                                              : "text-gray-400 group-hover:text-primary",
+                                            "h-6 w-6 shrink-0"
+                                          )}
+                                          aria-hidden="true"
+                                        />
+                                        {project.name}
+                                      </a>
+                                    </li>
+                                  )
+                              )}
+                            </ul>
+                          </li>
+                        )}
+
+                      {projects.length > 0 && (
+                        <li>
+                          <div className="text-xs font-semibold leading-6 text-gray-400">
+                            Progetti
+                          </div>
+                          <ul role="list" className="-mx-2 mt-2 space-y-1">
+                            {projects.map((project: Project) => (
+                              <li key={project.ProjectId}>
+                                <a
+                                  href={
+                                    "/projects/" +
+                                    project.CompanyName +
+                                    "/" +
+                                    project.ProjectId +
+                                    "/" +
+                                    project.ProjectName
+                                  }
+                                  className="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:text-primary hover:bg-gray-100"
+                                >
+                                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-primary group-hover:text-primary">
+                                    {project.ProjectName.charAt(0)}
+                                  </span>
+                                  <span className="truncate">
+                                    {project.ProjectName}
+                                  </span>
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </li>
+                      )}
                       <li className="mt-auto">
                         <a
                           href="#"
@@ -542,74 +616,115 @@ export default function Sidebar() {
                   ))}
                 </ul>
               </li>
-              <li>
-                <div className="text-xs font-semibold leading-6 text-gray-400">
-                  Amministrazione
-                </div>
-                <ul role="list" className="-mx-2 mt-2 space-y-1">
-                  {administration.map(
-                    (admin) =>
-                      admin.requiredCondition && (
-                        <li key={admin.name}>
-                          <a
-                            href={admin.href}
-                            className={classNames(
-                              admin.current
-                                ? "bg-gray-100 text-primary"
-                                : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                              "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                            )}
-                          >
-                            <admin.icon
-                              className={classNames(
-                                admin.current
-                                  ? "text-primary"
-                                  : "text-gray-400 group-hover:text-primary",
-                                "h-6 w-6 shrink-0"
-                              )}
-                              aria-hidden="true"
-                            />
-                            {admin.name}
-                          </a>
-                        </li>
-                      )
-                  )}
-                </ul>
-              </li>
-              <li>
-                <div className="text-xs font-semibold leading-6 text-gray-400">
-                  Progetti
-                </div>
-                <ul role="list" className="-mx-2 mt-2 space-y-1">
-                  {projectManagement.map(
-                    (project) =>
-                      project.requiredCondition && (
-                        <li key={project.name}>
-                          <a
-                            href={project.href}
-                            className={classNames(
-                              project.current
-                                ? "bg-gray-100 text-primary"
-                                : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                              "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                            )}
-                          >
-                            <project.icon
-                              className={classNames(
-                                project.current
-                                  ? "text-primary"
-                                  : "text-gray-400 group-hover:text-primary",
-                                "h-6 w-6 shrink-0"
-                              )}
-                              aria-hidden="true"
-                            />
-                            {project.name}
-                          </a>
-                        </li>
-                      )
-                  )}
-                </ul>
-              </li>
+              {administration &&
+                administration.some((admin) => admin.requiredCondition) && (
+                  <li>
+                    <div className="text-xs font-semibold leading-6 text-gray-400">
+                      Amministrazione
+                    </div>
+                    <ul role="list" className="-mx-2 mt-2 space-y-1">
+                      {administration.map(
+                        (admin) =>
+                          admin.requiredCondition && (
+                            <li key={admin.name}>
+                              <a
+                                href={admin.href}
+                                className={classNames(
+                                  admin.current
+                                    ? "bg-gray-100 text-primary"
+                                    : "text-gray-700 hover:text-primary hover:bg-gray-100",
+                                  "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                )}
+                              >
+                                <admin.icon
+                                  className={classNames(
+                                    admin.current
+                                      ? "text-primary"
+                                      : "text-gray-400 group-hover:text-primary",
+                                    "h-6 w-6 shrink-0"
+                                  )}
+                                  aria-hidden="true"
+                                />
+                                {admin.name}
+                              </a>
+                            </li>
+                          )
+                      )}
+                    </ul>
+                  </li>
+                )}
+
+              {projectManagement &&
+                projectManagement.some(
+                  (project) => project.requiredCondition
+                ) && (
+                  <li>
+                    <div className="text-xs font-semibold leading-6 text-gray-400">
+                      Gestione Progetti
+                    </div>
+                    <ul role="list" className="-mx-2 mt-2 space-y-1">
+                      {projectManagement.map(
+                        (project) =>
+                          project.requiredCondition && (
+                            <li key={project.name}>
+                              <a
+                                href={project.href}
+                                className={classNames(
+                                  project.current
+                                    ? "bg-gray-100 text-primary"
+                                    : "text-gray-700 hover:text-primary hover:bg-gray-100",
+                                  "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                )}
+                              >
+                                <project.icon
+                                  className={classNames(
+                                    project.current
+                                      ? "text-primary"
+                                      : "text-gray-400 group-hover:text-primary",
+                                    "h-6 w-6 shrink-0"
+                                  )}
+                                  aria-hidden="true"
+                                />
+                                {project.name}
+                              </a>
+                            </li>
+                          )
+                      )}
+                    </ul>
+                  </li>
+                )}
+
+              {projects.length > 0 && (
+                <li>
+                  <div className="text-xs font-semibold leading-6 text-gray-400">
+                    Progetti
+                  </div>
+                  <ul role="list" className="-mx-2 mt-2 space-y-1">
+                    {projects.map((project: Project) => (
+                      <li key={project.ProjectId}>
+                        <a
+                          href={
+                            "/projects/" +
+                            project.CompanyName +
+                            "/" +
+                            project.ProjectId +
+                            "/" +
+                            project.ProjectName
+                          }
+                          className="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:text-primary hover:bg-gray-100"
+                        >
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-primary group-hover:text-primary">
+                            {project.ProjectName.charAt(0)}
+                          </span>
+                          <span className="truncate">
+                            {project.ProjectName}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              )}
               <li className="mt-auto">
                 <a
                   href="#"
