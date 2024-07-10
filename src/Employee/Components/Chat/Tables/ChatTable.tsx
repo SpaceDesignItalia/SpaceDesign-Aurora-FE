@@ -71,18 +71,14 @@ export default function ChatTable() {
 
   useEffect(() => {
     // Connect to socket and handle message updates
-    socket.on("message-update", (updatedMessage: Message) => {
+    socket.on("message-update", (updatedMessageConversationId: number) => {
       if (
         selectedConversationId &&
-        updatedMessage.ConversationId === selectedConversationId
+        updatedMessageConversationId === selectedConversationId
       ) {
-        setMessages((prevMessages) => [...prevMessages, updatedMessage]);
+        handleOpenChat(selectedConversationId);
       }
     });
-
-    return () => {
-      socket.off("message-update");
-    };
   }, [selectedConversationId]);
 
   useEffect(() => {
@@ -184,7 +180,6 @@ export default function ChatTable() {
   function handleSendMessage() {
     // Handle sending a message
     if (newMessage.trim() === "") return;
-
     try {
       axios
         .post("/Chat/POST/SendMessage", {
