@@ -11,9 +11,10 @@ interface File {
 
 interface FileListProps {
   ProjectId: number;
+  access: boolean;
 }
 
-const FileList: React.FC<FileListProps> = ({ ProjectId }) => {
+const FileList: React.FC<FileListProps> = ({ ProjectId, access }) => {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,15 +27,13 @@ const FileList: React.FC<FileListProps> = ({ ProjectId }) => {
   });
 
   useEffect(() => {
-    console.log("ProjectId", ProjectId);
     socket.emit("join", ProjectId);
     const fetchFiles = async () => {
       try {
         const response = await axios.get("/Project/GET/GetFilesByProjectId", {
-          params: { ProjectId: ProjectId },
+          params: { ProjectId: ProjectId, Access: access },
         });
         setFiles(response.data);
-        console.log(response.data);
       } catch (err) {
         setError("Error fetching files");
       } finally {
@@ -43,7 +42,7 @@ const FileList: React.FC<FileListProps> = ({ ProjectId }) => {
     };
 
     fetchFiles();
-  }, [ProjectId, update]);
+  }, [ProjectId, update, access]);
 
   if (loading) return <p className="text-center">⏳ Loading files...</p>;
   if (error) return <p className="text-center text-red-500">❌ {error}</p>;

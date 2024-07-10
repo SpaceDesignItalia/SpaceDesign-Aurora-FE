@@ -5,12 +5,17 @@ import { API_WEBSOCKET_URL } from "../../../../../API/API";
 
 const socket = io(API_WEBSOCKET_URL);
 
-export default function FileUploader({ ProjectId }: { ProjectId: number }) {
-  const [files, setFiles] = useState<File[]>([]);
+export default function FileUploader({
+  ProjectId,
+  access,
+}: {
+  ProjectId: number;
+  access: boolean;
+}) {
+  const [files, setFiles] = useState<{ file: File; forClient: boolean }[]>([]);
   const [status, setStatus] = useState<
     "initial" | "uploading" | "success" | "fail"
   >("initial");
-
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const dropRef = useRef<HTMLDivElement | null>(null);
 
@@ -19,7 +24,11 @@ export default function FileUploader({ ProjectId }: { ProjectId: number }) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setStatus("initial");
-      setFiles(Array.from(e.target.files));
+      const newFiles = Array.from(e.target.files).map((file) => ({
+        file,
+        forClient: false,
+      }));
+      setFiles(newFiles);
     }
   };
 
@@ -28,7 +37,11 @@ export default function FileUploader({ ProjectId }: { ProjectId: number }) {
     e.stopPropagation();
     if (e.dataTransfer.files) {
       setStatus("initial");
-      setFiles(Array.from(e.dataTransfer.files));
+      const newFiles = Array.from(e.dataTransfer.files).map((file) => ({
+        file,
+        forClient: false,
+      }));
+      setFiles(newFiles);
     }
   };
 
@@ -37,13 +50,22 @@ export default function FileUploader({ ProjectId }: { ProjectId: number }) {
     e.stopPropagation();
   };
 
+  const handleCheckboxChange = (index: number) => {
+    setFiles((prevFiles) =>
+      prevFiles.map((file, i) =>
+        i === index ? { ...file, forClient: !file.forClient } : file
+      )
+    );
+  };
+
   const handleUpload = async () => {
     if (files.length > 0) {
       setStatus("uploading");
 
       const formData = new FormData();
-      files.forEach((file) => {
+      files.forEach(({ file, forClient }) => {
         formData.append("files", file);
+        formData.append("forClient", forClient.toString());
       });
       formData.append("ProjectId", ProjectId.toString());
 
@@ -54,6 +76,7 @@ export default function FileUploader({ ProjectId }: { ProjectId: number }) {
           },
         });
         setStatus("success");
+        setFiles([]);
         socket.emit("file-update", ProjectId);
       } catch (error) {
         console.error(error);
@@ -88,9 +111,19 @@ export default function FileUploader({ ProjectId }: { ProjectId: number }) {
         <section className="mt-4 text-left">
           <h4 className="font-bold">File details:</h4>
           <ul className="list-disc ml-5">
-            {files.map((file, index) => (
-              <li key={index}>
-                {file.name} - {file.type} - {file.size} bytes
+            {files.map(({ file, forClient }, index) => (
+              <li key={index} className="flex items-center space-x-2">
+                <span>{file.name}</span>
+                {access && (
+                  <label className="flex items-center space-x-1">
+                    <input
+                      type="checkbox"
+                      checked={forClient}
+                      onChange={() => handleCheckboxChange(index)}
+                    />
+                    <span>Only for client</span>
+                  </label>
+                )}
               </li>
             ))}
           </ul>
