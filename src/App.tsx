@@ -27,8 +27,9 @@ import AddPermissionPage from "./Employee/Pages/Permission/AddPermissionPage";
 import EditProjectPage from "./Employee/Pages/Project/EditProjectPage";
 
 import DashboardCustomer from "./Customer/Pages/Dashboard/DashboardCustomer";
-import SidebarCustomer from "./Customer/Components/Layout/SidebarCustomer";
+import Navbar from "./Customer/Components/Layout/Navbar";
 import Error404 from "./Employee/Pages/Errors/Error404";
+import ProjectCustomerDashboard from "./Customer/Pages/Project/ProjectCustomerDashboard";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
@@ -86,7 +87,7 @@ const App: React.FC = () => {
   return (
     <>
       {isAuth && isStaffer && <Sidebar />}
-      {isAuth && !isStaffer && <SidebarCustomer />}
+      {isAuth && !isStaffer && <Navbar />}
       <Routes>
         {!isAuth && <Route element={<Login />} path="/login" />}
         <Route
@@ -113,6 +114,7 @@ const CustomerProtectedRoutes: React.FC = () => {
     <Routes>
       <Route element={<Outlet />}>
         <Route element={<DashboardCustomer />} path="/" />
+        <Route element={<ProjectCustomerDashboard />} path="/projects" />
       </Route>
     </Routes>
   );
