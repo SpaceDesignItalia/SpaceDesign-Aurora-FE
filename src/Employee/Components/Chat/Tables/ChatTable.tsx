@@ -380,10 +380,7 @@ export default function ChatTable() {
                   </Button>
                 </div>
 
-                <div
-                  className="flex flex-col flex-1 space-y-2 overflow-y-auto mt-3 px-4"
-                  ref={scrollRef}
-                >
+                <div className="flex flex-col flex-1 space-y-2 overflow-y-auto mt-3 px-4">
                   <ScrollShadow ref={scrollRef} hideScrollBar>
                     {messages.map((message) =>
                       message.StafferSenderId !== loggedStafferId ? (
