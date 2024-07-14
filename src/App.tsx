@@ -30,6 +30,8 @@ import DashboardCustomer from "./Customer/Pages/Dashboard/DashboardCustomer";
 import Navbar from "./Customer/Components/Layout/Navbar";
 import Error404 from "./Employee/Pages/Errors/Error404";
 import ProjectCustomerDashboard from "./Customer/Pages/Project/ProjectCustomerDashboard";
+import ProjectCustomerPage from "./Customer/Pages/Project/ProjectCustomerPage";
+import AddTicketPage from "./Customer/Pages/Project/AddTicketPage";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
@@ -115,6 +117,14 @@ const CustomerProtectedRoutes: React.FC = () => {
       <Route element={<Outlet />}>
         <Route element={<DashboardCustomer />} path="/" />
         <Route element={<ProjectCustomerDashboard />} path="/projects" />
+        <Route
+          element={<ProjectCustomerPage />}
+          path="/projects/:CompanyName/:ProjectId/:ProjectName"
+        />
+        <Route
+          element={<AddTicketPage />}
+          path="/projects/:CompanyName/:ProjectId/:ProjectName/open-new-ticket"
+        />
       </Route>
     </Routes>
   );

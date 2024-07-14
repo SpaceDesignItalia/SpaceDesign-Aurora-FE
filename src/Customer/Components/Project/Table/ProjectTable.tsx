@@ -1,4 +1,4 @@
-import { Input, Select, SelectItem } from "@nextui-org/react";
+import { Button, Input } from "@nextui-org/react";
 import TableCard from "../Other/TableCard";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import { useEffect, useState } from "react";
@@ -6,71 +6,137 @@ import axios from "axios";
 
 interface Project {
   ProjectId: number;
+  CompanyName: string;
   ProjectName: string;
   ProjectDescription: string;
   ProjectCreationDate: string;
   ProjectEndDate: string;
-  ProjectManagerId: number;
-  ProjectBannerId: number;
-  CompanyId: number; // Assume this field represents the CompanyId associated with the project
   StatusId: number;
 }
 
+interface userData {
+  CustomerId: number;
+  CustomerName: string;
+  CustomerSurname: string;
+  CustomerEmail: string;
+  CustomerPhone: string | null;
+}
+
+const USERDATA_VALUE: userData = {
+  CustomerId: 0,
+  CustomerName: "",
+  CustomerSurname: "",
+  CustomerEmail: "",
+  CustomerPhone: null,
+};
+
 export default function ProjectTable() {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [userData, setUserData] = useState<userData>(USERDATA_VALUE);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
-  const [selectedCompany, setSelectedCompany] = useState<number | null>(null); // State to hold selected company
 
   useEffect(() => {
-    axios.get("/Project/GET/GetAllProjects").then((res) => {
-      setProjects(res.data);
-      setFilteredProjects(res.data); // Initialize filtered projects with all projects
-    });
+    axios
+      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
+      .then((res) => {
+        setUserData(res.data);
+        fetchProjects(res.data.CustomerId);
+      });
   }, []);
 
-  // Function to filter projects by selected company
-  useEffect(() => {
-    if (selectedCompany !== null) {
-      const filtered = projects.filter(
-        (project) => project.CompanyId === selectedCompany
-      );
-      setFilteredProjects(filtered);
-    } else {
-      setFilteredProjects(projects); // Reset to all projects if no company selected
+  function fetchProjects(CustomerId: number) {
+    axios
+      .get("/Project/GET/GetProjectsByCustomerId", {
+        params: { CustomerId: CustomerId },
+      })
+      .then((res) => {
+        setProjects(res.data);
+        setFilteredProjects(res.data);
+      });
+  }
+
+  function searchProject() {
+    if (searchQuery.trim() === "") {
+      setFilteredProjects(projects);
+      return;
     }
-  }, [selectedCompany, projects]);
+
+    axios
+      .get("/Project/GET/SearchProjectByCustomerIdAndName", {
+        params: { CustomerId: userData.CustomerId, ProjectName: searchQuery },
+      })
+      .then((res) => {
+        setFilteredProjects(res.data);
+      });
+  }
+
+  function clearSearchInput() {
+    setSearchQuery("");
+    fetchProjects(userData.CustomerId);
+  }
+
+  // Function to group projects by CompanyName
+  const groupProjectsByCompany = (projects: Project[]) => {
+    return projects.reduce((acc, project) => {
+      const { CompanyName } = project;
+      if (!acc[CompanyName]) {
+        acc[CompanyName] = [];
+      }
+      acc[CompanyName].push(project);
+      return acc;
+    }, {} as { [key: string]: Project[] });
+  };
+
+  const groupedProjects = groupProjectsByCompany(filteredProjects);
 
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-row justify-between gap-3 items-end">
-        {/* Input for searching project by name */}
-        <Input
-          radius="sm"
-          variant="bordered"
-          startContent={<SearchOutlinedIcon />}
-          className="md:w-1/3"
-          placeholder="Cerca progetto per nome..."
-        />
-        {/* Select for choosing company */}
-        <Select
-          placeholder="Seleziona azienda"
-          value={selectedCompany}
-          onChange={(e) => setSelectedCompany(Number(e.target.value))}
-          className="md:w-1/3"
-        >
-          {/* Replace with actual company options */}
-          <SelectItem value={1}>Azienda 1</SelectItem>
-          <SelectItem value={2}>Azienda 2</SelectItem>
-          {/* Add more options based on your data */}
-        </Select>
+        <div className="flex flex-row gap-3 w-full">
+          <Input
+            radius="sm"
+            variant="bordered"
+            startContent={<SearchOutlinedIcon />}
+            isClearable
+            onClear={clearSearchInput}
+            className="md:w-1/4"
+            placeholder="Cerca progetto per nome"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Button
+            startContent={<SearchOutlinedIcon />}
+            isDisabled={searchQuery == ""}
+            color="primary"
+            radius="sm"
+            onClick={searchProject}
+            className="hidden sm:flex"
+          >
+            Cerca
+          </Button>
+          <Button
+            isIconOnly
+            color="primary"
+            radius="sm"
+            onClick={searchProject}
+            isDisabled={searchQuery == ""}
+            className="flex sm:hidden"
+          >
+            <SearchOutlinedIcon />
+          </Button>
+        </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {/* Map through filteredProjects instead of projects */}
-        {filteredProjects.length > 0 &&
-          filteredProjects.map((project) => {
-            return <TableCard project={project} key={project.ProjectId} />;
-          })}
-      </div>
+      {Object.keys(groupedProjects).map((companyName, index) => (
+        <div key={index} className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">{companyName}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {groupedProjects[companyName].map((project: Project) => (
+              <TableCard key={project.ProjectId} project={project} />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -240,7 +240,7 @@ export default function ChatTable() {
   }
 
   return (
-    <div className="flex w-full h-[650px]">
+    <div className="flex w-full h-5/6">
       <AddConversationModal
         isOpen={modalAddData.open}
         isClosed={() => setModalAddData({ ...modalAddData, open: false })}
@@ -342,7 +342,7 @@ export default function ChatTable() {
             </div>
           </div>
 
-          <div className="flex flex-col w-full mx-auto py-2 border-l">
+          <div className="flex flex-col w-full mx-auto py-2 border-l h-fit">
             {selectedConversation ? (
               <>
                 <div className="flex justify-between items-center mb-3 px-4 py-2 border-b">

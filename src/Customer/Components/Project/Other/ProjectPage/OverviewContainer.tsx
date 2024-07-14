@@ -103,19 +103,6 @@ export default function OverviewContainer({
 
   return (
     <>
-      <AddProjectLink
-        isOpen={modalData.open}
-        isClosed={() => setModalData({ ...modalData, open: false })}
-        ProjectId={modalData.ProjectId}
-      />
-      <DeleteLinkModal
-        isOpen={modalEditData.open}
-        isClosed={() => {
-          setModalEditData({ ...modalEditData, open: false });
-        }}
-        LinkData={modalEditData.Links}
-        DeleteLink={DeleteLink}
-      />
       <div className="grid grid-cols-1 sm:grid-cols-6 gap-5 h-screen">
         <div className="grid grid-cols-1 xl:grid-cols-6 gap-6 col-span-6 md:col-span-4">
           <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6 xl:col-span-6 h-fit">
@@ -156,78 +143,6 @@ export default function OverviewContainer({
         </div>
 
         <div className="flex flex-col gap-5 col-span-6  md:col-span-2">
-          <div className="grid grid-cols-1 2xl:grid-cols-1 gap-4">
-            <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6">
-              <div className="flex flex-col gap-3 items-start w-full">
-                <div className="flex flex-row justify-between w-full">
-                  <h1 className="font-bold">Collegamenti esterni</h1>
-                  <Button
-                    size="sm"
-                    color="warning"
-                    className="text-white"
-                    variant="solid"
-                    onClick={() =>
-                      setModalEditData({
-                        ...modalEditData,
-                        open: true,
-                        Links: links,
-                      })
-                    }
-                    isIconOnly
-                  >
-                    <ModeEditRoundedIcon />
-                  </Button>
-                </div>
-                <div className="flex flex-row flex-wrap gap-3 items-center">
-                  {links.map((link, index) => {
-                    return (
-                      <Tooltip
-                        content={link.ProjectLinkTitle}
-                        closeDelay={0}
-                        key={index}
-                      >
-                        <Button
-                          as={Link}
-                          href={link.ProjectLinkUrl}
-                          target="blank"
-                          size="sm"
-                          variant="faded"
-                          isIconOnly
-                        >
-                          <img
-                            src={
-                              API_URL_IMG +
-                              "/linkIcons/" +
-                              link.ProjectLinkTypeImage
-                            }
-                            className="h-5 w-5"
-                          />
-                        </Button>
-                      </Tooltip>
-                    );
-                  })}
-                  <Tooltip content="Aggiungi un nuovo link" closeDelay={0}>
-                    <Button
-                      size="sm"
-                      color="primary"
-                      variant="solid"
-                      onClick={() =>
-                        setModalData({
-                          ...modalData,
-                          open: true,
-                          ProjectId: projectData.ProjectId,
-                        })
-                      }
-                      isIconOnly
-                    >
-                      <AddRoundedIcon />
-                    </Button>
-                  </Tooltip>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
             <div className="flex justify-between items-center">
               <h1 className="text-xl font-bold mb-4">Completato</h1>
