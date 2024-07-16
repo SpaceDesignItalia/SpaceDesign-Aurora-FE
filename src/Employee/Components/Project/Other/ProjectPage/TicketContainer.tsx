@@ -1,11 +1,10 @@
 import { Button, Input, ScrollShadow } from "@nextui-org/react";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
-import ChatMessage from "../Other/ChatMessage";
+import ChatMessage from "../ProjectTicket/ChatMessage";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
-import { API_WEBSOCKET_URL } from "../../../../API/API";
-import { useParams } from "react-router-dom";
+import { API_WEBSOCKET_URL } from "../../../../../API/API";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -20,11 +19,29 @@ interface Message {
   IsCustomer: boolean;
 }
 
-export default function ProjectChat() {
-  const { ProjectId } = useParams();
+interface Project {
+  ProjectId: number;
+  ProjectName: string;
+  ProjectDescription: string;
+  ProjectCreationDate: Date;
+  ProjectEndDate: Date;
+  CompanyId: number;
+  ProjectBannerId: number;
+  ProjectBannerPath: string;
+  StatusName: string;
+  ProjectManagerId: number;
+  ProjectManagerFullName: string;
+  ProjectManagerEmail: string;
+  RoleName: string;
+}
 
+export default function TicketContainer({
+  projectData,
+}: {
+  projectData: Project;
+}) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [loggedCustomerId, setloggedCustomerId] = useState<number>(0);
+  const [loggedStafferId, setloggedStafferId] = useState<number>(0);
   const [newMessage, setNewMessage] = useState("");
   const [conversationId, setConversationId] = useState<number>(-1);
 
@@ -42,10 +59,10 @@ export default function ProjectChat() {
     axios
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then(async (res) => {
-        setloggedCustomerId(res.data.CustomerId);
+        setloggedStafferId(res.data.StafferId);
 
         return axios.get("/Project/GET/GetConversationByProjectId", {
-          params: { ProjectId: ProjectId },
+          params: { ProjectId: projectData.ProjectId },
         });
       })
       .then((res) => {
@@ -54,6 +71,7 @@ export default function ProjectChat() {
         socket.emit("join", res.data[1].ConversationId);
         handleOpenChat(res.data[1].ConversationId);
       });
+
     socket.on("message-update", () => {
       handleOpenChat(parseInt(localStorage.getItem("conversationId")!));
     });
@@ -67,6 +85,7 @@ export default function ProjectChat() {
           params: { ConversationId: conversationId },
         })
         .then((res) => {
+          console.log(res.data);
           setMessages(res.data);
           setConversationId(conversationId);
           socket.emit("join", conversationId);
@@ -80,9 +99,9 @@ export default function ProjectChat() {
     if (newMessage.trim() === "") return;
     try {
       axios
-        .post("/Chat/POST/SendCustomerMessage", {
+        .post("/Chat/POST/SendMessage", {
           ConversationId: conversationId,
-          StafferSenderId: loggedCustomerId,
+          StafferSenderId: loggedStafferId,
           Text: newMessage,
         })
         .then(() => {
@@ -103,9 +122,9 @@ export default function ProjectChat() {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
-          <h1 className="font-bold">Team chat</h1>
+      <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
+        <div className="flex flex-col gap-5">
+          <h1 className="font-bold">Customer chat</h1>
           <ScrollShadow
             className="w-full h-[500px]"
             ref={scrollRef}
@@ -113,7 +132,7 @@ export default function ProjectChat() {
           >
             <div className="flex flex-col">
               {messages.map((message) => {
-                if (!message.IsCustomer) {
+                if (message.IsCustomer) {
                   return (
                     <ChatMessage
                       message={message}
