@@ -130,13 +130,13 @@ export default function ProjectPage() {
 
           <div className="flex flex-col gap-5 py-6 lg:py-8">
             <header className="flex flex-col xl:flex-row xl:justify-between w-full gap-5">
-              <div className="flex flex-col gap-3">
-                <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
-                  {projectData.ProjectName}
-                </h1>
+              <div className="flex flex-row items-center gap-3">
                 <Chip color="primary" radius="sm">
                   {projectData.StatusName}
                 </Chip>
+                <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+                  {projectData.ProjectName}
+                </h1>
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-5">
