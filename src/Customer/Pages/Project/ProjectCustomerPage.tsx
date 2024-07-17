@@ -8,6 +8,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import OverviewContainer from "../../Components/Project/Other/ProjectPage/OverviewContainer";
 import TicketContainer from "../../Components/Project/Other/ProjectPage/TicketContainer";
+import FilesCustomerContainer from "../../Components/Project/Other/ProjectPage/FilesCustomerContainer";
 
 interface Project {
   ProjectId: number;
@@ -141,7 +142,7 @@ export default function ProjectCustomerPage() {
             {activeTab === "Panoramica" && (
               <OverviewContainer projectData={projectData} />
             )}
-            {activeTab === "Files" && <div>Files content</div>}
+            {activeTab === "Files" && <FilesCustomerContainer />}
             {activeTab === "Ticket" && <TicketContainer />}
           </div>
         </main>
