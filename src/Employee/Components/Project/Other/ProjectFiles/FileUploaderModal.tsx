@@ -12,6 +12,7 @@ import {
   Checkbox,
 } from "@nextui-org/react";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import FileUploadRoundedIcon from "@mui/icons-material/FileUploadRounded";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -25,9 +26,6 @@ export default function FileUploaderModal({
   isClosed: () => void;
 }) {
   const [files, setFiles] = useState<{ file: File; forClient: boolean }[]>([]);
-  const [status, setStatus] = useState<
-    "initial" | "uploading" | "success" | "fail"
-  >("initial");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const dropRef = useRef<HTMLDivElement | null>(null);
 
@@ -35,7 +33,6 @@ export default function FileUploaderModal({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setStatus("initial");
       const newFiles = Array.from(e.target.files).map((file) => ({
         file,
         forClient: false,
@@ -48,7 +45,6 @@ export default function FileUploaderModal({
     e.preventDefault();
     e.stopPropagation();
     if (e.dataTransfer.files) {
-      setStatus("initial");
       const newFiles = Array.from(e.dataTransfer.files).map((file) => ({
         file,
         forClient: false,
@@ -96,6 +92,11 @@ export default function FileUploaderModal({
     }
   };
 
+  function closeModal() {
+    setFiles([]);
+    isClosed();
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -104,77 +105,75 @@ export default function FileUploaderModal({
       scrollBehavior="inside"
       placement="center"
       backdrop="blur"
+      hideCloseButton
     >
       <ModalContent>
-        {(isClosed) => (
-          <>
-            <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">
-                Aggiungi un nuovo file al progetto
-              </h3>
-            </ModalHeader>
-            <ModalBody>
-              <input
-                name="file"
-                id="file"
-                type="file"
-                multiple
-                onChange={handleFileChange}
-                ref={fileInputRef}
-                className="hidden"
-              />
-              <div
-                className="border-2 border-dashed border-blue-500 p-4 rounded-lg cursor-pointer hover:bg-blue-50"
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                ref={dropRef}
-                onClick={() => fileInputRef.current?.click()} // Add this line
-              >
-                <p className="text-blue-500">
-                  Clicca o trascina i file per caricarli
-                </p>
-              </div>
-              {files.length > 0 && (
-                <section className="mt-4 text-left">
-                  <h4 className="font-bold">File selezionati:</h4>
-                  <ul className="flex flex-col list-disc mt-3 gap-2">
-                    {files.map(({ file, forClient }, index) => (
-                      <li key={index} className="flex items-center space-x-2">
-                        <Button
-                          color="danger"
-                          size="sm"
-                          radius="sm"
-                          onClick={() => handleRemoveFile(index)}
-                          isIconOnly
-                        >
-                          <CloseRoundedIcon />
-                        </Button>
-                        <span>{file.name}</span>
+        <ModalHeader className="flex flex-col gap-1">
+          <h3 className="text-xl font-semibold">
+            Aggiungi un nuovo file al progetto
+          </h3>
+        </ModalHeader>
+        <ModalBody>
+          <input
+            name="file"
+            id="file"
+            type="file"
+            multiple
+            onChange={handleFileChange}
+            ref={fileInputRef}
+            className="hidden"
+          />
+          <div
+            className="flex flex-row gap-2 border-2 border-dashed border-blue-500 p-4 rounded-lg cursor-pointer hover:bg-blue-50"
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            ref={dropRef}
+            onClick={() => fileInputRef.current?.click()} // Add this line
+          >
+            <FileUploadRoundedIcon className="text-blue-500" />
+            <p className="text-blue-500">
+              Clicca o trascina i file per caricarli
+            </p>
+          </div>
+          {files.length > 0 && (
+            <section className="mt-4 text-left">
+              <h4 className="font-bold">File selezionati:</h4>
+              <ul className="flex flex-col list-disc mt-3 gap-2">
+                {files.map(({ file, forClient }, index) => (
+                  <li key={index} className="flex items-center space-x-2">
+                    <Button
+                      color="danger"
+                      size="sm"
+                      radius="sm"
+                      onClick={() => handleRemoveFile(index)}
+                      isIconOnly
+                    >
+                      <CloseRoundedIcon />
+                    </Button>
+                    <span>{file.name}</span>
 
-                        <Checkbox
-                          checked={forClient}
-                          onChange={() => handleCheckboxChange(index)}
-                        >
-                          Visibile al cliente
-                        </Checkbox>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-              {files.length > 0 && (
-                <Button color="primary" radius="sm" onClick={handleUpload}>
-                  Carica document{files.length > 1 ? "i" : "o"}
-                </Button>
-              )}
-            </ModalBody>
-            <ModalFooter className="flex sm:flex-row flex-col">
-              <Button variant="light" onClick={isClosed} radius="sm">
-                Annulla
-              </Button>
-            </ModalFooter>
-          </>
-        )}
+                    <Checkbox
+                      checked={forClient}
+                      onChange={() => handleCheckboxChange(index)}
+                    >
+                      Visibile al cliente
+                    </Checkbox>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </ModalBody>
+        <ModalFooter className="flex sm:flex-row flex-col">
+          {files.length > 0 && (
+            <Button color="primary" radius="sm" onClick={handleUpload}>
+              Carica document{files.length > 1 ? "i" : "o"}
+            </Button>
+          )}
+          <Button variant="light" onClick={closeModal} radius="sm">
+            Annulla
+          </Button>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   );
