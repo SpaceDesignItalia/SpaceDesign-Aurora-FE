@@ -16,6 +16,7 @@ import TeamContainer from "../../Components/Project/Other/ProjectPage/TeamContai
 import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContainer";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import FilesContainer from "../../Components/Project/Other/ProjectPage/FilesContainer";
+import TicketContainer from "../../Components/Project/Other/ProjectPage/TicketContainer";
 
 interface Project {
   ProjectId: number;
@@ -205,6 +206,11 @@ export default function ProjectPage() {
             {activeTab === "Files" && (
               <div>
                 <FilesContainer projectData={projectData} />
+              </div>
+            )}
+            {activeTab === "Ticket" && (
+              <div>
+                <TicketContainer projectData={projectData} />
               </div>
             )}
             {activeTab === "Ticket" && <div>Ticket content</div>}
