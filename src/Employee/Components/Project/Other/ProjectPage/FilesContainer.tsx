@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -10,6 +10,7 @@ import {
   DropdownTrigger,
   DropdownItem,
   DropdownMenu,
+  Tooltip,
 } from "@nextui-org/react";
 import FileUploaderModal from "../ProjectFiles/FileUploaderModal";
 import { io } from "socket.io-client";
@@ -22,6 +23,8 @@ import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 import ConfirmDeleteFileModal from "../ConfirmDeleteFileModal";
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import { usePermissions } from "../../../Layout/PermissionProvider";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -59,21 +62,34 @@ interface ModalDeleteData {
   open: boolean;
 }
 
+const DEFAULT_FILE: File = {
+  ProjectFileId: 0,
+  FileName: "",
+  FilePath: "",
+  ForClient: false,
+  ProjectId: 0,
+};
+
 export default function FilesContainer({
   projectData,
 }: {
   projectData: Project;
 }) {
   const { ProjectId } = useParams();
+  const { hasPermission } = usePermissions();
   const [files, setFiles] = useState<File[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [searchResults, setSearchResults] = useState<File[]>([]);
+  const [adminPermission, setAdminPermission] = useState({
+    addFile: false,
+    removeFile: false,
+    customerView: false,
+  });
   const [modalUploadFile, setModalUploadFile] = useState<ModalData>({
     ProjectId: 0,
     open: false,
   });
   const [modalDeleteFile, setModalDeleteFile] = useState<ModalDeleteData>({
-    File: null,
+    File: DEFAULT_FILE,
     open: false,
   });
 
@@ -84,6 +100,14 @@ export default function FilesContainer({
   }, []);
 
   useEffect(() => {
+    async function checkPermissions() {
+      setAdminPermission({
+        addFile: await hasPermission("ADD_NEW_FILE"),
+        removeFile: await hasPermission("DELETE_FILE"),
+        customerView: await hasPermission("ALLOW_CUSTOMER_VIEW"),
+      });
+    }
+    checkPermissions();
     fetchFiles(); // Carica i file iniziali quando cambia ProjectId o quando c'è un aggiornamento
   }, [ProjectId]);
 
@@ -163,6 +187,7 @@ export default function FilesContainer({
     <>
       <FileUploaderModal
         ProjectId={projectData.ProjectId}
+        AllowCustomerView={adminPermission.customerView}
         isOpen={modalUploadFile.open}
         isClosed={() => setModalUploadFile({ ...modalUploadFile, open: false })}
       />
@@ -196,7 +221,7 @@ export default function FilesContainer({
               Cerca
             </Button>
           </div>
-          {files.length > 0 && (
+          {files.length > 0 && adminPermission.addFile && (
             <Button
               radius="sm"
               color="primary"
@@ -220,31 +245,43 @@ export default function FilesContainer({
             files.map((file, index) => (
               <Card radius="sm" key={index} className="col-span-1">
                 <CardBody className="flex flex-row gap-5">
+                  {file.ForClient && (
+                    <Tooltip
+                      content="Visibile al cliente"
+                      color="warning"
+                      closeDelay={0}
+                      showArrow
+                    >
+                      <PersonRoundedIcon />
+                    </Tooltip>
+                  )}
                   <div className="w-full">
                     <h4>{file.FileName}</h4>
                   </div>
-                  <Dropdown radius="sm">
-                    <DropdownTrigger>
-                      <Button isIconOnly size="sm" variant="light">
-                        <MoreVertRoundedIcon />
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu>
-                      <DropdownItem
-                        color="danger"
-                        startContent={<DeleteOutlinedIcon />}
-                        onClick={() =>
-                          setModalDeleteFile({
-                            ...modalDeleteFile,
-                            File: file,
-                            open: true,
-                          })
-                        }
-                      >
-                        Rimuovi
-                      </DropdownItem>
-                    </DropdownMenu>
-                  </Dropdown>
+                  {adminPermission.removeFile && (
+                    <Dropdown radius="sm">
+                      <DropdownTrigger>
+                        <Button isIconOnly size="sm" variant="light">
+                          <MoreVertRoundedIcon />
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownMenu>
+                        <DropdownItem
+                          color="danger"
+                          startContent={<DeleteOutlinedIcon />}
+                          onClick={() =>
+                            setModalDeleteFile({
+                              ...modalDeleteFile,
+                              File: file,
+                              open: true,
+                            })
+                          }
+                        >
+                          Rimuovi
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
+                  )}
                 </CardBody>
 
                 <CardFooter>
@@ -279,16 +316,18 @@ export default function FilesContainer({
                     Inizia caricando un nuovo file
                   </p>
                   <div className="mt-4">
-                    <Button
-                      color="primary"
-                      radius="sm"
-                      onClick={() =>
-                        setModalUploadFile({ ...modalUploadFile, open: true })
-                      }
-                      startContent={<NoteAddRoundedIcon />}
-                    >
-                      Carica file
-                    </Button>
+                    {adminPermission.addFile && (
+                      <Button
+                        color="primary"
+                        radius="sm"
+                        onClick={() =>
+                          setModalUploadFile({ ...modalUploadFile, open: true })
+                        }
+                        startContent={<NoteAddRoundedIcon />}
+                      >
+                        Carica file
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}

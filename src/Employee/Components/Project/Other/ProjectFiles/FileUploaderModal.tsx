@@ -18,10 +18,12 @@ const socket = io(API_WEBSOCKET_URL);
 
 export default function FileUploaderModal({
   ProjectId,
+  AllowCustomerView,
   isOpen,
   isClosed,
 }: {
   ProjectId: number;
+  AllowCustomerView: boolean;
   isOpen: boolean;
   isClosed: () => void;
 }) {
@@ -151,13 +153,14 @@ export default function FileUploaderModal({
                       <CloseRoundedIcon />
                     </Button>
                     <span>{file.name}</span>
-
-                    <Checkbox
-                      checked={forClient}
-                      onChange={() => handleCheckboxChange(index)}
-                    >
-                      Visibile al cliente
-                    </Checkbox>
+                    {AllowCustomerView && (
+                      <Checkbox
+                        checked={forClient}
+                        onChange={() => handleCheckboxChange(index)}
+                      >
+                        Visibile al cliente
+                      </Checkbox>
+                    )}
                   </li>
                 ))}
               </ul>
