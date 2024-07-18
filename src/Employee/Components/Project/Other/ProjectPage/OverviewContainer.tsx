@@ -2,6 +2,8 @@ import { Button, Progress, cn, User, Tooltip, Link } from "@nextui-org/react";
 import TimerRoundedIcon from "@mui/icons-material/TimerRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ModeEditRoundedIcon from "@mui/icons-material/ModeEditRounded";
+import ChecklistRoundedIcon from "@mui/icons-material/ChecklistRounded";
+import Groups2RoundedIcon from "@mui/icons-material/Groups2Rounded";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import AddProjectLink from "../AddProjectLink";
@@ -50,6 +52,8 @@ export default function OverviewContainer({
 }: {
   projectData: Project;
 }) {
+  const [totalTasks, setTotalTasks] = useState<number>(0);
+  const [totalTeamMembers, setTotalTeamMembers] = useState<number>(0);
   const [modalData, setModalData] = useState<ModalData>({
     ProjectId: 0,
     open: false,
@@ -84,6 +88,22 @@ export default function OverviewContainer({
       })
       .then((res) => {
         setLinks(res.data);
+      });
+
+    axios
+      .get("Project/GET/GetTotalTasks", {
+        params: { ProjectId: projectData.ProjectId },
+      })
+      .then((res) => {
+        setTotalTasks(res.data[0].TotalTasks);
+      });
+
+    axios
+      .get("Project/GET/GetTotalTeamMembers", {
+        params: { ProjectId: projectData.ProjectId },
+      })
+      .then((res) => {
+        setTotalTeamMembers(res.data[0].TotalTeamMembers);
       });
     async function checkPermissions() {
       setAdminPermission({
@@ -128,7 +148,7 @@ export default function OverviewContainer({
         DeleteLink={DeleteLink}
       />
       <div className="grid grid-cols-1 sm:grid-cols-6 gap-5 h-screen">
-        <div className="grid grid-cols-1 xl:grid-cols-6 gap-6 col-span-6 md:col-span-4">
+        <div className="grid grid-cols-1 xl:grid-cols-6 gap-6 col-span-6 md:col-span-4 h-fit">
           <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6 xl:col-span-6 h-fit">
             <h1 className="text-xl font-bold mb-4">Dettagli progetto</h1>
 
@@ -163,6 +183,22 @@ export default function OverviewContainer({
                 }}
               />
             </div>
+          </div>
+
+          <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-3">
+            <div className="flex flex-col items-start">
+              <h1 className="font-bold">Membri del team</h1>
+              <span>{totalTeamMembers}</span>
+            </div>
+            <Groups2RoundedIcon className="text-gray-500" />
+          </div>
+
+          <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-3">
+            <div className="flex flex-col items-start">
+              <h1 className="font-bold">Task totali</h1>
+              <span>{totalTasks}</span>
+            </div>
+            <ChecklistRoundedIcon className="text-gray-500" />
           </div>
         </div>
 
