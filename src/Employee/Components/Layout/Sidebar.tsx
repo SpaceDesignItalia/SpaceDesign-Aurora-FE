@@ -826,7 +826,7 @@ export default function Sidebar() {
                     <DropdownItem key="logout" color="danger" onClick={logout}>
                       <div className="flex flex-row gap-2">
                         <LogoutRoundedIcon />
-                        Log Out
+                        Logout
                       </div>
                     </DropdownItem>
                   </DropdownMenu>

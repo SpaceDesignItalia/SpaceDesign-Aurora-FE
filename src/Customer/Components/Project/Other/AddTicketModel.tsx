@@ -17,14 +17,6 @@ interface Ticket {
   TicketRequestName: string;
 }
 
-interface userData {
-  CustomerId: number;
-  CustomerName: string;
-  CustomerSurname: string;
-  CustomerEmail: string;
-  CustomerPhone: string | null;
-}
-
 interface NewTicket {
   ProjectTicketTitle: string;
   ProjectTicketDescription: string;
@@ -39,14 +31,6 @@ interface AlertData {
   alertDescription: string;
   alertColor: string;
 }
-
-const USERDATA_VALUE: userData = {
-  CustomerId: 0,
-  CustomerName: "",
-  CustomerSurname: "",
-  CustomerEmail: "",
-  CustomerPhone: null,
-};
 
 const TICKET_DEFAULT: NewTicket = {
   ProjectTicketTitle: "",
@@ -66,7 +50,6 @@ const ALERTDATA: AlertData = {
 export default function AddTicketModal() {
   const { ProjectId } = useParams();
   const [ticket, setTicket] = useState<NewTicket>(TICKET_DEFAULT);
-  const [userData, setUserData] = useState<userData>(USERDATA_VALUE);
   const [ticketType, setTicketType] = useState<Ticket[]>([]);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>(ALERTDATA);
@@ -75,12 +58,6 @@ export default function AddTicketModal() {
     axios.get("/Ticket/GET/GetAllTicketTypes").then((res) => {
       setTicketType(res.data);
     });
-
-    axios
-      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
-      .then((res) => {
-        setUserData(res.data);
-      });
   }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -109,13 +86,16 @@ export default function AddTicketModal() {
   const handleUpdateCustomer = async () => {
     try {
       setIsSaving(true);
-      const res = await axios.post("/Ticket/POST/OpenNewTicket", {
-        TicketData: {
-          ...ticket,
-          ProjectId: ProjectId,
-          CustomerId: userData.CustomerId,
+      const res = await axios.post(
+        "/Ticket/POST/OpenNewTicket",
+        {
+          TicketData: {
+            ...ticket,
+            ProjectId: ProjectId,
+          },
         },
-      });
+        { withCredentials: true }
+      );
 
       if (res.status === 200) {
         setAlertData({
