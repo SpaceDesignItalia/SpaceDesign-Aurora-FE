@@ -43,11 +43,6 @@ export default function ProjectsTable() {
   const { hasPermission } = usePermissions();
 
   useEffect(() => {
-    axios
-      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
-      .then((res) => {
-        fetchData(res.data.StafferId);
-      });
     async function checkPermissions() {
       setAdminCustomerPermission({
         addCustomerPermission: await hasPermission("CREATE_CUSTOMER"),
@@ -55,14 +50,13 @@ export default function ProjectsTable() {
         deleteCustomerPermission: await hasPermission("DELETE_CUSTOMER"),
       });
     }
+    fetchData();
     checkPermissions();
   }, []);
 
-  function fetchData(StafferId: number) {
+  function fetchData() {
     axios
-      .get("/Project/GET/GetProjectInTeam", {
-        params: { StafferId: StafferId },
-      })
+      .get("/Project/GET/GetProjectInTeam", { withCredentials: true })
       .then((res) => {
         setProjects(res.data);
         console.log(res.data);
