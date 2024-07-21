@@ -32,6 +32,7 @@ import Error404 from "./Employee/Pages/Errors/Error404";
 import ProjectCustomerDashboard from "./Customer/Pages/Project/ProjectCustomerDashboard";
 import ProjectCustomerPage from "./Customer/Pages/Project/ProjectCustomerPage";
 import AddTicketPage from "./Customer/Pages/Project/AddTicketPage";
+import SettingsDashboard from "./Employee/Pages/Settings/SettingsDashboard";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
@@ -135,6 +136,7 @@ const EmployeeProtectedRoutes: React.FC = () => {
     <Routes>
       <Route element={<Outlet />}>
         <Route path="*" element={<Error404 />} />
+        <Route path="/settings" element={<SettingsDashboard />} />
         <Route element={<Dashboard />} path="/" />
         <Route
           element={<CustomerDashboard />}
