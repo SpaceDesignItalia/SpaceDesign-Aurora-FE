@@ -14,6 +14,12 @@ interface Staffer {
   StafferImageUrl: string;
 }
 
+interface ChangePassword {
+  OldPassword: string;
+  NewPassword: string;
+  ConfirmPassword: string;
+}
+
 interface AlertData {
   isOpen: boolean;
   alertTitle: string;
@@ -30,6 +36,12 @@ const STAFFER_DEFAULT: Staffer = {
   StafferImageUrl: "",
 };
 
+const CHANGEPASSWORD_DEFAULT: ChangePassword = {
+  OldPassword: "",
+  NewPassword: "",
+  ConfirmPassword: "",
+};
+
 const ALERT_DEFAULT: AlertData = {
   isOpen: false,
   alertTitle: "",
@@ -43,8 +55,13 @@ export default function SettingsModel() {
     useState<Staffer>(STAFFER_DEFAULT);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string>("");
+  const [changePassword, setChangePassword] = useState<ChangePassword>(
+    CHANGEPASSWORD_DEFAULT
+  );
   const [alertData, setAlertData] = useState<AlertData>(ALERT_DEFAULT);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isSavingNewPassword, setIsSavingNewPassword] =
+    useState<boolean>(false);
 
   useEffect(() => {
     axios
@@ -63,6 +80,14 @@ export default function SettingsModel() {
     const { name, value } = e.target;
     setUserEditedData({
       ...userEditedData,
+      [name]: value,
+    });
+  };
+
+  const handleChangePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setChangePassword({
+      ...changePassword,
       [name]: value,
     });
   };
@@ -114,10 +139,71 @@ export default function SettingsModel() {
     }
   };
 
+  const handleSavePassword = async () => {
+    try {
+      setIsSavingNewPassword(true);
+      const res = await axios.put(
+        "/Staffer/UPDATE/UpdateStafferPassword",
+        {
+          ChangePasswordData: changePassword,
+        },
+        { withCredentials: true }
+      );
+
+      if (res.status === 200) {
+        setAlertData({
+          isOpen: true,
+          alertTitle: "Operazione completata",
+          alertDescription: "La password è stata cambiata con successo.",
+          alertColor: "green",
+        });
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
+    } catch (error: any) {
+      if (error.response.status === 401) {
+        setAlertData({
+          isOpen: true,
+          alertTitle: "Errore durante l'operazione",
+          alertDescription: "La password attuale è errata!",
+          alertColor: "red",
+        });
+
+        setTimeout(() => {
+          setAlertData(ALERT_DEFAULT);
+          setIsSavingNewPassword(false);
+        }, 2000);
+      } else {
+        setAlertData({
+          isOpen: true,
+          alertTitle: "Errore durante l'operazione",
+          alertDescription:
+            "Si è verificato un errore durante la modifica dei dati. Per favore, riprova più tardi.",
+          alertColor: "red",
+        });
+        console.error("Errore durante l'aggiornamento dei dati:", error);
+      }
+    }
+  };
+
   const isDataUnchanged =
     JSON.stringify(userData) === JSON.stringify(userEditedData) &&
     !profileImage;
 
+  const isPasswordFieldsNotEmpty = () => {
+    if (
+      changePassword.OldPassword !== "" &&
+      changePassword.NewPassword !== "" &&
+      changePassword.ConfirmPassword !== "" &&
+      changePassword.NewPassword == changePassword.ConfirmPassword &&
+      changePassword.OldPassword !== changePassword.NewPassword
+    ) {
+      return false;
+    }
+    return true;
+  };
   return (
     <>
       <StatusAlert AlertData={alertData} />
@@ -223,7 +309,7 @@ export default function SettingsModel() {
               <Button
                 color="primary"
                 radius="sm"
-                startContent={isSaving ? "" : <SaveRoundedIcon />}
+                startContent={!isSaving && <SaveRoundedIcon />}
                 isDisabled={isDataUnchanged}
                 isLoading={isSaving}
                 onClick={handleSave}
@@ -248,17 +334,19 @@ export default function SettingsModel() {
             <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
               <div className="col-span-full">
                 <label
-                  htmlFor="StafferPassword"
+                  htmlFor="OldPassword"
                   className="block text-sm font-medium leading-6"
                 >
                   Password attuale
                 </label>
                 <div className="mt-2">
                   <Input
+                    type="password"
                     variant="bordered"
                     radius="sm"
-                    id="StafferPassword"
-                    name="StafferPassword"
+                    id="OldPassword"
+                    name="OldPassword"
+                    onChange={handleChangePassword}
                   />
                 </div>
               </div>
@@ -272,27 +360,31 @@ export default function SettingsModel() {
                 </label>
                 <div className="mt-2">
                   <Input
+                    type="password"
                     variant="bordered"
                     radius="sm"
                     id="NewPassword"
                     name="NewPassword"
+                    onChange={handleChangePassword}
                   />
                 </div>
               </div>
 
               <div className="col-span-full">
                 <label
-                  htmlFor="ConfirmNewPassword"
+                  htmlFor="ConfirmPassword"
                   className="block text-sm font-medium leading-6"
                 >
                   Conferma nuova password
                 </label>
                 <div className="mt-2">
                   <Input
+                    type="password"
                     variant="bordered"
                     radius="sm"
-                    id="ConfirmNewPassword"
-                    name="ConfirmNewPassword"
+                    id="ConfirmPassword"
+                    name="ConfirmPassword"
+                    onChange={handleChangePassword}
                   />
                 </div>
               </div>
@@ -302,7 +394,10 @@ export default function SettingsModel() {
               <Button
                 color="primary"
                 radius="sm"
-                startContent={<SaveRoundedIcon />}
+                startContent={!isSavingNewPassword && <SaveRoundedIcon />}
+                isDisabled={isPasswordFieldsNotEmpty()}
+                isLoading={isSavingNewPassword}
+                onClick={handleSavePassword}
               >
                 Salva
               </Button>
