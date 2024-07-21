@@ -14,42 +14,18 @@ interface Project {
   StatusId: number;
 }
 
-interface userData {
-  CustomerId: number;
-  CustomerName: string;
-  CustomerSurname: string;
-  CustomerEmail: string;
-  CustomerPhone: string | null;
-}
-
-const USERDATA_VALUE: userData = {
-  CustomerId: 0,
-  CustomerName: "",
-  CustomerSurname: "",
-  CustomerEmail: "",
-  CustomerPhone: null,
-};
-
 export default function ProjectTable() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [userData, setUserData] = useState<userData>(USERDATA_VALUE);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    axios
-      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
-      .then((res) => {
-        setUserData(res.data);
-        fetchProjects(res.data.CustomerId);
-      });
+    fetchProjects();
   }, []);
 
-  function fetchProjects(CustomerId: number) {
+  function fetchProjects() {
     axios
-      .get("/Project/GET/GetProjectsByCustomerId", {
-        params: { CustomerId: CustomerId },
-      })
+      .get("/Project/GET/GetProjectsByCustomerId", { withCredentials: true })
       .then((res) => {
         setProjects(res.data);
         setFilteredProjects(res.data);
@@ -64,7 +40,8 @@ export default function ProjectTable() {
 
     axios
       .get("/Project/GET/SearchProjectByCustomerIdAndName", {
-        params: { CustomerId: userData.CustomerId, ProjectName: searchQuery },
+        withCredentials: true,
+        params: { ProjectName: searchQuery },
       })
       .then((res) => {
         setFilteredProjects(res.data);
@@ -73,7 +50,7 @@ export default function ProjectTable() {
 
   function clearSearchInput() {
     setSearchQuery("");
-    fetchProjects(userData.CustomerId);
+    fetchProjects();
   }
 
   // Function to group projects by CompanyName
