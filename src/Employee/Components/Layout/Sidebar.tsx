@@ -8,7 +8,6 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
-
 import Logo from "../../../assets/SpaceDesignLogo.png";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
@@ -88,9 +87,8 @@ export default function Sidebar() {
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then((res) => {
         setUserData(res.data);
-        fetchProjects(res.data.StafferId);
       });
-
+    fetchProjects();
     fetchPermissions();
   }, [currentUrl]);
 
@@ -160,10 +158,10 @@ export default function Sidebar() {
     ]);
   }
 
-  function fetchProjects(StafferId: number) {
+  function fetchProjects() {
     axios
       .get("/Project/GET/GetProjectInTeam", {
-        params: { StafferId: StafferId },
+        withCredentials: true,
       })
       .then((res) => {
         setProjects(res.data);
@@ -508,18 +506,6 @@ export default function Sidebar() {
                           </ul>
                         </li>
                       )}
-                      <li className="mt-auto">
-                        <a
-                          href="/settings"
-                          className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-100 hover:text-primary"
-                        >
-                          <Cog6ToothIcon
-                            className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-primary"
-                            aria-hidden="true"
-                          />
-                          Settings
-                        </a>
-                      </li>
                     </ul>
                   </nav>
                 </div>
@@ -737,18 +723,6 @@ export default function Sidebar() {
                   </ul>
                 </li>
               )}
-              <li className="mt-auto">
-                <a
-                  href="/settings"
-                  className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-100 hover:text-primary"
-                >
-                  <Cog6ToothIcon
-                    className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-primary"
-                    aria-hidden="true"
-                  />
-                  Settings
-                </a>
-              </li>
             </ul>
           </nav>
         </div>
@@ -823,9 +797,18 @@ export default function Sidebar() {
                     </div>
                   </DropdownTrigger>
                   <DropdownMenu aria-label="User Actions" variant="flat">
+                    <DropdownItem key="settings" href="/settings">
+                      <div className="flex flex-row gap-2">
+                        <Cog6ToothIcon
+                          className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-primary"
+                          aria-hidden="true"
+                        />
+                        Impostazioni
+                      </div>
+                    </DropdownItem>
                     <DropdownItem key="logout" color="danger" onClick={logout}>
                       <div className="flex flex-row gap-2">
-                        <LogoutRoundedIcon />
+                        <LogoutRoundedIcon className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-danger" />
                         Logout
                       </div>
                     </DropdownItem>

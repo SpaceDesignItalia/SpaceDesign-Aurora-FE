@@ -33,6 +33,7 @@ import ProjectCustomerDashboard from "./Customer/Pages/Project/ProjectCustomerDa
 import ProjectCustomerPage from "./Customer/Pages/Project/ProjectCustomerPage";
 import AddTicketPage from "./Customer/Pages/Project/AddTicketPage";
 import SettingsDashboard from "./Employee/Pages/Settings/SettingsDashboard";
+import SettingsCustomerDashboard from "./Customer/Pages/Settings/SettingsCustomerDashboard";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
@@ -117,6 +118,7 @@ const CustomerProtectedRoutes: React.FC = () => {
     <Routes>
       <Route element={<Outlet />}>
         <Route element={<DashboardCustomer />} path="/" />
+        <Route element={<SettingsCustomerDashboard />} path="/settings" />
         <Route element={<ProjectCustomerDashboard />} path="/projects" />
         <Route
           element={<ProjectCustomerPage />}
