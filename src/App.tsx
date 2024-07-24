@@ -35,6 +35,9 @@ import AddTicketPage from "./Customer/Pages/Project/AddTicketPage";
 import SettingsDashboard from "./Employee/Pages/Settings/SettingsDashboard";
 import SettingsCustomerDashboard from "./Customer/Pages/Settings/SettingsCustomerDashboard";
 
+import PasswordRecovery from "./Employee/Components/Login/PasswordRecovery";
+import PasswordReset from "./Employee/Components/Login/PasswordReset";
+
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
   const [isAuth, setIsAuth] = useState<boolean>(false);
@@ -93,6 +96,8 @@ const App: React.FC = () => {
       {isAuth && isStaffer && <Sidebar />}
       {isAuth && !isStaffer && <Navbar />}
       <Routes>
+        <Route path="/password-recovery" element={<PasswordRecovery />} />
+        <Route path="/password-reset" element={<PasswordReset />} />
         {!isAuth && <Route element={<Login />} path="/login" />}
         <Route
           path="/*"
