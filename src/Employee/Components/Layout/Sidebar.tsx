@@ -3,7 +3,6 @@ import { Fragment, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
-  BellIcon,
   Cog6ToothIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -28,6 +27,7 @@ import {
   Skeleton,
   DropdownMenu,
 } from "@nextui-org/react";
+import Notification from "./Notification/Notification";
 
 interface NavigationItem {
   name: string;
@@ -751,13 +751,7 @@ export default function Sidebar() {
 
             <div className="flex flex-1 justify-end gap-x-4 self-stretch lg:gap-x-6">
               <div className="flex items-center gap-x-4 lg:gap-x-6">
-                <button
-                  type="button"
-                  className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
-                >
-                  <span className="sr-only">View notifications</span>
-                  <BellIcon className="h-6 w-6" aria-hidden="true" />
-                </button>
+                <Notification />
 
                 {/* Separator */}
                 <div
