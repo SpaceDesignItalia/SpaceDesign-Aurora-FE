@@ -4,12 +4,14 @@ import EmailIcon from "@mui/icons-material/Email";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import axios from "axios";
+import { Link } from "react-router-dom"; // Assuming you're using React Router
 
 interface LoginData {
   email: string;
   password: string;
   rememberMe: boolean;
 }
+
 export default function Login() {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [loginData, setLoginData] = useState<LoginData>({
@@ -125,9 +127,12 @@ export default function Login() {
                   </Checkbox>
                 </div>
                 <div className="text-sm">
-                  <a href="/" className="text-blue-600 hover:underline">
+                  <Link
+                    to="/password-recovery"
+                    className="text-blue-600 hover:underline"
+                  >
                     Hai dimenticato la password?
-                  </a>
+                  </Link>
                 </div>
               </div>
               <div className="mt-10">
