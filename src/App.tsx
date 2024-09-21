@@ -40,6 +40,7 @@ import PasswordReset from "./Employee/Components/Login/PasswordReset";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
+  axios.defaults.withCredentials = true;
   const [isAuth, setIsAuth] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isStaffer, setIsStaffer] = useState<boolean>(false);
