@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BellIcon } from "@heroicons/react/24/outline";
 import {
   Popover,
@@ -6,75 +6,35 @@ import {
   PopoverContent,
   Tabs,
   Tab,
+  ScrollShadow,
 } from "@nextui-org/react";
 import NotificationItem from "./NotificationItem";
+import axios from "axios";
 
 interface Notification {
   NotificationId: number;
-  NotificationTypeName: string;
   NotificationMessage: string;
+  NotificationTypeName: string;
   ProjectId: number;
   ProjectName: string;
   CompanyName: string;
   UserId: number;
-  UserFullName: string;
+  userfullname: string;
   NotificationCreationDate: Date;
+  IsRead: boolean;
 }
 
 export default function Notification() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  useEffect(() => {
+    axios
+      .get("/Notification/GET/GetAllNotifications", { withCredentials: true })
+      .then((response) => {
+        setNotifications(response.data);
+      });
+  }, []);
+
   const tabs = [{ title: "Non lette" }, { title: "Tutte" }];
-  const notifications: Notification[] = [
-    {
-      NotificationId: 1,
-      NotificationTypeName: "Progetto",
-      NotificationMessage: `Sei stato assegnato al progetto!</p>`,
-      ProjectId: 9,
-      ProjectName: "Zio pera",
-      CompanyName: "Globalcom S.r.l",
-      UserId: 3,
-      UserFullName: "Andrea Braia",
-      NotificationCreationDate: new Date(),
-    },
-    {
-      NotificationId: 2,
-      NotificationTypeName: "Progetto",
-      NotificationMessage: `ti ha inviato un nuovo messaggio:</p>`,
-      ProjectId: 9,
-      ProjectName: "Zio pera",
-      CompanyName: "Globalcom S.r.l",
-      UserId: 4,
-      UserFullName: "Luigi Rossi",
-      NotificationCreationDate: new Date(
-        new Date().setDate(new Date().getDate() - 1)
-      ), // Yesterday
-    },
-    {
-      NotificationId: 3,
-      NotificationTypeName: "Messaggio",
-      NotificationMessage: `ha inviato un avviso importante:</p>`,
-      ProjectId: 9,
-      ProjectName: "Zio pera",
-      CompanyName: "Globalcom S.r.l",
-      UserId: 5,
-      UserFullName: "Giulia Bianchi",
-      NotificationCreationDate: new Date(
-        new Date().setDate(new Date().getDate() - 2)
-      ), // Two days ago
-    },
-    {
-      NotificationId: 4,
-      NotificationTypeName: "Promemoria",
-      NotificationMessage: `ti ricorda della riunione di domani:</p>`,
-      ProjectId: 9,
-      ProjectName: "Zio pera",
-      CompanyName: "Globalcom S.r.l",
-      UserId: 6,
-      UserFullName: "Mario Verdi",
-      NotificationCreationDate: new Date(
-        new Date().setDate(new Date().getDate() - 3)
-      ), // Three days ago
-    },
-  ];
   const [activeTab, setActiveTab] = useState("Non lette");
   return (
     <Popover
@@ -105,7 +65,7 @@ export default function Notification() {
               aria-label="Notification"
               color="primary"
               selectedKey={activeTab}
-              onSelectionChange={setActiveTab}
+              onSelectionChange={(key) => setActiveTab(key as string)}
               classNames={{
                 base: "w-full",
                 tabList:
@@ -118,13 +78,22 @@ export default function Notification() {
               ))}
             </Tabs>
           </div>
-          {activeTab === "Non lette" && (
-            <>
-              {notifications.map((notification) => {
-                return <NotificationItem NotificationInfo={notification} />;
-              })}
-            </>
-          )}
+          <ScrollShadow className="w-full h-96">
+            {activeTab === "Non lette" && (
+              <>
+                {notifications.map((notification) => {
+                  return <NotificationItem NotificationInfo={notification} />;
+                })}
+              </>
+            )}
+            {activeTab === "Tutte" && (
+              <>
+                {notifications.map((notification) => {
+                  return <NotificationItem NotificationInfo={notification} />;
+                })}
+              </>
+            )}
+          </ScrollShadow>
         </div>
       </PopoverContent>
     </Popover>

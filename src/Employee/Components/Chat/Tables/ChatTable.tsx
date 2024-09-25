@@ -183,11 +183,15 @@ export default function ChatTable() {
     if (newMessage.trim() === "") return;
     try {
       axios
-        .post("/Chat/POST/SendMessage", {
-          ConversationId: selectedConversationId!,
-          StafferSenderId: loggedStafferId,
-          Text: newMessage,
-        })
+        .post(
+          "/Chat/POST/SendMessage",
+          {
+            ConversationId: selectedConversationId!,
+            StafferSenderId: loggedStafferId,
+            Text: newMessage,
+          },
+          { withCredentials: true }
+        )
         .then(() => {
           socket.emit("message", selectedConversationId!);
           setNewMessage("");

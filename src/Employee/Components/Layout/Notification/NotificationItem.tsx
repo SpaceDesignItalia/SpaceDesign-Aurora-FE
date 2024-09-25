@@ -1,4 +1,5 @@
 import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
+import Person2RoundedIcon from "@mui/icons-material/Person2Rounded";
 import { Link } from "@nextui-org/react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -9,14 +10,15 @@ dayjs.locale("it");
 
 interface Notification {
   NotificationId: number;
-  NotificationTypeName: string;
   NotificationMessage: string;
+  NotificationTypeName: string;
   ProjectId: number;
   ProjectName: string;
   CompanyName: string;
   UserId: number;
-  UserFullName: string;
+  userfullname: string;
   NotificationCreationDate: Date;
+  IsRead: boolean;
 }
 
 function formatNotificationDate(date: Date): string {
@@ -24,9 +26,11 @@ function formatNotificationDate(date: Date): string {
   const notificationDate = dayjs(date);
 
   if (now.diff(notificationDate, "day") < 1) {
-    return "ieri";
+    return "oggi";
   } else if (now.diff(notificationDate, "day") < 2) {
-    return "2 giorni fa";
+    return "ieri";
+  } else if (now.diff(notificationDate, "day") < 7) {
+    return notificationDate.format("dddd");
   } else {
     return notificationDate.fromNow();
   }
@@ -41,9 +45,10 @@ export default function NotificationItem({
     new Date(NotificationInfo.NotificationCreationDate)
   );
 
+  console.log(NotificationInfo);
   return (
     <>
-      {NotificationInfo.NotificationTypeName == "Progetto" && (
+      {NotificationInfo.NotificationTypeName === "Progetto" && (
         <Link
           className="w-full"
           color="foreground"
@@ -62,7 +67,15 @@ export default function NotificationItem({
                 <div className="bg-primary rounded-lg p-1 text-white">
                   <FolderCopyRoundedIcon />
                 </div>{" "}
-                Progetto: <strong>{NotificationInfo.ProjectName}</strong>
+                Progetto:{" "}
+                {NotificationInfo.userfullname !== " " ? (
+                  <strong>
+                    {NotificationInfo.ProjectName} -{" "}
+                    {NotificationInfo.userfullname}
+                  </strong>
+                ) : (
+                  <strong>{NotificationInfo.ProjectName}</strong>
+                )}
               </div>
             </div>
             <div
@@ -75,29 +88,21 @@ export default function NotificationItem({
         </Link>
       )}
 
-      {NotificationInfo.NotificationTypeName == "Messaggio" && (
+      {NotificationInfo.NotificationTypeName === "Dipendente" && (
         <Link
           className="w-full"
           color="foreground"
-          href={
-            "/projects/" +
-            NotificationInfo.CompanyName +
-            "/" +
-            NotificationInfo.ProjectId +
-            "/" +
-            NotificationInfo.ProjectName
-          }
+          href={"/comunications/chat/"}
         >
           <div className="h-fit w-full p-3 border-b-2 hover:bg-gray-100">
             <div className="w-full flex justify-between items-center gap-3">
               <div className="flex w-full items-center gap-2">
                 <div className="bg-primary rounded-lg p-1 text-white">
-                  <FolderCopyRoundedIcon />
+                  <Person2RoundedIcon />
                 </div>{" "}
-                Messaggio:
+                Messaggio: <strong>{NotificationInfo.userfullname}</strong>
               </div>
             </div>
-            <p>{NotificationInfo.}</p>
             <div
               dangerouslySetInnerHTML={{
                 __html: NotificationInfo.NotificationMessage,
