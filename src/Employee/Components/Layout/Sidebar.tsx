@@ -28,6 +28,14 @@ import {
   DropdownMenu,
 } from "@nextui-org/react";
 import Notification from "./Notification/Notification";
+import { io, Socket } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../API/API";
+
+interface Notification {
+  NotificationId: number;
+  NotificationTypeName: string;
+  IsRead: boolean;
+}
 
 interface NavigationItem {
   name: string;
@@ -50,6 +58,7 @@ interface Project {
   ProjectId: number;
   ProjectName: string;
   CompanyName: string;
+  NotificationCount: number;
 }
 
 const USERDATA_VALUE: Employee = {
@@ -66,8 +75,11 @@ const PROJECT_DATA: Project[] = [
     ProjectId: 0,
     ProjectName: "",
     CompanyName: "",
+    NotificationCount: 0,
   },
 ];
+
+const socket: Socket = io(API_WEBSOCKET_URL);
 
 export default function Sidebar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -75,22 +87,33 @@ export default function Sidebar() {
 
   const { hasPermission } = usePermissions();
 
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [administration, setAdministration] = useState<NavigationItem[]>([]);
   const [projectManagement, setProjectManagement] = useState<NavigationItem[]>(
     []
   );
   const [userData, setUserData] = useState<Employee>(USERDATA_VALUE);
   const [projects, setProjects] = useState<Project[]>(PROJECT_DATA);
+  const [notificationUpdate, setNotificationUpdate] = useState(false);
 
   useEffect(() => {
     axios
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then((res) => {
         setUserData(res.data);
+        socket.emit("join-notifications", res.data.StafferId);
       });
     fetchProjects();
     fetchPermissions();
   }, [currentUrl]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [notificationUpdate]);
+
+  socket.on("newNotification", () => {
+    setNotificationUpdate(!notificationUpdate);
+  });
 
   async function fetchPermissions() {
     setAdministration([
@@ -168,6 +191,14 @@ export default function Sidebar() {
       });
   }
 
+  function fetchNotifications() {
+    axios
+      .get("/Notification/GET/GetAllNotifications", { withCredentials: true })
+      .then((response) => {
+        setNotifications(response.data);
+      });
+  }
+
   function isSubRoute({
     currentUrl,
     parentRoute,
@@ -220,6 +251,11 @@ export default function Sidebar() {
       href: "/comunications/chat",
       icon: ChatBubbleOutlineRoundedIcon,
       current: currentUrl === "/comunications/chat",
+      notificationCount: notifications.filter(
+        (notification) =>
+          notification.NotificationTypeName === "Dipendente" &&
+          !notification.IsRead
+      ).length,
     },
   ];
 
@@ -389,6 +425,11 @@ export default function Sidebar() {
                                   aria-hidden="true"
                                 />
                                 {item.name}
+                                {item.notificationCount > 0 && (
+                                  <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                                    {item.notificationCount}
+                                  </span>
+                                )}
                               </a>
                             </li>
                           ))}
@@ -500,6 +541,11 @@ export default function Sidebar() {
                                   <span className="truncate">
                                     {project.ProjectName}
                                   </span>
+                                  {project.NotificationCount > 0 && (
+                                    <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                                      {project.NotificationCount}
+                                    </span>
+                                  )}
                                 </a>
                               </li>
                             ))}
@@ -609,6 +655,11 @@ export default function Sidebar() {
                           aria-hidden="true"
                         />
                         {item.name}
+                        {item.notificationCount > 0 && (
+                          <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                            {item.notificationCount}
+                          </span>
+                        )}
                       </a>
                     </li>
                   ))}
@@ -717,6 +768,11 @@ export default function Sidebar() {
                           <span className="truncate">
                             {project.ProjectName}
                           </span>
+                          {project.NotificationCount > 0 && (
+                            <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                              {project.NotificationCount}
+                            </span>
+                          )}
                         </a>
                       </li>
                     ))}
