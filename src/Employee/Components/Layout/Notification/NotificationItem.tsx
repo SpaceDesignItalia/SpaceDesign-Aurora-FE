@@ -1,9 +1,11 @@
 import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
 import Person2RoundedIcon from "@mui/icons-material/Person2Rounded";
+import CloseIcon from "@mui/icons-material/Close"; // Importa l'icona della X
 import { Link } from "@nextui-org/react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/it";
+import axios from "axios";
 
 dayjs.extend(relativeTime);
 dayjs.locale("it");
@@ -38,32 +40,80 @@ function formatNotificationDate(date: Date): string {
 
 export default function NotificationItem({
   NotificationInfo,
+  NotificationUpdate,
 }: {
   NotificationInfo: Notification;
+  NotificationUpdate: () => void;
 }) {
   const formattedDate = formatNotificationDate(
     new Date(NotificationInfo.NotificationCreationDate)
   );
 
-  console.log(NotificationInfo);
+  const handleRemoveNotification = (event: React.MouseEvent) => {
+    event.stopPropagation(); // Previene la propagazione dell'evento
+    event.preventDefault(); // Previene il comportamento predefinito del link
+    axios
+      .delete("/Notification/DELETE/DeleteNotification", {
+        params: {
+          NotificationId: NotificationInfo.NotificationId,
+        },
+        withCredentials: true,
+      })
+      .then(() => {
+        NotificationUpdate();
+      });
+  };
+
+  const handleReadNotification = () => {
+    axios
+      .post(
+        "/Notification/POST/ReadNotification",
+        {
+          NotificationId: NotificationInfo.NotificationId,
+        },
+        { withCredentials: true }
+      )
+      .then(() => {
+        NotificationUpdate();
+      });
+  };
+
+  const handleReadProjectNotification = () => {
+    handleReadNotification();
+    location.href =
+      "/projects/" +
+      NotificationInfo.CompanyName +
+      "/" +
+      NotificationInfo.ProjectId +
+      "/" +
+      NotificationInfo.ProjectName;
+  };
+
+  const handleReadMessageNotification = () => {
+    handleReadNotification();
+    location.href = "/comunications/chat/";
+  };
+
   return (
     <>
       {NotificationInfo.NotificationTypeName === "Progetto" && (
         <Link
           className="w-full"
           color="foreground"
-          href={
-            "/projects/" +
-            NotificationInfo.CompanyName +
-            "/" +
-            NotificationInfo.ProjectId +
-            "/" +
-            NotificationInfo.ProjectName
-          }
+          onClick={handleReadProjectNotification}
         >
-          <div className="h-fit w-full p-3 border-b-2 hover:bg-gray-100">
+          <div className="relative h-fit w-full p-3 border-t-2 hover:bg-gray-100">
+            {/* X per chiudere la notifica */}
+            <span
+              onClick={handleRemoveNotification}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 cursor-pointer"
+              role="button"
+              aria-label="Close notification"
+            >
+              <CloseIcon className="hover:text-red-600" />
+            </span>
             <div className="w-full flex justify-between items-center gap-3">
-              <div className="flex w-full items-center gap-2">
+              <div className="flex w-full items-center gap-2 mr-4">
                 <div className="bg-primary rounded-lg p-1 text-white">
                   <FolderCopyRoundedIcon />
                 </div>{" "}
@@ -92,11 +142,21 @@ export default function NotificationItem({
         <Link
           className="w-full"
           color="foreground"
+          onClick={handleReadMessageNotification}
           href={"/comunications/chat/"}
         >
-          <div className="h-fit w-full p-3 border-b-2 hover:bg-gray-100">
+          <div className="relative h-fit w-full p-3 border-t-2 hover:bg-gray-100">
+            {/* X per chiudere la notifica */}
+            <span
+              onClick={handleRemoveNotification}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 cursor-pointer"
+              role="button"
+              aria-label="Close notification"
+            >
+              <CloseIcon className="hover:text-red-600" />
+            </span>
             <div className="w-full flex justify-between items-center gap-3">
-              <div className="flex w-full items-center gap-2">
+              <div className="flex w-full items-center gap-2 mr-4">
                 <div className="bg-primary rounded-lg p-1 text-white">
                   <Person2RoundedIcon />
                 </div>{" "}

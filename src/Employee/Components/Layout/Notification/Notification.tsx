@@ -10,6 +10,8 @@ import {
 } from "@nextui-org/react";
 import NotificationItem from "./NotificationItem";
 import axios from "axios";
+import { io, Socket } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../../API/API";
 
 interface Notification {
   NotificationId: number;
@@ -24,18 +26,56 @@ interface Notification {
   IsRead: boolean;
 }
 
+const socket: Socket = io(API_WEBSOCKET_URL);
+
 export default function Notification() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [update, setUpdate] = useState(false);
+  const [stafferId, setStafferId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (update) {
+      const timer = setTimeout(() => setUpdate(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [update]);
+
+  // Filtra le notifiche non lette
+  const unreadNotificationsCount = notifications.filter(
+    (notification) => !notification.IsRead
+  ).length;
+
+  function notificationUpdate() {
+    setUpdate(!update);
+  }
+
+  useEffect(() => {
+    // Fetch logged in staffer's data and conversations
+    axios
+      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
+      .then(async (res) => {
+        setStafferId(res.data.StafferId);
+      })
+      .then(() => {
+        socket.emit("join-notifications", stafferId);
+      });
+  });
+
+  socket.on("newNotification", () => {
+    notificationUpdate();
+  });
+
   useEffect(() => {
     axios
       .get("/Notification/GET/GetAllNotifications", { withCredentials: true })
       .then((response) => {
         setNotifications(response.data);
       });
-  }, []);
+  }, [update]);
 
   const tabs = [{ title: "Non lette" }, { title: "Tutte" }];
   const [activeTab, setActiveTab] = useState("Non lette");
+
   return (
     <Popover
       size="lg"
@@ -48,14 +88,22 @@ export default function Notification() {
       <PopoverTrigger>
         <button
           type="button"
-          className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
+          className="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
         >
           <span className="sr-only">View notifications</span>
-          <BellIcon className="h-6 w-6" aria-hidden="true" />
+          <BellIcon
+            className={`h-6 w-6 ${update ? "animate-shake" : ""}`}
+            aria-hidden="true"
+          />
+          {unreadNotificationsCount > 0 && (
+            <span className="absolute top-0 right-0 inline-flex items-center justify-center px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full">
+              {unreadNotificationsCount}
+            </span>
+          )}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-96 h-fit">
-        <div className="w-full py-5">
+        <div className="w-full pt-5">
           <div>
             <h1 className="px-5 font-bold">Notifiche</h1>
           </div>
@@ -69,7 +117,7 @@ export default function Notification() {
               classNames={{
                 base: "w-full",
                 tabList:
-                  "gap-6 w-full relative rounded-none p-0 border-b border-divider",
+                  "gap-6 w-full relative rounded-none p-0 border-divider",
                 tabContent: "group-data-[selected=true]:font-bold mb-3",
               }}
             >
@@ -78,19 +126,29 @@ export default function Notification() {
               ))}
             </Tabs>
           </div>
-          <ScrollShadow className="w-full h-96">
+          <ScrollShadow className="w-full h-40">
             {activeTab === "Non lette" && (
               <>
-                {notifications.map((notification) => {
-                  return <NotificationItem NotificationInfo={notification} />;
-                })}
+                {notifications
+                  .filter((notification) => !notification.IsRead)
+                  .map((notification) => (
+                    <NotificationItem
+                      key={notification.NotificationId}
+                      NotificationInfo={notification}
+                      NotificationUpdate={notificationUpdate}
+                    />
+                  ))}
               </>
             )}
             {activeTab === "Tutte" && (
               <>
-                {notifications.map((notification) => {
-                  return <NotificationItem NotificationInfo={notification} />;
-                })}
+                {notifications.map((notification) => (
+                  <NotificationItem
+                    key={notification.NotificationId}
+                    NotificationInfo={notification}
+                    NotificationUpdate={notificationUpdate}
+                  />
+                ))}
               </>
             )}
           </ScrollShadow>
