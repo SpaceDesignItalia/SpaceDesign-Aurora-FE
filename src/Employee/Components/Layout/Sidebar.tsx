@@ -310,16 +310,16 @@ export default function Sidebar() {
                                 href={item.href}
                                 className={classNames(
                                   item.current
-                                    ? "bg-gray-100 text-primary"
-                                    : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                                  "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                    ? "bg-blue-100 text-gray-700"
+                                    : "text-gray-700 hover:text-gray-700 hover:bg-blue-100",
+                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
                                 )}
                               >
                                 <item.icon
                                   className={classNames(
                                     item.current
-                                      ? "text-primary"
-                                      : "text-gray-400 group-hover:text-primary",
+                                      ? "text-gray-700"
+                                      : "text-gray-700 group-hover:text-gray-700",
                                     "h-6 w-6 shrink-0"
                                   )}
                                   aria-hidden="true"
@@ -342,16 +342,16 @@ export default function Sidebar() {
                                 href={item.href}
                                 className={classNames(
                                   item.current
-                                    ? "bg-gray-100 text-primary"
-                                    : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                                  "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                    ? "bg-blue-100 text-gray-700"
+                                    : "text-gray-700 hover:text-gray-700 hover:bg-blue-100",
+                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
                                 )}
                               >
                                 <item.icon
                                   className={classNames(
                                     item.current
-                                      ? "text-primary"
-                                      : "text-gray-400 group-hover:text-primary",
+                                      ? "text-gray-700"
+                                      : "text-gray-700 group-hover:text-gray-700",
                                     "h-6 w-6 shrink-0"
                                   )}
                                   aria-hidden="true"
@@ -374,16 +374,16 @@ export default function Sidebar() {
                                 href={item.href}
                                 className={classNames(
                                   item.current
-                                    ? "bg-gray-100 text-primary"
-                                    : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                                  "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                    ? "bg-blue-100 text-gray-700"
+                                    : "text-gray-700 hover:text-gray-700 hover:bg-blue-100",
+                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
                                 )}
                               >
                                 <item.icon
                                   className={classNames(
                                     item.current
-                                      ? "text-primary"
-                                      : "text-gray-400 group-hover:text-primary",
+                                      ? "text-gray-700"
+                                      : "text-gray-700 group-hover:text-gray-700",
                                     "h-6 w-6 shrink-0"
                                   )}
                                   aria-hidden="true"
@@ -412,16 +412,16 @@ export default function Sidebar() {
                                         href={admin.href}
                                         className={classNames(
                                           admin.current
-                                            ? "bg-gray-100 text-primary"
-                                            : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                                          "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                            ? "bg-blue-100 text-gray-700"
+                                            : "text-gray-700 hover:text-gray-700 hover:bg-blue-100",
+                                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
                                         )}
                                       >
                                         <admin.icon
                                           className={classNames(
                                             admin.current
-                                              ? "text-primary"
-                                              : "text-gray-400 group-hover:text-primary",
+                                              ? "text-gray-700"
+                                              : "text-gray-700 group-hover:text-gray-700",
                                             "h-6 w-6 shrink-0"
                                           )}
                                           aria-hidden="true"
@@ -452,16 +452,16 @@ export default function Sidebar() {
                                         href={project.href}
                                         className={classNames(
                                           project.current
-                                            ? "bg-gray-100 text-primary"
-                                            : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                                          "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                            ? "bg-blue-100 text-gray-700"
+                                            : "text-gray-700 hover:text-gray-700 hover:bg-blue-100",
+                                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
                                         )}
                                       >
                                         <project.icon
                                           className={classNames(
                                             project.current
-                                              ? "text-primary"
-                                              : "text-gray-400 group-hover:text-primary",
+                                              ? "text-gray-700"
+                                              : "text-gray-700 group-hover:text-gray-700",
                                             "h-6 w-6 shrink-0"
                                           )}
                                           aria-hidden="true"
@@ -492,9 +492,9 @@ export default function Sidebar() {
                                     "/" +
                                     project.ProjectName
                                   }
-                                  className="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:text-primary hover:bg-gray-100"
+                                  className="group flex gap-x-3 rounded-full p-2 px-4 text-sm font-semibold leading-6 text-gray-700 hover:text-gray-700 hover:bg-blue-100"
                                 >
-                                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-primary group-hover:text-primary">
+                                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-gray-700 group-hover:text-gray-700">
                                     {project.ProjectName.charAt(0)}
                                   </span>
                                   <span className="truncate">
@@ -532,16 +532,16 @@ export default function Sidebar() {
                         href={item.href}
                         className={classNames(
                           item.current
-                            ? "bg-gray-100 text-primary"
-                            : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                          "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                            ? "bg-blue-100 text-gray-700"
+                            : "text-gray-700 hover:text-gray-700 hover:bg-blue-100",
+                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
                         )}
                       >
                         <item.icon
                           className={classNames(
                             item.current
-                              ? "text-primary"
-                              : "text-gray-400 group-hover:text-primary",
+                              ? "text-gray-700"
+                              : "text-gray-700 group-hover:text-gray-700",
                             "h-6 w-6 shrink-0"
                           )}
                           aria-hidden="true"
@@ -563,16 +563,16 @@ export default function Sidebar() {
                         href={item.href}
                         className={classNames(
                           item.current
-                            ? "bg-gray-100 text-primary"
-                            : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                          "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                            ? "bg-blue-100 text-gray-700"
+                            : "text-gray-700 hover:text-gray-700 hover:bg-blue-100",
+                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
                         )}
                       >
                         <item.icon
                           className={classNames(
                             item.current
-                              ? "text-primary"
-                              : "text-gray-400 group-hover:text-primary",
+                              ? "text-gray-700"
+                              : "text-gray-700 group-hover:text-gray-700",
                             "h-6 w-6 shrink-0"
                           )}
                           aria-hidden="true"
@@ -594,16 +594,16 @@ export default function Sidebar() {
                         href={item.href}
                         className={classNames(
                           item.current
-                            ? "bg-gray-100 text-primary"
-                            : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                          "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                            ? "bg-blue-100 text-gray-700"
+                            : "text-gray-700 hover:text-gray-700 hover:bg-blue-100",
+                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
                         )}
                       >
                         <item.icon
                           className={classNames(
                             item.current
-                              ? "text-primary"
-                              : "text-gray-400 group-hover:text-primary",
+                              ? "text-gray-700"
+                              : "text-gray-700 group-hover:text-gray-700",
                             "h-6 w-6 shrink-0"
                           )}
                           aria-hidden="true"
@@ -629,16 +629,16 @@ export default function Sidebar() {
                                 href={admin.href}
                                 className={classNames(
                                   admin.current
-                                    ? "bg-gray-100 text-primary"
-                                    : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                                  "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                    ? "bg-blue-100 text-gray-700"
+                                    : "text-gray-700 hover:text-gray-700 hover:bg-blue-100",
+                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
                                 )}
                               >
                                 <admin.icon
                                   className={classNames(
                                     admin.current
-                                      ? "text-primary"
-                                      : "text-gray-400 group-hover:text-primary",
+                                      ? "text-gray-700"
+                                      : "text-gray-700 group-hover:text-gray-700",
                                     "h-6 w-6 shrink-0"
                                   )}
                                   aria-hidden="true"
@@ -669,16 +669,16 @@ export default function Sidebar() {
                                 href={project.href}
                                 className={classNames(
                                   project.current
-                                    ? "bg-gray-100 text-primary"
-                                    : "text-gray-700 hover:text-primary hover:bg-gray-100",
-                                  "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                    ? "bg-blue-100 text-gray-700"
+                                    : "text-gray-700 hover:text-gray-700 hover:bg-blue-100",
+                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
                                 )}
                               >
                                 <project.icon
                                   className={classNames(
                                     project.current
-                                      ? "text-primary"
-                                      : "text-gray-400 group-hover:text-primary",
+                                      ? "text-gray-700"
+                                      : "text-gray-700 group-hover:text-gray-700",
                                     "h-6 w-6 shrink-0"
                                   )}
                                   aria-hidden="true"
@@ -709,9 +709,9 @@ export default function Sidebar() {
                             "/" +
                             project.ProjectName
                           }
-                          className="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:text-primary hover:bg-gray-100"
+                          className="group flex gap-x-3 rounded-full p-2 px-4 text-sm font-semibold leading-6 text-gray-700 hover:text-gray-700 hover:bg-blue-100"
                         >
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-primary group-hover:text-primary">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-gray-700 group-hover:text-gray-700">
                             {project.ProjectName.charAt(0)}
                           </span>
                           <span className="truncate">

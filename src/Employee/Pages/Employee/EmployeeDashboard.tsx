@@ -3,6 +3,7 @@ import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
+import EmployeeStats from "../../Components/Employee/Other/EmployeeStats";
 
 export default function EmployeeDashboard() {
   const { hasPermission } = usePermissions();
@@ -24,7 +25,7 @@ export default function EmployeeDashboard() {
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
             Dipendenti
           </h1>
-          <Breadcrumbs variant="bordered" radius="sm">
+          <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
               <DashboardOutlinedIcon />
             </BreadcrumbItem>
@@ -35,6 +36,7 @@ export default function EmployeeDashboard() {
         </div>
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
+        <EmployeeStats />
         <div className="py-6 lg:py-8">
           <EmployeeTable />
         </div>

@@ -21,6 +21,7 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
@@ -33,6 +34,7 @@ interface Employee {
   EmployeeFullName: string;
   EmployeeEmail: string;
   EmployeePhone: string;
+  RoleName: string;
 }
 
 interface ModalData {
@@ -49,6 +51,7 @@ const columns = [
   { name: "Nome Dipendente", uid: "EmployeeFullName" },
   { name: "Email Dipendente", uid: "EmployeeEmail" },
   { name: "Telefono Dipendente", uid: "EmployeePhone" },
+  { name: "Ruolo", uid: "RoleName" },
   { name: "Azioni", uid: "actions" },
 ];
 
@@ -146,23 +149,42 @@ export default function EmployeeTable() {
       const cellValue = employee[columnKey as keyof Employee];
 
       switch (columnKey) {
-        case "name":
+        case "EmployeeFullName":
           return <p>{cellValue}</p>;
-        case "company":
+        case "EmployeeEmail":
           return (
             <div className="flex flex-col">
-              <p className="text-bold text-small capitalize">{cellValue}</p>
+              <p className="text-bold text-small">{cellValue}</p>
             </div>
           );
-        case "phone":
+        case "EmployeePhone":
           return (
             <div className="flex flex-col">
-              <p className="text-bold text-small capitalize">{cellValue}</p>
+              {cellValue == "" ? (
+                <p className="text-bold text-small capitalize">Non presente</p>
+              ) : (
+                <p className="text-bold text-small capitalize">
+                  +39 {cellValue}
+                </p>
+              )}
             </div>
+          );
+        case "RoleName":
+          return (
+            <span className="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-2 ring-inset ring-gray-200">
+              <svg
+                viewBox="0 0 6 6"
+                aria-hidden="true"
+                className="h-1.5 w-1.5 fill-blue-500"
+              >
+                <circle r={3} cx={3} cy={3} />
+              </svg>
+              {cellValue}
+            </span>
           );
         case "actions":
           return (
-            <div className="relative flex justify-left items-center gap-2">
+            <div className="relative flex justify-center items-center gap-2">
               <Dropdown radius="sm">
                 <DropdownTrigger>
                   <Button isIconOnly size="sm" variant="light">
@@ -241,9 +263,9 @@ export default function EmployeeTable() {
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between gap-3 items-end">
           <Input
-            radius="sm"
+            radius="full"
             variant="bordered"
-            startContent={<SearchOutlinedIcon />}
+            startContent={<SearchOutlinedIcon className="text-gray-400" />}
             onChange={SearchEmployee}
             className="md:w-1/3"
             placeholder="Cerca dipendente per email..."
@@ -255,7 +277,7 @@ export default function EmployeeTable() {
                   as={Link}
                   href="./employee/add-employee"
                   color="primary"
-                  radius="sm"
+                  radius="full"
                   startContent={<PersonAddAlt1RoundedIcon />}
                   className="hidden sm:flex"
                 >
@@ -288,6 +310,7 @@ export default function EmployeeTable() {
           showControls
           showShadow
           color="primary"
+          radius="full"
           page={page}
           total={pages || 1}
           onChange={setPage}
@@ -297,7 +320,7 @@ export default function EmployeeTable() {
   }, [items.length, page, pages]);
 
   return (
-    <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
+    <div className="bg-white">
       <ViewEmployeeModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
@@ -310,38 +333,62 @@ export default function EmployeeTable() {
         DeleteEmployee={DeleteEmployee}
       />
 
-      <Table
-        aria-label="Example table with custom cells, pagination and sorting"
-        isHeaderSticky
-        isStriped
-        bottomContent={bottomContent}
-        bottomContentPlacement="outside"
-        sortDescriptor={sortDescriptor}
-        topContent={topContent}
-        topContentPlacement="outside"
-        onSortChange={setSortDescriptor}
-        radius="sm"
-      >
-        <TableHeader columns={columns}>
-          {(column) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}
+      {employees.length > 0 ? (
+        <Table
+          aria-label="Example table with custom cells, pagination and sorting"
+          isHeaderSticky
+          isStriped
+          bottomContent={bottomContent}
+          bottomContentPlacement="inside"
+          sortDescriptor={sortDescriptor}
+          topContent={topContent}
+          topContentPlacement="inside"
+          onSortChange={setSortDescriptor}
+          radius="full"
+        >
+          <TableHeader columns={columns}>
+            {(column) => (
+              <TableColumn
+                key={column.uid}
+                align={column.uid === "actions" ? "center" : "start"}
+              >
+                {column.name}
+              </TableColumn>
+            )}
+          </TableHeader>
+          <TableBody emptyContent={"Nessun dipendente trovato!"} items={items}>
+            {(item) => (
+              <TableRow key={item.EmployeeId}>
+                {(columnKey) => (
+                  <TableCell>{renderCell(item, columnKey)}</TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      ) : (
+        <div className="text-center py-20">
+          <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
+          <h3 className="mt-2 text-sm font-semibold text-gray-900">
+            Nessun dipendente registrato
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Inizia aggiungendo nuovi dipendenti per visualizzarne i dettagli e
+            accedere alle analisi.
+          </p>
+          <div className="mt-6">
+            <Button
+              as={Link}
+              color="primary"
+              radius="full"
+              startContent={<AddRoundedIcon />}
+              href="./employee/add-employee"
             >
-              {column.name}
-            </TableColumn>
-          )}
-        </TableHeader>
-        <TableBody emptyContent={"Nessun dipendente trovato!"} items={items}>
-          {(item) => (
-            <TableRow key={item.EmployeeId}>
-              {(columnKey) => (
-                <TableCell>{renderCell(item, columnKey)}</TableCell>
-              )}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+              Aggiungi un nuovo dipendente
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
