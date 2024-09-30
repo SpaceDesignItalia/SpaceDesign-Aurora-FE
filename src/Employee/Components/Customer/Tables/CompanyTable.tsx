@@ -22,6 +22,7 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import AddBusinessRoundedIcon from "@mui/icons-material/AddBusinessRounded";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
@@ -55,6 +56,7 @@ const columns = [
 ];
 
 export default function CompanyTable() {
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [companies, setCompanies] = useState<Company[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [adminCompanyPermission, setAdminCompanyPermission] = useState({
@@ -109,11 +111,10 @@ export default function CompanyTable() {
     open: false,
   });
 
-  async function SearchCompany(e: { target: { value: string } }) {
-    const searchQuery = e.target.value.trim(); // Otteniamo il valore di ricerca e rimuoviamo gli spazi vuoti
+  async function SearchCompany() {
     try {
       const response = await axios.get("/Company/GET/SearchCompanyByName", {
-        params: { CompanyName: searchQuery },
+        params: { CompanyName: searchTerm },
       });
       setCompanies(response.data);
     } catch (error) {
@@ -179,6 +180,7 @@ export default function CompanyTable() {
 
               {adminCompanyPermission.editCompanyermission && (
                 <Button
+                  as={Link}
                   variant="light"
                   size="sm"
                   color="warning"
@@ -222,14 +224,42 @@ export default function CompanyTable() {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between gap-3 items-end">
-          <Input
-            radius="full"
-            variant="bordered"
-            startContent={<SearchOutlinedIcon className="text-gray-400" />}
-            onChange={SearchCompany}
-            className="md:w-1/3"
-            placeholder="Cerca per nome azienda..."
-          />
+          <div className="flex flex-row gap-3 w-full">
+            <Input
+              radius="full"
+              variant="bordered"
+              startContent={<SearchOutlinedIcon className="text-gray-400" />}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value.trim() === "") {
+                  fetchData();
+                }
+              }}
+              value={searchTerm}
+              className="md:w-1/3"
+              placeholder="Cerca per nome azienda..."
+            />
+            <Button
+              color="primary"
+              radius="full"
+              endContent={<SearchOutlinedIcon />}
+              isDisabled={searchTerm == ""}
+              onClick={SearchCompany}
+              className="hidden sm:flex"
+            >
+              Cerca
+            </Button>
+            <Button
+              color="primary"
+              radius="full"
+              isDisabled={searchTerm == ""}
+              onClick={SearchCompany}
+              className="sm:hidden"
+              isIconOnly
+            >
+              <SearchOutlinedIcon />
+            </Button>
+          </div>
           <div className="flex gap-3">
             {adminCompanyPermission.addCompanyPermission && (
               <>
@@ -259,7 +289,7 @@ export default function CompanyTable() {
         </div>
       </div>
     );
-  }, [onRowsPerPageChange, companies.length]);
+  }, [onRowsPerPageChange, companies.length, searchTerm, SearchCompany]);
 
   const bottomContent = React.useMemo(() => {
     return (
@@ -311,7 +341,42 @@ export default function CompanyTable() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Nessun azienda trovata!"} items={items}>
+        <TableBody
+          emptyContent={
+            searchTerm == "" ? (
+              <div className="text-center p-10">
+                <AddBusinessRoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun azienda trovata!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Inizia aggiungendo una nuova azienda al database.
+                </p>
+                <div className="mt-6">
+                  <Button
+                    color="primary"
+                    radius="full"
+                    startContent={<AddRoundedIcon />}
+                  >
+                    Aggiungi azienda
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center p-10">
+                <AddBusinessRoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun azienda trovata!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Nessun risultato corrisponde alla tua ricerca:{" "}
+                  <span className="font-semibold italic">{searchTerm}</span>
+                </p>
+              </div>
+            )
+          }
+          items={items}
+        >
           {(item) => (
             <TableRow key={item.CompanyId}>
               {(columnKey) => (

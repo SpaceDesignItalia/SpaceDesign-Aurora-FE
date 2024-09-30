@@ -111,16 +111,10 @@ export default function EmployeeTable() {
 
   async function SearchEmployee() {
     try {
-      if (searchTerm.trim() === "") {
-        // Se il campo di ricerca è vuoto, recupera tutti i dipendenti
-        fetchData();
-      } else {
-        // Altrimenti cerca i dipendenti in base all'email
-        const response = await axios.get("/Staffer/GET/SearchStafferByEmail", {
-          params: { EmployeeEmail: searchTerm.trim() },
-        });
-        setEmployees(response.data);
-      }
+      const response = await axios.get("/Staffer/GET/SearchStafferByEmail", {
+        params: { EmployeeEmail: searchTerm.trim() },
+      });
+      setEmployees(response.data);
     } catch (error) {
       console.error("Errore durante la ricerca del dipendente:", error);
     }
