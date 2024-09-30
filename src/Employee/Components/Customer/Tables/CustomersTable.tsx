@@ -156,63 +156,47 @@ export default function CustomersTable() {
           );
         case "actions":
           return (
-            <div className="relative flex justify-left items-center gap-2">
-              <Dropdown radius="sm">
-                <DropdownTrigger>
-                  <Button isIconOnly size="sm" variant="light">
-                    <MoreVertRoundedIcon />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  <DropdownItem
-                    color="primary"
-                    startContent={<RemoveRedEyeOutlinedIcon />}
-                    aria-label="View"
-                    aria-labelledby="View"
-                    onClick={() =>
-                      setModalData({
-                        ...modalData,
-                        open: true,
-                        Customer: customer,
-                      })
-                    }
-                  >
-                    Visualizza
-                  </DropdownItem>
-                  {adminCustomerPermission.editCustomerPermission ? (
-                    <DropdownItem
-                      color="warning"
-                      startContent={<ModeOutlinedIcon />}
-                      aria-label="Edit"
-                      aria-labelledby="Edit"
-                      href={
-                        "/administration/customer/edit-customer/" +
-                        customer.CustomerId
-                      }
-                    >
-                      Modifica
-                    </DropdownItem>
-                  ) : null}
+            <div className="relative flex justify-center items-center gap-2">
+              <Button
+                color="primary"
+                variant="light"
+                size="sm"
+                startContent={<RemoveRedEyeOutlinedIcon />}
+                aria-label="View"
+                aria-labelledby="View"
+                onClick={() =>
+                  setModalData({
+                    ...modalData,
+                    open: true,
+                    Customer: customer,
+                  })
+                }
+                isIconOnly
+              />
 
-                  {adminCustomerPermission.deleteCustomerPermission ? (
-                    <DropdownItem
-                      color="danger"
-                      startContent={<DeleteOutlinedIcon />}
-                      aria-label="Remove"
-                      aria-labelledby="Remove"
-                      onClick={() =>
-                        setModalDeleteData({
-                          ...modalDeleteData,
-                          open: true,
-                          Customer: customer,
-                        })
-                      }
-                    >
-                      Rimuovi
-                    </DropdownItem>
-                  ) : null}
-                </DropdownMenu>
-              </Dropdown>
+              {adminCustomerPermission.editCustomerPermission ? (
+                <Button
+                  as={Link}
+                  color="warning"
+                  variant="light"
+                  size="sm"
+                  startContent={<ModeOutlinedIcon />}
+                  aria-label="Edit"
+                  aria-labelledby="Edit"
+                  href={
+                    "/administration/customer/edit-customer/" +
+                    customer.CustomerId
+                  }
+                  isIconOnly
+                />
+              ) : null}
+
+              {adminCustomerPermission.deleteCustomerPermission ? (
+                <ConfirmDeleteCustomerModal
+                  CustomerData={modalDeleteData.Customer}
+                  DeleteCustomer={DeleteCustomer}
+                />
+              ) : null}
             </div>
           );
         default:
@@ -235,9 +219,9 @@ export default function CustomersTable() {
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between gap-3 items-end">
           <Input
-            radius="sm"
+            radius="full"
             variant="bordered"
-            startContent={<SearchOutlinedIcon />}
+            startContent={<SearchOutlinedIcon className="text-gray-400" />}
             onChange={SearchCompany}
             className="md:w-1/3"
             placeholder="Cerca cliente per email..."
@@ -249,7 +233,7 @@ export default function CustomersTable() {
                   as={Link}
                   href="./customer/add-customer"
                   color="primary"
-                  radius="sm"
+                  radius="full"
                   startContent={<PersonAddAlt1RoundedIcon />}
                   className="hidden sm:flex"
                 >
@@ -259,7 +243,7 @@ export default function CustomersTable() {
                   as={Link}
                   href="./customer/add-customer"
                   color="primary"
-                  radius="sm"
+                  radius="full"
                   isIconOnly
                   className="sm:hidden"
                 >
@@ -281,6 +265,7 @@ export default function CustomersTable() {
           showControls
           showShadow
           color="primary"
+          radius="full"
           page={page}
           total={pages || 1}
           onChange={setPage}
@@ -290,29 +275,27 @@ export default function CustomersTable() {
   }, [items.length, page, pages]);
 
   return (
-    <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
+    <div className=" bg-white">
       <ViewCustomerModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
         CustomerData={modalData.Customer}
       />
-      <ConfirmDeleteCustomerModal
-        isOpen={modalDeleteData.open}
-        isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
-        CustomerData={modalDeleteData.Customer}
-        DeleteCustomer={DeleteCustomer}
-      />
+
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
         isStriped
         bottomContent={bottomContent}
-        bottomContentPlacement="outside"
+        bottomContentPlacement="inside"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
-        topContentPlacement="outside"
+        topContentPlacement="inside"
         onSortChange={setSortDescriptor}
-        radius="sm"
+        radius="full"
+        classNames={{
+          wrapper: "border rounded-lg shadow-none",
+        }}
       >
         <TableHeader columns={columns}>
           {(column) => (

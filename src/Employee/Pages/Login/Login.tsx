@@ -174,7 +174,7 @@ export default function Login() {
                     isLoading={isLogging}
                     type="submit"
                     color="primary"
-                    radius="sm"
+                    radius="full"
                     fullWidth
                   >
                     Accedi

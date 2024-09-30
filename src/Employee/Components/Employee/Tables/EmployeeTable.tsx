@@ -56,6 +56,7 @@ const columns = [
 ];
 
 export default function EmployeeTable() {
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
@@ -108,13 +109,18 @@ export default function EmployeeTable() {
     open: false,
   });
 
-  async function SearchEmployee(e: { target: { value: string } }) {
-    const searchQuery = e.target.value.trim(); // Otteniamo il valore di ricerca e rimuoviamo gli spazi vuoti
+  async function SearchEmployee() {
     try {
-      const response = await axios.get("/Staffer/GET/SearchStafferByEmail", {
-        params: { EmployeeEmail: searchQuery },
-      });
-      setEmployees(response.data);
+      if (searchTerm.trim() === "") {
+        // Se il campo di ricerca è vuoto, recupera tutti i dipendenti
+        fetchData();
+      } else {
+        // Altrimenti cerca i dipendenti in base all'email
+        const response = await axios.get("/Staffer/GET/SearchStafferByEmail", {
+          params: { EmployeeEmail: searchTerm.trim() },
+        });
+        setEmployees(response.data);
+      }
     } catch (error) {
       console.error("Errore durante la ricerca del dipendente:", error);
     }
@@ -171,7 +177,7 @@ export default function EmployeeTable() {
           );
         case "RoleName":
           return (
-            <span className="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-2 ring-inset ring-gray-200">
+            <span className="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-2 ring-inset ring-gray-200 bg-white">
               <svg
                 viewBox="0 0 6 6"
                 aria-hidden="true"
@@ -185,62 +191,46 @@ export default function EmployeeTable() {
         case "actions":
           return (
             <div className="relative flex justify-center items-center gap-2">
-              <Dropdown radius="sm">
-                <DropdownTrigger>
-                  <Button isIconOnly size="sm" variant="light">
-                    <MoreVertRoundedIcon />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  <DropdownItem
-                    color="primary"
-                    startContent={<RemoveRedEyeOutlinedIcon />}
-                    aria-label="View"
-                    aria-labelledby="View"
-                    onClick={() =>
-                      setModalData({
-                        ...modalData,
-                        open: true,
-                        Employee: employee,
-                      })
-                    }
-                  >
-                    Visualizza
-                  </DropdownItem>
-                  {adminEmployeePermission.editEmployeePermission && (
-                    <DropdownItem
-                      color="warning"
-                      startContent={<ModeOutlinedIcon />}
-                      aria-label="Edit"
-                      aria-labelledby="Edit"
-                      href={
-                        "/administration/employee/edit-employee/" +
-                        employee.EmployeeId
-                      }
-                    >
-                      Modifica
-                    </DropdownItem>
-                  )}
+              <Button
+                variant="light"
+                size="sm"
+                color="primary"
+                startContent={<RemoveRedEyeOutlinedIcon />}
+                aria-label="View"
+                aria-labelledby="View"
+                isIconOnly
+                onClick={() =>
+                  setModalData({
+                    ...modalData,
+                    open: true,
+                    Employee: employee,
+                  })
+                }
+              />
 
-                  {adminEmployeePermission.deleteEmployeePermission && (
-                    <DropdownItem
-                      color="danger"
-                      startContent={<DeleteOutlinedIcon />}
-                      aria-label="Remove"
-                      aria-labelledby="Remove"
-                      onClick={() =>
-                        setModalDeleteData({
-                          ...modalDeleteData,
-                          open: true,
-                          Employee: employee,
-                        })
-                      }
-                    >
-                      Rimuovi
-                    </DropdownItem>
-                  )}
-                </DropdownMenu>
-              </Dropdown>
+              {adminEmployeePermission.editEmployeePermission && (
+                <Button
+                  as={Link}
+                  variant="light"
+                  size="sm"
+                  color="warning"
+                  startContent={<ModeOutlinedIcon />}
+                  aria-label="Edit"
+                  aria-labelledby="Edit"
+                  isIconOnly
+                  href={
+                    "/administration/employee/edit-employee/" +
+                    employee.EmployeeId
+                  }
+                />
+              )}
+
+              {adminEmployeePermission.deleteEmployeePermission && (
+                <ConfirmDeleteModal
+                  EmployeeData={employee}
+                  DeleteEmployee={DeleteEmployee}
+                />
+              )}
             </div>
           );
         default:
@@ -262,14 +252,43 @@ export default function EmployeeTable() {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between gap-3 items-end">
-          <Input
-            radius="full"
-            variant="bordered"
-            startContent={<SearchOutlinedIcon className="text-gray-400" />}
-            onChange={SearchEmployee}
-            className="md:w-1/3"
-            placeholder="Cerca dipendente per email..."
-          />
+          <div className="flex flex-row gap-3 w-full">
+            <Input
+              radius="full"
+              variant="bordered"
+              startContent={<SearchOutlinedIcon className="text-gray-400" />}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value.trim() === "") {
+                  fetchData(); // Chiama SearchEmployee se il campo è vuoto
+                }
+              }}
+              value={searchTerm}
+              className="md:w-1/3"
+              placeholder="Cerca dipendente per email..."
+            />
+
+            <Button
+              color="primary"
+              radius="full"
+              endContent={<SearchOutlinedIcon />}
+              isDisabled={searchTerm == ""}
+              onClick={SearchEmployee}
+              className="hidden sm:flex"
+            >
+              Cerca
+            </Button>
+            <Button
+              color="primary"
+              radius="full"
+              isDisabled={searchTerm == ""}
+              onClick={SearchEmployee}
+              className="sm:hidden"
+              isIconOnly
+            >
+              <SearchOutlinedIcon />
+            </Button>
+          </div>
           <div className="flex gap-3">
             {adminEmployeePermission.addEmployeePermission && (
               <>
@@ -288,7 +307,7 @@ export default function EmployeeTable() {
                   as={Link}
                   href="./employee/add-employee"
                   color="primary"
-                  radius="sm"
+                  radius="full"
                   isIconOnly
                   className="sm:hidden"
                 >
@@ -300,7 +319,7 @@ export default function EmployeeTable() {
         </div>
       </div>
     );
-  }, [onRowsPerPageChange, employees.length]);
+  }, [onRowsPerPageChange, employees.length, searchTerm, SearchEmployee]);
 
   const bottomContent = React.useMemo(() => {
     return (
@@ -326,69 +345,77 @@ export default function EmployeeTable() {
         isClosed={() => setModalData({ ...modalData, open: false })}
         EmployeeData={modalData.Employee}
       />
-      <ConfirmDeleteModal
-        isOpen={modalDeleteData.open}
-        isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
-        EmployeeData={modalDeleteData.Employee}
-        DeleteEmployee={DeleteEmployee}
-      />
 
-      {employees.length > 0 ? (
-        <Table
-          aria-label="Example table with custom cells, pagination and sorting"
-          isHeaderSticky
-          isStriped
-          bottomContent={bottomContent}
-          bottomContentPlacement="inside"
-          sortDescriptor={sortDescriptor}
-          topContent={topContent}
-          topContentPlacement="inside"
-          onSortChange={setSortDescriptor}
-          radius="full"
-        >
-          <TableHeader columns={columns}>
-            {(column) => (
-              <TableColumn
-                key={column.uid}
-                align={column.uid === "actions" ? "center" : "start"}
-              >
-                {column.name}
-              </TableColumn>
-            )}
-          </TableHeader>
-          <TableBody emptyContent={"Nessun dipendente trovato!"} items={items}>
-            {(item) => (
-              <TableRow key={item.EmployeeId}>
-                {(columnKey) => (
-                  <TableCell>{renderCell(item, columnKey)}</TableCell>
-                )}
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      ) : (
-        <div className="text-center py-20">
-          <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
-          <h3 className="mt-2 text-sm font-semibold text-gray-900">
-            Nessun dipendente registrato
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Inizia aggiungendo nuovi dipendenti per visualizzarne i dettagli e
-            accedere alle analisi.
-          </p>
-          <div className="mt-6">
-            <Button
-              as={Link}
-              color="primary"
-              radius="full"
-              startContent={<AddRoundedIcon />}
-              href="./employee/add-employee"
+      <Table
+        aria-label="Example table with custom cells, pagination and sorting"
+        isHeaderSticky
+        isStriped
+        bottomContent={bottomContent}
+        bottomContentPlacement="inside"
+        sortDescriptor={sortDescriptor}
+        topContent={topContent}
+        topContentPlacement="inside"
+        onSortChange={setSortDescriptor}
+        radius="full"
+        classNames={{
+          wrapper: "border rounded-lg shadow-none",
+        }}
+      >
+        <TableHeader columns={columns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}
             >
-              Aggiungi un nuovo dipendente
-            </Button>
-          </div>
-        </div>
-      )}
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody
+          emptyContent={
+            searchTerm == "" ? (
+              <div className="text-center p-10">
+                <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun dipendente trovato!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Inizia aggiungendo un nuovo dipendente al database.
+                </p>
+                <div className="mt-6">
+                  <Button
+                    color="primary"
+                    radius="full"
+                    startContent={<AddRoundedIcon />}
+                  >
+                    Aggiungi dipendente
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center p-10">
+                <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun dipendente trovato!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Nessun risultato corrisponde alla tua ricerca:{" "}
+                  <span className="font-semibold italic">{searchTerm}</span>
+                </p>
+              </div>
+            )
+          }
+          items={items}
+        >
+          {(item) => (
+            <TableRow key={item.EmployeeId}>
+              {(columnKey) => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }

@@ -159,64 +159,48 @@ export default function CompanyTable() {
           );
         case "actions":
           return (
-            <div className="relative flex justify-left items-center gap-2">
-              <Dropdown radius="sm">
-                <DropdownTrigger>
-                  <Button isIconOnly size="sm" variant="light">
-                    <MoreVertRoundedIcon />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  <DropdownItem
-                    color="primary"
-                    startContent={<RemoveRedEyeOutlinedIcon />}
-                    aria-label="View"
-                    aria-labelledby="View"
-                    onClick={() =>
-                      setModalData({
-                        ...modalData,
-                        open: true,
-                        Company: company,
-                      })
-                    }
-                  >
-                    Visualizza
-                  </DropdownItem>
-                  {adminCompanyPermission.editCompanyermission && (
-                    <DropdownItem
-                      color="warning"
-                      startContent={<ModeOutlinedIcon />}
-                      aria-label="Edit"
-                      aria-labelledby="Edit"
-                      href={
-                        "/administration/customer/edit-company/" +
-                        company.CompanyId +
-                        "/" +
-                        company.CompanyName
-                      }
-                    >
-                      Modifica
-                    </DropdownItem>
-                  )}
-                  {adminCompanyPermission.deleteCompanyPermission && (
-                    <DropdownItem
-                      color="danger"
-                      startContent={<DeleteOutlinedIcon />}
-                      aria-label="Remove"
-                      aria-labelledby="Remove"
-                      onClick={() =>
-                        setModalDeleteData({
-                          ...modalDeleteData,
-                          open: true,
-                          Company: company,
-                        })
-                      }
-                    >
-                      Rimuovi
-                    </DropdownItem>
-                  )}
-                </DropdownMenu>
-              </Dropdown>
+            <div className="relative flex justify-center items-center gap-2">
+              <Button
+                variant="light"
+                size="sm"
+                color="primary"
+                startContent={<RemoveRedEyeOutlinedIcon />}
+                aria-label="View"
+                aria-labelledby="View"
+                isIconOnly
+                onClick={() =>
+                  setModalData({
+                    ...modalData,
+                    open: true,
+                    Company: company,
+                  })
+                }
+              />
+
+              {adminCompanyPermission.editCompanyermission && (
+                <Button
+                  variant="light"
+                  size="sm"
+                  color="warning"
+                  startContent={<ModeOutlinedIcon />}
+                  aria-label="Edit"
+                  aria-labelledby="Edit"
+                  href={
+                    "/administration/customer/edit-company/" +
+                    company.CompanyId +
+                    "/" +
+                    company.CompanyName
+                  }
+                  isIconOnly
+                />
+              )}
+
+              {adminCompanyPermission.deleteCompanyPermission && (
+                <ConfirmDeleteCompanyModal
+                  CompanyData={company}
+                  DeleteCompany={DeleteCompany}
+                />
+              )}
             </div>
           );
         default:
@@ -239,9 +223,9 @@ export default function CompanyTable() {
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between gap-3 items-end">
           <Input
-            radius="sm"
+            radius="full"
             variant="bordered"
-            startContent={<SearchOutlinedIcon />}
+            startContent={<SearchOutlinedIcon className="text-gray-400" />}
             onChange={SearchCompany}
             className="md:w-1/3"
             placeholder="Cerca per nome azienda..."
@@ -253,7 +237,7 @@ export default function CompanyTable() {
                   as={Link}
                   href="./customer/add-company"
                   color="primary"
-                  radius="sm"
+                  radius="full"
                   startContent={<AddBusinessRoundedIcon />}
                   className="hidden sm:flex"
                 >
@@ -263,7 +247,7 @@ export default function CompanyTable() {
                   as={Link}
                   href="./customer/add-company"
                   color="primary"
-                  radius="sm"
+                  radius="full"
                   isIconOnly
                   className="sm:hidden"
                 >
@@ -285,6 +269,7 @@ export default function CompanyTable() {
           showControls
           showShadow
           color="primary"
+          radius="full"
           page={page}
           total={pages || 1}
           onChange={setPage}
@@ -294,29 +279,27 @@ export default function CompanyTable() {
   }, [items.length, page, pages]);
 
   return (
-    <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
+    <div className="bg-white">
       <ViewCompanyModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
         CompanyData={modalData.Company}
       />
-      <ConfirmDeleteCompanyModal
-        isOpen={modalDeleteData.open}
-        isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
-        CompanyData={modalDeleteData.Company}
-        DeleteCompany={DeleteCompany}
-      />
+
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
         isStriped
         bottomContent={bottomContent}
-        bottomContentPlacement="outside"
+        bottomContentPlacement="inside"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
-        topContentPlacement="outside"
+        topContentPlacement="inside"
         onSortChange={setSortDescriptor}
-        radius="sm"
+        radius="full"
+        classNames={{
+          wrapper: "border rounded-lg shadow-none",
+        }}
       >
         <TableHeader columns={columns}>
           {(column) => (
