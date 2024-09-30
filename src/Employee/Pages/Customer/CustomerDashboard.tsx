@@ -4,6 +4,7 @@ import CustomersTable from "../../Components/Customer/Tables/CustomersTable";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { useState, useEffect } from "react";
+import CustomerStats from "../../Components/Customer/Other/CustomerStats";
 
 export default function CustomerDashboard() {
   const { hasPermission } = usePermissions();
@@ -35,7 +36,7 @@ export default function CustomerDashboard() {
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
             Clienti
           </h1>
-          <Breadcrumbs variant="bordered" radius="sm">
+          <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
               <DashboardOutlinedIcon />
             </BreadcrumbItem>
@@ -46,6 +47,7 @@ export default function CustomerDashboard() {
         </div>
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
+        <CustomerStats />
         <div className="py-6 lg:py-8">
           {permissions.customer && <CustomersTable />}
         </div>

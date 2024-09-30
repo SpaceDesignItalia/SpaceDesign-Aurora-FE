@@ -29,6 +29,10 @@ export default {
         },
       },
       colors: {
+        primary: {
+          DEFAULT: "#000000",
+          foreground: "#FFFFFF",
+        },
         warning: {
           DEFAULT: "#FFA726",
           foreground: "#FFFFFF",

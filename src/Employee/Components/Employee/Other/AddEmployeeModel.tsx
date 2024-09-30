@@ -27,7 +27,7 @@ interface AlertData {
   isOpen: boolean;
   alertTitle: string;
   alertDescription: string;
-  alertColor: string;
+  alertColor: "green" | "red" | "yellow";
 }
 
 const initialEmployeeData: Employee = {
@@ -42,7 +42,7 @@ const initialAlertData: AlertData = {
   isOpen: false,
   alertTitle: "",
   alertDescription: "",
-  alertColor: "",
+  alertColor: "red",
 };
 
 export default function AddEmployeeModel() {
@@ -134,142 +134,149 @@ export default function AddEmployeeModel() {
   return (
     <>
       <StatusAlert AlertData={alertData} />
-      <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
+      <div className="space-y-6 lg:col-span-9">
         <form>
-          <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
-            <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
-              <div>
-                <h3 className="text-base font-semibold leading-6 text-gray-900">
-                  Dipendente
-                </h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  In questo pannello potrai aggiungere un nuovo dipendente al
-                  database.
-                </p>
+          <div className="space-y-6 bg-white py-6">
+            <div>
+              <h3 className="text-base font-semibold leading-6 text-gray-900">
+                Dipendente
+              </h3>
+              <p className="mt-1 text-sm text-gray-500 w-1/3">
+                In questo pannello potrai aggiungere un nuovo dipendente al
+                database. I campi contrassegnati con un asterisco (
+                <span className="text-danger font-bold">*</span>) sono
+                obbligatori.
+              </p>
+            </div>
+            <div className="grid grid-cols-6 gap-6">
+              <div className="col-span-6 sm:col-span-3">
+                <label
+                  htmlFor="EmployeeName"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Nome <span className="text-danger font-bold">*</span>
+                </label>
+                <Input
+                  variant="bordered"
+                  type="text"
+                  radius="full"
+                  name="EmployeeName"
+                  placeholder="Es. Mario"
+                  value={employeeData.EmployeeName}
+                  onChange={handleChange}
+                  aria-label="Nome"
+                  fullWidth
+                />
               </div>
-              <div className="grid grid-cols-6 gap-6">
-                <div className="col-span-6 sm:col-span-3">
-                  <label
-                    htmlFor="EmployeeName"
-                    className="block text-sm font-medium leading-6 text-gray-900"
-                  >
-                    Nome
-                  </label>
-                  <Input
-                    variant="bordered"
-                    type="text"
-                    radius="sm"
-                    name="EmployeeName"
-                    value={employeeData.EmployeeName}
-                    onChange={handleChange}
-                    aria-label="Nome"
-                    fullWidth
-                  />
-                </div>
-                <div className="col-span-6 sm:col-span-3">
-                  <label
-                    htmlFor="EmployeeSurname"
-                    className="block text-sm font-medium leading-6 text-gray-900"
-                  >
-                    Cognome
-                  </label>
-                  <Input
-                    variant="bordered"
-                    type="text"
-                    radius="sm"
-                    name="EmployeeSurname"
-                    value={employeeData.EmployeeSurname}
-                    onChange={handleChange}
-                    aria-label="Cognome"
-                    fullWidth
-                  />
-                </div>
-                <div className="col-span-6 sm:col-span-6">
-                  <label
-                    htmlFor="EmployeeEmail"
-                    className="block text-sm font-medium leading-6 text-gray-900"
-                  >
-                    Email
-                  </label>
-                  <Input
-                    variant="bordered"
-                    type="email"
-                    radius="sm"
-                    name="EmployeeEmail"
-                    value={employeeData.EmployeeEmail}
-                    onChange={handleChange}
-                    aria-label="Email"
-                    fullWidth
-                  />
-                </div>
-                <div className="col-span-6 sm:col-span-6">
-                  <label
-                    htmlFor="EmployeePhone"
-                    className="block text-sm font-medium leading-6 text-gray-900"
-                  >
-                    Numero di telefono
-                  </label>
-                  <Input
-                    variant="bordered"
-                    type="text"
-                    radius="sm"
-                    name="EmployeePhone"
-                    value={employeeData.EmployeePhone}
-                    onChange={handleChange}
-                    aria-label="Numero di telefono"
-                    fullWidth
-                  />
-                </div>
-                <div className="col-span-6 sm:col-span-6">
-                  <label
-                    htmlFor="role"
-                    className="block text-sm font-medium leading-6 text-gray-900"
-                  >
-                    Ruolo
-                  </label>
-                  <Autocomplete
-                    placeholder="Seleziona ruolo"
-                    onSelectionChange={handleRoleChange}
-                    selectedKey={selectedRole}
-                    variant="bordered"
-                    radius="sm"
-                    aria-label="Ruolo"
-                    fullWidth
-                  >
-                    {roles.map((role) => (
-                      <AutocompleteItem
-                        key={role.RoleId}
-                        textValue={role.RoleName}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div className="flex flex-col">
-                            <span className="text-small">{role.RoleName}</span>
-                            <span className="text-tiny text-default-400">
-                              {role.RoleDescription}
-                            </span>
-                          </div>
+              <div className="col-span-6 sm:col-span-3">
+                <label
+                  htmlFor="EmployeeSurname"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Cognome <span className="text-danger font-bold">*</span>
+                </label>
+                <Input
+                  variant="bordered"
+                  type="text"
+                  radius="full"
+                  name="EmployeeSurname"
+                  placeholder="Es. Rossi"
+                  value={employeeData.EmployeeSurname}
+                  onChange={handleChange}
+                  aria-label="Cognome"
+                  fullWidth
+                />
+              </div>
+              <div className="col-span-6 sm:col-span-6">
+                <label
+                  htmlFor="EmployeeEmail"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Email <span className="text-danger font-bold">*</span>
+                </label>
+                <Input
+                  variant="bordered"
+                  type="email"
+                  radius="full"
+                  name="EmployeeEmail"
+                  placeholder="Es. mario.rossi@mail.com"
+                  value={employeeData.EmployeeEmail}
+                  onChange={handleChange}
+                  aria-label="Email"
+                  fullWidth
+                />
+              </div>
+              <div className="col-span-6 sm:col-span-6">
+                <label
+                  htmlFor="EmployeePhone"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Numero di telefono
+                </label>
+                <Input
+                  variant="bordered"
+                  type="text"
+                  radius="full"
+                  name="EmployeePhone"
+                  value={employeeData.EmployeePhone}
+                  placeholder="Es. 0123456789"
+                  onChange={handleChange}
+                  aria-label="Numero di telefono"
+                  fullWidth
+                />
+              </div>
+              <div className="col-span-6 sm:col-span-6">
+                <label
+                  htmlFor="role"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Ruolo <span className="text-danger font-bold">*</span>
+                </label>
+                <Autocomplete
+                  placeholder="Seleziona ruolo"
+                  onSelectionChange={handleRoleChange}
+                  selectedKey={String(selectedRole)}
+                  variant="bordered"
+                  radius="full"
+                  aria-label="Ruolo"
+                  listboxProps={{
+                    emptyContent: "Nessun ruolo trovato",
+                  }}
+                  fullWidth
+                >
+                  {roles.map((role) => (
+                    <AutocompleteItem
+                      key={role.RoleId}
+                      textValue={role.RoleName}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex flex-col">
+                          <span className="text-small">{role.RoleName}</span>
+                          <span className="text-tiny text-default-400">
+                            {role.RoleDescription}
+                          </span>
                         </div>
-                      </AutocompleteItem>
-                    ))}
-                  </Autocomplete>
-                </div>
+                      </div>
+                    </AutocompleteItem>
+                  ))}
+                </Autocomplete>
               </div>
             </div>
-            <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-              <Button
-                color="success"
-                className="text-white"
-                radius="sm"
-                startContent={<SaveIcon />}
-                isDisabled={checkAllDataCompiled()}
-                isLoading={isAddingData}
-                onClick={handleCreateNewEmployee}
-              >
-                {isAddingData
-                  ? "Salvando il dipendente..."
-                  : "Salva dipendente"}
-              </Button>
-            </div>
+          </div>
+          <div className="py-3 text-right">
+            <Button
+              color="primary"
+              className="text-white"
+              radius="full"
+              startContent={<SaveIcon />}
+              isDisabled={checkAllDataCompiled()}
+              isLoading={isAddingData}
+              onClick={handleCreateNewEmployee}
+            >
+              {isAddingData
+                ? "Salvando il dipendente..."
+                : "Aggiungi dipendente"}
+            </Button>
           </div>
         </form>
       </div>
