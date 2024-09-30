@@ -23,7 +23,7 @@ export default function AddEmployeePage() {
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
             Aggiungi dipendente
           </h1>
-          <Breadcrumbs variant="bordered" radius="sm">
+          <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
               <DashboardOutlinedIcon />
             </BreadcrumbItem>
