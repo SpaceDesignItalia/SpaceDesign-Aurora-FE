@@ -17,7 +17,7 @@ interface AlertData {
   isOpen: boolean;
   alertTitle: string;
   alertDescription: string;
-  alertColor: string;
+  alertColor: "green" | "red" | "yellow";
 }
 
 const initialCompanyData: Company = {
@@ -40,7 +40,7 @@ const EditCompanyModel: React.FC = () => {
     isOpen: false,
     alertTitle: "",
     alertDescription: "",
-    alertColor: "",
+    alertColor: "red",
   });
 
   useEffect(() => {
@@ -119,105 +119,105 @@ const EditCompanyModel: React.FC = () => {
     <>
       <StatusAlert AlertData={alertData} />
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
-        <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
-          <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
-            <div>
-              <h3 className="text-base font-semibold leading-6 text-gray-900">
-                Modifica azienda
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                In questo pannello potrai modificare un'azienda dal database.
-              </p>
+        <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
+          <div>
+            <h3 className="text-base font-semibold leading-6 text-gray-900">
+              Modifica azienda
+            </h3>
+            <p className="mt-1 text-sm text-gray-500 w-1/3">
+              In questo pannello potrai modificare un'azienda dal database. I
+              campi contrassegnati con un asterisco (
+              <span className="text-danger font-bold">*</span>) sono
+              obbligatori.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-6 gap-6">
+            <div className="col-span-6 sm:col-span-6">
+              <label
+                htmlFor="CompanyName"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Nome azienda <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Input
+                variant="bordered"
+                type="text"
+                radius="full"
+                name="CompanyName"
+                value={newCompanyData.CompanyName}
+                onChange={handleChange}
+                fullWidth
+              />
             </div>
 
-            <div className="grid grid-cols-6 gap-6">
-              <div className="col-span-6 sm:col-span-6">
-                <label
-                  htmlFor="CompanyName"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Nome azienda <span className="text-red-600 font-bold">*</span>
-                </label>
-                <Input
-                  variant="bordered"
-                  type="text"
-                  radius="sm"
-                  name="CompanyName"
-                  value={newCompanyData.CompanyName}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="CompanyAddress"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Indirizzo <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Input
+                variant="bordered"
+                type="text"
+                radius="full"
+                name="CompanyAddress"
+                value={newCompanyData.CompanyAddress}
+                onChange={handleChange}
+                fullWidth
+              />
+            </div>
 
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="CompanyAddress"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Indirizzo <span className="text-red-600 font-bold">*</span>
-                </label>
-                <Input
-                  variant="bordered"
-                  type="text"
-                  radius="sm"
-                  name="CompanyAddress"
-                  value={newCompanyData.CompanyAddress}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="CompanyEmail"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Email azienda <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Input
+                variant="bordered"
+                type="email"
+                radius="full"
+                name="CompanyEmail"
+                value={newCompanyData.CompanyEmail}
+                onChange={handleChange}
+                fullWidth
+              />
+            </div>
 
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="CompanyEmail"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Email azienda{" "}
-                  <span className="text-red-600 font-bold">*</span>
-                </label>
-                <Input
-                  variant="bordered"
-                  type="email"
-                  radius="sm"
-                  name="CompanyEmail"
-                  value={newCompanyData.CompanyEmail}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </div>
-
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="CompanyPhone"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Numero di telefono
-                </label>
-                <Input
-                  variant="bordered"
-                  type="text"
-                  radius="sm"
-                  name="CompanyPhone"
-                  value={newCompanyData.CompanyPhone || ""}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="CompanyPhone"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Numero di telefono
+              </label>
+              <Input
+                variant="bordered"
+                type="text"
+                radius="full"
+                name="CompanyPhone"
+                value={newCompanyData.CompanyPhone || ""}
+                onChange={handleChange}
+                fullWidth
+              />
             </div>
           </div>
-          <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-            <Button
-              color="success"
-              className="text-white"
-              radius="sm"
-              startContent={!isAddingData && <SaveIcon />}
-              isDisabled={checkAllDataCompiled()}
-              isLoading={isAddingData}
-              onClick={handleUpdateCompany}
-            >
-              {isAddingData ? "Salvando le modifiche..." : "Salva modifiche"}
-            </Button>
-          </div>
+        </div>
+        <div className="bg-gray-5 py-3 text-right">
+          <Button
+            color="primary"
+            className="text-white"
+            radius="full"
+            startContent={!isAddingData && <SaveIcon />}
+            isDisabled={checkAllDataCompiled()}
+            isLoading={isAddingData}
+            onClick={handleUpdateCompany}
+          >
+            {isAddingData ? "Salvando le modifiche..." : "Salva modifiche"}
+          </Button>
         </div>
       </div>
     </>

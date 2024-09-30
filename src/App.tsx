@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { usePermissions } from "./Employee/Components/Layout/PermissionProvider";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { Spinner } from "@nextui-org/react";
 import axios from "axios";
 import { API_URL } from "./API/API";
 import Dashboard from "./Employee/Pages/Dashboard/Dashboard";
@@ -37,6 +36,7 @@ import SettingsCustomerDashboard from "./Customer/Pages/Settings/SettingsCustome
 
 import PasswordRecovery from "./Employee/Components/Login/PasswordRecovery";
 import PasswordReset from "./Employee/Components/Login/PasswordReset";
+import Loader from "./Employee/Components/Layout/Loader";
 
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
@@ -85,11 +85,7 @@ const App: React.FC = () => {
   }, [loadPermissions, permissionsLoaded, setStafferId]);
 
   if (isLoading) {
-    return (
-      <div className="absolute left-0 w-full h-full flex flex-col justify-center items-center">
-        <Spinner size="lg" color="danger" />
-      </div>
-    );
+    return <Loader />;
   }
 
   return (
