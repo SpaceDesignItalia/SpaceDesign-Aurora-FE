@@ -25,6 +25,7 @@ import ProjectPage from "./Employee/Pages/Project/ProjectPage";
 import EditPermissionPage from "./Employee/Pages/Permission/EditPermissionPage";
 import AddPermissionPage from "./Employee/Pages/Permission/AddPermissionPage";
 import EditProjectPage from "./Employee/Pages/Project/EditProjectPage";
+import LeadDashboard from "./Employee/Pages/Lead/LeadDashboard";
 
 import DashboardCustomer from "./Customer/Pages/Dashboard/DashboardCustomer";
 import Navbar from "./Customer/Components/Layout/Navbar";
@@ -209,6 +210,7 @@ const EmployeeProtectedRoutes: React.FC = () => {
           element={<EditPermissionPage />}
           path="/administration/permission/edit-permission/:PermissionId"
         />
+        <Route element={<LeadDashboard />} path="/lead" />
       </Route>
     </Routes>
   );
