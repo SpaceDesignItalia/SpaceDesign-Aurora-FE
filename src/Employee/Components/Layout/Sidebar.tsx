@@ -115,6 +115,10 @@ export default function Sidebar() {
     setNotificationUpdate(!notificationUpdate);
   });
 
+  socket.on("delete-notifications", () => {
+    setNotificationUpdate(!notificationUpdate);
+  });
+
   async function fetchPermissions() {
     setAdministration([
       {
