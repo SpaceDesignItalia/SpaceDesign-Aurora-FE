@@ -597,12 +597,12 @@ export default function ChatTable() {
                 </div>
               </>
             ) : (
-              <div className="flex flex-col h-screen justify-center items-center">
+              <div className="flex flex-col h-screen justify-center items-center p-2">
                 <Groups2RoundedIcon sx={{ fontSize: 50 }} />
                 <h3 className="mt-2 text-base font-semibold text-gray-900">
                   Nessuna conversazione selezionata
                 </h3>
-                <p className="mt-1 text-base text-gray-500">
+                <p className="mt-1 text-base text-gray-500 text-center">
                   Inizia selezionando una conversazione dall'elenco o crea una
                   nuova conversazione.
                 </p>
