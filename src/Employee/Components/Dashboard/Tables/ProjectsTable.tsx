@@ -59,7 +59,6 @@ export default function ProjectsTable() {
       .get("/Project/GET/GetProjectInTeam", { withCredentials: true })
       .then((res) => {
         setProjects(res.data);
-        console.log(res.data);
       });
   }
 

@@ -201,10 +201,10 @@ export default function Sidebar() {
 
   const requests = [
     {
-      name: "Messaggi",
-      href: "/messages",
+      name: "Lead",
+      href: "/lead",
       icon: MailOutlineRoundedIcon,
-      current: currentUrl === "/messages",
+      current: currentUrl === "/lead",
     },
     {
       name: "Ticket",
