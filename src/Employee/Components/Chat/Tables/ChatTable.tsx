@@ -254,10 +254,10 @@ export default function ChatTable() {
 
       {conversations.length > 0 ? (
         <>
-          <div className="w-1/2 bg-white">
+          <div className="hidden lg:flex flex-col w-1/3 bg-white">
             <div className="flex flex-row justify-between gap-3 px-4 py-5 sm:px-6">
               <Input
-                radius="sm"
+                radius="full"
                 variant="bordered"
                 startContent={<SearchOutlinedIcon />}
                 value={searchQuery}
@@ -267,13 +267,13 @@ export default function ChatTable() {
               <Button
                 isIconOnly
                 color="primary"
-                radius="sm"
+                radius="full"
                 onClick={() => setModalAddData({ ...modalAddData, open: true })}
               >
                 <AddCommentRoundedIcon />
               </Button>
             </div>
-            <div className="overflow-y-auto flex-1">
+            <div className="overflow-y-auto flex flex-col">
               {conversations
                 .filter(
                   (conversation) =>
@@ -288,25 +288,27 @@ export default function ChatTable() {
                   <div
                     key={conversation.ConversationId}
                     className={cn(
-                      "flex flex-row items-center p-3 cursor-pointer transition duration-300 ease-in-out border-b border-t",
+                      "flex flex-row items-center p-3 cursor-pointer transition duration-300 ease-in-out border-b border-t w-full",
                       selectedConversationId === conversation.ConversationId &&
                         "bg-gray-100 border-0 border-r-3 border-primary"
                     )}
                     onClick={() => handleOpenChat(conversation.ConversationId)}
                   >
-                    <Avatar
-                      src={
-                        conversation.Staffer1Id === loggedStafferId
-                          ? API_URL_IMG +
-                            "/profileIcons/" +
-                            conversation.Staffer2ImageUrl
-                          : API_URL_IMG +
-                            "/profileIcons/" +
-                            conversation.Staffer1ImageUrl
-                      }
-                      size="lg"
-                    />
-                    <div className="ml-4 flex-1">
+                    <div>
+                      <Avatar
+                        src={
+                          conversation.Staffer1Id === loggedStafferId
+                            ? API_URL_IMG +
+                              "/profileIcons/" +
+                              conversation.Staffer2ImageUrl
+                            : API_URL_IMG +
+                              "/profileIcons/" +
+                              conversation.Staffer1ImageUrl
+                        }
+                        size="lg"
+                      />
+                    </div>
+                    <div className="ml-4 flex flex-col w-5/6">
                       <div className="flex items-center justify-between">
                         <h2 className="font-bold text-lg">
                           {conversation.Staffer1Id === loggedStafferId
@@ -320,7 +322,7 @@ export default function ChatTable() {
                         )}
                       </div>
                       {conversation.lastMessage && (
-                        <p className="text-gray-500 truncate">
+                        <p className="text-gray-500 truncate w-auto">
                           {conversation.lastMessage}
                         </p>
                       )}
@@ -346,7 +348,7 @@ export default function ChatTable() {
             </div>
           </div>
 
-          <div className="flex flex-col w-full mx-auto py-2 border-l h-[42rem]">
+          <div className="flex flex-col w-full mx-auto py-2 border-l h-[calc(100vh-80px)]">
             {selectedConversation ? (
               <>
                 <div className="flex justify-between items-center mb-3 px-4 py-2 border-b">
@@ -384,8 +386,12 @@ export default function ChatTable() {
                   </Button>
                 </div>
 
-                <div className="flex flex-col flex-1 space-y-2 overflow-y-auto mt-3 px-4">
-                  <ScrollShadow ref={scrollRef} hideScrollBar>
+                <div className="flex flex-col flex-1 space-y-2 overflow-y-auto mt-3 px-4 py-3">
+                  <ScrollShadow
+                    ref={scrollRef}
+                    className="h-fit py-10"
+                    hideScrollBar
+                  >
                     {messages.map((message) =>
                       message.StafferSenderId !== loggedStafferId ? (
                         <ChatMessage
@@ -416,6 +422,7 @@ export default function ChatTable() {
                   <Button
                     onClick={handleSendMessage}
                     color="primary"
+                    radius="full"
                     isIconOnly
                     isDisabled={newMessage.trim() === "" ? true : false}
                   >
@@ -437,7 +444,7 @@ export default function ChatTable() {
                   <Button
                     startContent={<AddCommentRoundedIcon />}
                     color="primary"
-                    radius="sm"
+                    radius="full"
                     onClick={() =>
                       setModalAddData({ ...modalAddData, open: true })
                     }

@@ -112,7 +112,11 @@ export default function AddConversationModal({
               </div>
             </ModalBody>
             <ModalFooter>
-              <Button color="success" onClick={createConversation} radius="sm">
+              <Button
+                color="primary"
+                onClick={createConversation}
+                radius="full"
+              >
                 Aggiungi
               </Button>
             </ModalFooter>

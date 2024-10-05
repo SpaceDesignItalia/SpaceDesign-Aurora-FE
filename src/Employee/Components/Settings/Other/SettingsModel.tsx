@@ -24,7 +24,7 @@ interface AlertData {
   isOpen: boolean;
   alertTitle: string;
   alertDescription: string;
-  alertColor: string;
+  alertColor: "green" | "red" | "yellow";
 }
 
 const STAFFER_DEFAULT: Staffer = {
@@ -46,7 +46,7 @@ const ALERT_DEFAULT: AlertData = {
   isOpen: false,
   alertTitle: "",
   alertDescription: "",
-  alertColor: "",
+  alertColor: "red",
 };
 
 const phoneRegex = /^[0-9]{1,10}$/;
@@ -232,205 +232,202 @@ export default function SettingsModel() {
   return (
     <>
       <StatusAlert AlertData={alertData} />
-      <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
-        <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8 border-b-2 border-gray-200">
-          <div>
-            <h2 className="text-base font-semibold leading-7">
-              Informazioni personali
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-gray-400">
-              Modifica le tue informazioni personali.
-            </p>
-          </div>
 
-          <form className="md:col-span-2">
-            <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-              <div className="col-span-full flex items-center gap-x-8">
-                <Avatar
-                  name={userData.StafferName}
-                  radius="sm"
-                  isBordered
-                  src={profileImagePreview}
-                  className="h-24 w-24"
+      <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8 border-b-2 border-gray-200">
+        <div>
+          <h2 className="text-base font-semibold leading-7">
+            Informazioni personali
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-gray-400">
+            Modifica le tue informazioni personali.
+          </p>
+        </div>
+
+        <form className="md:col-span-2">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
+            <div className="col-span-full flex items-center gap-x-8">
+              <Avatar
+                name={userData.StafferName}
+                radius="sm"
+                isBordered
+                src={profileImagePreview}
+                className="h-24 w-24"
+              />
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  style={{ display: "none" }}
+                  id="profileImage"
                 />
-                <div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    style={{ display: "none" }}
-                    id="profileImage"
-                  />
-                  <label htmlFor="profileImage">
-                    <Button as="span" color="primary" radius="sm">
-                      Cambia foto profilo
-                    </Button>
-                  </label>
-                  <p className="mt-2 text-xs leading-5 text-gray-400">
-                    JPG, GIF or PNG.
-                  </p>
-                </div>
-              </div>
-
-              <div className="sm:col-span-3">
-                <label
-                  htmlFor="StafferName"
-                  className="block text-sm font-medium leading-6"
-                >
-                  Nome
+                <label htmlFor="profileImage">
+                  <Button as="span" color="primary" radius="full">
+                    Cambia foto profilo
+                  </Button>
                 </label>
-                <div className="mt-2">
-                  <Input
-                    variant="bordered"
-                    value={userEditedData.StafferName}
-                    onChange={handleChange}
-                    radius="sm"
-                    id="StafferName"
-                    name="StafferName"
-                  />
-                </div>
-              </div>
-
-              <div className="sm:col-span-3">
-                <label
-                  htmlFor="StafferSurname"
-                  className="block text-sm font-medium leading-6"
-                >
-                  Cognome
-                </label>
-                <div className="mt-2">
-                  <Input
-                    variant="bordered"
-                    value={userEditedData.StafferSurname}
-                    onChange={handleChange}
-                    radius="sm"
-                    id="StafferSurname"
-                    name="StafferSurname"
-                  />
-                </div>
-              </div>
-
-              <div className="col-span-full">
-                <label
-                  htmlFor="StafferPhone"
-                  className="block text-sm font-medium leading-6"
-                >
-                  Numero di telefono
-                </label>
-                <div className="mt-2">
-                  <Input
-                    variant="bordered"
-                    value={userEditedData.StafferPhone}
-                    onChange={handleChange}
-                    radius="sm"
-                    id="StafferPhone"
-                    name="StafferPhone"
-                    isInvalid={errors.phone != ""}
-                    errorMessage={errors.phone}
-                  />
-                </div>
+                <p className="mt-2 text-xs leading-5 text-gray-400">
+                  JPG, GIF or PNG.
+                </p>
               </div>
             </div>
 
-            <div className="mt-8 flex">
-              <Button
-                color="primary"
-                radius="sm"
-                startContent={!isSaving && <SaveRoundedIcon />}
-                isDisabled={isDataUnchanged}
-                isLoading={isSaving}
-                onClick={handleSave}
+            <div className="sm:col-span-3">
+              <label
+                htmlFor="StafferName"
+                className="block text-sm font-medium leading-6"
               >
-                Salva
-              </Button>
+                Nome
+              </label>
+              <div className="mt-2">
+                <Input
+                  variant="bordered"
+                  value={userEditedData.StafferName}
+                  onChange={handleChange}
+                  radius="full"
+                  id="StafferName"
+                  name="StafferName"
+                />
+              </div>
             </div>
-          </form>
-        </div>
 
-        <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
-          <div>
-            <h2 className="text-base font-semibold leading-7">
-              Cambia password
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-gray-400">
-              Aggiorna la password del tuo account.
-            </p>
+            <div className="sm:col-span-3">
+              <label
+                htmlFor="StafferSurname"
+                className="block text-sm font-medium leading-6"
+              >
+                Cognome
+              </label>
+              <div className="mt-2">
+                <Input
+                  variant="bordered"
+                  value={userEditedData.StafferSurname}
+                  onChange={handleChange}
+                  radius="full"
+                  id="StafferSurname"
+                  name="StafferSurname"
+                />
+              </div>
+            </div>
+
+            <div className="col-span-full">
+              <label
+                htmlFor="StafferPhone"
+                className="block text-sm font-medium leading-6"
+              >
+                Numero di telefono
+              </label>
+              <div className="mt-2">
+                <Input
+                  variant="bordered"
+                  value={userEditedData.StafferPhone}
+                  onChange={handleChange}
+                  radius="full"
+                  id="StafferPhone"
+                  name="StafferPhone"
+                  isInvalid={errors.phone != ""}
+                  errorMessage={errors.phone}
+                />
+              </div>
+            </div>
           </div>
 
-          <form className="md:col-span-2">
-            <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-              <div className="col-span-full">
-                <label
-                  htmlFor="OldPassword"
-                  className="block text-sm font-medium leading-6"
-                >
-                  Password attuale
-                </label>
-                <div className="mt-2">
-                  <Input
-                    type="password"
-                    variant="bordered"
-                    radius="sm"
-                    id="OldPassword"
-                    name="OldPassword"
-                    onChange={handleChangePassword}
-                  />
-                </div>
-              </div>
+          <div className="mt-8 flex">
+            <Button
+              color="primary"
+              radius="sm"
+              startContent={!isSaving && <SaveRoundedIcon />}
+              isDisabled={isDataUnchanged}
+              isLoading={isSaving}
+              onClick={handleSave}
+            >
+              Salva
+            </Button>
+          </div>
+        </form>
+      </div>
 
-              <div className="col-span-full">
-                <label
-                  htmlFor="NewPassword"
-                  className="block text-sm font-medium leading-6"
-                >
-                  Nuova password
-                </label>
-                <div className="mt-2">
-                  <Input
-                    type="password"
-                    variant="bordered"
-                    radius="sm"
-                    id="NewPassword"
-                    name="NewPassword"
-                    onChange={handleChangePassword}
-                  />
-                </div>
-              </div>
-
-              <div className="col-span-full">
-                <label
-                  htmlFor="ConfirmPassword"
-                  className="block text-sm font-medium leading-6"
-                >
-                  Conferma nuova password
-                </label>
-                <div className="mt-2">
-                  <Input
-                    type="password"
-                    variant="bordered"
-                    radius="sm"
-                    id="ConfirmPassword"
-                    name="ConfirmPassword"
-                    onChange={handleChangePassword}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex">
-              <Button
-                color="primary"
-                radius="sm"
-                startContent={!isSavingNewPassword && <SaveRoundedIcon />}
-                isDisabled={isPasswordFieldsNotEmpty()}
-                isLoading={isSavingNewPassword}
-                onClick={handleSavePassword}
-              >
-                Salva
-              </Button>
-            </div>
-          </form>
+      <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
+        <div>
+          <h2 className="text-base font-semibold leading-7">Cambia password</h2>
+          <p className="mt-1 text-sm leading-6 text-gray-400">
+            Aggiorna la password del tuo account.
+          </p>
         </div>
+
+        <form className="md:col-span-2">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
+            <div className="col-span-full">
+              <label
+                htmlFor="OldPassword"
+                className="block text-sm font-medium leading-6"
+              >
+                Password attuale
+              </label>
+              <div className="mt-2">
+                <Input
+                  type="password"
+                  variant="bordered"
+                  radius="full"
+                  id="OldPassword"
+                  name="OldPassword"
+                  onChange={handleChangePassword}
+                />
+              </div>
+            </div>
+
+            <div className="col-span-full">
+              <label
+                htmlFor="NewPassword"
+                className="block text-sm font-medium leading-6"
+              >
+                Nuova password
+              </label>
+              <div className="mt-2">
+                <Input
+                  type="password"
+                  variant="bordered"
+                  radius="full"
+                  id="NewPassword"
+                  name="NewPassword"
+                  onChange={handleChangePassword}
+                />
+              </div>
+            </div>
+
+            <div className="col-span-full">
+              <label
+                htmlFor="ConfirmPassword"
+                className="block text-sm font-medium leading-6"
+              >
+                Conferma nuova password
+              </label>
+              <div className="mt-2">
+                <Input
+                  type="password"
+                  variant="bordered"
+                  radius="full"
+                  id="ConfirmPassword"
+                  name="ConfirmPassword"
+                  onChange={handleChangePassword}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 flex">
+            <Button
+              color="primary"
+              radius="full"
+              startContent={!isSavingNewPassword && <SaveRoundedIcon />}
+              isDisabled={isPasswordFieldsNotEmpty()}
+              isLoading={isSavingNewPassword}
+              onClick={handleSavePassword}
+            >
+              Salva
+            </Button>
+          </div>
+        </form>
       </div>
     </>
   );
