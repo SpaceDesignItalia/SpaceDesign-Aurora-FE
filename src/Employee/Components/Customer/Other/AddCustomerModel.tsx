@@ -29,7 +29,7 @@ interface AlertData {
   isOpen: boolean;
   alertTitle: string;
   alertDescription: string;
-  alertColor: string;
+  alertColor: "green" | "red" | "yellow";
 }
 
 const initialCustomerData: Customer = {
@@ -51,7 +51,7 @@ export default function EditCustomerModel() {
     isOpen: false,
     alertTitle: "",
     alertDescription: "",
-    alertColor: "",
+    alertColor: "red",
   });
 
   useEffect(() => {
@@ -150,146 +150,147 @@ export default function EditCustomerModel() {
       <StatusAlert AlertData={alertData} />
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
         <form>
-          <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
-            <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
-              <div>
-                <h3 className="text-base font-semibold leading-6 text-gray-900">
-                  Modifica Cliente
-                </h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Modifica le informazioni del cliente dal database.
-                </p>
+          <div className="space-y-6 bg-white py-6">
+            <div>
+              <h3 className="text-base font-semibold leading-6 text-gray-900">
+                Modifica Cliente
+              </h3>
+              <p className="mt-1 text-sm text-gray-500 w-1/3">
+                In questo pannello potrai aggiungere un nuovo cliente al
+                database. I campi contrassegnati con un asterisco (
+                <span className="text-danger font-bold">*</span>) sono
+                obbligatori.
+              </p>
+            </div>
+            <div className="grid grid-cols-6 gap-6">
+              <div className="col-span-6 sm:col-span-3">
+                <label
+                  htmlFor="CustomerName"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Nome <span className="text-red-600 font-bold">*</span>
+                </label>
+                <Input
+                  variant="bordered"
+                  type="text"
+                  radius="full"
+                  name="CustomerName"
+                  placeholder="Inserisci il nome"
+                  value={customerData.CustomerName}
+                  onChange={handleChange}
+                  aria-label="Nome"
+                  fullWidth
+                />
               </div>
-              <div className="grid grid-cols-6 gap-6">
-                <div className="col-span-6 sm:col-span-3">
-                  <label
-                    htmlFor="CustomerName"
-                    className="block text-sm font-medium leading-6 text-gray-900"
-                  >
-                    Nome <span className="text-red-600 font-bold">*</span>
-                  </label>
-                  <Input
+              <div className="col-span-6 sm:col-span-3">
+                <label
+                  htmlFor="CustomerSurname"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Cognome <span className="text-red-600 font-bold">*</span>
+                </label>
+                <Input
+                  variant="bordered"
+                  type="text"
+                  radius="full"
+                  name="CustomerSurname"
+                  placeholder="Inserisci il cognome"
+                  value={customerData.CustomerSurname}
+                  onChange={handleChange}
+                  aria-label="Cognome"
+                  fullWidth
+                />
+              </div>
+              <div className="col-span-6 sm:col-span-6">
+                <label
+                  htmlFor="CustomerEmail"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Email <span className="text-red-600 font-bold">*</span>
+                </label>
+                <Input
+                  variant="bordered"
+                  type="email"
+                  radius="full"
+                  name="CustomerEmail"
+                  placeholder="Inserisci l'email"
+                  value={customerData.CustomerEmail}
+                  onChange={handleChange}
+                  aria-label="Email"
+                  fullWidth
+                />
+              </div>
+              <div className="col-span-6 sm:col-span-6">
+                <label
+                  htmlFor="CustomerPhone"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Numero di telefono
+                </label>
+                <Input
+                  variant="bordered"
+                  type="text"
+                  radius="full"
+                  name="CustomerPhone"
+                  placeholder="Inserisci il numero di telefono"
+                  value={customerData.CustomerPhone || ""}
+                  onChange={handleChange}
+                  aria-label="Numero di telefono"
+                  fullWidth
+                />
+              </div>
+              <div className="col-span-6 sm:col-span-6">
+                <label
+                  htmlFor="company"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Azienda <span className="text-red-600 font-bold">*</span>
+                </label>
+                <div className="flex flex-col md:flex-row gap-4">
+                  <Autocomplete
+                    defaultItems={companies}
+                    placeholder="Seleziona azienda"
+                    onSelectionChange={handleCompanyIdChange}
+                    selectedKey={String(customerData.CompanyId)}
                     variant="bordered"
-                    type="text"
-                    radius="sm"
-                    name="CustomerName"
-                    placeholder="Inserisci il nome"
-                    value={customerData.CustomerName}
-                    onChange={handleChange}
-                    aria-label="Nome"
+                    radius="full"
+                    aria-label="company"
                     fullWidth
-                  />
-                </div>
-                <div className="col-span-6 sm:col-span-3">
-                  <label
-                    htmlFor="CustomerSurname"
-                    className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Cognome <span className="text-red-600 font-bold">*</span>
-                  </label>
-                  <Input
-                    variant="bordered"
-                    type="text"
-                    radius="sm"
-                    name="CustomerSurname"
-                    placeholder="Inserisci il cognome"
-                    value={customerData.CustomerSurname}
-                    onChange={handleChange}
-                    aria-label="Cognome"
-                    fullWidth
-                  />
-                </div>
-                <div className="col-span-6 sm:col-span-6">
-                  <label
-                    htmlFor="CustomerEmail"
-                    className="block text-sm font-medium leading-6 text-gray-900"
-                  >
-                    Email <span className="text-red-600 font-bold">*</span>
-                  </label>
-                  <Input
-                    variant="bordered"
-                    type="email"
-                    radius="sm"
-                    name="CustomerEmail"
-                    placeholder="Inserisci l'email"
-                    value={customerData.CustomerEmail}
-                    onChange={handleChange}
-                    aria-label="Email"
-                    fullWidth
-                  />
-                </div>
-                <div className="col-span-6 sm:col-span-6">
-                  <label
-                    htmlFor="CustomerPhone"
-                    className="block text-sm font-medium leading-6 text-gray-900"
-                  >
-                    Numero di telefono
-                  </label>
-                  <Input
-                    variant="bordered"
-                    type="text"
-                    radius="sm"
-                    name="CustomerPhone"
-                    placeholder="Inserisci il numero di telefono"
-                    value={customerData.CustomerPhone || ""}
-                    onChange={handleChange}
-                    aria-label="Numero di telefono"
-                    fullWidth
-                  />
-                </div>
-                <div className="col-span-6 sm:col-span-6">
-                  <label
-                    htmlFor="company"
-                    className="block text-sm font-medium leading-6 text-gray-900"
-                  >
-                    Azienda <span className="text-red-600 font-bold">*</span>
-                  </label>
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <Autocomplete
-                      defaultItems={companies}
-                      placeholder="Seleziona azienda"
-                      onSelectionChange={handleCompanyIdChange}
-                      selectedKey={String(customerData.CompanyId)}
-                      variant="bordered"
-                      radius="sm"
-                      aria-label="company"
-                      fullWidth
-                    >
-                      {(company) => (
-                        <AutocompleteItem
-                          key={company.CompanyId}
-                          textValue={company.CompanyName}
-                        >
-                          <div className="flex justify-between items-center">
-                            <div className="flex flex-col">
-                              <span className="text-small">
-                                {company.CompanyName}
-                              </span>
-                              <span className="text-tiny text-default-400">
-                                {company.CompanyAddress}
-                              </span>
-                            </div>
+                    {(company) => (
+                      <AutocompleteItem
+                        key={company.CompanyId}
+                        textValue={company.CompanyName}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex flex-col">
+                            <span className="text-small">
+                              {company.CompanyName}
+                            </span>
+                            <span className="text-tiny text-default-400">
+                              {company.CompanyAddress}
+                            </span>
                           </div>
-                        </AutocompleteItem>
-                      )}
-                    </Autocomplete>
-                  </div>
+                        </div>
+                      </AutocompleteItem>
+                    )}
+                  </Autocomplete>
                 </div>
               </div>
             </div>
-            <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-              <Button
-                color="success"
-                className="text-white"
-                radius="sm"
-                startContent={<SaveIcon />}
-                isDisabled={checkAllDataCompiled()}
-                isLoading={isSaving}
-                onClick={handleUpdateCustomer}
-              >
-                {isSaving ? "Salvando il cliente..." : "Salva cliente"}
-              </Button>
-            </div>
+          </div>
+          <div className="px-4 py-3 text-right sm:px-6">
+            <Button
+              color="primary"
+              className="text-white"
+              radius="full"
+              startContent={<SaveIcon />}
+              isDisabled={checkAllDataCompiled()}
+              isLoading={isSaving}
+              onClick={handleUpdateCustomer}
+            >
+              {isSaving ? "Salvando il cliente..." : "Salva cliente"}
+            </Button>
           </div>
         </form>
       </div>

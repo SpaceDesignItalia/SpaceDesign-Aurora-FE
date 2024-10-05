@@ -21,11 +21,14 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import AddModeratorRoundedIcon from "@mui/icons-material/AddModeratorRounded";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
 import ViewRoleModal from "../Other/ViewRoleModal";
 import { usePermissions } from "../../Layout/PermissionProvider";
+import ConfirmDeleteRoleModal from "../Other/ConfirmDeleteRoleModal";
 
 interface Role {
   RoleId: number;
@@ -45,6 +48,7 @@ const columns = [
 ];
 
 export default function RoleTable() {
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [roles, setRoles] = useState<Role[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [adminRolePermission, setAdminRolePermission] = useState({
@@ -87,11 +91,10 @@ export default function RoleTable() {
     open: false,
   });
 
-  async function SearchRole(e: { target: { value: string } }) {
-    const searchQuery = e.target.value.trim();
+  async function SearchRole() {
     try {
       const response = await axios.get("/Permission/GET/SearchRoleByName", {
-        params: { RoleName: searchQuery },
+        params: { RoleName: searchTerm.trim() },
       });
       setRoles(response.data);
     } catch (error) {
@@ -99,10 +102,10 @@ export default function RoleTable() {
     }
   }
 
-  async function deleteRole(RoleId: number) {
+  async function deleteRole(role: Role) {
     try {
       const res = await axios.delete("/Permission/DELETE/DeleteRole", {
-        params: { RoleId: RoleId },
+        params: { RoleId: role.RoleId },
       });
 
       if (res.status === 200) {
@@ -127,9 +130,9 @@ export default function RoleTable() {
       const cellValue = role[columnKey as keyof Role];
 
       switch (columnKey) {
-        case "name":
+        case "RoleName":
           return <p>{cellValue}</p>;
-        case "description":
+        case "RoleDescription":
           return (
             <div className="flex flex-col">
               <p className="text-bold text-small capitalize">{cellValue}</p>
@@ -137,55 +140,43 @@ export default function RoleTable() {
           );
         case "actions":
           return (
-            <div className="relative flex justify-left items-center gap-2">
-              <Dropdown radius="sm">
-                <DropdownTrigger>
-                  <Button isIconOnly size="sm" variant="light">
-                    <MoreVertRoundedIcon />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  <DropdownItem
-                    color="primary"
-                    startContent={<RemoveRedEyeOutlinedIcon />}
-                    aria-label="View"
-                    aria-labelledby="View"
-                    onClick={() =>
-                      setModalData({
-                        ...modalData,
-                        open: true,
-                        Role: role,
-                      })
-                    }
-                  >
-                    Visualizza
-                  </DropdownItem>
-                  {adminRolePermission.editRolePermission && (
-                    <DropdownItem
-                      color="warning"
-                      startContent={<ModeOutlinedIcon />}
-                      aria-label="Edit"
-                      aria-labelledby="Edit"
-                      href={
-                        "/administration/permission/edit-role/" + role.RoleId
-                      }
-                    >
-                      Modifica
-                    </DropdownItem>
-                  )}
-                  {adminRolePermission.deleteRolePermission && (
-                    <DropdownItem
-                      color="danger"
-                      startContent={<DeleteOutlinedIcon />}
-                      aria-label="Remove"
-                      aria-labelledby="Remove"
-                      onClick={() => deleteRole(role.RoleId)}
-                    >
-                      Rimuovi
-                    </DropdownItem>
-                  )}
-                </DropdownMenu>
-              </Dropdown>
+            <div className="relative flex justify-center items-center gap-2">
+              <Button
+                variant="light"
+                size="sm"
+                color="primary"
+                startContent={<RemoveRedEyeOutlinedIcon />}
+                aria-label="View"
+                aria-labelledby="View"
+                onClick={() =>
+                  setModalData({
+                    ...modalData,
+                    open: true,
+                    Role: role,
+                  })
+                }
+                isIconOnly
+              />
+
+              {adminRolePermission.editRolePermission && (
+                <Button
+                  as={Link}
+                  variant="light"
+                  size="sm"
+                  color="warning"
+                  startContent={<ModeOutlinedIcon />}
+                  aria-label="Edit"
+                  aria-labelledby="Edit"
+                  href={"/administration/permission/edit-role/" + role.RoleId}
+                  isIconOnly
+                />
+              )}
+              {adminRolePermission.deleteRolePermission && (
+                <ConfirmDeleteRoleModal
+                  RoleData={role}
+                  DeleteRole={deleteRole}
+                />
+              )}
             </div>
           );
         default:
@@ -207,14 +198,41 @@ export default function RoleTable() {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between gap-3 items-end">
-          <Input
-            radius="sm"
-            variant="bordered"
-            startContent={<SearchOutlinedIcon />}
-            onChange={SearchRole}
-            className="md:w-1/3"
-            placeholder="Cerca ruolo per nome..."
-          />
+          <div className="flex flex-row gap-3 w-full">
+            <Input
+              radius="full"
+              variant="bordered"
+              startContent={<SearchOutlinedIcon />}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value.trim() === "") {
+                  fetchData(); // Chiama SearchEmployee se il campo è vuoto
+                }
+              }}
+              className="md:w-1/3"
+              placeholder="Cerca ruolo per nome..."
+            />
+            <Button
+              color="primary"
+              radius="full"
+              endContent={<SearchOutlinedIcon />}
+              isDisabled={searchTerm == ""}
+              onClick={SearchRole}
+              className="hidden sm:flex"
+            >
+              Cerca
+            </Button>
+            <Button
+              color="primary"
+              radius="full"
+              isDisabled={searchTerm == ""}
+              onClick={SearchRole}
+              className="sm:hidden"
+              isIconOnly
+            >
+              <SearchOutlinedIcon />
+            </Button>
+          </div>
           <div className="flex gap-3">
             {adminRolePermission.addRolePermission && (
               <>
@@ -222,7 +240,7 @@ export default function RoleTable() {
                   as={Link}
                   href="./permission/add-role"
                   color="primary"
-                  radius="sm"
+                  radius="full"
                   startContent={<AddModeratorRoundedIcon />}
                   className="hidden sm:flex"
                 >
@@ -233,7 +251,7 @@ export default function RoleTable() {
                   as={Link}
                   href="./permission/add-role"
                   color="primary"
-                  radius="sm"
+                  radius="full"
                   isIconOnly
                   className="sm:hidden"
                 >
@@ -245,7 +263,7 @@ export default function RoleTable() {
         </div>
       </div>
     );
-  }, [onRowsPerPageChange, roles.length]);
+  }, [onRowsPerPageChange, roles.length, searchTerm, SearchRole]);
 
   const bottomContent = React.useMemo(() => {
     return (
@@ -255,6 +273,7 @@ export default function RoleTable() {
           showControls
           showShadow
           color="primary"
+          radius="full"
           page={page}
           total={pages || 1}
           onChange={setPage}
@@ -264,7 +283,7 @@ export default function RoleTable() {
   }, [items.length, page, pages]);
 
   return (
-    <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
+    <div className="bg-white">
       <ViewRoleModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
@@ -276,12 +295,15 @@ export default function RoleTable() {
         isHeaderSticky
         isStriped
         bottomContent={bottomContent}
-        bottomContentPlacement="outside"
+        bottomContentPlacement="inside"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
-        topContentPlacement="outside"
+        topContentPlacement="inside"
         onSortChange={setSortDescriptor}
-        radius="sm"
+        radius="full"
+        classNames={{
+          wrapper: "border rounded-lg shadow-none",
+        }}
       >
         <TableHeader columns={columns}>
           {(column) => (
@@ -293,7 +315,44 @@ export default function RoleTable() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Nessun ruolo trovato!"} items={items}>
+        <TableBody
+          emptyContent={
+            searchTerm == "" ? (
+              <div className="text-center p-10">
+                <BadgeRoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun ruolo trovato!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Inizia aggiungendo un nuovo ruolo al database.
+                </p>
+                <div className="mt-6">
+                  <Button
+                    as={Link}
+                    color="primary"
+                    radius="full"
+                    startContent={<AddRoundedIcon />}
+                    href="./permission/add-role"
+                  >
+                    Aggiungi ruolo
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center p-10">
+                <BadgeRoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun ruolo trovato!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Nessun risultato corrisponde alla tua ricerca:{" "}
+                  <span className="font-semibold italic">{searchTerm}</span>
+                </p>
+              </div>
+            )
+          }
+          items={items}
+        >
           {(item) => (
             <TableRow key={item.RoleId}>
               {(columnKey) => (

@@ -19,7 +19,7 @@ interface AlertData {
   isOpen: boolean;
   alertTitle: string;
   alertDescription: string;
-  alertColor: string;
+  alertColor: "green" | "red" | "yellow";
 }
 
 const initialPermissionData = {
@@ -33,7 +33,7 @@ const initialAlertData: AlertData = {
   isOpen: false,
   alertTitle: "",
   alertDescription: "",
-  alertColor: "",
+  alertColor: "red",
 };
 
 export default function AddPermissionModel() {
@@ -137,124 +137,124 @@ export default function AddPermissionModel() {
     <>
       <StatusAlert AlertData={alertData} />
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
-        <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
-          <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
-            <div>
-              <h3 className="text-base font-semibold leading-6 text-gray-900">
-                Aggiungi permesso
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                In questo pannello potrai aggiungere un nuovo permesso al
-                database.
-              </p>
+        <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
+          <div>
+            <h3 className="text-base font-semibold leading-6 text-gray-900">
+              Aggiungi permesso
+            </h3>
+            <p className="mt-1 text-sm text-gray-500 w-1/3">
+              In questo pannello potrai aggiungere un nuovo permesso al
+              database. I campi contrassegnati con un asterisco (
+              <span className="text-danger font-bold">*</span>) sono
+              obbligatori. Assicurati di compilare tutte le informazioni
+              necessarie prima di procedere.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-6 gap-6">
+            <div className="col-span-6">
+              <label
+                htmlFor="PermissionName"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Nome permesso <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Input
+                id="PermissionName"
+                name="PermissionName"
+                variant="bordered"
+                radius="full"
+                value={newPermission.PermissionName}
+                onChange={handleChange}
+                fullWidth
+              />
             </div>
 
-            <div className="grid grid-cols-6 gap-6">
-              <div className="col-span-6">
-                <label
-                  htmlFor="PermissionName"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Nome permesso{" "}
-                  <span className="text-red-600 font-bold">*</span>
-                </label>
-                <Input
-                  id="PermissionName"
-                  name="PermissionName"
-                  variant="bordered"
-                  radius="sm"
-                  value={newPermission.PermissionName}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </div>
+            <div className="col-span-6">
+              <label
+                htmlFor="PermissionDescription"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Descrizione permesso{" "}
+                <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Textarea
+                id="PermissionDescription"
+                name="PermissionDescription"
+                variant="bordered"
+                radius="full"
+                value={newPermission.PermissionDescription}
+                onChange={handleChange}
+                fullWidth
+              />
+            </div>
 
-              <div className="col-span-6">
-                <label
-                  htmlFor="PermissionDescription"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Descrizione permesso{" "}
-                  <span className="text-red-600 font-bold">*</span>
-                </label>
-                <Textarea
-                  id="PermissionDescription"
-                  name="PermissionDescription"
-                  variant="bordered"
-                  radius="sm"
-                  value={newPermission.PermissionDescription}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="PermissionAction"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Azione permesso{" "}
+                <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Input
+                id="PermissionAction"
+                name="PermissionAction"
+                variant="bordered"
+                radius="full"
+                value={newPermission.PermissionAction}
+                onChange={handleChange}
+                fullWidth
+              />
+            </div>
 
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="PermissionAction"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Azione permesso{" "}
-                  <span className="text-red-600 font-bold">*</span>
-                </label>
-                <Input
-                  id="PermissionAction"
-                  name="PermissionAction"
-                  variant="bordered"
-                  radius="sm"
-                  value={newPermission.PermissionAction}
-                  onChange={handleChange}
-                  fullWidth
-                />
-              </div>
-
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="PermissionGroup"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Gruppo permesso{" "}
-                  <span className="text-red-600 font-bold">*</span>
-                </label>
-                <Autocomplete
-                  items={permissionGroups.map((group) => ({
-                    key: group.PermissionGroupId,
-                    label: group.GroupName,
-                  }))}
-                  placeholder="Seleziona gruppo"
-                  onSelectionChange={handlePermissionGroupChange}
-                  variant="bordered"
-                  radius="sm"
-                  aria-label="PermissionGroup"
-                  fullWidth
-                >
-                  {(item) => (
-                    <AutocompleteItem key={item.key} textValue={item.label}>
-                      <div className="flex justify-between items-center">
-                        <div className="flex gap-2 items-center">
-                          <div className="flex flex-col">
-                            <span className="text-small">{item.label}</span>
-                          </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="PermissionGroup"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Gruppo permesso{" "}
+                <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Autocomplete
+                items={permissionGroups.map((group) => ({
+                  key: group.PermissionGroupId,
+                  label: group.GroupName,
+                }))}
+                placeholder="Seleziona gruppo"
+                onSelectionChange={handlePermissionGroupChange}
+                variant="bordered"
+                radius="full"
+                aria-label="PermissionGroup"
+                fullWidth
+              >
+                {(item) => (
+                  <AutocompleteItem key={item.key} textValue={item.label}>
+                    <div className="flex justify-between items-center">
+                      <div className="flex gap-2 items-center">
+                        <div className="flex flex-col">
+                          <span className="text-small">{item.label}</span>
                         </div>
                       </div>
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
-              </div>
+                    </div>
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
             </div>
           </div>
-          <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-            <Button
-              color="success"
-              className="text-white"
-              radius="sm"
-              startContent={!isAddingData && <SaveIcon />}
-              isDisabled={isDataIncomplete()}
-              isLoading={isAddingData}
-              onClick={handleCreateNewPermission}
-            >
-              {isAddingData ? "Salvando il permesso..." : "Salva permesso"}
-            </Button>
-          </div>
+        </div>
+        <div className="py-3 text-right">
+          <Button
+            color="primary"
+            className="text-white"
+            radius="full"
+            startContent={!isAddingData && <SaveIcon />}
+            isDisabled={isDataIncomplete()}
+            isLoading={isAddingData}
+            onClick={handleCreateNewPermission}
+          >
+            {isAddingData ? "Salvando il permesso..." : "Salva permesso"}
+          </Button>
         </div>
       </div>
     </>

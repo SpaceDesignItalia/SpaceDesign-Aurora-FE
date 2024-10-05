@@ -1,12 +1,13 @@
 // ConfirmDeleteModal.tsx
+import { useState } from "react";
 import {
   Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@nextui-org/react";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 
 interface Company {
   CompanyName: string;
@@ -16,60 +17,71 @@ interface Company {
 }
 
 interface ConfirmDeleteCompanyModalProps {
-  isOpen: boolean;
-  isClosed: () => void;
   CompanyData: Company;
   DeleteCompany: (CompanyData: Company) => void;
 }
 
 export default function ConfirmDeleteCompanyModal({
-  isOpen,
-  isClosed,
   CompanyData,
   DeleteCompany,
 }: ConfirmDeleteCompanyModalProps) {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   return (
-    <Modal
-      isOpen={isOpen}
-      onOpenChange={isClosed}
-      size="2xl"
-      scrollBehavior="inside"
-      placement="center"
-      backdrop="blur"
-    >
-      <ModalContent>
-        {(isClosed) => (
-          <>
-            <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">
-                Conferma eliminazione dell'azienda {CompanyData.CompanyName}
-              </h3>
-            </ModalHeader>
-            <ModalBody>
-              <p className="text-gray-600">
-                Sei sicuro di voler eliminare l'azienda{" "}
-                {CompanyData.CompanyName}? <br />
-                Questa azione non potrà essere annullata.
-              </p>
-            </ModalBody>
-            <ModalFooter className="flex sm:flex-row flex-col">
+    <>
+      <Popover
+        placement="top"
+        showArrow={true}
+        size="sm"
+        isOpen={isOpen}
+        onOpenChange={() => setIsOpen(false)}
+      >
+        <PopoverTrigger>
+          <Button
+            variant="light"
+            size="sm"
+            color="danger"
+            startContent={<DeleteOutlinedIcon />}
+            aria-label="Remove"
+            aria-labelledby="Remove"
+            isIconOnly
+            onClick={() => {
+              setIsOpen(true);
+            }}
+          />
+        </PopoverTrigger>
+        <PopoverContent>
+          <div className="px-1 py-2">
+            <div className="flex flex-row gap-2 items-center text-small font-bold mb-2">
+              <ErrorRoundedIcon
+                className="text-warning"
+                sx={{ fontSize: 20 }}
+              />
+              Sei sicuro?
+            </div>
+            <div className="flex flex-row gap-2">
               <Button
-                color="success"
-                onClick={() => {
-                  DeleteCompany(CompanyData);
-                  isClosed();
-                }}
+                variant="light"
                 radius="sm"
+                size="sm"
+                onClick={() => setIsOpen(false)}
               >
-                Conferma eliminazione
-              </Button>
-              <Button variant="light" onClick={isClosed} radius="sm">
                 Annulla
               </Button>
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+              <Button
+                color="danger"
+                variant="ghost"
+                onClick={() => {
+                  DeleteCompany(CompanyData);
+                }}
+                radius="sm"
+                size="sm"
+              >
+                Elimina
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </>
   );
 }

@@ -9,22 +9,21 @@ import {
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 
-interface Customer {
-  CustomerId: number;
-  CustomerFullName: string;
-  CustomerEmail: string;
-  CustomerPhone: string;
+interface Role {
+  RoleId: number;
+  RoleName: string;
+  RoleDescription: string;
 }
 
-interface ConfirmDeleteCustomerModalProps {
-  CustomerData: Customer;
-  DeleteCustomer: (CustomerData: Customer) => void;
+interface ConfirmDeleteRoleModalProps {
+  RoleData: Role;
+  DeleteRole: (PermissionId: Role) => void;
 }
 
-export default function ConfirmDeleteCustomerModal({
-  CustomerData,
-  DeleteCustomer,
-}: ConfirmDeleteCustomerModalProps) {
+export default function ConfirmDeleteRoleModal({
+  RoleData,
+  DeleteRole,
+}: ConfirmDeleteRoleModalProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   return (
     <Popover
@@ -67,7 +66,7 @@ export default function ConfirmDeleteCustomerModal({
               color="danger"
               variant="ghost"
               onClick={() => {
-                DeleteCustomer(CustomerData);
+                DeleteRole(RoleData);
               }}
               radius="sm"
               size="sm"

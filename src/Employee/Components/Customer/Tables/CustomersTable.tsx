@@ -24,6 +24,7 @@ import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axios from "axios";
 import ViewCustomerModal from "../Other/ViewCustomerModal";
 import ConfirmDeleteCustomerModal from "../Other/ConfirmDeleteCustomerModal";
@@ -54,6 +55,7 @@ const columns = [
 ];
 
 export default function CustomersTable() {
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [adminCustomerPermission, setAdminCustomerPermission] = useState({
@@ -106,11 +108,10 @@ export default function CustomersTable() {
     open: false,
   });
 
-  async function SearchCompany(e: { target: { value: string } }) {
-    const searchQuery = e.target.value.trim(); // Otteniamo il valore di ricerca e rimuoviamo gli spazi vuoti
+  async function SearchCustomer() {
     try {
       const response = await axios.get("/Customer/GET/SearchCustomerByEmail", {
-        params: { CustomerEmail: searchQuery },
+        params: { CustomerEmail: searchTerm },
       });
       setCustomers(response.data);
     } catch (error) {
@@ -156,63 +157,47 @@ export default function CustomersTable() {
           );
         case "actions":
           return (
-            <div className="relative flex justify-left items-center gap-2">
-              <Dropdown radius="sm">
-                <DropdownTrigger>
-                  <Button isIconOnly size="sm" variant="light">
-                    <MoreVertRoundedIcon />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  <DropdownItem
-                    color="primary"
-                    startContent={<RemoveRedEyeOutlinedIcon />}
-                    aria-label="View"
-                    aria-labelledby="View"
-                    onClick={() =>
-                      setModalData({
-                        ...modalData,
-                        open: true,
-                        Customer: customer,
-                      })
-                    }
-                  >
-                    Visualizza
-                  </DropdownItem>
-                  {adminCustomerPermission.editCustomerPermission ? (
-                    <DropdownItem
-                      color="warning"
-                      startContent={<ModeOutlinedIcon />}
-                      aria-label="Edit"
-                      aria-labelledby="Edit"
-                      href={
-                        "/administration/customer/edit-customer/" +
-                        customer.CustomerId
-                      }
-                    >
-                      Modifica
-                    </DropdownItem>
-                  ) : null}
+            <div className="relative flex justify-center items-center gap-2">
+              <Button
+                color="primary"
+                variant="light"
+                size="sm"
+                startContent={<RemoveRedEyeOutlinedIcon />}
+                aria-label="View"
+                aria-labelledby="View"
+                onClick={() =>
+                  setModalData({
+                    ...modalData,
+                    open: true,
+                    Customer: customer,
+                  })
+                }
+                isIconOnly
+              />
 
-                  {adminCustomerPermission.deleteCustomerPermission ? (
-                    <DropdownItem
-                      color="danger"
-                      startContent={<DeleteOutlinedIcon />}
-                      aria-label="Remove"
-                      aria-labelledby="Remove"
-                      onClick={() =>
-                        setModalDeleteData({
-                          ...modalDeleteData,
-                          open: true,
-                          Customer: customer,
-                        })
-                      }
-                    >
-                      Rimuovi
-                    </DropdownItem>
-                  ) : null}
-                </DropdownMenu>
-              </Dropdown>
+              {adminCustomerPermission.editCustomerPermission ? (
+                <Button
+                  as={Link}
+                  color="warning"
+                  variant="light"
+                  size="sm"
+                  startContent={<ModeOutlinedIcon />}
+                  aria-label="Edit"
+                  aria-labelledby="Edit"
+                  href={
+                    "/administration/customer/edit-customer/" +
+                    customer.CustomerId
+                  }
+                  isIconOnly
+                />
+              ) : null}
+
+              {adminCustomerPermission.deleteCustomerPermission ? (
+                <ConfirmDeleteCustomerModal
+                  CustomerData={modalDeleteData.Customer}
+                  DeleteCustomer={DeleteCustomer}
+                />
+              ) : null}
             </div>
           );
         default:
@@ -234,14 +219,42 @@ export default function CustomersTable() {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between gap-3 items-end">
-          <Input
-            radius="sm"
-            variant="bordered"
-            startContent={<SearchOutlinedIcon />}
-            onChange={SearchCompany}
-            className="md:w-1/3"
-            placeholder="Cerca cliente per email..."
-          />
+          <div className="flex flex-row gap-3 w-full">
+            <Input
+              radius="full"
+              variant="bordered"
+              startContent={<SearchOutlinedIcon className="text-gray-400" />}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value.trim() === "") {
+                  fetchData();
+                }
+              }}
+              value={searchTerm}
+              className="md:w-1/3"
+              placeholder="Cerca cliente per email..."
+            />
+            <Button
+              color="primary"
+              radius="full"
+              endContent={<SearchOutlinedIcon />}
+              isDisabled={searchTerm == ""}
+              onClick={SearchCustomer}
+              className="hidden sm:flex"
+            >
+              Cerca
+            </Button>
+            <Button
+              color="primary"
+              radius="full"
+              isDisabled={searchTerm == ""}
+              onClick={SearchCustomer}
+              className="sm:hidden"
+              isIconOnly
+            >
+              <SearchOutlinedIcon />
+            </Button>
+          </div>
           <div className="flex gap-3">
             {adminCustomerPermission.addCustomerPermission && (
               <>
@@ -249,7 +262,7 @@ export default function CustomersTable() {
                   as={Link}
                   href="./customer/add-customer"
                   color="primary"
-                  radius="sm"
+                  radius="full"
                   startContent={<PersonAddAlt1RoundedIcon />}
                   className="hidden sm:flex"
                 >
@@ -259,7 +272,7 @@ export default function CustomersTable() {
                   as={Link}
                   href="./customer/add-customer"
                   color="primary"
-                  radius="sm"
+                  radius="full"
                   isIconOnly
                   className="sm:hidden"
                 >
@@ -271,7 +284,7 @@ export default function CustomersTable() {
         </div>
       </div>
     );
-  }, [onRowsPerPageChange, customers.length]);
+  }, [onRowsPerPageChange, customers.length, searchTerm, SearchCustomer]);
 
   const bottomContent = React.useMemo(() => {
     return (
@@ -281,6 +294,7 @@ export default function CustomersTable() {
           showControls
           showShadow
           color="primary"
+          radius="full"
           page={page}
           total={pages || 1}
           onChange={setPage}
@@ -290,29 +304,27 @@ export default function CustomersTable() {
   }, [items.length, page, pages]);
 
   return (
-    <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
+    <div className=" bg-white">
       <ViewCustomerModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
         CustomerData={modalData.Customer}
       />
-      <ConfirmDeleteCustomerModal
-        isOpen={modalDeleteData.open}
-        isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
-        CustomerData={modalDeleteData.Customer}
-        DeleteCustomer={DeleteCustomer}
-      />
+
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
         isStriped
         bottomContent={bottomContent}
-        bottomContentPlacement="outside"
+        bottomContentPlacement="inside"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
-        topContentPlacement="outside"
+        topContentPlacement="inside"
         onSortChange={setSortDescriptor}
-        radius="sm"
+        radius="full"
+        classNames={{
+          wrapper: "border rounded-lg shadow-none",
+        }}
       >
         <TableHeader columns={columns}>
           {(column) => (
@@ -324,7 +336,42 @@ export default function CustomersTable() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Nessun cliente trovato!"} items={items}>
+        <TableBody
+          emptyContent={
+            searchTerm == "" ? (
+              <div className="text-center p-10">
+                <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun cliente trovato!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Inizia aggiungendo un nuovo cliente al database.
+                </p>
+                <div className="mt-6">
+                  <Button
+                    color="primary"
+                    radius="full"
+                    startContent={<AddRoundedIcon />}
+                  >
+                    Aggiungi cliente
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center p-10">
+                <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun cliente trovato!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Nessun risultato corrisponde alla tua ricerca:{" "}
+                  <span className="font-semibold italic">{searchTerm}</span>
+                </p>
+              </div>
+            )
+          }
+          items={items}
+        >
           {(item) => (
             <TableRow key={item.CustomerId}>
               {(columnKey) => (

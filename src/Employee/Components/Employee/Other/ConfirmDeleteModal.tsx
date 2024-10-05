@@ -1,12 +1,13 @@
 // ConfirmDeleteModal.tsx
+import { useState } from "react";
 import {
   Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@nextui-org/react";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 
 interface Employee {
   EmployeeId: number;
@@ -16,60 +17,67 @@ interface Employee {
 }
 
 interface ConfirmDeleteModalProps {
-  isOpen: boolean;
-  isClosed: () => void;
   EmployeeData: Employee;
   DeleteEmployee: (EmployeeData: Employee) => void;
 }
 
 export default function ConfirmDeleteModal({
-  isOpen,
-  isClosed,
   EmployeeData,
   DeleteEmployee,
 }: ConfirmDeleteModalProps) {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+
   return (
-    <Modal
+    <Popover
+      placement="top"
+      showArrow={true}
+      size="sm"
       isOpen={isOpen}
-      onOpenChange={isClosed}
-      size="xl"
-      scrollBehavior="inside"
-      placement="center"
-      backdrop="blur"
+      onOpenChange={() => setIsOpen(false)}
     >
-      <ModalContent>
-        {(isClosed) => (
-          <>
-            <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">
-                Conferma eliminazione di {EmployeeData.EmployeeFullName}
-              </h3>
-            </ModalHeader>
-            <ModalBody>
-              <p className="text-gray-600">
-                Sei sicuro di voler eliminare il dipendente{" "}
-                {EmployeeData.EmployeeFullName}? <br />
-                Questa azione non potrà essere annullata.
-              </p>
-            </ModalBody>
-            <ModalFooter className="flex sm:flex-row flex-col">
-              <Button
-                color="success"
-                onClick={() => {
-                  DeleteEmployee(EmployeeData);
-                  isClosed();
-                }}
-                radius="sm"
-              >
-                Conferma eliminazione
-              </Button>
-              <Button variant="light" onClick={isClosed} radius="sm">
-                Annulla
-              </Button>
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+      <PopoverTrigger>
+        <Button
+          variant="light"
+          size="sm"
+          color="danger"
+          startContent={<DeleteOutlinedIcon />}
+          aria-label="Remove"
+          aria-labelledby="Remove"
+          isIconOnly
+          onClick={() => {
+            setIsOpen(true);
+          }}
+        />
+      </PopoverTrigger>
+      <PopoverContent>
+        <div className="px-1 py-2">
+          <div className="flex flex-row gap-2 items-center text-small font-bold mb-2">
+            <ErrorRoundedIcon className="text-warning" sx={{ fontSize: 20 }} />
+            Sei sicuro?
+          </div>
+          <div className="flex flex-row gap-2">
+            <Button
+              variant="light"
+              radius="sm"
+              size="sm"
+              onClick={() => setIsOpen(false)}
+            >
+              Annulla
+            </Button>
+            <Button
+              color="danger"
+              variant="ghost"
+              onClick={() => {
+                DeleteEmployee(EmployeeData);
+              }}
+              radius="sm"
+              size="sm"
+            >
+              Elimina
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -1,10 +1,24 @@
-import { Avatar, Button, Input, ScrollShadow, cn } from "@nextui-org/react";
+import {
+  Avatar,
+  Button,
+  Input,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  ScrollShadow,
+  cn,
+  useDisclosure,
+} from "@nextui-org/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
+import RecentActorsRoundedIcon from "@mui/icons-material/RecentActorsRounded";
 import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
 import Groups2RoundedIcon from "@mui/icons-material/Groups2Rounded";
 import ChatMessage from "../Other/ChatMessage";
@@ -27,6 +41,7 @@ interface Conversation {
   Staffer2ImageUrl: string;
   lastMessage: string;
   lastMessageDate?: Date;
+  notificationCount: number;
 }
 
 interface Message {
@@ -44,6 +59,7 @@ interface ModalAddData {
 }
 
 export default function ChatTable() {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [modalAddData, setModalAddData] = useState<ModalAddData>({
     loggedStafferId: 0,
     open: false,
@@ -59,7 +75,6 @@ export default function ChatTable() {
     useState<Conversation | null>(null); // State to hold selected conversation details
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [messagesLoaded, setMessagesLoaded] = useState<boolean>(false); // State to track if messages are already loaded
-
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,17 +85,18 @@ export default function ChatTable() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    // Connect to socket and handle message updates
-    socket.on("message-update", (updatedMessageConversationId: number) => {
-      if (
-        selectedConversationId &&
-        updatedMessageConversationId === selectedConversationId
-      ) {
-        handleOpenChat(selectedConversationId);
-      }
-    });
-  }, [selectedConversationId]);
+  // Connect to socket and handle message updates
+  socket.on("message-update", (updatedMessageConversationId: number) => {
+    const storageConversationId = localStorage.getItem(
+      "selectedConversationId"
+    );
+    if (
+      storageConversationId &&
+      Number(updatedMessageConversationId) === Number(storageConversationId)
+    ) {
+      handleOpenChat(Number(storageConversationId));
+    }
+  });
 
   useEffect(() => {
     // Fetch logged in staffer's data and conversations
@@ -95,6 +111,7 @@ export default function ChatTable() {
           "/Chat/GET/getConversationByStafferId",
           {
             params: { StafferId: stafferId },
+            withCredentials: true,
           }
         );
 
@@ -155,6 +172,8 @@ export default function ChatTable() {
     // Handle opening a conversation
     try {
       setSelectedConversationId(conversationId);
+      localStorage.setItem("selectedConversationId", conversationId.toString());
+      socket.emit("join-notifications", loggedStafferId);
 
       const response = await axios.get(
         "/Chat/GET/GetMessagesByConversationId",
@@ -162,6 +181,32 @@ export default function ChatTable() {
           params: { ConversationId: conversationId },
         }
       );
+      let StafferId = 0;
+
+      conversations.forEach((conv) => {
+        if (conv.ConversationId === conversationId) {
+          if (loggedStafferId === conv.Staffer1Id) {
+            StafferId = conv.Staffer2Id;
+          } else {
+            StafferId = conv.Staffer1Id;
+          }
+        }
+      });
+      await axios
+        .delete("Notification/DELETE/DeleteConversationNotifications", {
+          params: {
+            UserId: loggedStafferId,
+            StafferId: StafferId,
+          },
+        })
+        .then(() => {
+          conversations.forEach((conv) => {
+            if (conv.ConversationId === conversationId) {
+              conv.notificationCount = 0;
+            }
+          });
+          socket.emit("delete-notifications", loggedStafferId);
+        });
 
       setMessages(response.data);
       socket.emit("join", conversationId);
@@ -183,11 +228,15 @@ export default function ChatTable() {
     if (newMessage.trim() === "") return;
     try {
       axios
-        .post("/Chat/POST/SendMessage", {
-          ConversationId: selectedConversationId!,
-          StafferSenderId: loggedStafferId,
-          Text: newMessage,
-        })
+        .post(
+          "/Chat/POST/SendMessage",
+          {
+            ConversationId: selectedConversationId!,
+            StafferSenderId: loggedStafferId,
+            Text: newMessage,
+          },
+          { withCredentials: true }
+        )
         .then(() => {
           socket.emit("message", selectedConversationId!);
           setNewMessage("");
@@ -240,7 +289,7 @@ export default function ChatTable() {
   }
 
   return (
-    <div className="flex w-full h-5/6">
+    <div className="flex flex-col lg:flex-row w-full h-5/6">
       <AddConversationModal
         isOpen={modalAddData.open}
         isClosed={() => setModalAddData({ ...modalAddData, open: false })}
@@ -248,12 +297,27 @@ export default function ChatTable() {
         handleOpenChat={handleOpenChat}
       />
 
-      {conversations.length > 0 ? (
-        <>
-          <div className="w-1/2 bg-white">
+      <div className="w-full lg:hidden flex justify-between items-center p-3">
+        <h1 className="text-2xl font-semibold">Chat</h1>
+        <Button
+          size="lg"
+          color="primary"
+          variant="light"
+          radius="full"
+          isIconOnly
+          startContent={<RecentActorsRoundedIcon />}
+          className="lg:hidden"
+          onClick={onOpenChange}
+        />
+
+        <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="full">
+          <ModalContent>
+            <ModalHeader>
+              <h1>Seleziona una chat o creane una</h1>
+            </ModalHeader>
             <div className="flex flex-row justify-between gap-3 px-4 py-5 sm:px-6">
               <Input
-                radius="sm"
+                radius="full"
                 variant="bordered"
                 startContent={<SearchOutlinedIcon />}
                 value={searchQuery}
@@ -263,13 +327,13 @@ export default function ChatTable() {
               <Button
                 isIconOnly
                 color="primary"
-                radius="sm"
+                radius="full"
                 onClick={() => setModalAddData({ ...modalAddData, open: true })}
               >
                 <AddCommentRoundedIcon />
               </Button>
             </div>
-            <div className="overflow-y-auto flex-1">
+            <div className="overflow-y-auto flex flex-col">
               {conversations
                 .filter(
                   (conversation) =>
@@ -284,25 +348,30 @@ export default function ChatTable() {
                   <div
                     key={conversation.ConversationId}
                     className={cn(
-                      "flex flex-row items-center p-3 cursor-pointer transition duration-300 ease-in-out border-b border-t",
+                      "flex flex-row items-center p-3 cursor-pointer transition duration-300 ease-in-out border-b border-t w-full",
                       selectedConversationId === conversation.ConversationId &&
                         "bg-gray-100 border-0 border-r-3 border-primary"
                     )}
-                    onClick={() => handleOpenChat(conversation.ConversationId)}
+                    onClick={() => {
+                      handleOpenChat(conversation.ConversationId);
+                      onOpenChange();
+                    }}
                   >
-                    <Avatar
-                      src={
-                        conversation.Staffer1Id === loggedStafferId
-                          ? API_URL_IMG +
-                            "/profileIcons/" +
-                            conversation.Staffer2ImageUrl
-                          : API_URL_IMG +
-                            "/profileIcons/" +
-                            conversation.Staffer1ImageUrl
-                      }
-                      size="lg"
-                    />
-                    <div className="ml-4 flex-1">
+                    <div>
+                      <Avatar
+                        src={
+                          conversation.Staffer1Id === loggedStafferId
+                            ? API_URL_IMG +
+                              "/profileIcons/" +
+                              conversation.Staffer2ImageUrl
+                            : API_URL_IMG +
+                              "/profileIcons/" +
+                              conversation.Staffer1ImageUrl
+                        }
+                        size="lg"
+                      />
+                    </div>
+                    <div className="ml-4 flex flex-col w-5/6">
                       <div className="flex items-center justify-between">
                         <h2 className="font-bold text-lg">
                           {conversation.Staffer1Id === loggedStafferId
@@ -316,7 +385,7 @@ export default function ChatTable() {
                         )}
                       </div>
                       {conversation.lastMessage && (
-                        <p className="text-gray-500 truncate">
+                        <p className="text-gray-500 truncate w-auto">
                           {conversation.lastMessage}
                         </p>
                       )}
@@ -340,12 +409,115 @@ export default function ChatTable() {
                   </div>
                 )}
             </div>
+          </ModalContent>
+        </Modal>
+      </div>
+
+      {conversations.length > 0 ? (
+        <>
+          <div className="hidden lg:flex flex-col w-1/3 bg-white">
+            <div className="flex flex-row justify-between gap-3 px-4 py-5 sm:px-6">
+              <Input
+                radius="full"
+                variant="bordered"
+                startContent={<SearchOutlinedIcon />}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cerca conversazione"
+              />
+              <Button
+                isIconOnly
+                color="primary"
+                radius="full"
+                onClick={() => setModalAddData({ ...modalAddData, open: true })}
+              >
+                <AddCommentRoundedIcon />
+              </Button>
+            </div>
+            <div className="overflow-y-auto flex flex-col">
+              {conversations
+                .filter(
+                  (conversation) =>
+                    conversation.Staffer1FullName.toLowerCase().includes(
+                      searchQuery.toLowerCase()
+                    ) ||
+                    conversation.Staffer2FullName.toLowerCase().includes(
+                      searchQuery.toLowerCase()
+                    )
+                )
+                .map((conversation) => (
+                  <div
+                    key={conversation.ConversationId}
+                    className={cn(
+                      "flex flex-row items-center p-3 cursor-pointer transition duration-300 ease-in-out border-b border-t w-full",
+                      selectedConversationId === conversation.ConversationId &&
+                        "bg-gray-100 border-0 border-r-3 border-primary"
+                    )}
+                    onClick={() => handleOpenChat(conversation.ConversationId)}
+                  >
+                    <div>
+                      <Avatar
+                        src={
+                          conversation.Staffer1Id === loggedStafferId
+                            ? API_URL_IMG +
+                              "/profileIcons/" +
+                              conversation.Staffer2ImageUrl
+                            : API_URL_IMG +
+                              "/profileIcons/" +
+                              conversation.Staffer1ImageUrl
+                        }
+                        size="lg"
+                      />
+                    </div>
+                    <div className="ml-4 flex flex-col w-5/6">
+                      <div className="flex items-center justify-between">
+                        <h2 className="font-bold text-lg">
+                          {conversation.Staffer1Id === loggedStafferId
+                            ? conversation.Staffer2FullName
+                            : conversation.Staffer1FullName}
+                        </h2>
+                        {conversation.lastMessageDate && (
+                          <p className="text-sm text-gray-500">
+                            {formatDate(conversation.lastMessageDate)}
+                          </p>
+                        )}
+                      </div>
+                      {conversation.lastMessage && (
+                        <p className="text-gray-500 truncate w-auto">
+                          {conversation.lastMessage}
+                        </p>
+                      )}
+                    </div>
+                    {conversation.notificationCount > 0 && (
+                      <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                        {conversation.notificationCount}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              {searchQuery !== "" &&
+                !conversations.some(
+                  (conversation) =>
+                    conversation.Staffer1FullName.toLowerCase().includes(
+                      searchQuery.toLowerCase()
+                    ) ||
+                    conversation.Staffer2FullName.toLowerCase().includes(
+                      searchQuery.toLowerCase()
+                    )
+                ) && (
+                  <div className="flex justify-center items-center py-4">
+                    <p className="text-gray-500">
+                      Nessuna conversazione trovata!
+                    </p>
+                  </div>
+                )}
+            </div>
           </div>
 
-          <div className="flex flex-col w-full mx-auto py-2 border-l h-fit">
+          <div className="flex flex-col w-full mx-auto py-2 lg:border-l h-[calc(100vh-80px)]">
             {selectedConversation ? (
               <>
-                <div className="flex justify-between items-center mb-3 px-4 py-2 border-b">
+                <div className="flex justify-between items-center mb-3 px-4 py-2 border-b border-t lg:border-t-0">
                   <div className="flex flex-row gap-2 justify-center items-center">
                     <Avatar
                       src={
@@ -380,8 +552,12 @@ export default function ChatTable() {
                   </Button>
                 </div>
 
-                <div className="flex flex-col flex-1 space-y-2 overflow-y-auto mt-3 px-4">
-                  <ScrollShadow ref={scrollRef} hideScrollBar>
+                <div className="flex flex-col flex-1 space-y-2 overflow-y-auto mt-3 px-4 py-3">
+                  <ScrollShadow
+                    ref={scrollRef}
+                    className="h-fit py-10"
+                    hideScrollBar
+                  >
                     {messages.map((message) =>
                       message.StafferSenderId !== loggedStafferId ? (
                         <ChatMessage
@@ -412,6 +588,7 @@ export default function ChatTable() {
                   <Button
                     onClick={handleSendMessage}
                     color="primary"
+                    radius="full"
                     isIconOnly
                     isDisabled={newMessage.trim() === "" ? true : false}
                   >
@@ -420,12 +597,12 @@ export default function ChatTable() {
                 </div>
               </>
             ) : (
-              <div className="flex flex-col h-screen justify-center items-center">
+              <div className="flex flex-col h-screen justify-center items-center p-2">
                 <Groups2RoundedIcon sx={{ fontSize: 50 }} />
                 <h3 className="mt-2 text-base font-semibold text-gray-900">
                   Nessuna conversazione selezionata
                 </h3>
-                <p className="mt-1 text-base text-gray-500">
+                <p className="mt-1 text-base text-gray-500 text-center">
                   Inizia selezionando una conversazione dall'elenco o crea una
                   nuova conversazione.
                 </p>
@@ -433,7 +610,7 @@ export default function ChatTable() {
                   <Button
                     startContent={<AddCommentRoundedIcon />}
                     color="primary"
-                    radius="sm"
+                    radius="full"
                     onClick={() =>
                       setModalAddData({ ...modalAddData, open: true })
                     }

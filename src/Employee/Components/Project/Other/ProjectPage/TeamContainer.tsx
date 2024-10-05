@@ -140,11 +140,15 @@ export default function TeamContainer({
     if (newMessage.trim() === "") return;
     try {
       axios
-        .post("/Chat/POST/SendMessage", {
-          ConversationId: conversationId,
-          StafferSenderId: loggedStafferId,
-          Text: newMessage,
-        })
+        .post(
+          "/Chat/POST/SendMessage",
+          {
+            ConversationId: conversationId,
+            StafferSenderId: loggedStafferId,
+            Text: newMessage,
+          },
+          { withCredentials: true }
+        )
         .then(() => {
           socket.emit("message", conversationId);
           setConversationId(conversationId);
