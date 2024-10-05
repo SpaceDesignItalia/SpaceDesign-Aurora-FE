@@ -1,5 +1,3 @@
-import React from "react";
-import { useParams } from "react-router-dom";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import EditPermissionModel from "../../Components/Permission/Other/EditPermissionModel";
@@ -7,7 +5,6 @@ import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
 
 export default function EditPermissionPage() {
-  const { PermissionId } = useParams();
   const { hasPermission } = usePermissions();
 
   useEffect(() => {
@@ -28,7 +25,7 @@ export default function EditPermissionPage() {
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
             Modifica permesso
           </h1>
-          <Breadcrumbs variant="bordered" radius="sm">
+          <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
               <DashboardOutlinedIcon />
             </BreadcrumbItem>
@@ -41,7 +38,7 @@ export default function EditPermissionPage() {
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
         <div className="py-6 lg:py-8">
-          <EditPermissionModel PermissionId={PermissionId} />
+          <EditPermissionModel />
         </div>
       </main>
     </div>

@@ -17,7 +17,7 @@ export default function StatusAlert({ AlertData }: { AlertData: AlertData }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className={`absolute top-20 right-5 w-1/4 rounded-md bg-${AlertData.alertColor}-50 p-4`}
+          className={`absolute top-20 right-5 w-1/4 z-50 rounded-md bg-${AlertData.alertColor}-50 p-4`}
         >
           <div className="flex">
             <div className="flex-shrink-0">

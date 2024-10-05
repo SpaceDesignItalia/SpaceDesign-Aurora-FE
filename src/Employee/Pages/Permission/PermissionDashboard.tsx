@@ -35,7 +35,7 @@ export default function PermissionDashboard() {
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
             Ruoli
           </h1>
-          <Breadcrumbs variant="bordered" radius="sm">
+          <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
               <DashboardOutlinedIcon />
             </BreadcrumbItem>

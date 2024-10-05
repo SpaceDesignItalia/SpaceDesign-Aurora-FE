@@ -1,10 +1,24 @@
-import { Avatar, Button, Input, ScrollShadow, cn } from "@nextui-org/react";
+import {
+  Avatar,
+  Button,
+  Input,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  ScrollShadow,
+  cn,
+  useDisclosure,
+} from "@nextui-org/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
+import RecentActorsRoundedIcon from "@mui/icons-material/RecentActorsRounded";
 import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
 import Groups2RoundedIcon from "@mui/icons-material/Groups2Rounded";
 import ChatMessage from "../Other/ChatMessage";
@@ -44,6 +58,7 @@ interface ModalAddData {
 }
 
 export default function ChatTable() {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [modalAddData, setModalAddData] = useState<ModalAddData>({
     loggedStafferId: 0,
     open: false,
@@ -244,7 +259,7 @@ export default function ChatTable() {
   }
 
   return (
-    <div className="flex w-full h-5/6">
+    <div className="flex flex-col lg:flex-row w-full h-5/6">
       <AddConversationModal
         isOpen={modalAddData.open}
         isClosed={() => setModalAddData({ ...modalAddData, open: false })}
@@ -252,12 +267,27 @@ export default function ChatTable() {
         handleOpenChat={handleOpenChat}
       />
 
-      {conversations.length > 0 ? (
-        <>
-          <div className="w-1/2 bg-white">
+      <div className="w-full lg:hidden flex justify-between items-center p-3">
+        <h1 className="text-2xl font-semibold">Chat</h1>
+        <Button
+          size="lg"
+          color="primary"
+          variant="light"
+          radius="full"
+          isIconOnly
+          startContent={<RecentActorsRoundedIcon />}
+          className="lg:hidden"
+          onClick={onOpenChange}
+        />
+
+        <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="full">
+          <ModalContent>
+            <ModalHeader>
+              <h1>Seleziona una chat o creane una</h1>
+            </ModalHeader>
             <div className="flex flex-row justify-between gap-3 px-4 py-5 sm:px-6">
               <Input
-                radius="sm"
+                radius="full"
                 variant="bordered"
                 startContent={<SearchOutlinedIcon />}
                 value={searchQuery}
@@ -267,13 +297,13 @@ export default function ChatTable() {
               <Button
                 isIconOnly
                 color="primary"
-                radius="sm"
+                radius="full"
                 onClick={() => setModalAddData({ ...modalAddData, open: true })}
               >
                 <AddCommentRoundedIcon />
               </Button>
             </div>
-            <div className="overflow-y-auto flex-1">
+            <div className="overflow-y-auto flex flex-col">
               {conversations
                 .filter(
                   (conversation) =>
@@ -288,25 +318,30 @@ export default function ChatTable() {
                   <div
                     key={conversation.ConversationId}
                     className={cn(
-                      "flex flex-row items-center p-3 cursor-pointer transition duration-300 ease-in-out border-b border-t",
+                      "flex flex-row items-center p-3 cursor-pointer transition duration-300 ease-in-out border-b border-t w-full",
                       selectedConversationId === conversation.ConversationId &&
                         "bg-gray-100 border-0 border-r-3 border-primary"
                     )}
-                    onClick={() => handleOpenChat(conversation.ConversationId)}
+                    onClick={() => {
+                      handleOpenChat(conversation.ConversationId);
+                      onOpenChange();
+                    }}
                   >
-                    <Avatar
-                      src={
-                        conversation.Staffer1Id === loggedStafferId
-                          ? API_URL_IMG +
-                            "/profileIcons/" +
-                            conversation.Staffer2ImageUrl
-                          : API_URL_IMG +
-                            "/profileIcons/" +
-                            conversation.Staffer1ImageUrl
-                      }
-                      size="lg"
-                    />
-                    <div className="ml-4 flex-1">
+                    <div>
+                      <Avatar
+                        src={
+                          conversation.Staffer1Id === loggedStafferId
+                            ? API_URL_IMG +
+                              "/profileIcons/" +
+                              conversation.Staffer2ImageUrl
+                            : API_URL_IMG +
+                              "/profileIcons/" +
+                              conversation.Staffer1ImageUrl
+                        }
+                        size="lg"
+                      />
+                    </div>
+                    <div className="ml-4 flex flex-col w-5/6">
                       <div className="flex items-center justify-between">
                         <h2 className="font-bold text-lg">
                           {conversation.Staffer1Id === loggedStafferId
@@ -320,7 +355,105 @@ export default function ChatTable() {
                         )}
                       </div>
                       {conversation.lastMessage && (
-                        <p className="text-gray-500 truncate">
+                        <p className="text-gray-500 truncate w-auto">
+                          {conversation.lastMessage}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              {searchQuery !== "" &&
+                !conversations.some(
+                  (conversation) =>
+                    conversation.Staffer1FullName.toLowerCase().includes(
+                      searchQuery.toLowerCase()
+                    ) ||
+                    conversation.Staffer2FullName.toLowerCase().includes(
+                      searchQuery.toLowerCase()
+                    )
+                ) && (
+                  <div className="flex justify-center items-center py-4">
+                    <p className="text-gray-500">
+                      Nessuna conversazione trovata!
+                    </p>
+                  </div>
+                )}
+            </div>
+          </ModalContent>
+        </Modal>
+      </div>
+
+      {conversations.length > 0 ? (
+        <>
+          <div className="hidden lg:flex flex-col w-1/3 bg-white">
+            <div className="flex flex-row justify-between gap-3 px-4 py-5 sm:px-6">
+              <Input
+                radius="full"
+                variant="bordered"
+                startContent={<SearchOutlinedIcon />}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cerca conversazione"
+              />
+              <Button
+                isIconOnly
+                color="primary"
+                radius="full"
+                onClick={() => setModalAddData({ ...modalAddData, open: true })}
+              >
+                <AddCommentRoundedIcon />
+              </Button>
+            </div>
+            <div className="overflow-y-auto flex flex-col">
+              {conversations
+                .filter(
+                  (conversation) =>
+                    conversation.Staffer1FullName.toLowerCase().includes(
+                      searchQuery.toLowerCase()
+                    ) ||
+                    conversation.Staffer2FullName.toLowerCase().includes(
+                      searchQuery.toLowerCase()
+                    )
+                )
+                .map((conversation) => (
+                  <div
+                    key={conversation.ConversationId}
+                    className={cn(
+                      "flex flex-row items-center p-3 cursor-pointer transition duration-300 ease-in-out border-b border-t w-full",
+                      selectedConversationId === conversation.ConversationId &&
+                        "bg-gray-100 border-0 border-r-3 border-primary"
+                    )}
+                    onClick={() => handleOpenChat(conversation.ConversationId)}
+                  >
+                    <div>
+                      <Avatar
+                        src={
+                          conversation.Staffer1Id === loggedStafferId
+                            ? API_URL_IMG +
+                              "/profileIcons/" +
+                              conversation.Staffer2ImageUrl
+                            : API_URL_IMG +
+                              "/profileIcons/" +
+                              conversation.Staffer1ImageUrl
+                        }
+                        size="lg"
+                      />
+                    </div>
+                    <div className="ml-4 flex flex-col w-5/6">
+                      <div className="flex items-center justify-between">
+                        <h2 className="font-bold text-lg">
+                          {conversation.Staffer1Id === loggedStafferId
+                            ? conversation.Staffer2FullName
+                            : conversation.Staffer1FullName}
+                        </h2>
+                        {conversation.lastMessageDate && (
+                          <p className="text-sm text-gray-500">
+                            {formatDate(conversation.lastMessageDate)}
+                          </p>
+                        )}
+                      </div>
+                      {conversation.lastMessage && (
+                        <p className="text-gray-500 truncate w-auto">
                           {conversation.lastMessage}
                         </p>
                       )}
@@ -346,10 +479,10 @@ export default function ChatTable() {
             </div>
           </div>
 
-          <div className="flex flex-col w-full mx-auto py-2 border-l h-[42rem]">
+          <div className="flex flex-col w-full mx-auto py-2 lg:border-l h-[calc(100vh-80px)]">
             {selectedConversation ? (
               <>
-                <div className="flex justify-between items-center mb-3 px-4 py-2 border-b">
+                <div className="flex justify-between items-center mb-3 px-4 py-2 border-b border-t lg:border-t-0">
                   <div className="flex flex-row gap-2 justify-center items-center">
                     <Avatar
                       src={
@@ -384,8 +517,12 @@ export default function ChatTable() {
                   </Button>
                 </div>
 
-                <div className="flex flex-col flex-1 space-y-2 overflow-y-auto mt-3 px-4">
-                  <ScrollShadow ref={scrollRef} hideScrollBar>
+                <div className="flex flex-col flex-1 space-y-2 overflow-y-auto mt-3 px-4 py-3">
+                  <ScrollShadow
+                    ref={scrollRef}
+                    className="h-fit py-10"
+                    hideScrollBar
+                  >
                     {messages.map((message) =>
                       message.StafferSenderId !== loggedStafferId ? (
                         <ChatMessage
@@ -416,6 +553,7 @@ export default function ChatTable() {
                   <Button
                     onClick={handleSendMessage}
                     color="primary"
+                    radius="full"
                     isIconOnly
                     isDisabled={newMessage.trim() === "" ? true : false}
                   >
@@ -437,7 +575,7 @@ export default function ChatTable() {
                   <Button
                     startContent={<AddCommentRoundedIcon />}
                     color="primary"
-                    radius="sm"
+                    radius="full"
                     onClick={() =>
                       setModalAddData({ ...modalAddData, open: true })
                     }

@@ -33,6 +33,9 @@ export default function Notification() {
   const [update, setUpdate] = useState(false);
   const [stafferId, setStafferId] = useState<number | null>(null);
 
+  // Carica il suono di notifica
+  const notificationSound = new Audio("/notification.mp3");
+
   useEffect(() => {
     if (update) {
       const timer = setTimeout(() => setUpdate(false), 2000);
@@ -63,6 +66,8 @@ export default function Notification() {
 
   socket.on("newNotification", () => {
     notificationUpdate();
+    notificationSound.volume = 0.5;
+    notificationSound.play(); // Riproduci il suono alla ricezione della notifica
   });
 
   useEffect(() => {
@@ -82,7 +87,7 @@ export default function Notification() {
       radius="sm"
       classNames={{
         base: "before:bg-default-200",
-        content: "p-0 border-small border-divider bg-background",
+        content: "p-0 border-lg border-divider bg-background",
       }}
     >
       <PopoverTrigger>
@@ -126,7 +131,7 @@ export default function Notification() {
               ))}
             </Tabs>
           </div>
-          <ScrollShadow className="w-full h-40">
+          <ScrollShadow className="w-full max-h-96">
             {activeTab === "Non lette" && (
               <>
                 {notifications

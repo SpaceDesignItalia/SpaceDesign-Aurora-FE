@@ -17,8 +17,6 @@ interface Employee {
 }
 
 interface ConfirmDeleteModalProps {
-  isOpen: boolean;
-  isClosed: () => void;
   EmployeeData: Employee;
   DeleteEmployee: (EmployeeData: Employee) => void;
 }
