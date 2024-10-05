@@ -70,17 +70,18 @@ export default function ChatTable() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    // Connect to socket and handle message updates
-    socket.on("message-update", (updatedMessageConversationId: number) => {
-      if (
-        selectedConversationId &&
-        updatedMessageConversationId === selectedConversationId
-      ) {
-        handleOpenChat(selectedConversationId);
-      }
-    });
-  }, [selectedConversationId]);
+  // Connect to socket and handle message updates
+  socket.on("message-update", (updatedMessageConversationId: number) => {
+    const storageConversationId = localStorage.getItem(
+      "selectedConversationId"
+    );
+    if (
+      storageConversationId &&
+      Number(updatedMessageConversationId) === Number(storageConversationId)
+    ) {
+      handleOpenChat(Number(storageConversationId));
+    }
+  });
 
   useEffect(() => {
     // Fetch logged in staffer's data and conversations
@@ -91,7 +92,6 @@ export default function ChatTable() {
         setLoggedStafferId(stafferId);
         setModalAddData({ ...modalAddData, loggedStafferId: stafferId });
 
-        console.log("update");
         const response = await axios.get(
           "/Chat/GET/getConversationByStafferId",
           {
@@ -157,6 +157,7 @@ export default function ChatTable() {
     // Handle opening a conversation
     try {
       setSelectedConversationId(conversationId);
+      localStorage.setItem("selectedConversationId", conversationId.toString());
       socket.emit("join-notifications", loggedStafferId);
 
       const response = await axios.get(
