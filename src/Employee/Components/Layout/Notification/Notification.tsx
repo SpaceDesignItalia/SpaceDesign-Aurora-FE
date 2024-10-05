@@ -47,6 +47,7 @@ export default function Notification() {
   ).length;
 
   function notificationUpdate() {
+    socket.emit("delete-notifications", stafferId);
     setUpdate(!update);
   }
 

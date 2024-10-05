@@ -111,6 +111,10 @@ export default function Sidebar() {
     fetchNotifications();
   }, [notificationUpdate]);
 
+  socket.on("delete-notifications", () => {
+    setNotificationUpdate(!notificationUpdate);
+  });
+
   socket.on("newNotification", () => {
     setNotificationUpdate(!notificationUpdate);
   });
