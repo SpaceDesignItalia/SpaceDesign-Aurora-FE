@@ -31,6 +31,7 @@ const socket: Socket = io(API_WEBSOCKET_URL);
 export default function Notification() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [update, setUpdate] = useState(false);
+  const [deleteNotification, setDeleteNotification] = useState(false);
   const [stafferId, setStafferId] = useState<number | null>(null);
 
   // Carica il suono di notifica
@@ -49,6 +50,7 @@ export default function Notification() {
   ).length;
 
   function notificationUpdate() {
+    socket.emit("delete-notifications", stafferId);
     setUpdate(!update);
   }
 
@@ -70,13 +72,17 @@ export default function Notification() {
     notificationSound.play(); // Riproduci il suono alla ricezione della notifica
   });
 
+  socket.on("delete-notifications", () => {
+    setDeleteNotification(!deleteNotification);
+  });
+
   useEffect(() => {
     axios
       .get("/Notification/GET/GetAllNotifications", { withCredentials: true })
       .then((response) => {
         setNotifications(response.data);
       });
-  }, [update]);
+  }, [update, deleteNotification]);
 
   const tabs = [{ title: "Non lette" }, { title: "Tutte" }];
   const [activeTab, setActiveTab] = useState("Non lette");

@@ -41,6 +41,7 @@ interface Conversation {
   Staffer2ImageUrl: string;
   lastMessage: string;
   lastMessageDate?: Date;
+  notificationCount: number;
 }
 
 interface Message {
@@ -74,7 +75,6 @@ export default function ChatTable() {
     useState<Conversation | null>(null); // State to hold selected conversation details
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [messagesLoaded, setMessagesLoaded] = useState<boolean>(false); // State to track if messages are already loaded
-
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -85,17 +85,18 @@ export default function ChatTable() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    // Connect to socket and handle message updates
-    socket.on("message-update", (updatedMessageConversationId: number) => {
-      if (
-        selectedConversationId &&
-        updatedMessageConversationId === selectedConversationId
-      ) {
-        handleOpenChat(selectedConversationId);
-      }
-    });
-  }, [selectedConversationId]);
+  // Connect to socket and handle message updates
+  socket.on("message-update", (updatedMessageConversationId: number) => {
+    const storageConversationId = localStorage.getItem(
+      "selectedConversationId"
+    );
+    if (
+      storageConversationId &&
+      Number(updatedMessageConversationId) === Number(storageConversationId)
+    ) {
+      handleOpenChat(Number(storageConversationId));
+    }
+  });
 
   useEffect(() => {
     // Fetch logged in staffer's data and conversations
@@ -110,6 +111,7 @@ export default function ChatTable() {
           "/Chat/GET/getConversationByStafferId",
           {
             params: { StafferId: stafferId },
+            withCredentials: true,
           }
         );
 
@@ -170,6 +172,8 @@ export default function ChatTable() {
     // Handle opening a conversation
     try {
       setSelectedConversationId(conversationId);
+      localStorage.setItem("selectedConversationId", conversationId.toString());
+      socket.emit("join-notifications", loggedStafferId);
 
       const response = await axios.get(
         "/Chat/GET/GetMessagesByConversationId",
@@ -177,6 +181,32 @@ export default function ChatTable() {
           params: { ConversationId: conversationId },
         }
       );
+      let StafferId = 0;
+
+      conversations.forEach((conv) => {
+        if (conv.ConversationId === conversationId) {
+          if (loggedStafferId === conv.Staffer1Id) {
+            StafferId = conv.Staffer2Id;
+          } else {
+            StafferId = conv.Staffer1Id;
+          }
+        }
+      });
+      await axios
+        .delete("Notification/DELETE/DeleteConversationNotifications", {
+          params: {
+            UserId: loggedStafferId,
+            StafferId: StafferId,
+          },
+        })
+        .then(() => {
+          conversations.forEach((conv) => {
+            if (conv.ConversationId === conversationId) {
+              conv.notificationCount = 0;
+            }
+          });
+          socket.emit("delete-notifications", loggedStafferId);
+        });
 
       setMessages(response.data);
       socket.emit("join", conversationId);
@@ -458,6 +488,11 @@ export default function ChatTable() {
                         </p>
                       )}
                     </div>
+                    {conversation.notificationCount > 0 && (
+                      <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                        {conversation.notificationCount}
+                      </span>
+                    )}
                   </div>
                 ))}
               {searchQuery !== "" &&
