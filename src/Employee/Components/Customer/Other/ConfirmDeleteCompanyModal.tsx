@@ -17,8 +17,6 @@ interface Company {
 }
 
 interface ConfirmDeleteCompanyModalProps {
-  isOpen: boolean;
-  isClosed: () => void;
   CompanyData: Company;
   DeleteCompany: (CompanyData: Company) => void;
 }

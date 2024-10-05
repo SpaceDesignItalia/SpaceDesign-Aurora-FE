@@ -9,6 +9,7 @@ import {
 } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
+import { useParams } from "react-router-dom";
 
 interface PermissionGroup {
   GroupName: string;
@@ -19,11 +20,7 @@ interface AlertData {
   isOpen: boolean;
   alertTitle: string;
   alertDescription: string;
-  alertColor: string;
-}
-
-interface EditPermissionModelProps {
-  PermissionId: number;
+  alertColor: "green" | "red" | "yellow";
 }
 
 const initialPermissionState = {
@@ -38,12 +35,11 @@ const initialAlertData: AlertData = {
   isOpen: false,
   alertTitle: "",
   alertDescription: "",
-  alertColor: "",
+  alertColor: "red",
 };
 
-const EditPermissionModel: React.FC<EditPermissionModelProps> = ({
-  PermissionId,
-}) => {
+export default function EditPermissionModel() {
+  const { PermissionId } = useParams();
   const [permissionGroup, setPermissionGroup] = useState<PermissionGroup[]>([]);
   const [initialPermission, setInitialPermission] = useState(
     initialPermissionState
@@ -152,124 +148,122 @@ const EditPermissionModel: React.FC<EditPermissionModelProps> = ({
     <>
       <StatusAlert AlertData={alertData} />
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
-        <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
-          <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
-            <div>
-              <h3 className="text-base font-semibold leading-6 text-gray-900">
-                Modifica permesso
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                In questo pannello potrai modificare un permesso esistente nel
-                database.
-              </p>
+        <div className="space-y-6 bg-white py-6">
+          <div>
+            <h3 className="text-base font-semibold leading-6 text-gray-900">
+              Modifica permesso
+            </h3>
+            <p className="mt-1 text-sm text-gray-500 w-1/3">
+              In questo pannello potrai modificare un permesso esistente nel
+              database. I campi contrassegnati con un asterisco (
+              <span className="text-danger font-bold">*</span>) sono
+              obbligatori. Assicurati di aggiornare tutte le informazioni
+              necessarie prima di procedere.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-6 gap-6">
+            <div className="col-span-6">
+              <label
+                htmlFor="permission-name"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Nome permesso <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Input
+                id="permission-name"
+                variant="bordered"
+                type="text"
+                radius="full"
+                value={currentPermission.PermissionName}
+                onChange={handleInputChange("PermissionName")}
+                fullWidth
+              />
             </div>
 
-            <div className="grid grid-cols-6 gap-6">
-              <div className="col-span-6">
-                <label
-                  htmlFor="permission-name"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Nome permesso{" "}
-                  <span className="text-red-600 font-bold">*</span>
-                </label>
-                <Input
-                  id="permission-name"
-                  variant="bordered"
-                  type="text"
-                  radius="sm"
-                  value={currentPermission.PermissionName}
-                  onChange={handleInputChange("PermissionName")}
-                  fullWidth
-                />
-              </div>
+            <div className="col-span-6">
+              <label
+                htmlFor="permission-description"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Descrizione permesso{" "}
+                <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Textarea
+                id="permission-description"
+                variant="bordered"
+                radius="full"
+                value={currentPermission.PermissionDescription}
+                onChange={handleInputChange("PermissionDescription")}
+                fullWidth
+              />
+            </div>
 
-              <div className="col-span-6">
-                <label
-                  htmlFor="permission-description"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Descrizione permesso{" "}
-                  <span className="text-red-600 font-bold">*</span>
-                </label>
-                <Textarea
-                  id="permission-description"
-                  variant="bordered"
-                  radius="sm"
-                  value={currentPermission.PermissionDescription}
-                  onChange={handleInputChange("PermissionDescription")}
-                  fullWidth
-                />
-              </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="permission-action"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Azione permesso{" "}
+                <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Input
+                id="permission-action"
+                variant="bordered"
+                type="text"
+                radius="full"
+                value={currentPermission.PermissionAction}
+                onChange={handleInputChange("PermissionAction")}
+                fullWidth
+              />
+            </div>
 
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="permission-action"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Azione permesso{" "}
-                  <span className="text-red-600 font-bold">*</span>
-                </label>
-                <Input
-                  id="permission-action"
-                  variant="bordered"
-                  type="text"
-                  radius="sm"
-                  value={currentPermission.PermissionAction}
-                  onChange={handleInputChange("PermissionAction")}
-                  fullWidth
-                />
-              </div>
-
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="permission-group"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Gruppo permesso{" "}
-                  <span className="text-red-600 font-bold">*</span>
-                </label>
-                <Autocomplete
-                  items={permissionGroup.map((group) => ({
-                    key: group.PermissionGroupId,
-                    label: group.GroupName,
-                  }))}
-                  placeholder="Seleziona gruppo"
-                  onSelectionChange={handleGroupChange}
-                  variant="bordered"
-                  radius="sm"
-                  aria-label="permission-group"
-                  fullWidth
-                  selectedKey={String(currentPermission.PermissionGroupId)}
-                >
-                  {(item) => (
-                    <AutocompleteItem key={item.key} textValue={item.label}>
-                      <div className="flex justify-between items-center">
-                        <span className="text-small">{item.label}</span>
-                      </div>
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
-              </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="permission-group"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Gruppo permesso{" "}
+                <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Autocomplete
+                items={permissionGroup.map((group) => ({
+                  key: group.PermissionGroupId,
+                  label: group.GroupName,
+                }))}
+                placeholder="Seleziona gruppo"
+                onSelectionChange={handleGroupChange}
+                variant="bordered"
+                radius="full"
+                aria-label="permission-group"
+                fullWidth
+                selectedKey={String(currentPermission.PermissionGroupId)}
+              >
+                {(item) => (
+                  <AutocompleteItem key={item.key} textValue={item.label}>
+                    <div className="flex justify-between items-center">
+                      <span className="text-small">{item.label}</span>
+                    </div>
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
             </div>
           </div>
-          <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-            <Button
-              color="success"
-              className="text-white"
-              radius="sm"
-              startContent={!isUpdatingData && <SaveIcon />}
-              isDisabled={checkAllDataCompiled() || !hasChanges()}
-              isLoading={isUpdatingData}
-              onClick={handleUpdatePermission}
-            >
-              {isUpdatingData ? "Salvando il permesso..." : "Salva permesso"}
-            </Button>
-          </div>
+        </div>
+        <div className="py-3 text-right">
+          <Button
+            color="primary"
+            className="text-white"
+            radius="full"
+            startContent={!isUpdatingData && <SaveIcon />}
+            isDisabled={checkAllDataCompiled() || !hasChanges()}
+            isLoading={isUpdatingData}
+            onClick={handleUpdatePermission}
+          >
+            {isUpdatingData ? "Salvando il permesso..." : "Salva permesso"}
+          </Button>
         </div>
       </div>
     </>
   );
-};
-
-export default EditPermissionModel;
+}

@@ -378,9 +378,11 @@ export default function EmployeeTable() {
                 </p>
                 <div className="mt-6">
                   <Button
+                    as={Link}
                     color="primary"
                     radius="full"
                     startContent={<AddRoundedIcon />}
+                    href="./employee/add-employee"
                   >
                     Aggiungi dipendente
                   </Button>

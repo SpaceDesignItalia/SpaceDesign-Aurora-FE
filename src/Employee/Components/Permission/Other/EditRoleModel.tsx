@@ -30,7 +30,7 @@ interface AlertData {
   isOpen: boolean;
   alertTitle: string;
   alertDescription: string;
-  alertColor: string;
+  alertColor: "red" | "green" | "yellow";
 }
 
 const initialRoleDataStruct: Role = { RoleName: "", RoleDescription: "" };
@@ -39,7 +39,7 @@ const initialAlertData: AlertData = {
   isOpen: false,
   alertTitle: "",
   alertDescription: "",
-  alertColor: "",
+  alertColor: "red",
 };
 
 const EditRoleModel: React.FC = () => {
@@ -157,113 +157,115 @@ const EditRoleModel: React.FC = () => {
     <>
       <StatusAlert AlertData={alertData} />
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
-        <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
-          <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
-            <div>
-              <h3 className="text-base font-semibold leading-6 text-gray-900">
-                Modifica ruolo
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                In questo pannello potrai modificare il ruolo esistente nel
-                database.
-              </p>
+        <div className="space-y-6 bg-white px-4 py-6">
+          <div>
+            <h3 className="text-base font-semibold leading-6 text-gray-900">
+              Modifica ruolo
+            </h3>
+            <p className="mt-1 text-sm text-gray-500 w-1/3">
+              In questo pannello potrai modificare il ruolo esistente nel
+              database. I campi contrassegnati con un asterisco (
+              <span className="text-danger font-bold">*</span>) sono
+              obbligatori. Assicurati di aggiornare tutte le informazioni
+              necessarie prima di procedere.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-6 gap-6">
+            <div className="col-span-6 sm:col-span-6">
+              <label
+                htmlFor="role-name"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Nome ruolo
+              </label>
+              <Input
+                id="role-name"
+                variant="bordered"
+                type="text"
+                radius="full"
+                value={roleData.RoleName}
+                onChange={handleRoleChange("RoleName")}
+                fullWidth
+              />
             </div>
 
-            <div className="grid grid-cols-6 gap-6">
-              <div className="col-span-6 sm:col-span-6">
-                <label
-                  htmlFor="role-name"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Nome ruolo
-                </label>
-                <Input
-                  id="role-name"
-                  variant="bordered"
-                  type="text"
-                  radius="sm"
-                  value={roleData.RoleName}
-                  onChange={handleRoleChange("RoleName")}
-                  fullWidth
-                />
-              </div>
+            <div className="col-span-6 sm:col-span-6">
+              <label
+                htmlFor="role-description"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Descrizione
+              </label>
+              <Textarea
+                id="role-description"
+                variant="bordered"
+                radius="full"
+                value={roleData.RoleDescription}
+                onChange={handleRoleChange("RoleDescription")}
+                fullWidth
+              />
+            </div>
 
-              <div className="col-span-6 sm:col-span-6">
-                <label
-                  htmlFor="role-description"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Descrizione
-                </label>
-                <Textarea
-                  id="role-description"
-                  variant="bordered"
-                  radius="sm"
-                  value={roleData.RoleDescription}
-                  onChange={handleRoleChange("RoleDescription")}
-                  fullWidth
-                />
-              </div>
+            <div className="col-span-6 sm:col-span-6">
+              <label
+                htmlFor="role-permissions"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Permessi associati
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-0 justify-between mt-3">
+                {permissionGroup.map((group) => {
+                  const groupPermissions = permissions.filter(
+                    (permission) => permission.GroupName === group.GroupName
+                  );
 
-              <div className="col-span-6 sm:col-span-6">
-                <label
-                  htmlFor="role-permissions"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Permessi associati
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-0 justify-between mt-3">
-                  {permissionGroup.map((group) => {
-                    const groupPermissions = permissions.filter(
-                      (permission) => permission.GroupName === group.GroupName
-                    );
+                  if (groupPermissions.length === 0) return null;
 
-                    if (groupPermissions.length === 0) return null;
-
-                    return (
-                      <CheckboxGroup
-                        className="mt-5"
-                        label={group.GroupName}
-                        key={group.GroupName}
-                        value={rolePermissions.map(String)}
-                      >
-                        {groupPermissions.map((permission) => (
-                          <Checkbox
-                            key={permission.PermissionId}
-                            value={String(permission.PermissionId)}
-                            isSelected={rolePermissions.includes(
-                              permission.PermissionId
-                            )}
-                            onChange={(e) =>
-                              handleCheckboxChange(
-                                e.target.value,
-                                e.target.checked
-                              )
-                            }
-                          >
-                            {permission.PermissionName}
-                          </Checkbox>
-                        ))}
-                      </CheckboxGroup>
-                    );
-                  })}
-                </div>
+                  return (
+                    <CheckboxGroup
+                      className="mt-5"
+                      radius="full"
+                      label={group.GroupName}
+                      key={group.GroupName}
+                      value={rolePermissions.map(String)}
+                    >
+                      {groupPermissions.map((permission) => (
+                        <Checkbox
+                          key={permission.PermissionId}
+                          value={String(permission.PermissionId)}
+                          isSelected={rolePermissions.includes(
+                            permission.PermissionId
+                          )}
+                          onChange={(e) =>
+                            handleCheckboxChange(
+                              e.target.value,
+                              e.target.checked
+                            )
+                          }
+                        >
+                          {permission.PermissionName}
+                        </Checkbox>
+                      ))}
+                    </CheckboxGroup>
+                  );
+                })}
               </div>
             </div>
           </div>
-          <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-            <Button
-              color="success"
-              className="text-white"
-              radius="sm"
-              startContent={!isAddingData && <SaveIcon />}
-              isDisabled={checkAllDataCompiled()}
-              isLoading={isAddingData}
-              onClick={handleUpdateRole}
-            >
-              {isAddingData ? "Aggiornando il ruolo..." : "Aggiorna ruolo"}
-            </Button>
-          </div>
+        </div>
+        <div className="py-3 text-right">
+          <Button
+            color="success"
+            className="text-white"
+            radius="full"
+            startContent={!isAddingData && <SaveIcon />}
+            isDisabled={checkAllDataCompiled()}
+            isLoading={isAddingData}
+            onClick={handleUpdateRole}
+          >
+            {isAddingData ? "Aggiornando il ruolo..." : "Aggiorna ruolo"}
+          </Button>
         </div>
       </div>
     </>

@@ -21,6 +21,8 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import AddModeratorRoundedIcon from "@mui/icons-material/AddModeratorRounded";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import LocalPoliceRoundedIcon from "@mui/icons-material/LocalPoliceRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
@@ -72,6 +74,7 @@ const columns = [
 ];
 
 export default function PermissionTable() {
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [adminPermission, setAdminPermission] = useState({
@@ -127,13 +130,12 @@ export default function PermissionTable() {
     open: false,
   });
 
-  async function SearchPermission(e: { target: { value: string } }) {
-    const searchQuery = e.target.value.trim();
+  async function SearchPermission() {
     try {
       const response = await axios.get(
         "/Permission/GET/SearchPermissionByName",
         {
-          params: { PermissionName: searchQuery },
+          params: { PermissionName: searchTerm.trim() },
         }
       );
       setPermissions(response.data);
@@ -182,62 +184,45 @@ export default function PermissionTable() {
         case "actions":
           return (
             <div className="relative flex justify-center items-center gap-2">
-              <Dropdown radius="sm">
-                <DropdownTrigger>
-                  <Button isIconOnly size="sm" variant="light">
-                    <MoreVertRoundedIcon />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  <DropdownItem
-                    color="primary"
-                    startContent={<RemoveRedEyeOutlinedIcon />}
-                    aria-label="View"
-                    aria-labelledby="View"
-                    onClick={() =>
-                      setModalData({
-                        ...modalData,
-                        open: true,
-                        Permission: permission,
-                      })
-                    }
-                  >
-                    Visualizza
-                  </DropdownItem>
+              <Button
+                size="sm"
+                color="primary"
+                variant="light"
+                startContent={<RemoveRedEyeOutlinedIcon />}
+                aria-label="View"
+                aria-labelledby="View"
+                onClick={() =>
+                  setModalData({
+                    ...modalData,
+                    open: true,
+                    Permission: permission,
+                  })
+                }
+                isIconOnly
+              />
 
-                  {adminPermission.editPermission && (
-                    <DropdownItem
-                      color="warning"
-                      startContent={<ModeOutlinedIcon />}
-                      aria-label="Edit"
-                      aria-labelledby="Edit"
-                      href={
-                        "/administration/permission/edit-permission/" +
-                        permission.PermissionId
-                      }
-                    >
-                      Modifica
-                    </DropdownItem>
-                  )}
-                  {adminPermission.deletePermission && (
-                    <DropdownItem
-                      color="danger"
-                      startContent={<DeleteOutlinedIcon />}
-                      aria-label="Remove"
-                      aria-labelledby="Remove"
-                      onClick={() =>
-                        setModalDeleteData({
-                          ...modalDeleteData,
-                          open: true,
-                          Permission: permission,
-                        })
-                      }
-                    >
-                      Rimuovi
-                    </DropdownItem>
-                  )}
-                </DropdownMenu>
-              </Dropdown>
+              {adminPermission.editPermission && (
+                <Button
+                  as={Link}
+                  size="sm"
+                  color="warning"
+                  variant="light"
+                  startContent={<ModeOutlinedIcon />}
+                  aria-label="Edit"
+                  aria-labelledby="Edit"
+                  href={
+                    "/administration/permission/edit-permission/" +
+                    permission.PermissionId
+                  }
+                  isIconOnly
+                />
+              )}
+              {adminPermission.deletePermission && (
+                <ConfirmDeletePermissionModal
+                  PermissionData={permission}
+                  DeletePermission={DeletePermission}
+                />
+              )}
             </div>
           );
       }
@@ -257,14 +242,41 @@ export default function PermissionTable() {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between gap-3 items-end">
-          <Input
-            radius="sm"
-            variant="bordered"
-            startContent={<SearchOutlinedIcon />}
-            onChange={SearchPermission}
-            className="md:w-1/3"
-            placeholder="Cerca permesso per nome..."
-          />
+          <div className="flex flex-row gap-3 w-full">
+            <Input
+              radius="full"
+              variant="bordered"
+              startContent={<SearchOutlinedIcon />}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value.trim() === "") {
+                  fetchData(); // Chiama SearchEmployee se il campo è vuoto
+                }
+              }}
+              className="md:w-1/3"
+              placeholder="Cerca permesso per nome..."
+            />
+            <Button
+              color="primary"
+              radius="full"
+              endContent={<SearchOutlinedIcon />}
+              isDisabled={searchTerm == ""}
+              onClick={SearchPermission}
+              className="hidden sm:flex"
+            >
+              Cerca
+            </Button>
+            <Button
+              color="primary"
+              radius="full"
+              isDisabled={searchTerm == ""}
+              onClick={SearchPermission}
+              className="sm:hidden"
+              isIconOnly
+            >
+              <SearchOutlinedIcon />
+            </Button>
+          </div>
           <div className="flex gap-3">
             {adminPermission.addPermission && (
               <>
@@ -272,7 +284,7 @@ export default function PermissionTable() {
                   as={Link}
                   href="./permission/add-permission"
                   color="primary"
-                  radius="sm"
+                  radius="full"
                   startContent={<VpnKeyIcon />}
                   className="hidden sm:flex"
                 >
@@ -283,7 +295,7 @@ export default function PermissionTable() {
                   as={Link}
                   href="./permission/add-permission"
                   color="primary"
-                  radius="sm"
+                  radius="full"
                   isIconOnly
                   className="sm:hidden"
                 >
@@ -295,7 +307,7 @@ export default function PermissionTable() {
         </div>
       </div>
     );
-  }, [onRowsPerPageChange, permissions.length]);
+  }, [onRowsPerPageChange, permissions.length, searchTerm, SearchPermission]);
 
   const bottomContent = React.useMemo(() => {
     return (
@@ -305,6 +317,7 @@ export default function PermissionTable() {
           showControls
           showShadow
           color="primary"
+          radius="full"
           page={page}
           total={pages || 1}
           onChange={setPage}
@@ -314,29 +327,24 @@ export default function PermissionTable() {
   }, [items.length, page, pages]);
 
   return (
-    <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
+    <div className="bg-white">
       <ViewPermissionModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
         PermData={modalData.Permission}
       />
-      <ConfirmDeletePermissionModal
-        isOpen={modalDeleteData.open}
-        isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
-        PermissionData={modalDeleteData.Permission}
-        DeletePermission={DeletePermission}
-      />
+
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
         isStriped
         bottomContent={bottomContent}
-        bottomContentPlacement="outside"
+        bottomContentPlacement="inside"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
-        topContentPlacement="outside"
+        topContentPlacement="inside"
         onSortChange={setSortDescriptor}
-        radius="sm"
+        radius="full"
       >
         <TableHeader columns={columns}>
           {(column) => (
@@ -348,7 +356,44 @@ export default function PermissionTable() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Nessun permesso trovato!"} items={items}>
+        <TableBody
+          emptyContent={
+            searchTerm == "" ? (
+              <div className="text-center p-10">
+                <LocalPoliceRoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun permesso trovato!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Inizia aggiungendo un nuovo permesso al database.
+                </p>
+                <div className="mt-6">
+                  <Button
+                    as={Link}
+                    color="primary"
+                    radius="full"
+                    startContent={<AddRoundedIcon />}
+                    href="./permission/add-permission"
+                  >
+                    Aggiungi permesso
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center p-10">
+                <LocalPoliceRoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun permesso trovato!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Nessun risultato corrisponde alla tua ricerca:{" "}
+                  <span className="font-semibold italic">{searchTerm}</span>
+                </p>
+              </div>
+            )
+          }
+          items={items}
+        >
           {(item) => (
             <TableRow key={item.PermissionId}>
               {(columnKey) => (
