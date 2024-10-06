@@ -69,7 +69,7 @@ export default function Notification() {
   socket.on("newNotification", () => {
     notificationUpdate();
     notificationSound.volume = 0.5;
-    notificationSound.play(); // Riproduci il suono alla ricezione della notifica
+    //notificationSound.play(); // Riproduci il suono alla ricezione della notifica
   });
 
   socket.on("delete-notifications", () => {
