@@ -1,4 +1,12 @@
-import { Button, Progress, cn, User, Tooltip, Link } from "@nextui-org/react";
+import {
+  Button,
+  Progress,
+  cn,
+  User,
+  Tooltip,
+  Link,
+  link,
+} from "@nextui-org/react";
 import TimerRoundedIcon from "@mui/icons-material/TimerRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ModeEditRoundedIcon from "@mui/icons-material/ModeEditRounded";
@@ -208,12 +216,12 @@ export default function OverviewContainer({
               <div className="flex flex-col gap-3 items-start w-full">
                 <div className="flex flex-row justify-between w-full">
                   <h1 className="font-bold">Collegamenti esterni</h1>
-                  {adminPermission.editProject && (
+                  {adminPermission.editProject && links.length > 0 && (
                     <Button
                       size="sm"
+                      radius="full"
                       color="warning"
-                      className="text-white"
-                      variant="solid"
+                      variant="light"
                       onClick={() =>
                         setModalEditData({
                           ...modalEditData,
