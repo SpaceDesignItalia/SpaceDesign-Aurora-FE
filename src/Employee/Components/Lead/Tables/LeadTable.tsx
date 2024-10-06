@@ -194,7 +194,7 @@ export default function EmployeeTable() {
               }}
               value={searchTerm}
               className="md:w-1/3"
-              placeholder="Cerca dipendente per email..."
+              placeholder="Cerca lead per azienda..."
             />
 
             <Button

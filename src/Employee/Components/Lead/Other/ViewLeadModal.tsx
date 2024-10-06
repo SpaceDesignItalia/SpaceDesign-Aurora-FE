@@ -163,7 +163,7 @@ export default function ViewLeadModal({
                       <dt className="text-sm font-medium leading-6 mb-4 text-gray-900">
                         Messaggio
                       </dt>
-                      <dd className="mt-1 text-sm leading-6 text-gray-700">
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 break-words">
                         {lead.Message}
                       </dd>
                     </div>
