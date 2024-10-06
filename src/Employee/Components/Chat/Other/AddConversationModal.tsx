@@ -43,7 +43,6 @@ export default function AddConversationModal({
         params: { StafferId: loggedStafferId },
       })
       .then((res) => {
-        console.log(res.data);
         setMembers(res.data);
       });
   }, [loggedStafferId]);

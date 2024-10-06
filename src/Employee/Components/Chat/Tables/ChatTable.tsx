@@ -26,6 +26,7 @@ import AddConversationModal from "../Other/AddConversationModal";
 import { API_URL_IMG, API_WEBSOCKET_URL } from "../../../../API/API";
 import dayjs from "dayjs";
 import "dayjs/locale/it";
+import { Update } from "@mui/icons-material";
 
 dayjs.locale("it");
 
@@ -86,17 +87,29 @@ export default function ChatTable() {
   }, [messages]);
 
   // Connect to socket and handle message updates
-  socket.on("message-update", (updatedMessageConversationId: number) => {
-    const storageConversationId = localStorage.getItem(
-      "selectedConversationId"
-    );
-    if (
-      storageConversationId &&
-      Number(updatedMessageConversationId) === Number(storageConversationId)
-    ) {
-      handleOpenChat(Number(storageConversationId));
-    }
-  });
+  useEffect(() => {
+    socket.on("message-update", (updatedMessageConversationId: number) => {
+      const storageConversationId = localStorage.getItem(
+        "selectedConversationId"
+      );
+      if (
+        storageConversationId &&
+        Number(updatedMessageConversationId) === Number(storageConversationId)
+      ) {
+        handleOpenChat(Number(storageConversationId));
+        setMessagesLoaded(false);
+      } else {
+        setMessagesLoaded(false);
+        setConversations((prevConversations) =>
+          prevConversations.map((conv) =>
+            conv.ConversationId === updatedMessageConversationId
+              ? { ...conv, notificationCount: conv.notificationCount + 1 }
+              : conv
+          )
+        );
+      }
+    });
+  }, []);
 
   useEffect(() => {
     // Fetch logged in staffer's data and conversations
