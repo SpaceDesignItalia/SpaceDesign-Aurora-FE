@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useState } from "react";
 import {
   Table,
@@ -9,21 +8,15 @@ import {
   TableCell,
   Input,
   Button,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  DropdownItem,
   Pagination,
   SortDescriptor,
   Link,
 } from "@nextui-org/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
 import ViewEmployeeModal from "../Other/ViewEmployeeModal";
 import ConfirmDeleteModal from "../Other/ConfirmDeleteModal";
@@ -38,11 +31,6 @@ interface Employee {
 }
 
 interface ModalData {
-  Employee: Employee;
-  open: boolean;
-}
-
-interface ModalDeleteData {
   Employee: Employee;
   open: boolean;
 }
@@ -95,16 +83,7 @@ export default function EmployeeTable() {
       EmployeeFullName: "",
       EmployeeEmail: "",
       EmployeePhone: "",
-    },
-    open: false,
-  });
-
-  const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
-    Employee: {
-      EmployeeId: 0,
-      EmployeeFullName: "",
-      EmployeeEmail: "",
-      EmployeePhone: "",
+      RoleName: "",
     },
     open: false,
   });
@@ -242,6 +221,8 @@ export default function EmployeeTable() {
     []
   );
 
+  console.log(items);
+
   const topContent = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
@@ -350,7 +331,7 @@ export default function EmployeeTable() {
         topContent={topContent}
         topContentPlacement="inside"
         onSortChange={setSortDescriptor}
-        radius="full"
+        radius="lg"
         classNames={{
           wrapper: "border rounded-lg shadow-none",
         }}
