@@ -29,6 +29,7 @@ import ViewTaskModal from "./ViewTaskModal";
 import axios from "axios";
 import { useEffect } from "react";
 import { usePermissions } from "../../../Layout/PermissionProvider";
+import ReactQuill from "react-quill";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -47,6 +48,7 @@ interface Task {
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
   ProjectTaskExpiration: DateValue;
+  ProjectTaskCreation: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
@@ -88,6 +90,7 @@ export default function TaskCard({
       ProjectTaskId: 0,
       ProjectTaskName: "",
       ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
@@ -100,6 +103,7 @@ export default function TaskCard({
       ProjectTaskId: 0,
       ProjectTaskName: "",
       ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
@@ -112,6 +116,7 @@ export default function TaskCard({
       ProjectTaskId: 0,
       ProjectTaskName: "",
       ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
@@ -268,16 +273,10 @@ export default function TaskCard({
             </Dropdown>
           </CardHeader>
           <CardBody className="px-3 py-0 text-small">
-            <div
-              dangerouslySetInnerHTML={
-                task.ProjectTaskDescription
-                  ? {
-                      __html: task.ProjectTaskDescription,
-                    }
-                  : {
-                      __html: "Nessuna descrizione",
-                    }
-              }
+            <ReactQuill
+              className="sm:col-span-2 sm:mt-0 h-fit"
+              theme="bubble"
+              value={task.ProjectTaskDescription}
             />
           </CardBody>
           <CardFooter className="gap-3 flex flex-col items-start">

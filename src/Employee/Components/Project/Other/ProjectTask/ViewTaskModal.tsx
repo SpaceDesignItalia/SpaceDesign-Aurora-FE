@@ -14,6 +14,7 @@ import {
 import { API_URL_IMG } from "../../../../../API/API";
 import { useDateFormatter } from "@react-aria/i18n";
 import dayjs from "dayjs";
+import ReactQuill from "react-quill";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -32,6 +33,7 @@ interface Task {
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
   ProjectTaskExpiration: DateValue;
+  ProjectTaskCreation: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
@@ -85,12 +87,10 @@ export default function ViewTaskModal({
                       Descrizione
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: TaskData.ProjectTaskDescription
-                            ? TaskData.ProjectTaskDescription
-                            : "Nessuna descrizione",
-                        }}
+                      <ReactQuill
+                        className="sm:col-span-2 sm:mt-0 h-fit"
+                        theme="bubble"
+                        value={TaskData.ProjectTaskDescription}
                       />
                     </dd>
                   </div>
@@ -100,6 +100,14 @@ export default function ViewTaskModal({
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                       {formatDate(TaskData.ProjectTaskExpiration)}
+                    </dd>
+                  </div>
+                  <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt className="text-sm font-medium leading-6 text-gray-900">
+                      Inizio
+                    </dt>
+                    <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                      {formatDate(TaskData.ProjectTaskCreation)}
                     </dd>
                   </div>
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
