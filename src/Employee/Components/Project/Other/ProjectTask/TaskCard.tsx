@@ -18,6 +18,9 @@ import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import SmsRoundedIcon from "@mui/icons-material/SmsRounded";
+import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import { API_URL_IMG } from "../../../../../API/API";
 import dayjs from "dayjs";
 import { useDateFormatter } from "@react-aria/i18n";
@@ -26,6 +29,7 @@ import { parseDate } from "@internationalized/date";
 import EditTaskModal from "./EditTaskModal";
 import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
 import ViewTaskModal from "./ViewTaskModal";
+import AddCommentModal from "./AddCommentModal";
 import axios from "axios";
 import { useEffect } from "react";
 import { usePermissions } from "../../../Layout/PermissionProvider";
@@ -43,6 +47,15 @@ interface Member {
   StafferImageUrl: string;
 }
 
+interface Comment {
+  ProjectTaskCommentId: number;
+  StafferId: number;
+  StafferFullName: string;
+  StafferImageUrl: string;
+  Text: string;
+  CommentDate: Date;
+}
+
 interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
@@ -52,6 +65,7 @@ interface Task {
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
+  ProjectTaskComments: Comment[];
   ProjectId: number;
 }
 
@@ -77,6 +91,8 @@ export default function TaskCard({
   update,
   socket,
   projectId,
+  updateTaskStatus,
+  columnCount,
 }: {
   provided: any;
   task: Task;
@@ -84,6 +100,8 @@ export default function TaskCard({
   update: any;
   socket: any;
   projectId: number;
+  updateTaskStatus: any;
+  columnCount: number;
 }) {
   const [modalData, setModalData] = useState<ModalData>({
     Task: {
@@ -94,6 +112,7 @@ export default function TaskCard({
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
+      ProjectTaskComments: [],
       ProjectId: 0,
     },
     open: false,
@@ -107,6 +126,7 @@ export default function TaskCard({
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
+      ProjectTaskComments: [],
       ProjectId: 0,
     },
     open: false,
@@ -120,6 +140,21 @@ export default function TaskCard({
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
+      ProjectTaskComments: [],
+      ProjectId: 0,
+    },
+    open: false,
+  });
+  const [modalCommentData, setModalCommentData] = useState<ModalCommentData>({
+    Task: {
+      ProjectTaskId: 0,
+      ProjectTaskName: "",
+      ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+      ProjectTaskStatusId: 0,
+      ProjectTaskTags: [],
+      ProjectTaskMembers: [],
+      ProjectTaskComments: [],
       ProjectId: 0,
     },
     open: false,
@@ -151,7 +186,7 @@ export default function TaskCard({
     }
     fetchData();
   }, [hasPermission]);
-
+  console.log(columnCount);
   function formatDate(date: DateValue) {
     let formatter = useDateFormatter({ dateStyle: "full" });
     return dayjs(formatter.format(new Date(date.toString()))).format(
@@ -185,6 +220,13 @@ export default function TaskCard({
         TaskData={modalDeleteData.Task}
         DeleteTask={DeleteTask}
       />
+      <AddCommentModal
+        isOpen={modalCommentData.open}
+        isClosed={() =>
+          setModalCommentData({ ...modalCommentData, open: false })
+        }
+        TaskData={modalCommentData.Task}
+      />
       <div
         ref={provided.innerRef}
         {...provided.draggableProps}
@@ -213,64 +255,94 @@ export default function TaskCard({
                 </h1>
               </div>
             </div>
-            <Dropdown radius="sm">
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
-                  <MoreVertRoundedIcon />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem
-                  color="primary"
-                  startContent={<RemoveRedEyeOutlinedIcon />}
-                  aria-label="View"
-                  aria-labelledby="View"
+            <div className="flex flex-row gap-3">
+              {Number(task.ProjectTaskStatusId) > 1 && (
+                <Button
+                  isIconOnly
+                  size="sm"
                   onClick={() =>
-                    setModalData({
-                      ...modalData,
-                      open: true,
-                      Task: task,
-                    })
+                    updateTaskStatus(
+                      task.ProjectTaskId,
+                      Number(task.ProjectTaskStatusId) - 1
+                    )
                   }
                 >
-                  Visualizza
-                </DropdownItem>
-                {permissions.editActivity && (
+                  <ArrowBackIosNewRoundedIcon />
+                </Button>
+              )}
+              <Dropdown radius="sm">
+                <DropdownTrigger>
+                  <Button isIconOnly size="sm" variant="light">
+                    <MoreVertRoundedIcon />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu>
                   <DropdownItem
-                    color="warning"
-                    startContent={<ModeOutlinedIcon />}
-                    aria-label="Edit"
-                    aria-labelledby="Edit"
+                    color="primary"
+                    startContent={<RemoveRedEyeOutlinedIcon />}
+                    aria-label="View"
+                    aria-labelledby="View"
                     onClick={() =>
-                      setModalEditData({
-                        ...modalEditData,
+                      setModalData({
+                        ...modalData,
                         open: true,
                         Task: task,
                       })
                     }
                   >
-                    Modifica
+                    Visualizza
                   </DropdownItem>
-                )}
-                {permissions.removeActivity && (
-                  <DropdownItem
-                    color="danger"
-                    startContent={<DeleteOutlinedIcon />}
-                    aria-label="Remove"
-                    aria-labelledby="Remove"
-                    onClick={() =>
-                      setModalDeleteData({
-                        ...modalDeleteData,
-                        open: true,
-                        Task: task,
-                      })
-                    }
-                  >
-                    Rimuovi
-                  </DropdownItem>
-                )}
-              </DropdownMenu>
-            </Dropdown>
+                  {permissions.editActivity && (
+                    <DropdownItem
+                      color="warning"
+                      startContent={<ModeOutlinedIcon />}
+                      aria-label="Edit"
+                      aria-labelledby="Edit"
+                      onClick={() =>
+                        setModalEditData({
+                          ...modalEditData,
+                          open: true,
+                          Task: task,
+                        })
+                      }
+                    >
+                      Modifica
+                    </DropdownItem>
+                  )}
+                  {permissions.removeActivity && (
+                    <DropdownItem
+                      color="danger"
+                      startContent={<DeleteOutlinedIcon />}
+                      aria-label="Remove"
+                      aria-labelledby="Remove"
+                      onClick={() =>
+                        setModalDeleteData({
+                          ...modalDeleteData,
+                          open: true,
+                          Task: task,
+                        })
+                      }
+                    >
+                      Rimuovi
+                    </DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+              {task.ProjectTaskStatusId < columnCount && (
+                <Button
+                  isIconOnly
+                  size="sm"
+                  onClick={() =>
+                    updateTaskStatus(
+                      task.ProjectTaskId,
+                      Number(task.ProjectTaskStatusId) + 1
+                    )
+                  }
+                >
+                  <ArrowForwardIosRoundedIcon />
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardBody className="px-3 py-0 text-small">
             <ReactQuill
@@ -293,10 +365,24 @@ export default function TaskCard({
                 />
               ))}
             </AvatarGroup>
-            <div className="flex flex-row items-center gap-3 w-full">
+            <div className="flex flex-row items-center justify-between gap-3 w-full">
               <span className="font-semibold">
                 {formatDate(task.ProjectTaskExpiration)}
               </span>
+              <Button
+                color="primary"
+                isIconOnly
+                size="sm"
+                onClick={() =>
+                  setModalCommentData({
+                    ...modalCommentData,
+                    open: true,
+                    Task: task,
+                  })
+                }
+              >
+                <SmsRoundedIcon />
+              </Button>
             </div>
           </CardFooter>
         </Card>

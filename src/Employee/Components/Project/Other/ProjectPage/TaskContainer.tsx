@@ -29,14 +29,25 @@ interface Member {
   StafferImageUrl: string;
 }
 
+interface Comment {
+  ProjectTaskCommentId: number;
+  StafferId: number;
+  StafferFullName: string;
+  StafferImageUrl: string;
+  Text: string;
+  CommentDate: Date;
+}
+
 interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
   ProjectTaskExpiration: DateValue;
+  ProjectTaskCreation: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
+  ProjectTaskComments: Comment[];
   ProjectId: number;
 }
 
@@ -127,10 +138,18 @@ export default function TaskContainer({
                 }
               );
 
+              const commentResponse = await axios.get<Comment[]>(
+                "/Project/GET/GetCommentsByTaskId",
+                {
+                  params: { ProjectTaskId: task.ProjectTaskId },
+                }
+              );
+
               return {
                 ...task,
                 ProjectTaskTags: tagsResponse.data,
                 ProjectTaskMembers: membersResponse.data,
+                ProjectTaskComments: commentResponse.data,
               };
             })
           );
@@ -282,6 +301,8 @@ export default function TaskContainer({
                               update={update}
                               socket={socket}
                               projectId={projectId}
+                              updateTaskStatus={updateTaskStatus}
+                              columnCount={columns.length}
                             />
                           )}
                         </Draggable>

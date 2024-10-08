@@ -15,6 +15,8 @@ import { API_URL_IMG } from "../../../../../API/API";
 import { useDateFormatter } from "@react-aria/i18n";
 import dayjs from "dayjs";
 import ReactQuill from "react-quill";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -28,6 +30,15 @@ interface Member {
   StafferImageUrl: string;
 }
 
+interface Comment {
+  ProjectTaskCommentId: number;
+  StafferId: number;
+  StafferFullName: string;
+  StafferImageUrl: string;
+  Text: string;
+  CommentDate: Date;
+}
+
 interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
@@ -37,6 +48,7 @@ interface Task {
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
+  ProjectTaskComments: Comment[];
 }
 
 export default function ViewTaskModal({
@@ -48,12 +60,34 @@ export default function ViewTaskModal({
   isClosed: () => void;
   TaskData: Task;
 }) {
+  const [loggedStafferId, setloggedStafferId] = useState<number>(0);
   let formatter = useDateFormatter({ dateStyle: "full" });
 
   function formatDate(date: DateValue) {
     return dayjs(formatter.format(new Date(date.toString()))).format(
       "DD/MM/YYYY"
     );
+  }
+
+  useEffect(() => {
+    axios
+      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
+      .then(async (res) => {
+        setloggedStafferId(res.data.StafferId);
+      });
+  }, []);
+
+  function handleDeleteComment(commentId: number) {
+    console.log(commentId);
+    axios
+      .delete("/Project/DELETE/DeleteTaskComment", {
+        data: { CommentId: commentId },
+        withCredentials: true,
+      })
+      .then(() => {
+        console.log("Commento eliminato");
+        window.location.reload();
+      });
   }
 
   return (
@@ -158,6 +192,59 @@ export default function ViewTaskModal({
                               {tag.ProjectTaskTagName}
                             </Chip>
                           ))}
+                        </div>
+                      )}
+                    </dd>
+                  </div>
+                  <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt className="text-sm font-medium leading-6 text-gray-900">
+                      Commenti
+                    </dt>
+                    <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
+                      {TaskData.ProjectTaskComments.length === 0 ? (
+                        <p>Nessun commento trovato</p>
+                      ) : (
+                        <div className="flex flex-col gap-2">
+                          {TaskData.ProjectTaskComments.map(
+                            (comment, index) => (
+                              <div
+                                key={index}
+                                className="flex gap-2 items-start"
+                              >
+                                <Avatar
+                                  src={
+                                    comment.StafferImageUrl &&
+                                    API_URL_IMG +
+                                      "/profileIcons/" +
+                                      comment.StafferImageUrl
+                                  }
+                                  alt={comment.StafferFullName}
+                                />
+                                <div className="flex flex-col">
+                                  <div className="flex items-center">
+                                    <p className="flex-1">{comment.Text}</p>
+                                    {comment.StafferId === loggedStafferId && (
+                                      <Button
+                                        className="text-red-500 ml-2"
+                                        onClick={() =>
+                                          handleDeleteComment(
+                                            comment.ProjectTaskCommentId
+                                          )
+                                        }
+                                      >
+                                        X
+                                      </Button>
+                                    )}
+                                  </div>
+                                  <p className="text-gray-500 text-sm">
+                                    {dayjs(comment.CommentDate).format(
+                                      "DD/MM/YYYY"
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                            )
+                          )}
                         </div>
                       )}
                     </dd>
