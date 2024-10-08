@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
+import ResponseTicket from "../ProjectTicket/ResponseTicket"; // Import ResponseTicket component
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -85,7 +86,6 @@ export default function TicketContainer({
           params: { ConversationId: conversationId },
         })
         .then((res) => {
-          console.log(res.data);
           setMessages(res.data);
           setConversationId(conversationId);
           socket.emit("join", conversationId);
@@ -106,7 +106,6 @@ export default function TicketContainer({
         })
         .then(() => {
           socket.emit("message", conversationId);
-          setConversationId(conversationId);
           setNewMessage("");
         });
     } catch (error) {
@@ -122,6 +121,11 @@ export default function TicketContainer({
 
   return (
     <>
+      {/* Ticket Table Section */}
+      {/* Call the ResponseTicket component and pass ProjectId */}
+      <ResponseTicket ProjectId={projectData.ProjectId} />
+
+      {/* Customer Chat Section */}
       <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
         <div className="flex flex-col gap-5">
           <h1 className="font-bold">Customer chat</h1>
@@ -140,7 +144,7 @@ export default function TicketContainer({
                       key={message.MessageId}
                     />
                   );
-                } else
+                } else {
                   return (
                     <ChatMessage
                       message={message}
@@ -148,6 +152,7 @@ export default function TicketContainer({
                       key={message.MessageId}
                     />
                   );
+                }
               })}
             </div>
           </ScrollShadow>
@@ -164,7 +169,7 @@ export default function TicketContainer({
               onClick={handleSendMessage}
               color="primary"
               isIconOnly
-              isDisabled={newMessage.trim() === "" ? true : false}
+              isDisabled={newMessage.trim() === ""}
             >
               <SendRoundedIcon />
             </Button>
