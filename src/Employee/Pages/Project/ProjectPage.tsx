@@ -17,6 +17,7 @@ import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContai
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import FilesContainer from "../../Components/Project/Other/ProjectPage/FilesContainer";
 import TicketContainer from "../../Components/Project/Other/ProjectPage/TicketContainer";
+import ResponseTicket from "../../Components/Project/Other/ProjectTicket/ResponseTicket";
 
 interface Project {
   ProjectId: number;
@@ -147,7 +148,7 @@ export default function ProjectPage() {
                   radius="sm"
                   variant="bordered"
                   selectedKey={activeTab}
-                  onSelectionChange={setActiveTab}
+                  onSelectionChange={(key) => setActiveTab(key.toString())}
                 >
                   {tabs.map((tab) => (
                     <Tab
@@ -213,7 +214,6 @@ export default function ProjectPage() {
                 <TicketContainer projectData={projectData} />
               </div>
             )}
-            {activeTab === "Ticket" && <div>Ticket content</div>}
           </div>
         </main>
       </div>
