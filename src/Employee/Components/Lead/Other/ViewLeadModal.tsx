@@ -6,7 +6,6 @@ import {
   ModalFooter,
   Button,
   Spinner,
-  Textarea,
 } from "@nextui-org/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -17,10 +16,10 @@ interface Lead {
   LastName: string;
   Email: string;
   Company: string;
-  Message: string;
   Name: string;
   Range: string;
-  CreatedAt: Date;
+  CreatedAt: Date | null;
+  Message: string;
 }
 
 interface ViewLeadModalProps {
@@ -147,7 +146,8 @@ export default function ViewLeadModal({
                           Data di creazione
                         </dt>
                         <dd className="mt-1 text-sm leading-6 text-gray-700">
-                          {lead.CreatedAt.toLocaleString()}
+                          {lead.CreatedAt !== null &&
+                            lead.CreatedAt.toLocaleString()}
                         </dd>
                       </div>
                       <div>
@@ -163,8 +163,8 @@ export default function ViewLeadModal({
                       <dt className="text-sm font-medium leading-6 mb-4 text-gray-900">
                         Messaggio
                       </dt>
-                      <dd className="mt-1 text-sm leading-6 text-gray-700">
-                        <Textarea isReadOnly value={lead.Message} />
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 break-words">
+                        {lead.Message}
                       </dd>
                     </div>
                   </dl>

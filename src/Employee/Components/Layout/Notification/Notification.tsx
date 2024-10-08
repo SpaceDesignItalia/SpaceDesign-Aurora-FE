@@ -34,9 +34,6 @@ export default function Notification() {
   const [deleteNotification, setDeleteNotification] = useState(false);
   const [stafferId, setStafferId] = useState<number | null>(null);
 
-  // Carica il suono di notifica
-  const notificationSound = new Audio("/notification.mp3");
-
   useEffect(() => {
     if (update) {
       const timer = setTimeout(() => setUpdate(false), 2000);
@@ -68,8 +65,6 @@ export default function Notification() {
 
   socket.on("newNotification", () => {
     notificationUpdate();
-    notificationSound.volume = 0.5;
-    //notificationSound.play(); // Riproduci il suono alla ricezione della notifica
   });
 
   socket.on("delete-notifications", () => {
