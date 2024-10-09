@@ -57,10 +57,12 @@ export default function EditTaskModal({
   isOpen,
   isClosed,
   TaskData,
+  socket,
 }: {
   isOpen: boolean;
   isClosed: () => void;
   TaskData: Task;
+  socket: any;
 }) {
   const [newTask, setNewTask] = useState<Task>(TaskData);
   const [members, setMembers] = useState<Member[]>([]);
@@ -213,8 +215,8 @@ export default function EditTaskModal({
         TaskData: newTask,
       })
       .then(() => {
-        setUpdate(!update);
-        window.location.reload();
+        socket.emit("task-news", TaskData.ProjectId);
+        isClosed();
       });
   }
 
@@ -223,6 +225,7 @@ export default function EditTaskModal({
       ...newTask,
       ProjectTaskMembers: [...newTask.ProjectTaskMembers, member],
     });
+    setUpdate(!update);
   }
 
   function addTaskTag(tag: Tag) {
@@ -230,6 +233,7 @@ export default function EditTaskModal({
       ...newTask,
       ProjectTaskTags: [...newTask.ProjectTaskTags, tag],
     });
+    setUpdate(!update);
   }
 
   function deleteTaskMember(stafferId: number) {
@@ -239,6 +243,7 @@ export default function EditTaskModal({
         (member) => member.StafferId !== stafferId
       ),
     });
+    setUpdate(!update);
   }
 
   function deleteTaskTag(tagId: number) {
@@ -248,6 +253,7 @@ export default function EditTaskModal({
         (tag) => tag.ProjectTaskTagId !== tagId
       ),
     });
+    setUpdate(!update);
   }
 
   return (

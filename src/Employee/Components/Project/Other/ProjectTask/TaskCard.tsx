@@ -18,7 +18,6 @@ import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import SmsRoundedIcon from "@mui/icons-material/SmsRounded";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import { API_URL_IMG } from "../../../../../API/API";
@@ -29,7 +28,6 @@ import { parseDate } from "@internationalized/date";
 import EditTaskModal from "./EditTaskModal";
 import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
 import ViewTaskModal from "./ViewTaskModal";
-import AddCommentModal from "./AddCommentModal";
 import axios from "axios";
 import { useEffect } from "react";
 import { usePermissions } from "../../../Layout/PermissionProvider";
@@ -145,20 +143,6 @@ export default function TaskCard({
     },
     open: false,
   });
-  const [modalCommentData, setModalCommentData] = useState<ModalCommentData>({
-    Task: {
-      ProjectTaskId: 0,
-      ProjectTaskName: "",
-      ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
-      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
-      ProjectTaskStatusId: 0,
-      ProjectTaskTags: [],
-      ProjectTaskMembers: [],
-      ProjectTaskComments: [],
-      ProjectId: 0,
-    },
-    open: false,
-  });
 
   const [permissions, setPermissions] = useState({
     editActivity: false,
@@ -186,7 +170,7 @@ export default function TaskCard({
     }
     fetchData();
   }, [hasPermission]);
-  console.log(columnCount);
+
   function formatDate(date: DateValue) {
     let formatter = useDateFormatter({ dateStyle: "full" });
     return dayjs(formatter.format(new Date(date.toString()))).format(
@@ -201,31 +185,26 @@ export default function TaskCard({
     socket.emit("task-news", projectId);
     setUpdate(!update);
   }
-
+  console.log(task);
   return (
     <>
       <ViewTaskModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
         TaskData={modalData.Task}
+        socket={socket}
       />
       <EditTaskModal
         isOpen={modalEditData.open}
         isClosed={() => setModalEditData({ ...modalEditData, open: false })}
         TaskData={modalEditData.Task}
+        socket={socket}
       />
       <ConfirmDeleteTaskModal
         isOpen={modalDeleteData.open}
         isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
         TaskData={modalDeleteData.Task}
         DeleteTask={DeleteTask}
-      />
-      <AddCommentModal
-        isOpen={modalCommentData.open}
-        isClosed={() =>
-          setModalCommentData({ ...modalCommentData, open: false })
-        }
-        TaskData={modalCommentData.Task}
       />
       <div
         ref={provided.innerRef}
@@ -369,20 +348,6 @@ export default function TaskCard({
               <span className="font-semibold">
                 {formatDate(task.ProjectTaskExpiration)}
               </span>
-              <Button
-                color="primary"
-                isIconOnly
-                size="sm"
-                onClick={() =>
-                  setModalCommentData({
-                    ...modalCommentData,
-                    open: true,
-                    Task: task,
-                  })
-                }
-              >
-                <SmsRoundedIcon />
-              </Button>
             </div>
           </CardFooter>
         </Card>

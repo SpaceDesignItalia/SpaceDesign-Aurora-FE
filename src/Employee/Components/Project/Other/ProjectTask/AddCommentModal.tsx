@@ -40,13 +40,14 @@ export default function AddCommentModal({
   isOpen,
   isClosed,
   TaskData,
+  socket,
 }: {
   isOpen: boolean;
   isClosed: () => void;
   TaskData: Task;
+  socket: any;
 }) {
   const [comment, setComment] = useState("");
-  const [update, setUpdate] = useState(false);
 
   function handleAddTask() {
     axios
@@ -56,7 +57,8 @@ export default function AddCommentModal({
         { withCredentials: true }
       )
       .then(() => {
-        setUpdate(!update);
+        setComment("");
+        socket.emit("task-news", TaskData.ProjectId);
         window.location.reload();
       });
   }
