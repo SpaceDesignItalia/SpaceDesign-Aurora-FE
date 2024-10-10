@@ -1,12 +1,4 @@
-import {
-  Button,
-  Progress,
-  cn,
-  User,
-  Tooltip,
-  Link,
-  link,
-} from "@nextui-org/react";
+import { Button, Progress, cn, User, Tooltip, Link } from "@nextui-org/react";
 import TimerRoundedIcon from "@mui/icons-material/TimerRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ModeEditRoundedIcon from "@mui/icons-material/ModeEditRounded";
@@ -40,6 +32,7 @@ interface Project {
 interface ModalData {
   ProjectId: number;
   open: boolean;
+  Links: Link[];
 }
 
 interface ModalEditData {
@@ -49,6 +42,7 @@ interface ModalEditData {
 
 interface Link {
   ProjectId: number;
+  ProjectLinkId: number;
   ProjectLinkTitle: string;
   ProjectLinkUrl: string;
   ProjectLinkTypeId: number;
@@ -65,6 +59,7 @@ export default function OverviewContainer({
   const [modalData, setModalData] = useState<ModalData>({
     ProjectId: 0,
     open: false,
+    Links: [],
   });
 
   const [modalEditData, setModalEditData] = useState<ModalEditData>({
@@ -128,10 +123,13 @@ export default function OverviewContainer({
     return <>{daysUntilDeadline} g</>;
   }
 
-  function DeleteLink(LinkId: number) {
+  function DeleteLink(LinkId: string) {
     axios
       .delete("/Project/DELETE/RemoveLinkFromProject", {
-        params: { ProjectLinkId: LinkId, ProjectId: projectData.ProjectId },
+        params: {
+          ProjectLinkId: Number(LinkId),
+          ProjectId: projectData.ProjectId,
+        },
       })
       .then((res) => {
         if (res.status === 200) {
@@ -248,6 +246,7 @@ export default function OverviewContainer({
                           href={link.ProjectLinkUrl}
                           target="blank"
                           size="sm"
+                          radius="full"
                           variant="faded"
                           isIconOnly
                         >
@@ -269,6 +268,7 @@ export default function OverviewContainer({
                       <Button
                         size="sm"
                         color="primary"
+                        radius="full"
                         variant="solid"
                         onClick={() =>
                           setModalData({

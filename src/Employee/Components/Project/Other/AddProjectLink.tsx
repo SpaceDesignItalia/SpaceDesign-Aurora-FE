@@ -93,11 +93,13 @@ export default function AddProjectLink({
     }
   }
 
-  function handleProjectLinkTypeChange(e: React.Key) {
-    setNewLinkData({
-      ...newLinkData,
-      ProjectLinkTypeId: parseInt(e),
-    });
+  function handleProjectLinkTypeChange(key: React.Key | null) {
+    if (key !== null) {
+      setNewLinkData({
+        ...newLinkData,
+        ProjectLinkTypeId: parseInt(key.toString()),
+      });
+    }
   }
 
   function handleProjectLinkURLChange(e: React.ChangeEvent<HTMLInputElement>) {

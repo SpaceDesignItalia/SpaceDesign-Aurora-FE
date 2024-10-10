@@ -152,11 +152,10 @@ export default function ProjectPage() {
                   color="primary"
                   radius="sm"
                   size="sm"
+                  startContent={<ModeOutlinedIcon />}
                   isIconOnly
                   onClick={() => setModalData({ ...modalData, open: true })}
-                >
-                  <ModeOutlinedIcon />
-                </Button>
+                />
               )}
             </div>
           </div>

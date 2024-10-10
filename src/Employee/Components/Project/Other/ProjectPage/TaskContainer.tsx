@@ -223,19 +223,31 @@ export default function TaskContainer({
 
       <div className="w-full flex justify-end">
         {permissions.assignActivity && (
-          <Button
-            color="primary"
-            radius="sm"
-            onClick={() => setModalAddData({ ...modalAddData, open: true })}
-            startContent={<LibraryAddRoundedIcon />}
-          >
-            Aggiungi Task
-          </Button>
+          <>
+            <Button
+              color="primary"
+              radius="full"
+              onClick={() => setModalAddData({ ...modalAddData, open: true })}
+              startContent={<LibraryAddRoundedIcon />}
+              className="hidden sm:flex"
+            >
+              Aggiungi Task
+            </Button>
+
+            <Button
+              color="primary"
+              radius="full"
+              onClick={() => setModalAddData({ ...modalAddData, open: true })}
+              startContent={<LibraryAddRoundedIcon />}
+              isIconOnly
+              className="sm:hidden"
+            />
+          </>
         )}
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-between p-5 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-between py-5 gap-5 mb-14">
           {columns.map((column) => {
             const columnTaskList =
               columnTasks[column.ProjectTaskStatusId] || [];
