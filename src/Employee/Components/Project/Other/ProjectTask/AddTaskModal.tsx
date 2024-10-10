@@ -46,6 +46,7 @@ interface Task {
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
   ProjectTaskExpiration: DateValue;
+  ProjectTaskCreation: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
@@ -66,6 +67,7 @@ export default function AddTaskModal({
     ProjectTaskName: "",
     ProjectTaskDescription: "",
     ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
+    ProjectTaskCreation: parseDate(dayjs().format("YYYY-MM-DD")),
     ProjectTaskStatusId: 0,
     ProjectTaskTags: [],
     ProjectTaskMembers: [],
@@ -175,9 +177,13 @@ export default function AddTaskModal({
 
   function handleAddTask() {
     const formattedDate = new Date(newTask.ProjectTaskExpiration.toString());
+    const formattedCreationDate = new Date(
+      newTask.ProjectTaskCreation.toString()
+    );
     axios
       .post("/Project/POST/AddTask", {
         FormattedDate: formattedDate,
+        FormattedCreationDate: formattedCreationDate,
         TaskData: newTask,
       })
       .then(() => {
@@ -285,6 +291,25 @@ export default function AddTaskModal({
                           setNewTask({
                             ...newTask,
                             ProjectTaskExpiration: e,
+                          })
+                        }
+                      />
+                    </I18nProvider>
+                  </div>
+                  <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt className="text-sm font-medium leading-6 text-gray-900">
+                      Scadenza
+                    </dt>
+                    <I18nProvider locale="it-GB">
+                      <DatePicker
+                        className=" sm:col-span-2 sm:mt-0"
+                        variant="bordered"
+                        radius="sm"
+                        value={newTask.ProjectTaskCreation}
+                        onChange={(e) =>
+                          setNewTask({
+                            ...newTask,
+                            ProjectTaskCreation: e,
                           })
                         }
                       />

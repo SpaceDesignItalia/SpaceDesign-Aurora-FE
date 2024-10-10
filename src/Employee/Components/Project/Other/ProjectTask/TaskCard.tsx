@@ -18,6 +18,8 @@ import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
+import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 import { API_URL_IMG } from "../../../../../API/API";
 import dayjs from "dayjs";
 import { useDateFormatter } from "@react-aria/i18n";
@@ -29,6 +31,7 @@ import ViewTaskModal from "./ViewTaskModal";
 import axios from "axios";
 import { useEffect } from "react";
 import { usePermissions } from "../../../Layout/PermissionProvider";
+import ReactQuill from "react-quill";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -42,14 +45,25 @@ interface Member {
   StafferImageUrl: string;
 }
 
+interface Comment {
+  ProjectTaskCommentId: number;
+  StafferId: number;
+  StafferFullName: string;
+  StafferImageUrl: string;
+  Text: string;
+  CommentDate: Date;
+}
+
 interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
   ProjectTaskExpiration: DateValue;
+  ProjectTaskCreation: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
+  ProjectTaskComments: Comment[];
   ProjectId: number;
 }
 
@@ -75,6 +89,8 @@ export default function TaskCard({
   update,
   socket,
   projectId,
+  updateTaskStatus,
+  columnCount,
 }: {
   provided: any;
   task: Task;
@@ -82,15 +98,19 @@ export default function TaskCard({
   update: any;
   socket: any;
   projectId: number;
+  updateTaskStatus: any;
+  columnCount: number;
 }) {
   const [modalData, setModalData] = useState<ModalData>({
     Task: {
       ProjectTaskId: 0,
       ProjectTaskName: "",
       ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
+      ProjectTaskComments: [],
       ProjectId: 0,
     },
     open: false,
@@ -100,9 +120,11 @@ export default function TaskCard({
       ProjectTaskId: 0,
       ProjectTaskName: "",
       ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
+      ProjectTaskComments: [],
       ProjectId: 0,
     },
     open: false,
@@ -112,9 +134,11 @@ export default function TaskCard({
       ProjectTaskId: 0,
       ProjectTaskName: "",
       ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
+      ProjectTaskComments: [],
       ProjectId: 0,
     },
     open: false,
@@ -161,18 +185,20 @@ export default function TaskCard({
     socket.emit("task-news", projectId);
     setUpdate(!update);
   }
-
+  console.log(task);
   return (
     <>
       <ViewTaskModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
         TaskData={modalData.Task}
+        socket={socket}
       />
       <EditTaskModal
         isOpen={modalEditData.open}
         isClosed={() => setModalEditData({ ...modalEditData, open: false })}
         TaskData={modalEditData.Task}
+        socket={socket}
       />
       <ConfirmDeleteTaskModal
         isOpen={modalDeleteData.open}
@@ -186,7 +212,7 @@ export default function TaskCard({
         {...provided.dragHandleProps}
       >
         <Card className="h-full" radius="sm">
-          <CardHeader className="justify-between">
+          <CardHeader className="justify-between items-start">
             <div className="flex gap-5">
               <div className="flex flex-col gap-3 items-start justify-center w-auto h-fit">
                 <div className="flex flex-row flex-wrap gap-2">
@@ -208,76 +234,102 @@ export default function TaskCard({
                 </h1>
               </div>
             </div>
-            <Dropdown radius="sm">
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
-                  <MoreVertRoundedIcon />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem
-                  color="primary"
-                  startContent={<RemoveRedEyeOutlinedIcon />}
-                  aria-label="View"
-                  aria-labelledby="View"
+            <div className="flex flex-row">
+              {Number(task.ProjectTaskStatusId) > 1 && (
+                <Button
+                  variant="light"
+                  isIconOnly
+                  size="sm"
                   onClick={() =>
-                    setModalData({
-                      ...modalData,
-                      open: true,
-                      Task: task,
-                    })
+                    updateTaskStatus(
+                      task.ProjectTaskId,
+                      Number(task.ProjectTaskStatusId) - 1
+                    )
                   }
                 >
-                  Visualizza
-                </DropdownItem>
-                {permissions.editActivity && (
+                  <ArrowBackIosNewRoundedIcon />
+                </Button>
+              )}
+              <Dropdown radius="sm">
+                <DropdownTrigger>
+                  <Button isIconOnly size="sm" variant="light">
+                    <MoreVertRoundedIcon />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu>
                   <DropdownItem
-                    color="warning"
-                    startContent={<ModeOutlinedIcon />}
-                    aria-label="Edit"
-                    aria-labelledby="Edit"
+                    color="primary"
+                    startContent={<RemoveRedEyeOutlinedIcon />}
+                    aria-label="View"
+                    aria-labelledby="View"
                     onClick={() =>
-                      setModalEditData({
-                        ...modalEditData,
+                      setModalData({
+                        ...modalData,
                         open: true,
                         Task: task,
                       })
                     }
                   >
-                    Modifica
+                    Visualizza
                   </DropdownItem>
-                )}
-                {permissions.removeActivity && (
-                  <DropdownItem
-                    color="danger"
-                    startContent={<DeleteOutlinedIcon />}
-                    aria-label="Remove"
-                    aria-labelledby="Remove"
-                    onClick={() =>
-                      setModalDeleteData({
-                        ...modalDeleteData,
-                        open: true,
-                        Task: task,
-                      })
-                    }
-                  >
-                    Rimuovi
-                  </DropdownItem>
-                )}
-              </DropdownMenu>
-            </Dropdown>
+                  {permissions.editActivity && (
+                    <DropdownItem
+                      color="warning"
+                      startContent={<ModeOutlinedIcon />}
+                      aria-label="Edit"
+                      aria-labelledby="Edit"
+                      onClick={() =>
+                        setModalEditData({
+                          ...modalEditData,
+                          open: true,
+                          Task: task,
+                        })
+                      }
+                    >
+                      Modifica
+                    </DropdownItem>
+                  )}
+                  {permissions.removeActivity && (
+                    <DropdownItem
+                      color="danger"
+                      startContent={<DeleteOutlinedIcon />}
+                      aria-label="Remove"
+                      aria-labelledby="Remove"
+                      onClick={() =>
+                        setModalDeleteData({
+                          ...modalDeleteData,
+                          open: true,
+                          Task: task,
+                        })
+                      }
+                    >
+                      Rimuovi
+                    </DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+              {task.ProjectTaskStatusId < columnCount && (
+                <Button
+                  variant="light"
+                  isIconOnly
+                  size="sm"
+                  onClick={() =>
+                    updateTaskStatus(
+                      task.ProjectTaskId,
+                      Number(task.ProjectTaskStatusId) + 1
+                    )
+                  }
+                >
+                  <ArrowForwardIosRoundedIcon />
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardBody className="px-3 py-0 text-small">
-            <div
-              dangerouslySetInnerHTML={
-                task.ProjectTaskDescription
-                  ? {
-                      __html: task.ProjectTaskDescription,
-                    }
-                  : {
-                      __html: "Nessuna descrizione",
-                    }
-              }
+            <ReactQuill
+              className="sm:col-span-2 sm:mt-0 h-fit"
+              theme="bubble"
+              value={task.ProjectTaskDescription}
             />
           </CardBody>
           <CardFooter className="gap-3 flex flex-col items-start">
@@ -294,7 +346,7 @@ export default function TaskCard({
                 />
               ))}
             </AvatarGroup>
-            <div className="flex flex-row items-center gap-3 w-full">
+            <div className="flex flex-row items-center justify-between gap-3 w-full">
               <span className="font-semibold">
                 {formatDate(task.ProjectTaskExpiration)}
               </span>
