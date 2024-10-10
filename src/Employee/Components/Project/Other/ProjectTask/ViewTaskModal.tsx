@@ -4,11 +4,13 @@ import {
   Button,
   Chip,
   DateValue,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
+  ScrollShadow,
   Tooltip,
 } from "@nextui-org/react";
 import { API_URL_IMG } from "../../../../../API/API";
@@ -19,8 +21,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { parseDate } from "@internationalized/date";
 import { Comment } from "@mui/icons-material";
-import AddCommentModal from "./AddCommentModal";
-import SmsRoundedIcon from "@mui/icons-material/SmsRounded";
+import SendRoundedIcon from "@mui/icons-material/SendRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -56,11 +58,6 @@ interface Task {
   ProjectId: number;
 }
 
-interface ModalCommentData {
-  Task: Task;
-  open: boolean;
-}
-
 export default function ViewTaskModal({
   isOpen,
   isClosed,
@@ -72,22 +69,10 @@ export default function ViewTaskModal({
   TaskData: Task;
   socket: any;
 }) {
-  const [modalCommentData, setModalCommentData] = useState<ModalCommentData>({
-    Task: {
-      ProjectTaskId: 0,
-      ProjectTaskName: "",
-      ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
-      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
-      ProjectTaskStatusId: 0,
-      ProjectTaskTags: [],
-      ProjectTaskMembers: [],
-      ProjectTaskComments: [],
-      ProjectId: 0,
-    },
-    open: false,
-  });
   const [newTask, setNewTask] = useState<Task>();
   const [loggedStafferId, setloggedStafferId] = useState<number>(0);
+  const [loggedStafferImageUrl, setloggedStafferImageUrl] =
+    useState<string>("");
   let formatter = useDateFormatter({ dateStyle: "full" });
 
   useEffect(() => {
@@ -114,6 +99,48 @@ export default function ViewTaskModal({
     });
   }, [TaskData]);
 
+  const [comment, setComment] = useState("");
+  const [update, setUpdate] = useState(false);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      const commentResponse = await axios.get<Comment[]>(
+        "/Project/GET/GetCommentsByTaskId",
+        {
+          params: { ProjectTaskId: TaskData.ProjectTaskId },
+        }
+      );
+      setNewTask({
+        ...newTask,
+        ProjectTaskComments: commentResponse.data,
+        ProjectTaskId: newTask?.ProjectTaskId!,
+        ProjectTaskName: newTask?.ProjectTaskName!,
+        ProjectTaskDescription: newTask?.ProjectTaskDescription,
+        ProjectTaskExpiration: newTask?.ProjectTaskExpiration!,
+        ProjectTaskCreation: newTask?.ProjectTaskCreation!,
+        ProjectTaskStatusId: newTask?.ProjectTaskStatusId!,
+        ProjectTaskMembers: newTask?.ProjectTaskMembers!,
+        ProjectTaskTags: newTask?.ProjectTaskTags!,
+        ProjectId: newTask?.ProjectId!,
+      });
+    };
+    fetchComments();
+  }, [update]);
+
+  function handleAddTaskComment() {
+    axios
+      .post(
+        "/Project/POST/AddTaskComment",
+        { Comment: comment, TaskId: TaskData.ProjectTaskId },
+        { withCredentials: true }
+      )
+      .then(() => {
+        setComment("");
+        socket.emit("task-news", TaskData.ProjectId);
+        setUpdate((prev) => !prev);
+      });
+  }
+
   function formatDate(date: DateValue) {
     return dayjs(formatter.format(new Date(date.toString()))).format(
       "DD/MM/YYYY"
@@ -125,6 +152,7 @@ export default function ViewTaskModal({
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then(async (res) => {
         setloggedStafferId(res.data.StafferId);
+        setloggedStafferImageUrl(res.data.StafferImageUrl);
       });
   }, []);
 
@@ -137,25 +165,12 @@ export default function ViewTaskModal({
       })
       .then(() => {
         socket.emit("task-news", TaskData.ProjectId);
-        setNewTask({
-          ...newTask,
-          ProjectTaskComments: newTask?.ProjectTaskComments.filter(
-            (comment) => comment.ProjectTaskCommentId !== commentId
-          ),
-        });
+        setUpdate((prev) => !prev);
       });
   }
 
   return (
     <>
-      <AddCommentModal
-        isOpen={modalCommentData.open}
-        isClosed={() =>
-          setModalCommentData({ ...modalCommentData, open: false })
-        }
-        TaskData={modalCommentData.Task}
-        socket={socket}
-      />
       <Modal
         isOpen={isOpen}
         onOpenChange={isClosed}
@@ -266,69 +281,101 @@ export default function ViewTaskModal({
                         Commenti
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
-                        <div className="relative flex-flex-col">
-                          <Button
-                            color="primary"
-                            size="sm"
-                            onClick={() =>
-                              setModalCommentData({
-                                ...modalCommentData,
-                                open: true,
-                                Task: newTask || TaskData,
-                              })
-                            }
-                          >
-                            <SmsRoundedIcon />
-                            Aggiungi Commento
-                          </Button>
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-shrink-0">
+                            <Avatar
+                              src={
+                                loggedStafferImageUrl &&
+                                API_URL_IMG +
+                                  "/profileIcons/" +
+                                  loggedStafferImageUrl
+                              }
+                              alt="Logged Staffer"
+                            />
+                          </div>
+                          <div className="w-full items-center">
+                            <div className="flex flex-row items-center gap-3">
+                              <label htmlFor="comment" className="sr-only">
+                                Scrivi il tuo commento
+                              </label>
+                              <Input
+                                id="comment"
+                                name="comment"
+                                placeholder="Scrivi il tuo commento..."
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleAddTaskComment();
+                                  }
+                                }}
+                              />
+                              <Button
+                                color="primary"
+                                isIconOnly
+                                onClick={handleAddTaskComment}
+                              >
+                                <SendRoundedIcon />
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                         {newTask && newTask.ProjectTaskComments.length === 0 ? (
                           <p>Nessun commento trovato</p>
                         ) : (
-                          <div className="flex flex-col gap-2">
-                            {newTask &&
-                              newTask.ProjectTaskComments.map(
-                                (comment, index) => (
-                                  <div
-                                    key={index}
-                                    className="flex gap-2 items-start"
-                                  >
-                                    <Avatar
-                                      src={
-                                        comment.StafferImageUrl &&
-                                        API_URL_IMG +
-                                          "/profileIcons/" +
-                                          comment.StafferImageUrl
-                                      }
-                                      alt={comment.StafferFullName}
-                                    />
-                                    <div className="flex flex-col">
-                                      <div className="flex items-center">
-                                        <p className="flex-1">{comment.Text}</p>
-                                        {comment.StafferId ===
-                                          loggedStafferId && (
-                                          <Button
-                                            className="text-red-500 ml-2"
-                                            onClick={() =>
-                                              handleDeleteComment(
-                                                comment.ProjectTaskCommentId
-                                              )
-                                            }
-                                          >
-                                            X
-                                          </Button>
-                                        )}
+                          <ScrollShadow className="h-40 mt-6">
+                            <div className="flex flex-col gap-4 p-4 bg-gray-50 rounded-lg shadow-md">
+                              {newTask &&
+                                newTask.ProjectTaskComments.map(
+                                  (comment, index) => (
+                                    <div
+                                      key={index}
+                                      className="flex gap-4 items-center p-3 bg-white rounded-lg shadow-sm border border-gray-200"
+                                    >
+                                      <Avatar
+                                        src={
+                                          comment.StafferImageUrl &&
+                                          API_URL_IMG +
+                                            "/profileIcons/" +
+                                            comment.StafferImageUrl
+                                        }
+                                        alt={comment.StafferFullName}
+                                        className="w-10 h-10 rounded-full"
+                                      />
+                                      <div className="flex flex-col flex-1">
+                                        <div className="flex items-center justify-between">
+                                          <p className="text-gray-800 text-base">
+                                            {comment.Text}
+                                          </p>
+                                          {comment.StafferId ===
+                                            loggedStafferId && (
+                                            <Button
+                                              size="sm"
+                                              variant="light"
+                                              className="hover:text-red-600 ml-2"
+                                              isIconOnly
+                                              onClick={() =>
+                                                handleDeleteComment(
+                                                  comment.ProjectTaskCommentId
+                                                )
+                                              }
+                                            >
+                                              <CloseRoundedIcon />
+                                            </Button>
+                                          )}
+                                        </div>
+                                        <p className="text-gray-500 text-sm">
+                                          {dayjs(comment.CommentDate).format(
+                                            "DD/MM/YYYY"
+                                          )}
+                                        </p>
                                       </div>
-                                      <p className="text-gray-500 text-sm">
-                                        {dayjs(comment.CommentDate).format(
-                                          "DD/MM/YYYY"
-                                        )}
-                                      </p>
                                     </div>
-                                  </div>
-                                )
-                              )}
-                          </div>
+                                  )
+                                )}
+                            </div>
+                          </ScrollShadow>
                         )}
                       </dd>
                     </div>

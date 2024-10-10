@@ -212,7 +212,7 @@ export default function TaskCard({
         {...provided.dragHandleProps}
       >
         <Card className="h-full" radius="sm">
-          <CardHeader className="justify-between">
+          <CardHeader className="justify-between items-start">
             <div className="flex gap-5">
               <div className="flex flex-col gap-3 items-start justify-center w-auto h-fit">
                 <div className="flex flex-row flex-wrap gap-2">
@@ -234,9 +234,10 @@ export default function TaskCard({
                 </h1>
               </div>
             </div>
-            <div className="flex flex-row gap-3">
+            <div className="flex flex-row">
               {Number(task.ProjectTaskStatusId) > 1 && (
                 <Button
+                  variant="light"
                   isIconOnly
                   size="sm"
                   onClick={() =>
@@ -309,6 +310,7 @@ export default function TaskCard({
               </Dropdown>
               {task.ProjectTaskStatusId < columnCount && (
                 <Button
+                  variant="light"
                   isIconOnly
                   size="sm"
                   onClick={() =>
