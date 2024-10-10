@@ -18,7 +18,7 @@ interface Lead {
   Company: string;
   Name: string;
   Range: string;
-  CreatedAt: Date | null;
+  CreatedAt: string;
   Message: string;
 }
 
@@ -54,7 +54,7 @@ export default function ViewLeadModal({
               Message: leadData.Message,
               Name: leadData.Name,
               Range: leadData.Range,
-              CreatedAt: new Date(leadData.CreatedAt),
+              CreatedAt: leadData.CreatedAt,
             });
             setError(null);
           })

@@ -1,5 +1,5 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import { Button, Input, ScrollShadow, cn } from "@nextui-org/react";
+import { Button, Input, ScrollShadow } from "@nextui-org/react";
 import ProjectTeamMemberCard from "../ProjectTeamMemberCard";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
@@ -90,7 +90,7 @@ export default function TeamContainer({
       .then((res) => {
         setMembers(res.data);
       });
-    socket.on("message-update", (conversationId) => {
+    socket.on("message-update", () => {
       handleOpenChat(parseInt(localStorage.getItem("conversationId")!));
     });
     async function checkPermissions() {
@@ -176,7 +176,7 @@ export default function TeamContainer({
         isClosed={() => setModalData({ ...modalData, open: false })}
         ProjectId={modalData.ProjectId}
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-20">
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
           <div className="flex flex-col gap-5">
             <h1 className="font-bold">Team chat</h1>
@@ -209,6 +209,7 @@ export default function TeamContainer({
             <div className="flex flex-row items-center gap-3 w-full">
               <Input
                 variant="bordered"
+                radius="full"
                 className="w-full"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
@@ -218,6 +219,7 @@ export default function TeamContainer({
               <Button
                 onClick={handleSendMessage}
                 color="primary"
+                radius="full"
                 isIconOnly
                 isDisabled={newMessage.trim() === "" ? true : false}
               >
@@ -234,7 +236,7 @@ export default function TeamContainer({
                 <>
                   <Button
                     color="primary"
-                    radius="sm"
+                    radius="full"
                     size="sm"
                     onClick={() =>
                       setModalData({
@@ -250,9 +252,9 @@ export default function TeamContainer({
                   <Button
                     onClick={handleEditTeam}
                     color="warning"
-                    radius="sm"
+                    variant="faded"
+                    radius="full"
                     size="sm"
-                    className="text-white"
                     isIconOnly
                   >
                     <EditRoundedIcon />

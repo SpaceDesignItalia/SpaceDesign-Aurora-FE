@@ -17,7 +17,7 @@ interface Lead {
   Company: string;
   Name: string;
   Range: string;
-  CreatedAt: Date | null;
+  CreatedAt: string;
   Message: string;
 }
 

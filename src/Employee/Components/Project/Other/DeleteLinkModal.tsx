@@ -7,10 +7,10 @@ import {
   ModalHeader,
   Radio,
   RadioGroup,
-  Tooltip,
 } from "@nextui-org/react";
 import { API_URL_IMG } from "../../../../API/API";
 import { useState } from "react";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 
 interface Link {
   ProjectId: number;
@@ -21,12 +21,19 @@ interface Link {
   ProjectLinkTypeImage: string;
 }
 
+interface DeleteLinkModalProps {
+  isOpen: boolean;
+  isClosed: () => void;
+  LinkData: Link[];
+  DeleteLink: (selected: string) => void;
+}
+
 export default function DeleteLinkModal({
   isOpen,
   isClosed,
   LinkData,
   DeleteLink,
-}) {
+}: DeleteLinkModalProps) {
   const [selected, setSelected] = useState<string>("");
   console.log(LinkData);
   return (
@@ -42,11 +49,11 @@ export default function DeleteLinkModal({
         {(isClosed) => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">Rimuovi link</h3>
+              <h3 className="text-xl font-semibold">Rimuovi collegamento:</h3>
             </ModalHeader>
             <ModalBody>
               <RadioGroup
-                label="Seleziona il link da rimuovere"
+                label="Seleziona il link da rimuovere:"
                 value={selected}
                 onValueChange={setSelected}
               >
@@ -70,21 +77,20 @@ export default function DeleteLinkModal({
               </RadioGroup>
             </ModalBody>
             <ModalFooter className="flex sm:flex-row flex-col">
+              <Button variant="light" onClick={isClosed} radius="sm">
+                Annulla
+              </Button>
               <Button
-                color="success"
-                variant="light"
+                color="primary"
                 onClick={() => {
                   DeleteLink(selected);
                   isClosed();
                 }}
                 isDisabled={selected === ""}
-                radius="sm"
-                className="mr-2"
+                startContent={<DeleteRoundedIcon />}
+                radius="full"
               >
                 Conferma eliminazione
-              </Button>
-              <Button variant="light" onClick={isClosed} radius="sm">
-                Annulla
               </Button>
             </ModalFooter>
           </>

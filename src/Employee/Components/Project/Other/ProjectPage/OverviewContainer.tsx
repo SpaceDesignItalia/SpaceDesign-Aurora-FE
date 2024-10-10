@@ -32,6 +32,7 @@ interface Project {
 interface ModalData {
   ProjectId: number;
   open: boolean;
+  Links: Link[];
 }
 
 interface ModalEditData {
@@ -41,6 +42,7 @@ interface ModalEditData {
 
 interface Link {
   ProjectId: number;
+  ProjectLinkId: number;
   ProjectLinkTitle: string;
   ProjectLinkUrl: string;
   ProjectLinkTypeId: number;
@@ -57,6 +59,7 @@ export default function OverviewContainer({
   const [modalData, setModalData] = useState<ModalData>({
     ProjectId: 0,
     open: false,
+    Links: [],
   });
 
   const [modalEditData, setModalEditData] = useState<ModalEditData>({
@@ -120,10 +123,13 @@ export default function OverviewContainer({
     return <>{daysUntilDeadline} g</>;
   }
 
-  function DeleteLink(LinkId: number) {
+  function DeleteLink(LinkId: string) {
     axios
       .delete("/Project/DELETE/RemoveLinkFromProject", {
-        params: { ProjectLinkId: LinkId, ProjectId: projectData.ProjectId },
+        params: {
+          ProjectLinkId: Number(LinkId),
+          ProjectId: projectData.ProjectId,
+        },
       })
       .then((res) => {
         if (res.status === 200) {
@@ -208,12 +214,12 @@ export default function OverviewContainer({
               <div className="flex flex-col gap-3 items-start w-full">
                 <div className="flex flex-row justify-between w-full">
                   <h1 className="font-bold">Collegamenti esterni</h1>
-                  {adminPermission.editProject && (
+                  {adminPermission.editProject && links.length > 0 && (
                     <Button
                       size="sm"
+                      radius="full"
                       color="warning"
-                      className="text-white"
-                      variant="solid"
+                      variant="light"
                       onClick={() =>
                         setModalEditData({
                           ...modalEditData,
@@ -240,6 +246,7 @@ export default function OverviewContainer({
                           href={link.ProjectLinkUrl}
                           target="blank"
                           size="sm"
+                          radius="full"
                           variant="faded"
                           isIconOnly
                         >
@@ -261,6 +268,7 @@ export default function OverviewContainer({
                       <Button
                         size="sm"
                         color="primary"
+                        radius="full"
                         variant="solid"
                         onClick={() =>
                           setModalData({

@@ -107,8 +107,40 @@ export default function ProjectPage() {
         ProjectBannerId={projectData.ProjectBannerId}
       />
       <div className="py-10 m-0 lg:ml-72 h-screen flex flex-col items-start px-4 sm:px-6 lg:px-8">
-        <main className="w-full">
-          <div className="w-full h-60 overflow-hidden rounded-xl relative">
+        <main className="w-full flex flex-col gap-3">
+          <div className="flex flex-row justify-between items-center sm:hidden">
+            {adminPermission.editProject && (
+              <Tooltip
+                content="Impostazioni progetto"
+                color="primary"
+                placement="bottom"
+                radius="full"
+                closeDelay={0}
+              >
+                <Button
+                  as={Link}
+                  color="primary"
+                  radius="full"
+                  href={
+                    "/projects/" +
+                    CompanyName +
+                    "/" +
+                    ProjectId +
+                    "/" +
+                    ProjectName +
+                    "/edit-project"
+                  }
+                  isIconOnly
+                >
+                  <TuneRoundedIcon />
+                </Button>
+              </Tooltip>
+            )}
+            <Chip color="primary" radius="full">
+              {projectData.StatusName}
+            </Chip>
+          </div>
+          <div className="w-full sm:h-60 overflow-hidden rounded-xl relative">
             <img
               src={API_URL_IMG + "/banners/" + projectData.ProjectBannerPath}
               className="w-full h-auto object-cover rotate-180"
@@ -120,59 +152,85 @@ export default function ProjectPage() {
                   color="primary"
                   radius="sm"
                   size="sm"
+                  startContent={<ModeOutlinedIcon />}
                   isIconOnly
                   onClick={() => setModalData({ ...modalData, open: true })}
-                >
-                  <ModeOutlinedIcon />
-                </Button>
+                />
               )}
             </div>
           </div>
 
           <div className="flex flex-col gap-5 py-6 lg:py-8">
-            <header className="flex flex-col xl:flex-row xl:justify-between w-full gap-5">
+            <header className="flex flex-col xl:justify-between w-full gap-5">
               <div className="flex flex-row items-center gap-3">
-                <Chip color="primary" radius="sm">
+                <Chip color="primary" radius="full" className="hidden sm:flex">
                   {projectData.StatusName}
                 </Chip>
-                <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+                <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900 w-full text-wrap">
                   {projectData.ProjectName}
                 </h1>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center gap-5">
-                <Tabs
-                  aria-label="Options"
-                  color="primary"
-                  radius="sm"
-                  variant="bordered"
-                  selectedKey={activeTab}
-                  onSelectionChange={setActiveTab}
-                >
-                  {tabs.map((tab) => (
-                    <Tab
-                      key={tab.title}
-                      title={
-                        <div className="flex items-center space-x-2">
-                          <tab.icon />
-                          <span>{tab.title}</span>
-                        </div>
-                      }
-                      itemKey={tab.title}
-                    />
-                  ))}
-                </Tabs>
+              <div className="flex flex-row items-center justify-between sm:justify-end gap-5">
+                <div>
+                  <Tabs
+                    aria-label="Options"
+                    color="primary"
+                    radius="full"
+                    variant="bordered"
+                    selectedKey={activeTab}
+                    className="hidden sm:flex"
+                    onSelectionChange={(key) => setActiveTab(key as string)}
+                  >
+                    {tabs.map((tab) => (
+                      <Tab
+                        key={tab.title}
+                        title={
+                          <div className="flex items-center space-x-2">
+                            <tab.icon />
+                            <span>{tab.title}</span>
+                          </div>
+                        }
+                      />
+                    ))}
+                  </Tabs>
+                  <div className="bg-white p-4 fixed bottom-0 z-50 w-full left-0 border-t-1 shadow-large rounded-tr-xl rounded-tl-xl">
+                    <Tabs
+                      aria-label="Options"
+                      color="primary"
+                      size="lg"
+                      variant="light"
+                      selectedKey={activeTab}
+                      className="sm:hidden"
+                      fullWidth
+                      onSelectionChange={(key) => setActiveTab(key as string)}
+                    >
+                      {tabs.map((tab) => (
+                        <Tab
+                          key={tab.title}
+                          title={
+                            <div className="flex items-center space-x-2">
+                              <tab.icon />
+                            </div>
+                          }
+                        />
+                      ))}
+                    </Tabs>
+                  </div>
+                </div>
+
                 {adminPermission.editProject && (
                   <Tooltip
                     content="Impostazioni progetto"
                     color="primary"
                     placement="bottom"
+                    radius="full"
                     closeDelay={0}
                   >
                     <Button
                       as={Link}
                       color="primary"
-                      radius="sm"
+                      radius="full"
                       href={
                         "/projects/" +
                         CompanyName +
@@ -182,6 +240,7 @@ export default function ProjectPage() {
                         ProjectName +
                         "/edit-project"
                       }
+                      className="hidden sm:flex"
                       isIconOnly
                     >
                       <TuneRoundedIcon />
