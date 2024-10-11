@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import LibraryAddRoundedIcon from "@mui/icons-material/LibraryAddRounded";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { Button, DateValue, cn } from "@nextui-org/react";
+import { Button, Chip, DateValue, cn } from "@nextui-org/react";
 import AddTaskModal from "../ProjectTask/AddTaskModal";
 import TaskCard from "../ProjectTask/TaskCard";
 import { io } from "socket.io-client";
@@ -280,9 +280,11 @@ export default function TaskContainer({
                     : "min-h-[200px]"
                 }`}
               >
-                <h2 className="text-xl font-bold p-3">
-                  {column.ProjectTaskStatusName} (
-                  {taskCounts[column.ProjectTaskStatusId]})
+                <h2 className="text-xl font-bold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
+                  {column.ProjectTaskStatusName}
+                  <Chip radius="full" color="primary" variant="faded" size="sm">
+                    {taskCounts[column.ProjectTaskStatusId]}
+                  </Chip>
                 </h2>
                 <Droppable
                   droppableId={column.ProjectTaskStatusId.toString()}
