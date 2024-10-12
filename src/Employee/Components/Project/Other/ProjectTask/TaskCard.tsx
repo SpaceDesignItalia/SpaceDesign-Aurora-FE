@@ -37,6 +37,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { usePermissions } from "../../../Layout/PermissionProvider";
 import ReactQuill from "react-quill";
+import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -190,6 +191,20 @@ export default function TaskCard({
     fetchComments();
   }, [update]);
 
+  const [checkboxCount, setCheckboxCount] = useState(0);
+  useEffect(() => {
+    const fetchCheckboxes = async () => {
+      const checkboxResponse = await axios.get(
+        "/Project/GET/GetCheckboxesByTaskId",
+        {
+          params: { TaskId: task.ProjectTaskId },
+        }
+      );
+      setCheckboxCount(checkboxResponse.data.length);
+    };
+    fetchCheckboxes();
+  }, [update]);
+
   function formatDate(date: DateValue) {
     let formatter = useDateFormatter({ dateStyle: "full" });
     return dayjs(formatter.format(new Date(date.toString()))).format(
@@ -301,6 +316,18 @@ export default function TaskCard({
                 <div className="flex flex-row justify-center items-center gap-1 font-semibold">
                   <ChatRoundedIcon />
                   {commentsCount}
+                </div>
+              </Tooltip>
+            )}
+            {checkboxCount > 0 && (
+              <Tooltip
+                content="Checklist assegnata alla task"
+                showArrow
+                placement="bottom"
+              >
+                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
+                  <CheckCircleOutlineRoundedIcon />
+                  {checkboxCount}
                 </div>
               </Tooltip>
             )}

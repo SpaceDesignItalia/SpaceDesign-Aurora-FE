@@ -4,6 +4,7 @@ import {
   Avatar,
   AvatarGroup,
   Button,
+  Checkbox,
   Chip,
   DateValue,
   Modal,
@@ -32,6 +33,7 @@ import Groups2RoundedIcon from "@mui/icons-material/Groups2Rounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import AttachFileRoundedIcon from "@mui/icons-material/AttachFileRounded";
 import ChatRoundedIcon from "@mui/icons-material/ChatRounded";
+import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -65,6 +67,11 @@ interface Task {
   ProjectTaskMembers: Member[];
   ProjectTaskComments: Comment[];
   ProjectId: number;
+  ProjectTaskCheckboxes?: {
+    CheckboxId: number;
+    Text: string;
+    isSelected: boolean;
+  }[];
 }
 
 export default function ViewTaskModal({
@@ -122,9 +129,17 @@ export default function ViewTaskModal({
           params: { ProjectTaskId: TaskData.ProjectTaskId },
         }
       );
+      const checkboxesResponse = await axios.get(
+        "/Project/GET/GetCheckboxesByTaskId",
+        {
+          params: { TaskId: TaskData.ProjectTaskId },
+        }
+      );
+
       setNewTask({
         ...newTask,
         ProjectTaskComments: commentResponse.data,
+        ProjectTaskCheckboxes: checkboxesResponse.data,
         ProjectTaskId: newTask?.ProjectTaskId!,
         ProjectTaskName: newTask?.ProjectTaskName!,
         ProjectTaskDescription: newTask?.ProjectTaskDescription,
@@ -191,6 +206,42 @@ export default function ViewTaskModal({
     const progress = (daysPassed / totalDuration) * 100; // Percentuale
     return Math.min(Math.max(progress, 0), 100); // Assicuriamoci che sia tra 0 e 100
   }
+
+  const [checkboxText, setCheckboxText] = useState(""); // State for new checkbox text
+
+  function handleAddCheckbox() {
+    if (checkboxText.trim() !== "") {
+      axios
+        .post(
+          "/Project/POST/AddTaskCheckbox",
+          {
+            TaskId: TaskData.ProjectTaskId,
+            CheckboxText: checkboxText,
+          },
+          { withCredentials: true }
+        )
+        .then(() => {
+          setCheckboxText("");
+          socket.emit("task-news", TaskData.ProjectId);
+          setUpdate(!update);
+        });
+    }
+  }
+
+  function handleCheckboxChange(id: number, isSelected: boolean) {
+    axios
+      .put(
+        "/Project/UPDATE/UpdateCheckboxStatus",
+        { CheckboxId: id, isSelected: isSelected },
+        { withCredentials: true }
+      )
+      .then(() => {
+        socket.emit("task-news", TaskData.ProjectId);
+        setUpdate(!update);
+      });
+  }
+
+  console.log(newTask?.ProjectTaskCheckboxes);
 
   return (
     <>
@@ -297,6 +348,49 @@ export default function ViewTaskModal({
                           theme="bubble"
                           value={TaskData.ProjectTaskDescription}
                         />
+                      </dd>
+                    </div>
+
+                    <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
+                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                        <CheckCircleOutlineRoundedIcon />
+                        Checklist
+                      </dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        <div className="flex flex-col gap-2">
+                          {newTask?.ProjectTaskCheckboxes?.map((checkbox) => (
+                            <Checkbox
+                              key={checkbox.CheckboxId}
+                              size="sm"
+                              isSelected={checkbox.isSelected}
+                              onChange={() =>
+                                handleCheckboxChange(
+                                  checkbox.CheckboxId,
+                                  !checkbox.isSelected
+                                )
+                              }
+                            >
+                              {checkbox.Text}
+                            </Checkbox>
+                          ))}
+                          <div className="flex items-center gap-2">
+                            <Textarea
+                              variant="underlined"
+                              color="primary"
+                              minRows={1}
+                              placeholder="Aggiungi una nuova checkbox..."
+                              value={checkboxText}
+                              onChange={(e) => setCheckboxText(e.target.value)}
+                            />
+                            <Button
+                              color="primary"
+                              size="sm"
+                              onClick={handleAddCheckbox}
+                            >
+                              Aggiungi
+                            </Button>
+                          </div>
+                        </div>
                       </dd>
                     </div>
 
