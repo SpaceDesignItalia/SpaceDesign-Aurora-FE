@@ -176,6 +176,20 @@ export default function TaskCard({
     fetchData();
   }, [hasPermission]);
 
+  const [commentsCount, setCommentsCount] = useState(0);
+  useEffect(() => {
+    const fetchComments = async () => {
+      const commentResponse = await axios.get<Comment[]>(
+        "/Project/GET/GetCommentsByTaskId",
+        {
+          params: { ProjectTaskId: task.ProjectTaskId },
+        }
+      );
+      setCommentsCount(commentResponse.data.length);
+    };
+    fetchComments();
+  }, [update]);
+
   function formatDate(date: DateValue) {
     let formatter = useDateFormatter({ dateStyle: "full" });
     return dayjs(formatter.format(new Date(date.toString()))).format(
@@ -198,6 +212,8 @@ export default function TaskCard({
         isClosed={() => setModalData({ ...modalData, open: false })}
         TaskData={modalData.Task}
         socket={socket}
+        update={update}
+        setUpdate={setUpdate}
       />
       <EditTaskModal
         isOpen={modalEditData.open}
@@ -276,11 +292,18 @@ export default function TaskCard({
                 <NotesRoundedIcon />
               </Tooltip>
             )}
-            <Tooltip content="Commenti" showArrow placement="bottom">
-              <div>
-                <ChatRoundedIcon />
-              </div>
-            </Tooltip>
+            {commentsCount > 0 && (
+              <Tooltip
+                content="Commenti riguardo la task"
+                showArrow
+                placement="bottom"
+              >
+                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
+                  <ChatRoundedIcon />
+                  {commentsCount}
+                </div>
+              </Tooltip>
+            )}
             {task.ProjectTaskTags.length > 0 && (
               <Tooltip
                 content="Tags assegnati alla task"

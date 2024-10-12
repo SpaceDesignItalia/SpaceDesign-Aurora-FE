@@ -72,11 +72,15 @@ export default function ViewTaskModal({
   isClosed,
   TaskData,
   socket,
+  update,
+  setUpdate,
 }: {
   isOpen: boolean;
   isClosed: () => void;
   TaskData: Task;
   socket: any;
+  update: boolean;
+  setUpdate: (update: boolean) => void;
 }) {
   const [newTask, setNewTask] = useState<Task>();
   const [loggedStafferId, setloggedStafferId] = useState<number>(0);
@@ -109,7 +113,6 @@ export default function ViewTaskModal({
   }, [TaskData]);
 
   const [comment, setComment] = useState("");
-  const [update, setUpdate] = useState(false);
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -146,7 +149,7 @@ export default function ViewTaskModal({
       .then(() => {
         setComment("");
         socket.emit("task-news", TaskData.ProjectId);
-        setUpdate((prev) => !prev);
+        setUpdate(!update);
       });
   }
 
@@ -174,7 +177,7 @@ export default function ViewTaskModal({
       })
       .then(() => {
         socket.emit("task-news", TaskData.ProjectId);
-        setUpdate((prev) => !prev);
+        setUpdate(!update);
       });
   }
 
