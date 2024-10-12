@@ -6,12 +6,17 @@ import {
   Button,
   Checkbox,
   Chip,
+  CircularProgress,
   DateValue,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Progress,
   ScrollShadow,
   Textarea,
@@ -21,7 +26,7 @@ import { API_URL_IMG } from "../../../../../API/API";
 import { useDateFormatter } from "@react-aria/i18n";
 import dayjs from "dayjs";
 import ReactQuill from "react-quill";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { parseDate } from "@internationalized/date";
 import { Comment } from "@mui/icons-material";
@@ -31,9 +36,11 @@ import NotesRoundedIcon from "@mui/icons-material/NotesRounded";
 import LocalOfferRoundedIcon from "@mui/icons-material/LocalOfferRounded";
 import Groups2RoundedIcon from "@mui/icons-material/Groups2Rounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
-import AttachFileRoundedIcon from "@mui/icons-material/AttachFileRounded";
 import ChatRoundedIcon from "@mui/icons-material/ChatRounded";
-import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
+import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import ModeEditRoundedIcon from "@mui/icons-material/ModeEditRounded";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -59,7 +66,7 @@ interface Comment {
 interface Checkbox {
   CheckboxId: number;
   Text: string;
-  isSelected: boolean;
+  IsSelected: boolean;
   ChecklistId: number;
 }
 
@@ -83,6 +90,10 @@ interface Task {
   ProjectTaskChecklists: Checklist[];
 }
 
+interface PopoverStates {
+  [key: number]: boolean; // chiavi di tipo number, valori di tipo boolean
+}
+
 export default function ViewTaskModal({
   isOpen,
   isClosed,
@@ -98,15 +109,28 @@ export default function ViewTaskModal({
   update: boolean;
   setUpdate: (update: boolean) => void;
 }) {
+  // Variabili di stato
   const [newTask, setNewTask] = useState<Task>();
-  const [loggedStafferId, setloggedStafferId] = useState<number>(0);
-  const [loggedStafferImageUrl, setloggedStafferImageUrl] =
+  const [loggedStafferId, setLoggedStafferId] = useState<number>(0);
+  const [loggedStafferImageUrl, setLoggedStafferImageUrl] =
     useState<string>("");
-  let formatter = useDateFormatter({ dateStyle: "full" });
+  const [popoverStates, setPopoverStates] = useState<PopoverStates>({});
+  const [comment, setComment] = useState("");
+  const [newChecklistName, setNewChecklistName] = useState(""); // Nome della nuova checklist
+  const [checklistText, setChecklistText] = useState(""); // Testo della nuova checklist
+
+  //Formatter data
+  const formatter = useDateFormatter({ dateStyle: "full" });
+  function formatDate(date: DateValue) {
+    return dayjs(formatter.format(new Date(date.toString()))).format(
+      "DD MMM YYYY"
+    );
+  }
 
   useEffect(() => {
+    // Imposta il nuovo task basato su TaskData
     const formatDate = (isoString: string) => {
-      return dayjs(isoString).format("YYYY-MM-DD"); // Format to YYYY-MM-DD
+      return dayjs(isoString).format("YYYY-MM-DD");
     };
 
     setNewTask({
@@ -129,56 +153,81 @@ export default function ViewTaskModal({
     });
   }, [TaskData]);
 
-  const [comment, setComment] = useState("");
+  useEffect(() => {
+    const fetchCommentsAndChecklists = async () => {
+      try {
+        // Fetch dei commenti
+        const commentResponse = await axios.get<Comment[]>(
+          "/Project/GET/GetCommentsByTaskId",
+          {
+            params: { ProjectTaskId: TaskData.ProjectTaskId },
+          }
+        );
+
+        // Fetch delle checklist
+        const checklistsResponse = await axios.get(
+          "/Project/GET/GetChecklistsByTaskId",
+          {
+            params: { TaskId: TaskData.ProjectTaskId },
+          }
+        );
+
+        // Fetch dei checkbox per ogni checklist
+        const updatedChecklists = await Promise.all(
+          checklistsResponse.data.map(async (checklist: Checklist) => {
+            const checkboxesResponse = await axios.get(
+              "/Project/GET/GetCheckboxesByChecklistId",
+              {
+                params: { ChecklistId: checklist.ChecklistId },
+              }
+            );
+            return {
+              ...checklist,
+              Checkboxes: checkboxesResponse.data,
+            };
+          })
+        );
+
+        // Aggiorna lo stato di newTask
+        setNewTask((prevTask) => ({
+          ...prevTask!,
+          ProjectTaskComments: commentResponse.data,
+          ProjectTaskChecklists: updatedChecklists,
+        }));
+      } catch (error) {
+        console.error("Errore nel fetch di commenti o checklist", error);
+      }
+    };
+
+    // Effettua il fetch quando cambia TaskData
+    if (TaskData.ProjectTaskId) {
+      fetchCommentsAndChecklists();
+    }
+  }, [TaskData.ProjectTaskId, update]);
 
   useEffect(() => {
-    const fetchComments = async () => {
-      const commentResponse = await axios.get<Comment[]>(
-        "/Project/GET/GetCommentsByTaskId",
-        {
-          params: { ProjectTaskId: TaskData.ProjectTaskId },
-        }
-      );
-      const checklistsResponse = await axios.get(
-        "/Project/GET/GetChecklistsByTaskId",
-        {
-          params: { TaskId: TaskData.ProjectTaskId },
-        }
-      );
-      const updatedChecklists = await Promise.all(
-        checklistsResponse.data.map(async (checklist: Checklist) => {
-          const checkboxesResponse = await axios.get(
-            "/Project/GET/GetCheckboxesByChecklistId",
-            {
-              params: { ChecklistId: checklist.ChecklistId },
-            }
-          );
-          return {
-            ...checklist,
-            Checkboxes: checkboxesResponse.data,
-          };
-        })
-      );
-
-      setNewTask({
-        ...newTask,
-        ProjectTaskComments: commentResponse.data,
-        ProjectTaskChecklists: updatedChecklists,
-        ProjectTaskId: newTask?.ProjectTaskId!,
-        ProjectTaskName: newTask?.ProjectTaskName!,
-        ProjectTaskDescription: newTask?.ProjectTaskDescription,
-        ProjectTaskExpiration: newTask?.ProjectTaskExpiration!,
-        ProjectTaskCreation: newTask?.ProjectTaskCreation!,
-        ProjectTaskStatusId: newTask?.ProjectTaskStatusId!,
-        ProjectTaskMembers: newTask?.ProjectTaskMembers!,
-        ProjectTaskTags: newTask?.ProjectTaskTags!,
-        ProjectId: newTask?.ProjectId!,
+    // Fetch dei dati di sessione dello staffer
+    axios
+      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
+      .then((res) => {
+        setLoggedStafferId(res.data.StafferId);
+        setLoggedStafferImageUrl(res.data.StafferImageUrl);
       });
-    };
-    fetchComments();
-  }, [update, newTask?.ProjectTaskChecklists]);
+  }, []);
 
-  function handleAddTaskComment() {
+  // Valori memorizzati
+  const memoizedCheckboxes = useMemo(() => {
+    return (
+      newTask?.ProjectTaskChecklists.flatMap((checklist) =>
+        checklist.Checkboxes.map((checkbox) => ({
+          ...checkbox,
+        }))
+      ) || []
+    );
+  }, [newTask]);
+
+  // Funzioni
+  const handleAddTaskComment = () => {
     axios
       .post(
         "/Project/POST/AddTaskComment",
@@ -186,57 +235,25 @@ export default function ViewTaskModal({
         { withCredentials: true }
       )
       .then(() => {
-        setComment("");
-        socket.emit("task-news", TaskData.ProjectId);
-        setUpdate(!update);
+        setComment(""); // Resetta il commento dopo l'aggiunta
+        socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
+        setUpdate(!update); // Aggiorna lo stato
       });
-  }
+  };
 
-  function formatDate(date: DateValue) {
-    return dayjs(formatter.format(new Date(date.toString()))).format(
-      "DD/MM/YYYY"
-    );
-  }
-
-  useEffect(() => {
-    axios
-      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
-      .then(async (res) => {
-        setloggedStafferId(res.data.StafferId);
-        setloggedStafferImageUrl(res.data.StafferImageUrl);
-      });
-  }, []);
-
-  function handleDeleteComment(commentId: number) {
-    console.log(commentId);
+  const handleDeleteComment = (commentId: number) => {
     axios
       .delete("/Project/DELETE/DeleteTaskComment", {
         data: { CommentId: commentId },
         withCredentials: true,
       })
       .then(() => {
-        socket.emit("task-news", TaskData.ProjectId);
-        setUpdate(!update);
+        socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
+        setUpdate(!update); // Aggiorna lo stato
       });
-  }
+  };
 
-  // Funzione per calcolare la percentuale di completamento
-  function calculateProgress(startDate: DateValue, endDate: DateValue): number {
-    const totalDuration = dayjs(endDate.toString()).diff(
-      dayjs(startDate.toString()),
-      "day"
-    ); // Differenza totale in giorni
-    const daysPassed = dayjs().diff(dayjs(startDate.toString()), "day"); // Giorni passati dalla data di inizio
-    const progress = (daysPassed / totalDuration) * 100; // Percentuale
-    return Math.min(Math.max(progress, 0), 100); // Assicuriamoci che sia tra 0 e 100
-  }
-
-  // Add these states to manage new checklists and checkboxes
-  const [newChecklistName, setNewChecklistName] = useState(""); // New checklist name
-  const [checklistText, setChecklistText] = useState(""); // New checklist text
-
-  // Function to add a new checklist
-  function handleAddChecklist() {
+  const handleAddChecklist = () => {
     if (newChecklistName.trim() !== "") {
       axios
         .post(
@@ -248,15 +265,14 @@ export default function ViewTaskModal({
           { withCredentials: true }
         )
         .then(() => {
-          setNewChecklistName("");
-          socket.emit("task-news", TaskData.ProjectId);
-          setUpdate(!update);
+          setNewChecklistName(""); // Resetta il nome della checklist dopo l'aggiunta
+          socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
+          setUpdate(!update); // Aggiorna lo stato
         });
     }
-  }
+  };
 
-  // Function to handle adding checkboxes to a specific checklist
-  function handleAddCheckboxToChecklist(checklistId: number) {
+  const handleAddCheckboxToChecklist = (checklistId: number) => {
     if (checklistText.trim() !== "") {
       axios
         .post(
@@ -268,25 +284,91 @@ export default function ViewTaskModal({
           { withCredentials: true }
         )
         .then(() => {
-          setChecklistText("");
-          socket.emit("task-news", TaskData.ProjectId);
-          setUpdate(!update);
+          togglePopover(checklistId); // Chiudi il popover
+          setChecklistText(""); // Resetta il testo della checkbox dopo l'aggiunta
+          socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
+          setUpdate(!update); // Aggiorna lo stato
         });
     }
-  }
+  };
 
-  function handleCheckboxChange(id: number, isSelected: boolean) {
+  const handleCheckboxChange = (id: number, isSelected: boolean) => {
+    const updatedCheckboxes = memoizedCheckboxes.map((checkbox) =>
+      checkbox.CheckboxId === id
+        ? { ...checkbox, IsSelected: isSelected }
+        : checkbox
+    );
+
+    // Aggiorna lo stato immediatamente
+    setNewTask((prevTask) => ({
+      ...prevTask!,
+      ProjectTaskChecklists:
+        prevTask?.ProjectTaskChecklists.map((checklist) => ({
+          ...checklist,
+          Checkboxes: updatedCheckboxes.filter(
+            (checkbox) => checkbox.ChecklistId === checklist.ChecklistId
+          ),
+        })) || [],
+    }));
+
+    // Aggiorna sul server
     axios
       .put(
         "/Project/UPDATE/UpdateCheckboxStatus",
-        { CheckboxId: id, isSelected: isSelected },
+        { CheckboxId: id, isSelected },
         { withCredentials: true }
       )
       .then(() => {
-        socket.emit("task-news", TaskData.ProjectId);
-        setUpdate(!update);
+        socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
+        setUpdate(!update); // Aggiorna lo stato
+      })
+      .catch((error) => {
+        console.error("Errore nell'aggiornare lo stato della checkbox:", error);
       });
-  }
+  };
+
+  const calculateProgress = (
+    startDate: DateValue,
+    endDate: DateValue
+  ): number => {
+    const totalDuration = dayjs(endDate.toString()).diff(
+      dayjs(startDate.toString()),
+      "day"
+    );
+    const daysPassed = dayjs().diff(dayjs(startDate.toString()), "day");
+    const progress = (daysPassed / totalDuration) * 100;
+    return Math.min(Math.max(progress, 0), 100); // Restituisci una percentuale tra 0 e 100
+  };
+
+  const calculateChecklistChecked = (checklist: Checklist) => {
+    const checked = checklist.Checkboxes.filter(
+      (checkbox) => checkbox.IsSelected
+    );
+    return (
+      <>
+        {checklist.Checkboxes.length !== 0 && (
+          <div>
+            {checked.length}/{checklist.Checkboxes.length}
+          </div> // Mostra la proporzione di checkbox selezionate
+        )}
+      </>
+    );
+  };
+
+  const calculateChecklistPercentage = (checklist: Checklist) => {
+    const checked = checklist.Checkboxes.filter(
+      (checkbox) => checkbox.IsSelected
+    );
+    return (checked.length / checklist.Checkboxes.length) * 100; // Calcola la percentuale di completamento della checklist
+  };
+
+  const togglePopover = (checklistId: number) => {
+    console.log(popoverStates[checklistId]);
+    setPopoverStates((prevStates) => ({
+      ...prevStates,
+      [checklistId]: !prevStates[checklistId], // Questo ora è valido
+    }));
+  };
 
   return (
     <>
@@ -396,85 +478,208 @@ export default function ViewTaskModal({
                       </dd>
                     </div>
 
-                    <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <CheckCircleOutlineRoundedIcon />
-                        Checklist
-                      </dt>
-                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        <div className="flex flex-col gap-4">
-                          {newTask?.ProjectTaskChecklists?.map((checklist) => (
-                            <div key={checklist.ChecklistId}>
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-medium">
-                                  {checklist.Text}
-                                </h4>
-                                {/* Add new checkbox to this checklist */}
-                                <div className="flex items-center gap-2">
-                                  <Textarea
-                                    variant="underlined"
-                                    color="primary"
-                                    minRows={1}
-                                    placeholder="Aggiungi una nuova checkbox..."
-                                    value={checklistText}
-                                    onChange={(e) =>
-                                      setChecklistText(e.target.value)
-                                    }
-                                  />
-                                  <Button
-                                    color="primary"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleAddCheckboxToChecklist(
-                                        checklist.ChecklistId
-                                      )
-                                    }
+                    <div className="px-4 py-6 flex flex-row justify-between items-start sm:gap-4 sm:px-0">
+                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 w-full mr-5">
+                        <div className="flex flex-row items-center justify-end w-full">
+                          <Popover
+                            radius="lg"
+                            placement="bottom"
+                            showArrow
+                            shouldBlockScroll
+                          >
+                            <PopoverTrigger>
+                              <Button
+                                color="primary"
+                                radius="full"
+                                variant="ghost"
+                                startContent={<AddRoundedIcon />}
+                              >
+                                Crea checklist
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="p-5 w-80">
+                              {(titleProps) => (
+                                <div className="px-1 py-2 w-full">
+                                  <p
+                                    className="text-small font-bold text-foreground"
+                                    {...titleProps}
                                   >
-                                    Aggiungi
-                                  </Button>
+                                    Crea checklist
+                                  </p>
+                                  <div className="mt-2 flex flex-col gap-2 w-full">
+                                    <Input
+                                      variant="underlined"
+                                      color="primary"
+                                      placeholder="Titolo della checklist"
+                                      value={newChecklistName}
+                                      onChange={(e) =>
+                                        setNewChecklistName(e.target.value)
+                                      }
+                                    />
+                                    <Button
+                                      color="primary"
+                                      size="sm"
+                                      radius="full"
+                                      onClick={handleAddChecklist}
+                                      startContent={<AddRoundedIcon />}
+                                      isDisabled={newChecklistName === ""}
+                                    >
+                                      Aggiungi Checklist
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <div className="flex flex-col gap-16 w-full mt-5">
+                          {newTask?.ProjectTaskChecklists?.map((checklist) => (
+                            <div key={checklist.ChecklistId} className="w-full">
+                              <div className="flex items-center justify-between border-b">
+                                <h4 className="flex flex-row gap-2 items-center font-medium py-5">
+                                  <CheckBoxOutlinedIcon /> {checklist.Text}
+                                </h4>
+                                <div className="flex flex-row gap-2 items-center">
+                                  <CircularProgress
+                                    size="lg"
+                                    value={calculateChecklistPercentage(
+                                      checklist
+                                    )}
+                                    color="primary"
+                                    showValueLabel={true}
+                                    valueLabel={calculateChecklistChecked(
+                                      checklist
+                                    )}
+                                  />
+
+                                  <Button
+                                    color="danger"
+                                    variant="light"
+                                    size="sm"
+                                    radius="full"
+                                    isIconOnly
+                                    startContent={<DeleteRoundedIcon />}
+                                  />
                                 </div>
                               </div>
                               {/* Display the checkboxes */}
-                              <div className="flex flex-col gap-2">
-                                {checklist.Checkboxes.map((checkbox) => (
-                                  <Checkbox
-                                    key={checkbox.CheckboxId}
-                                    size="sm"
-                                    isSelected={checkbox.isSelected}
-                                    onChange={() =>
-                                      handleCheckboxChange(
-                                        checkbox.CheckboxId,
-                                        !checkbox.isSelected
-                                      )
+                              <div className="flex flex-col gap-2 w-full mt-3">
+                                {memoizedCheckboxes
+                                  .filter(
+                                    (checkbox) =>
+                                      checkbox.ChecklistId ===
+                                      checklist.ChecklistId
+                                  ) // Filter checkboxes for the current checklist
+                                  .map((checkbox) => (
+                                    <div className="flex flex-row justify-between items-center w-full">
+                                      <Checkbox
+                                        lineThrough={checkbox.IsSelected} // Aggiungi il line-through se selezionato
+                                        key={checkbox.CheckboxId}
+                                        radius="full"
+                                        value={String(checkbox.CheckboxId)}
+                                        isSelected={checkbox.IsSelected} // Utilizza lo stato aggiornato
+                                        onChange={() =>
+                                          handleCheckboxChange(
+                                            checkbox.CheckboxId,
+                                            !checkbox.IsSelected
+                                          )
+                                        }
+                                      >
+                                        {checkbox.Text}
+                                      </Checkbox>
+                                      {!checkbox.IsSelected && (
+                                        <div className="flex flex-row items-center gap-2">
+                                          <Button
+                                            color="warning"
+                                            variant="light"
+                                            size="sm"
+                                            radius="full"
+                                            isIconOnly
+                                            startContent={
+                                              <ModeEditRoundedIcon />
+                                            }
+                                          />
+                                          <Button
+                                            color="danger"
+                                            variant="light"
+                                            size="sm"
+                                            radius="full"
+                                            isIconOnly
+                                            startContent={<DeleteRoundedIcon />}
+                                          />
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+
+                                <div className="flex items-center gap-2">
+                                  <Popover
+                                    radius="lg"
+                                    placement="bottom"
+                                    showArrow
+                                    shouldBlockScroll
+                                    isOpen={
+                                      popoverStates[checklist.ChecklistId]
+                                    }
+                                    onClose={() =>
+                                      togglePopover(checklist.ChecklistId)
                                     }
                                   >
-                                    {checkbox.Text}
-                                  </Checkbox>
-                                ))}
+                                    <PopoverTrigger>
+                                      <Button
+                                        color="primary"
+                                        size="sm"
+                                        radius="full"
+                                        startContent={<AddRoundedIcon />}
+                                        className="ml-7"
+                                        onClick={() =>
+                                          togglePopover(checklist.ChecklistId)
+                                        }
+                                      >
+                                        Aggiungi elemento
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="p-5 w-80">
+                                      {(titleProps) => (
+                                        <div className="px-1 py-2 w-full">
+                                          <p
+                                            className="text-small font-bold text-foreground"
+                                            {...titleProps}
+                                          >
+                                            Aggiungi elemento
+                                          </p>
+                                          <div className="mt-2 flex flex-col gap-2 w-full">
+                                            <Input
+                                              variant="underlined"
+                                              placeholder="Aggiungi un nuovo elemento"
+                                              value={checklistText}
+                                              onChange={(e) =>
+                                                setChecklistText(e.target.value)
+                                              }
+                                            />
+                                            <Button
+                                              color="primary"
+                                              size="sm"
+                                              radius="full"
+                                              onClick={() =>
+                                                handleAddCheckboxToChecklist(
+                                                  checklist.ChecklistId
+                                                )
+                                              }
+                                              isDisabled={checklistText === ""}
+                                              startContent={<AddRoundedIcon />}
+                                            >
+                                              Aggiungi elemento
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </PopoverContent>
+                                  </Popover>
+                                </div>
                               </div>
                             </div>
                           ))}
-
-                          {/* Add new checklist */}
-                          <div className="flex items-center gap-2 mt-4">
-                            <Textarea
-                              variant="underlined"
-                              color="primary"
-                              minRows={1}
-                              placeholder="Nome della nuova checklist..."
-                              value={newChecklistName}
-                              onChange={(e) =>
-                                setNewChecklistName(e.target.value)
-                              }
-                            />
-                            <Button
-                              color="primary"
-                              size="sm"
-                              onClick={handleAddChecklist}
-                            >
-                              Aggiungi Checklist
-                            </Button>
-                          </div>
                         </div>
                       </dd>
                     </div>
@@ -531,36 +736,8 @@ export default function ViewTaskModal({
                                     />
 
                                     {/* Spacer element to match the height of the toolbar */}
-                                    <div aria-hidden="true" className="py-2">
-                                      {/* Matches height of button in toolbar (1px border + 36px content height) */}
-                                      <div className="py-px">
-                                        <Button
-                                          color="primary"
-                                          variant="light"
-                                          isIconOnly
-                                        >
-                                          <AttachFileRoundedIcon />
-                                        </Button>
-                                        <div className="h-9" />
-                                      </div>
-                                    </div>
-                                  </div>
 
-                                  <div className="absolute inset-x-0 bottom-0 flex justify-between py-2 pl-3 pr-2">
-                                    <div className="flex items-center space-x-5">
-                                      <div className="flex items-center">
-                                        <button
-                                          type="button"
-                                          className="-m-2.5 flex h-10 w-10 items-center justify-center rounded-full text-gray-400 hover:text-gray-500"
-                                        >
-                                          <span className="sr-only">
-                                            Attach a file
-                                          </span>
-                                        </button>
-                                      </div>
-                                      <div className="flex items-center"></div>
-                                    </div>
-                                    <div className="flex-shrink-0">
+                                    <div className="mt-3 flex flex-row justify-end w-full">
                                       <Button
                                         isDisabled={comment == ""}
                                         color="primary"
