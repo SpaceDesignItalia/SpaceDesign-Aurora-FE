@@ -397,6 +397,34 @@ export default function ViewTaskModal({
       });
   }
 
+  const [editingCheckbox, setEditingCheckbox] = useState(0);
+  const [checkboxText, setCheckboxText] = useState("");
+
+  const handleEditClick = (checkbox: Checkbox) => {
+    setEditingCheckbox(checkbox.CheckboxId);
+    setCheckboxText(checkbox.Text);
+  };
+
+  const handleSaveEdit = (checkboxId: number) => {
+    // Qui invia la richiesta per aggiornare il testo della checkbox
+    axios
+      .put("/Project/UPDATE/UpdateCheckboxText", {
+        CheckboxId: checkboxId,
+        CheckboxText: checkboxText,
+      })
+      .then(() => {
+        setEditingCheckbox(0); // Esci dalla modalità di modifica
+        socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
+        setUpdate(!update); // Aggiorna lo stato
+      });
+  };
+
+  const handleKeyDown = (e: any, checkboxId: number) => {
+    if (e.key === "Enter") {
+      handleSaveEdit(checkboxId);
+    }
+  };
+
   return (
     <>
       <Modal
@@ -603,48 +631,84 @@ export default function ViewTaskModal({
                                       checklist.ChecklistId
                                   ) // Filter checkboxes for the current checklist
                                   .map((checkbox) => (
-                                    <div className="flex flex-row justify-between items-center w-full">
-                                      <Checkbox
-                                        lineThrough={checkbox.IsSelected} // Aggiungi il line-through se selezionato
-                                        key={checkbox.CheckboxId}
-                                        radius="full"
-                                        value={String(checkbox.CheckboxId)}
-                                        isSelected={checkbox.IsSelected} // Utilizza lo stato aggiornato
-                                        onChange={() =>
-                                          handleCheckboxChange(
-                                            checkbox.CheckboxId,
-                                            !checkbox.IsSelected
-                                          )
-                                        }
-                                      >
-                                        {checkbox.Text}
-                                      </Checkbox>
-                                      {!checkbox.IsSelected && (
-                                        <div className="flex flex-row items-center gap-2">
-                                          <Button
-                                            color="warning"
-                                            variant="light"
-                                            size="sm"
-                                            radius="full"
-                                            isIconOnly
-                                            startContent={
-                                              <ModeEditRoundedIcon />
-                                            }
-                                          />
-                                          <Button
-                                            color="danger"
-                                            variant="light"
-                                            size="sm"
-                                            radius="full"
-                                            isIconOnly
-                                            onClick={() =>
-                                              handleDeleteCheckbox(
-                                                checkbox.CheckboxId
-                                              )
-                                            }
-                                            startContent={<DeleteRoundedIcon />}
-                                          />
-                                        </div>
+                                    <div className="flex flex-row justify-between gap-2 items-center w-full">
+                                      {editingCheckbox ===
+                                      checkbox.CheckboxId ? (
+                                        <Input
+                                          radius="full"
+                                          value={checkboxText}
+                                          onChange={(e) =>
+                                            setCheckboxText(e.target.value)
+                                          }
+                                          onKeyDown={(e) =>
+                                            handleKeyDown(
+                                              e,
+                                              checkbox.CheckboxId
+                                            )
+                                          }
+                                          autoFocus
+                                        />
+                                      ) : (
+                                        <Checkbox
+                                          lineThrough={checkbox.IsSelected}
+                                          radius="full"
+                                          value={String(checkbox.CheckboxId)}
+                                          isSelected={checkbox.IsSelected}
+                                          onChange={() =>
+                                            handleCheckboxChange(
+                                              checkbox.CheckboxId,
+                                              !checkbox.IsSelected
+                                            )
+                                          }
+                                        >
+                                          {checkbox.Text}
+                                        </Checkbox>
+                                      )}
+                                      {editingCheckbox ===
+                                      checkbox.CheckboxId ? (
+                                        <Button
+                                          color="primary"
+                                          size="sm"
+                                          radius="full"
+                                          onClick={() =>
+                                            handleSaveEdit(checkbox.CheckboxId)
+                                          }
+                                        >
+                                          Salva
+                                        </Button>
+                                      ) : (
+                                        !checkbox.IsSelected && (
+                                          <div className="flex flex-row justify-end">
+                                            <Button
+                                              color="warning"
+                                              variant="light"
+                                              size="sm"
+                                              radius="full"
+                                              isIconOnly
+                                              startContent={
+                                                <ModeEditRoundedIcon />
+                                              }
+                                              onClick={() =>
+                                                handleEditClick(checkbox)
+                                              }
+                                            />
+                                            <Button
+                                              color="danger"
+                                              variant="light"
+                                              size="sm"
+                                              radius="full"
+                                              isIconOnly
+                                              onClick={() =>
+                                                handleDeleteCheckbox(
+                                                  checkbox.CheckboxId
+                                                )
+                                              }
+                                              startContent={
+                                                <DeleteRoundedIcon />
+                                              }
+                                            />
+                                          </div>
+                                        )
                                       )}
                                     </div>
                                   ))}
