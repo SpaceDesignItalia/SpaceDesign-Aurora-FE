@@ -373,7 +373,29 @@ export default function ViewTaskModal({
     }));
   };
 
-  console.log(newTask?.ProjectTaskChecklists);
+  function handleDeleteChecklist(checklistId: number) {
+    axios
+      .delete("/Project/DELETE/DeleteTaskChecklist", {
+        data: { ChecklistId: checklistId },
+        withCredentials: true,
+      })
+      .then(() => {
+        socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
+        setUpdate(!update); // Aggiorna lo stato
+      });
+  }
+
+  function handleDeleteCheckbox(checkboxId: number) {
+    axios
+      .delete("/Project/DELETE/DeleteTaskCheckbox", {
+        data: { CheckboxId: checkboxId },
+        withCredentials: true,
+      })
+      .then(() => {
+        socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
+        setUpdate(!update); // Aggiorna lo stato
+      });
+  }
 
   return (
     <>
@@ -563,6 +585,11 @@ export default function ViewTaskModal({
                                     size="sm"
                                     radius="full"
                                     isIconOnly
+                                    onClick={() =>
+                                      handleDeleteChecklist(
+                                        checklist.ChecklistId
+                                      )
+                                    }
                                     startContent={<DeleteRoundedIcon />}
                                   />
                                 </div>
@@ -610,6 +637,11 @@ export default function ViewTaskModal({
                                             size="sm"
                                             radius="full"
                                             isIconOnly
+                                            onClick={() =>
+                                              handleDeleteCheckbox(
+                                                checkbox.CheckboxId
+                                              )
+                                            }
                                             startContent={<DeleteRoundedIcon />}
                                           />
                                         </div>
