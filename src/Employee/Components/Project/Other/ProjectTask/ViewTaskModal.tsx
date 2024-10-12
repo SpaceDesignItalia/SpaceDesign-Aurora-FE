@@ -56,6 +56,19 @@ interface Comment {
   CommentDate: Date;
 }
 
+interface Checkbox {
+  CheckboxId: number;
+  Text: string;
+  isSelected: boolean;
+  ChecklistId: number;
+}
+
+interface Checklist {
+  ChecklistId: number;
+  Text: string;
+  Checkboxes: Checkbox[];
+}
+
 interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
@@ -67,11 +80,7 @@ interface Task {
   ProjectTaskMembers: Member[];
   ProjectTaskComments: Comment[];
   ProjectId: number;
-  ProjectTaskCheckboxes?: {
-    CheckboxId: number;
-    Text: string;
-    isSelected: boolean;
-  }[];
+  ProjectTaskChecklists: Checklist[];
 }
 
 export default function ViewTaskModal({
@@ -116,6 +125,7 @@ export default function ViewTaskModal({
       ProjectTaskMembers: TaskData.ProjectTaskMembers,
       ProjectTaskTags: TaskData.ProjectTaskTags,
       ProjectTaskComments: TaskData.ProjectTaskComments || [],
+      ProjectTaskChecklists: TaskData.ProjectTaskChecklists || [],
     });
   }, [TaskData]);
 
@@ -129,17 +139,31 @@ export default function ViewTaskModal({
           params: { ProjectTaskId: TaskData.ProjectTaskId },
         }
       );
-      const checkboxesResponse = await axios.get(
-        "/Project/GET/GetCheckboxesByTaskId",
+      const checklistsResponse = await axios.get(
+        "/Project/GET/GetChecklistsByTaskId",
         {
           params: { TaskId: TaskData.ProjectTaskId },
         }
+      );
+      const updatedChecklists = await Promise.all(
+        checklistsResponse.data.map(async (checklist: Checklist) => {
+          const checkboxesResponse = await axios.get(
+            "/Project/GET/GetCheckboxesByChecklistId",
+            {
+              params: { ChecklistId: checklist.ChecklistId },
+            }
+          );
+          return {
+            ...checklist,
+            Checkboxes: checkboxesResponse.data,
+          };
+        })
       );
 
       setNewTask({
         ...newTask,
         ProjectTaskComments: commentResponse.data,
-        ProjectTaskCheckboxes: checkboxesResponse.data,
+        ProjectTaskChecklists: updatedChecklists,
         ProjectTaskId: newTask?.ProjectTaskId!,
         ProjectTaskName: newTask?.ProjectTaskName!,
         ProjectTaskDescription: newTask?.ProjectTaskDescription,
@@ -152,7 +176,7 @@ export default function ViewTaskModal({
       });
     };
     fetchComments();
-  }, [update]);
+  }, [update, newTask?.ProjectTaskChecklists]);
 
   function handleAddTaskComment() {
     axios
@@ -207,21 +231,44 @@ export default function ViewTaskModal({
     return Math.min(Math.max(progress, 0), 100); // Assicuriamoci che sia tra 0 e 100
   }
 
-  const [checkboxText, setCheckboxText] = useState(""); // State for new checkbox text
+  // Add these states to manage new checklists and checkboxes
+  const [newChecklistName, setNewChecklistName] = useState(""); // New checklist name
+  const [checklistText, setChecklistText] = useState(""); // New checklist text
 
-  function handleAddCheckbox() {
-    if (checkboxText.trim() !== "") {
+  // Function to add a new checklist
+  function handleAddChecklist() {
+    if (newChecklistName.trim() !== "") {
       axios
         .post(
-          "/Project/POST/AddTaskCheckbox",
+          "/Project/POST/AddTaskChecklist",
           {
             TaskId: TaskData.ProjectTaskId,
-            CheckboxText: checkboxText,
+            ChecklistText: newChecklistName,
           },
           { withCredentials: true }
         )
         .then(() => {
-          setCheckboxText("");
+          setNewChecklistName("");
+          socket.emit("task-news", TaskData.ProjectId);
+          setUpdate(!update);
+        });
+    }
+  }
+
+  // Function to handle adding checkboxes to a specific checklist
+  function handleAddCheckboxToChecklist(checklistId: number) {
+    if (checklistText.trim() !== "") {
+      axios
+        .post(
+          "/Project/POST/AddTaskCheckbox",
+          {
+            ChecklistId: checklistId,
+            CheckboxText: checklistText,
+          },
+          { withCredentials: true }
+        )
+        .then(() => {
+          setChecklistText("");
           socket.emit("task-news", TaskData.ProjectId);
           setUpdate(!update);
         });
@@ -240,8 +287,6 @@ export default function ViewTaskModal({
         setUpdate(!update);
       });
   }
-
-  console.log(newTask?.ProjectTaskCheckboxes);
 
   return (
     <>
@@ -357,37 +402,77 @@ export default function ViewTaskModal({
                         Checklist
                       </dt>
                       <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        <div className="flex flex-col gap-2">
-                          {newTask?.ProjectTaskCheckboxes?.map((checkbox) => (
-                            <Checkbox
-                              key={checkbox.CheckboxId}
-                              size="sm"
-                              isSelected={checkbox.isSelected}
-                              onChange={() =>
-                                handleCheckboxChange(
-                                  checkbox.CheckboxId,
-                                  !checkbox.isSelected
-                                )
-                              }
-                            >
-                              {checkbox.Text}
-                            </Checkbox>
+                        <div className="flex flex-col gap-4">
+                          {newTask?.ProjectTaskChecklists?.map((checklist) => (
+                            <div key={checklist.ChecklistId}>
+                              <div className="flex items-center justify-between">
+                                <h4 className="font-medium">
+                                  {checklist.Text}
+                                </h4>
+                                {/* Add new checkbox to this checklist */}
+                                <div className="flex items-center gap-2">
+                                  <Textarea
+                                    variant="underlined"
+                                    color="primary"
+                                    minRows={1}
+                                    placeholder="Aggiungi una nuova checkbox..."
+                                    value={checklistText}
+                                    onChange={(e) =>
+                                      setChecklistText(e.target.value)
+                                    }
+                                  />
+                                  <Button
+                                    color="primary"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleAddCheckboxToChecklist(
+                                        checklist.ChecklistId
+                                      )
+                                    }
+                                  >
+                                    Aggiungi
+                                  </Button>
+                                </div>
+                              </div>
+                              {/* Display the checkboxes */}
+                              <div className="flex flex-col gap-2">
+                                {checklist.Checkboxes.map((checkbox) => (
+                                  <Checkbox
+                                    key={checkbox.CheckboxId}
+                                    size="sm"
+                                    isSelected={checkbox.isSelected}
+                                    onChange={() =>
+                                      handleCheckboxChange(
+                                        checkbox.CheckboxId,
+                                        !checkbox.isSelected
+                                      )
+                                    }
+                                  >
+                                    {checkbox.Text}
+                                  </Checkbox>
+                                ))}
+                              </div>
+                            </div>
                           ))}
-                          <div className="flex items-center gap-2">
+
+                          {/* Add new checklist */}
+                          <div className="flex items-center gap-2 mt-4">
                             <Textarea
                               variant="underlined"
                               color="primary"
                               minRows={1}
-                              placeholder="Aggiungi una nuova checkbox..."
-                              value={checkboxText}
-                              onChange={(e) => setCheckboxText(e.target.value)}
+                              placeholder="Nome della nuova checklist..."
+                              value={newChecklistName}
+                              onChange={(e) =>
+                                setNewChecklistName(e.target.value)
+                              }
                             />
                             <Button
                               color="primary"
                               size="sm"
-                              onClick={handleAddCheckbox}
+                              onClick={handleAddChecklist}
                             >
-                              Aggiungi
+                              Aggiungi Checklist
                             </Button>
                           </div>
                         </div>

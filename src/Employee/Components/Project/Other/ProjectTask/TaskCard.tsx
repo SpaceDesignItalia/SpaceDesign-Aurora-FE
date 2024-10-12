@@ -195,7 +195,7 @@ export default function TaskCard({
   useEffect(() => {
     const fetchCheckboxes = async () => {
       const checkboxResponse = await axios.get(
-        "/Project/GET/GetCheckboxesByTaskId",
+        "/Project/GET/GetChecklistsByTaskId",
         {
           params: { TaskId: task.ProjectTaskId },
         }
