@@ -127,6 +127,10 @@ export default function ViewTaskModal({
     );
   }
 
+  socket.on("task-update", () => {
+    setUpdate(!update);
+  });
+
   useEffect(() => {
     // Imposta il nuovo task basato su TaskData
     const formatDate = (isoString: string) => {
@@ -203,7 +207,7 @@ export default function ViewTaskModal({
     if (TaskData.ProjectTaskId) {
       fetchCommentsAndChecklists();
     }
-  }, [TaskData.ProjectTaskId, update]);
+  }, [update, TaskData]);
 
   useEffect(() => {
     // Fetch dei dati di sessione dello staffer
@@ -363,12 +367,13 @@ export default function ViewTaskModal({
   };
 
   const togglePopover = (checklistId: number) => {
-    console.log(popoverStates[checklistId]);
     setPopoverStates((prevStates) => ({
       ...prevStates,
       [checklistId]: !prevStates[checklistId], // Questo ora è valido
     }));
   };
+
+  console.log(newTask?.ProjectTaskChecklists);
 
   return (
     <>
