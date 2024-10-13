@@ -30,7 +30,6 @@ import dayjs from "dayjs";
 import { useDateFormatter } from "@react-aria/i18n";
 import { useState } from "react";
 import { parseDate } from "@internationalized/date";
-import EditTaskModal from "./EditTaskModal";
 import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
 import ViewTaskModal from "./ViewTaskModal";
 import axios from "axios";
@@ -121,35 +120,6 @@ export default function TaskCard({
     },
     open: false,
   });
-  const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
-    Task: {
-      ProjectTaskId: 0,
-      ProjectTaskName: "",
-      ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
-      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
-      ProjectTaskStatusId: 0,
-      ProjectTaskTags: [],
-      ProjectTaskMembers: [],
-      ProjectTaskComments: [],
-      ProjectId: 0,
-    },
-    open: false,
-  });
-  const [modalEditData, setModalEditData] = useState<ModalEditData>({
-    Task: {
-      ProjectTaskId: 0,
-      ProjectTaskName: "",
-      ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
-      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
-      ProjectTaskStatusId: 0,
-      ProjectTaskTags: [],
-      ProjectTaskMembers: [],
-      ProjectTaskComments: [],
-      ProjectId: 0,
-    },
-    open: false,
-  });
-
   const [permissions, setPermissions] = useState({
     editActivity: false,
     removeActivity: false,
@@ -212,29 +182,6 @@ export default function TaskCard({
     );
   }
 
-  async function DeleteTask(taskId: number) {
-    await axios.delete("/Project/DELETE/DeleteTask", {
-      params: { ProjectTaskId: taskId },
-    });
-    socket.emit("task-news", projectId);
-    setUpdate(!update);
-  }
-
-  useEffect(() => {
-    setModalData({
-      ...modalData,
-      Task: task,
-    });
-    setModalDeleteData({
-      ...modalDeleteData,
-      Task: task,
-    });
-    setModalEditData({
-      ...modalEditData,
-      Task: task,
-    });
-  }, [task]);
-
   return (
     <>
       <ViewTaskModal
@@ -245,18 +192,7 @@ export default function TaskCard({
         update={update}
         setUpdate={setUpdate}
       />
-      <EditTaskModal
-        isOpen={modalEditData.open}
-        isClosed={() => setModalEditData({ ...modalEditData, open: false })}
-        TaskData={modalEditData.Task}
-        socket={socket}
-      />
-      <ConfirmDeleteTaskModal
-        isOpen={modalDeleteData.open}
-        isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
-        TaskData={modalDeleteData.Task}
-        DeleteTask={DeleteTask}
-      />
+
       <div
         onClick={(e) =>
           setModalData({

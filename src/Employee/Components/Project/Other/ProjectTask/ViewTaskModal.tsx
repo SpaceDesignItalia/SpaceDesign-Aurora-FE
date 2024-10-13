@@ -5,7 +5,6 @@ import {
   AutocompleteItem,
   Avatar,
   AvatarGroup,
-  Badge,
   Button,
   Checkbox,
   Chip,
@@ -34,20 +33,24 @@ import "react-quill/dist/quill.snow.css"; // Import styles
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { parseDate } from "@internationalized/date";
-import { Close, Comment, EditRounded } from "@mui/icons-material";
-import SendRoundedIcon from "@mui/icons-material/SendRounded";
-import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
-import NotesRoundedIcon from "@mui/icons-material/NotesRounded";
-import LocalOfferRoundedIcon from "@mui/icons-material/LocalOfferRounded";
-import Groups2RoundedIcon from "@mui/icons-material/Groups2Rounded";
-import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
-import ChatRoundedIcon from "@mui/icons-material/ChatRounded";
-import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import ModeEditRoundedIcon from "@mui/icons-material/ModeEditRounded";
-import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
-import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+import {
+  Comment,
+  EditRounded,
+  SendRounded as SendRoundedIcon,
+  CreditCardRounded as CreditCardRoundedIcon,
+  NotesRounded as NotesRoundedIcon,
+  LocalOfferRounded as LocalOfferRoundedIcon,
+  Groups2Rounded as Groups2RoundedIcon,
+  CalendarMonthRounded as CalendarMonthRoundedIcon,
+  ChatRounded as ChatRoundedIcon,
+  CheckBoxOutlined as CheckBoxOutlinedIcon,
+  AddRounded as AddRoundedIcon,
+  DeleteRounded as DeleteRoundedIcon,
+  ModeEditRounded as ModeEditRoundedIcon,
+  CloseRounded as CloseRoundedIcon,
+  SaveRounded as SaveRoundedIcon,
+} from "@mui/icons-material";
+import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -566,17 +569,29 @@ export default function ViewTaskModal({
     setCommentEditingId(0);
   }
 
+  async function DeleteTask(Task: Task) {
+    try {
+      await axios.delete("/Project/DELETE/DeleteTask", {
+        params: { ProjectTaskId: Task.ProjectTaskId },
+      });
+      socket.emit("task-news", Task.ProjectId);
+      setUpdate(!update);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   const tagPopoverContent = (
-    <PopoverContent className="w-[350px]">
+    <PopoverContent className="w-[350px] p-5">
       {(titleProps) => (
-        <div className="px-1 py-2 w-full">
+        <div className="px-1 py-2 w-full flex flex-col gap-3">
           <h2 className="text-small font-bold text-foreground" {...titleProps}>
             Tag
           </h2>
           <div className="mt-2 flex flex-col gap-2 w-full">
             <Autocomplete
               defaultItems={tags}
-              placeholder="Cerca per nome..."
+              placeholder="Cerca tag"
               className="max-w-xs"
               variant="bordered"
               radius="sm"
@@ -599,43 +614,39 @@ export default function ViewTaskModal({
   );
 
   const memberPopoverContent = (
-    <PopoverContent className="w-[350px]">
-      {(titleProps) => (
-        <div className="px-1 py-2 w-full">
-          <h2 className="text-small font-bold text-foreground" {...titleProps}>
-            Dipendente
-          </h2>
-          <div className="mt-2 flex flex-col gap-2 w-full">
-            <Autocomplete
-              defaultItems={members}
-              placeholder="Cerca per nome..."
-              className="max-w-xs"
-              variant="bordered"
-              radius="sm"
-            >
-              {(member) => (
-                <AutocompleteItem
-                  startContent={
-                    <Avatar
-                      src={
-                        member.StafferImageUrl &&
-                        API_URL_IMG + "/profileIcons/" + member.StafferImageUrl
-                      }
-                      alt={member.StafferFullName}
-                    />
-                  }
-                  key={member.StafferId}
-                  onClick={() => {
-                    addTaskMember(member);
-                  }}
-                >
-                  {member.StafferFullName}
-                </AutocompleteItem>
-              )}
-            </Autocomplete>
-          </div>
+    <PopoverContent className="w-[350px] p-5">
+      <div className="px-1 py-2 w-full flex flex-col gap-3">
+        <h2 className="text-small font-bold text-foreground">Membri</h2>
+        <div className="mt-2 flex flex-col gap-2 w-full">
+          <Autocomplete
+            defaultItems={members}
+            placeholder="Cerca membri per nome"
+            className="max-w-xs"
+            variant="bordered"
+            radius="full"
+          >
+            {(member) => (
+              <AutocompleteItem
+                startContent={
+                  <Avatar
+                    src={
+                      member.StafferImageUrl &&
+                      API_URL_IMG + "/profileIcons/" + member.StafferImageUrl
+                    }
+                    alt={member.StafferFullName}
+                  />
+                }
+                key={member.StafferId}
+                onClick={() => {
+                  addTaskMember(member);
+                }}
+              >
+                {member.StafferFullName}
+              </AutocompleteItem>
+            )}
+          </Autocomplete>
         </div>
-      )}
+      </div>
     </PopoverContent>
   );
 
@@ -648,6 +659,7 @@ export default function ViewTaskModal({
         scrollBehavior="outside"
         placement="center"
         backdrop="blur"
+        hideCloseButton
       >
         <ModalContent>
           {() => (
@@ -671,18 +683,41 @@ export default function ViewTaskModal({
                     />
                   </div>
                 ) : (
-                  <>
-                    <div>
+                  <div className="w-full">
+                    <div className="w-full flex flex-row items-center justify-end gap-2 border-b-2 pb-2">
+                      <Button
+                        isIconOnly
+                        color="warning"
+                        variant="light"
+                        radius="full"
+                        startContent={<EditRounded sx={{ fontSize: 17 }} />}
+                        onClick={() => setEditing(true)}
+                        size="sm"
+                      />
+
+                      <ConfirmDeleteTaskModal
+                        TaskData={TaskData}
+                        DeleteTask={DeleteTask}
+                      />
+                      <Button
+                        color="primary"
+                        variant="light"
+                        onClick={handleColsesModal}
+                        radius="full"
+                        size="sm"
+                        isIconOnly
+                        startContent={
+                          <CloseRoundedIcon
+                            sx={{ fontSize: 17 }}
+                            className="text-gray-700"
+                          />
+                        }
+                      />
+                    </div>
+                    <div className="w-full py-3 flex flex-row items-center gap-2">
                       <CreditCardRoundedIcon /> {newTask!.ProjectTaskName}
                     </div>
-                    <Button
-                      isIconOnly
-                      color="warning"
-                      startContent={<EditRounded />}
-                      onClick={() => setEditing(true)}
-                      size="sm"
-                    />
-                  </>
+                  </div>
                 )}
               </ModalHeader>
               <ModalBody>
@@ -696,16 +731,16 @@ export default function ViewTaskModal({
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
                         {editing ? (
                           newTask!.ProjectTaskTags.length === 0 ? (
-                            <div className="flex flex-row">
+                            <div className="flex flex-row items-center gap-3">
                               <p>Nessun tag trovato</p>
-                              <Popover
-                                key="blur"
-                                offset={10}
-                                placement="bottom"
-                                backdrop="blur"
-                              >
+                              <Popover offset={10} placement="bottom">
                                 <PopoverTrigger>
-                                  <Button color="primary" isIconOnly>
+                                  <Button
+                                    color="primary"
+                                    variant="faded"
+                                    radius="full"
+                                    isIconOnly
+                                  >
                                     <AddRoundedIcon />
                                   </Button>
                                 </PopoverTrigger>
@@ -713,36 +748,28 @@ export default function ViewTaskModal({
                               </Popover>
                             </div>
                           ) : (
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2 items-center">
                               {newTask!.ProjectTaskTags.map((tag) => (
-                                <Badge
-                                  shape="rectangle"
-                                  className="p-1 cursor-pointer"
-                                  content={<DeleteOutlineRoundedIcon />}
-                                  color="danger"
-                                  size="sm"
-                                  onClick={() => {
-                                    deleteTaskTag(tag.ProjectTaskTagId);
-                                  }}
+                                <Chip
+                                  key={tag.ProjectTaskTagId}
+                                  onClose={() =>
+                                    deleteTaskTag(tag.ProjectTaskTagId)
+                                  }
+                                  color="primary"
+                                  variant="faded"
+                                  radius="sm"
                                 >
-                                  <Chip
-                                    key={tag.ProjectTaskTagId}
+                                  {tag.ProjectTaskTagName}
+                                </Chip>
+                              ))}
+                              <Popover offset={10} placement="bottom">
+                                <PopoverTrigger>
+                                  <Button
                                     color="primary"
                                     variant="faded"
-                                    radius="sm"
+                                    radius="full"
+                                    isIconOnly
                                   >
-                                    {tag.ProjectTaskTagName}
-                                  </Chip>
-                                </Badge>
-                              ))}
-                              <Popover
-                                key="blur"
-                                offset={10}
-                                placement="bottom"
-                                backdrop="blur"
-                              >
-                                <PopoverTrigger>
-                                  <Button color="primary" isIconOnly>
                                     <AddRoundedIcon />
                                   </Button>
                                 </PopoverTrigger>
@@ -776,16 +803,16 @@ export default function ViewTaskModal({
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
                         {editing ? (
                           newTask!.ProjectTaskMembers.length === 0 ? (
-                            <div className="flex flex-row">
+                            <div className="flex flex-row items-center gap-2">
                               <p>Nessun membro trovato</p>
-                              <Popover
-                                key="blur"
-                                offset={10}
-                                placement="bottom"
-                                backdrop="blur"
-                              >
+                              <Popover offset={10} placement="bottom">
                                 <PopoverTrigger>
-                                  <Button color="primary" isIconOnly>
+                                  <Button
+                                    color="primary"
+                                    variant="faded"
+                                    radius="full"
+                                    isIconOnly
+                                  >
                                     <AddRoundedIcon />
                                   </Button>
                                 </PopoverTrigger>
@@ -793,48 +820,42 @@ export default function ViewTaskModal({
                               </Popover>
                             </div>
                           ) : (
-                            <>
-                              <AvatarGroup isBordered isGrid max={7}>
-                                {newTask!.ProjectTaskMembers.map((member) => (
-                                  <Badge
-                                    shape="rectangle"
-                                    className="p-1 cursor-pointer"
-                                    content={<DeleteOutlineRoundedIcon />}
-                                    color="danger"
-                                    size="sm"
-                                    onClick={() => {
-                                      deleteTaskMember(member.StafferId);
-                                    }}
-                                  >
-                                    <Tooltip
-                                      key={member.StafferId}
-                                      content={member.StafferFullName}
-                                    >
-                                      <Avatar
-                                        src={
-                                          member.StafferImageUrl &&
-                                          `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
-                                        }
-                                        alt={member.StafferFullName}
-                                      />
-                                    </Tooltip>
-                                  </Badge>
-                                ))}
-                              </AvatarGroup>
-                              <Popover
-                                key="blur"
-                                offset={10}
-                                placement="bottom"
-                                backdrop="blur"
-                              >
+                            <div className="flex flex-wrap gap-3 items-center">
+                              {newTask!.ProjectTaskMembers.map((member) => (
+                                <Chip
+                                  size="lg"
+                                  onClose={() =>
+                                    deleteTaskMember(member.StafferId)
+                                  }
+                                  variant="flat"
+                                  avatar={
+                                    <Avatar
+                                      src={
+                                        member.StafferImageUrl &&
+                                        `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
+                                      }
+                                      alt={member.StafferFullName}
+                                    />
+                                  }
+                                >
+                                  {member.StafferFullName}
+                                </Chip>
+                              ))}
+
+                              <Popover offset={10} placement="bottom">
                                 <PopoverTrigger>
-                                  <Button color="primary" isIconOnly>
+                                  <Button
+                                    color="primary"
+                                    variant="faded"
+                                    radius="full"
+                                    isIconOnly
+                                  >
                                     <AddRoundedIcon />
                                   </Button>
                                 </PopoverTrigger>
                                 {memberPopoverContent}
                               </Popover>
-                            </>
+                            </div>
                           )
                         ) : newTask!.ProjectTaskMembers.length === 0 ? (
                           <p>Nessun membro trovato</p>
@@ -871,9 +892,11 @@ export default function ViewTaskModal({
                               <div className="flex flex-row justify-between w-full">
                                 <I18nProvider locale="it">
                                   <DatePicker
-                                    className={`w-1/3 ${
-                                      dateError ? "border-red-500" : ""
-                                    }`}
+                                    labelPlacement="outside"
+                                    label="Data inizio"
+                                    className="w-1/3"
+                                    radius="full"
+                                    color={dateError ? "danger" : "default"}
                                     variant="bordered"
                                     value={newTask!.ProjectTaskCreation}
                                     onChange={(date) =>
@@ -886,7 +909,11 @@ export default function ViewTaskModal({
                                 </I18nProvider>
                                 <I18nProvider locale="it">
                                   <DatePicker
+                                    labelPlacement="outside"
+                                    label="Data fine"
                                     className="w-1/3"
+                                    radius="full"
+                                    color={dateError ? "danger" : "default"}
                                     variant="bordered"
                                     value={newTask!.ProjectTaskExpiration}
                                     onChange={(date) =>
@@ -1024,16 +1051,13 @@ export default function ViewTaskModal({
                                         {checklist.Text}
                                       </h4>
                                       <div className="flex flex-row gap-2 items-center">
+                                        {calculateChecklistChecked(checklist)}
                                         <CircularProgress
                                           size="lg"
                                           value={calculateChecklistPercentage(
                                             checklist
                                           )}
                                           color="primary"
-                                          showValueLabel={true}
-                                          valueLabel={calculateChecklistChecked(
-                                            checklist
-                                          )}
                                         />
 
                                         <Button
@@ -1471,7 +1495,6 @@ export default function ViewTaskModal({
                           variant="light"
                           onClick={closeEditing}
                           radius="sm"
-                          startContent={<Close />}
                         >
                           Annulla
                         </Button>
@@ -1491,14 +1514,16 @@ export default function ViewTaskModal({
                 </div>
               </ModalBody>
               <ModalFooter>
-                <Button
-                  color="primary"
-                  variant="light"
-                  onClick={handleColsesModal}
-                  radius="sm"
-                >
-                  Chiudi
-                </Button>
+                {!editing && (
+                  <Button
+                    color="primary"
+                    variant="light"
+                    onClick={handleColsesModal}
+                    radius="sm"
+                  >
+                    Chiudi
+                  </Button>
+                )}
               </ModalFooter>
             </>
           )}
