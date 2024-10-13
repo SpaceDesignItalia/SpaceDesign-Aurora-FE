@@ -159,6 +159,7 @@ export default function TaskCard({
 
   useEffect(() => {
     socket.on("task-update", () => {
+      console.log("task-update");
       setUpdate(!update);
     });
   }, []);

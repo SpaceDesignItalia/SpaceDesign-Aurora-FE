@@ -166,6 +166,7 @@ export default function ViewTaskModal({
       ProjectTaskComments: TaskData.ProjectTaskComments || [],
       ProjectTaskChecklists: TaskData.ProjectTaskChecklists || [],
     });
+    console.log("update");
   }, [TaskData, deleteUpdate, editing]);
 
   useEffect(() => {
@@ -654,16 +655,37 @@ export default function ViewTaskModal({
           {() => (
             <>
               <ModalHeader className="flex flex-row justify-between items-center gap-2">
-                <div>
-                  <CreditCardRoundedIcon /> {newTask!.ProjectTaskName}
-                </div>
-                <Button
-                  isIconOnly
-                  color="warning"
-                  startContent={<EditRounded />}
-                  onClick={() => setEditing(true)}
-                  size="sm"
-                />
+                {editing ? (
+                  <div className="flex flex-row justify-between items-center gap-2 w-full">
+                    <CreditCardRoundedIcon />
+                    <Input
+                      className="w-full"
+                      variant="underlined"
+                      color="primary"
+                      placeholder="Titolo della checklist"
+                      value={newTask!.ProjectTaskName}
+                      onChange={(e) => {
+                        setNewTask({
+                          ...newTask!,
+                          ProjectTaskName: e.target.value,
+                        });
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <CreditCardRoundedIcon /> {newTask!.ProjectTaskName}
+                    </div>
+                    <Button
+                      isIconOnly
+                      color="warning"
+                      startContent={<EditRounded />}
+                      onClick={() => setEditing(true)}
+                      size="sm"
+                    />
+                  </>
+                )}
               </ModalHeader>
               <ModalBody>
                 <div className="mt-4">
