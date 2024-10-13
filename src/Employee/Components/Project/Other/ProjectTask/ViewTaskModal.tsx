@@ -227,7 +227,7 @@ export default function ViewTaskModal({
     if (TaskData.ProjectTaskId) {
       fetchCommentsAndChecklists();
     }
-  }, [update, TaskData, deleteUpdate]);
+  }, [update, TaskData]);
 
   useEffect(() => {
     // Fetch dei dati di sessione dello staffer
@@ -260,7 +260,6 @@ export default function ViewTaskModal({
       )
       .then(() => {
         setComment(""); // Resetta il commento dopo l'aggiunta
-        socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
         setUpdate(!update); // Aggiorna lo stato
       });
   };
@@ -272,7 +271,6 @@ export default function ViewTaskModal({
         withCredentials: true,
       })
       .then(() => {
-        socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
         setUpdate(!update); // Aggiorna lo stato
       });
   };
@@ -290,7 +288,6 @@ export default function ViewTaskModal({
         )
         .then(() => {
           setNewChecklistName(""); // Resetta il nome della checklist dopo l'aggiunta
-          socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
           setUpdate(!update); // Aggiorna lo stato
         });
     }
@@ -310,7 +307,6 @@ export default function ViewTaskModal({
         .then(() => {
           togglePopover(checklistId); // Chiudi il popover
           setChecklistText(""); // Resetta il testo della checkbox dopo l'aggiunta
-          socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
           setUpdate(!update); // Aggiorna lo stato
         });
     }
@@ -343,7 +339,6 @@ export default function ViewTaskModal({
         { withCredentials: true }
       )
       .then(() => {
-        socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
         setUpdate(!update); // Aggiorna lo stato
       })
       .catch((error) => {
@@ -400,7 +395,6 @@ export default function ViewTaskModal({
         withCredentials: true,
       })
       .then(() => {
-        socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
         setUpdate(!update); // Aggiorna lo stato
       });
   }
@@ -412,7 +406,6 @@ export default function ViewTaskModal({
         withCredentials: true,
       })
       .then(() => {
-        socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
         setUpdate(!update); // Aggiorna lo stato
       });
   }
@@ -434,7 +427,6 @@ export default function ViewTaskModal({
       })
       .then(() => {
         setEditingCheckbox(0); // Esci dalla modalità di modifica
-        socket.emit("task-news", TaskData.ProjectId); // Notifica il socket del cambiamento
         setUpdate(!update); // Aggiorna lo stato
       });
   };
@@ -564,7 +556,6 @@ export default function ViewTaskModal({
         CommentText: updateComment,
       })
       .then(() => {
-        socket.emit("task-news", TaskData.ProjectId);
         setUpdate(!update);
         setComment("");
         setCommentEditingId(0);
