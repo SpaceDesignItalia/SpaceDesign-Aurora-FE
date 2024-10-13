@@ -220,6 +220,21 @@ export default function TaskCard({
     setUpdate(!update);
   }
 
+  useEffect(() => {
+    setModalData({
+      ...modalData,
+      Task: task,
+    });
+    setModalDeleteData({
+      ...modalDeleteData,
+      Task: task,
+    });
+    setModalEditData({
+      ...modalEditData,
+      Task: task,
+    });
+  }, [task]);
+
   return (
     <>
       <ViewTaskModal

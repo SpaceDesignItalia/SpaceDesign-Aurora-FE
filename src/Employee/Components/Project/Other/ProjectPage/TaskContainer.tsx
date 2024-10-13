@@ -95,7 +95,6 @@ export default function TaskContainer({
   useEffect(() => {
     socket.on("task-update", () => {
       setUpdate((prev) => !prev);
-      console.log("Task update");
     });
   }, []);
 

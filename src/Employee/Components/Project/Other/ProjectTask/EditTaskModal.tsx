@@ -70,8 +70,6 @@ export default function EditTaskModal({
   const [update, setUpdate] = useState(false);
   const [dateError, setDateError] = useState(false); // Nuovo stato per l'errore
 
-  console.log(dateError);
-
   useEffect(() => {
     // Validation: check if the start date is after the expiration date
     if (newTask.ProjectTaskCreation && newTask.ProjectTaskExpiration) {
