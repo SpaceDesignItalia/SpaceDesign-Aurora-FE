@@ -123,10 +123,12 @@ export default function ViewTaskModal({
     useState<string>("");
   const [popoverStates, setPopoverStates] = useState<PopoverStates>({});
   const [comment, setComment] = useState("");
+  const [updateComment, setUpdateComment] = useState("");
   const [newChecklistName, setNewChecklistName] = useState(""); // Nome della nuova checklist
   const [checklistText, setChecklistText] = useState(""); // Testo della nuova checklist
   const [deleteUpdate, setDeleteUpdate] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [commentEditingId, setCommentEditingId] = useState(0);
 
   //Formatter data
   const formatter = useDateFormatter({ dateStyle: "full" });
@@ -443,6 +445,7 @@ export default function ViewTaskModal({
     isClosed();
     setEditing(false);
     setDeleteUpdate(!deleteUpdate);
+    deleteUpdateComment();
   }
 
   const [members, setMembers] = useState<Member[]>([]);
@@ -543,6 +546,25 @@ export default function ViewTaskModal({
   function closeEditing() {
     setEditing(false);
     setDeleteUpdate(!deleteUpdate);
+  }
+
+  function handleUpdateComment() {
+    axios
+      .put("/Project/UPDATE/UpdateComment", {
+        CommentId: commentEditingId,
+        CommentText: updateComment,
+      })
+      .then(() => {
+        socket.emit("task-news", TaskData.ProjectId);
+        setUpdate(!update);
+        setComment("");
+        setCommentEditingId(0);
+      });
+  }
+
+  function deleteUpdateComment() {
+    setComment("");
+    setCommentEditingId(0);
   }
 
   const tagPopoverContent = (
@@ -1325,35 +1347,90 @@ export default function ViewTaskModal({
                                                     ).format("DD/MM/YYYY")}
                                                   </p>
                                                 </div>
-
-                                                <Textarea
-                                                  variant="underlined"
-                                                  color="primary"
-                                                  readOnly
-                                                  value={comment.Text}
-                                                  minRows={1}
-                                                />
+                                                {commentEditingId ===
+                                                comment.ProjectTaskCommentId ? (
+                                                  <Textarea
+                                                    variant="underlined"
+                                                    color="primary"
+                                                    value={updateComment}
+                                                    onChange={(e) =>
+                                                      setUpdateComment(
+                                                        e.target.value
+                                                      )
+                                                    }
+                                                    minRows={1}
+                                                  />
+                                                ) : (
+                                                  <Textarea
+                                                    variant="underlined"
+                                                    color="primary"
+                                                    readOnly
+                                                    value={comment.Text}
+                                                    minRows={1}
+                                                  />
+                                                )}
                                               </div>
+
                                               {comment.StafferId ===
                                                 loggedStafferId && (
                                                 <div className="flex flex-row gap-2">
-                                                  <Button
-                                                    size="sm"
-                                                    variant="light"
-                                                  >
-                                                    Modifica
-                                                  </Button>
-                                                  <Button
-                                                    size="sm"
-                                                    variant="faded"
-                                                    onClick={() =>
-                                                      handleDeleteComment(
-                                                        comment.ProjectTaskCommentId
-                                                      )
-                                                    }
-                                                  >
-                                                    Elimina
-                                                  </Button>
+                                                  {commentEditingId ===
+                                                  comment.ProjectTaskCommentId ? (
+                                                    <>
+                                                      <Button
+                                                        size="sm"
+                                                        variant="light"
+                                                        onClick={
+                                                          deleteUpdateComment
+                                                        }
+                                                      >
+                                                        Annulla
+                                                      </Button>
+                                                      <Button
+                                                        size="sm"
+                                                        variant="faded"
+                                                        onClick={
+                                                          handleUpdateComment
+                                                        }
+                                                        isDisabled={
+                                                          updateComment ===
+                                                            "" ||
+                                                          updateComment ===
+                                                            comment.Text
+                                                        }
+                                                      >
+                                                        Conferma
+                                                      </Button>
+                                                    </>
+                                                  ) : (
+                                                    <>
+                                                      <Button
+                                                        size="sm"
+                                                        variant="light"
+                                                        onClick={() => {
+                                                          setCommentEditingId(
+                                                            comment.ProjectTaskCommentId
+                                                          );
+                                                          setUpdateComment(
+                                                            comment.Text
+                                                          );
+                                                        }}
+                                                      >
+                                                        Modifica
+                                                      </Button>
+                                                      <Button
+                                                        size="sm"
+                                                        variant="faded"
+                                                        onClick={() =>
+                                                          handleDeleteComment(
+                                                            comment.ProjectTaskCommentId
+                                                          )
+                                                        }
+                                                      >
+                                                        Elimina
+                                                      </Button>
+                                                    </>
+                                                  )}
                                                 </div>
                                               )}
                                             </>
