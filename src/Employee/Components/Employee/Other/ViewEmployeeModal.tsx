@@ -45,7 +45,7 @@ export default function ViewEmployeeModal({
                 <dl className="divide-y divide-gray-100">
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt className="text-sm font-medium leading-6 text-gray-900">
-                      Nome Cliente
+                      Nome Dipendente
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                       {EmployeeData.EmployeeFullName}
@@ -53,7 +53,7 @@ export default function ViewEmployeeModal({
                   </div>
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt className="text-sm font-medium leading-6 text-gray-900">
-                      Email Cliente
+                      Email Dipendente
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                       {EmployeeData.EmployeeEmail}
@@ -61,7 +61,7 @@ export default function ViewEmployeeModal({
                   </div>
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt className="text-sm font-medium leading-6 text-gray-900">
-                      Telefono Cliente
+                      Telefono Dipendente
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                       {EmployeeData.EmployeePhone}
