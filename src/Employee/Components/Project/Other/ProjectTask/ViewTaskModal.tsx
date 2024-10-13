@@ -227,7 +227,7 @@ export default function ViewTaskModal({
     if (TaskData.ProjectTaskId) {
       fetchCommentsAndChecklists();
     }
-  }, [update, TaskData]);
+  }, [update, TaskData, deleteUpdate]);
 
   useEffect(() => {
     // Fetch dei dati di sessione dello staffer
