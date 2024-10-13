@@ -141,12 +141,14 @@ export default function ViewTaskModal({
     );
   }
 
-  socket.on("task-update", () => {
-    setUpdate(!update);
-  });
-
   useEffect(() => {
-    // Imposta il nuovo task basato su TaskData
+    socket.on("task-update", () => {
+      fetchTaskData();
+      setUpdate(!update);
+    });
+  }, []);
+
+  function fetchTaskData() {
     const formatDate = (isoString: string) => {
       return dayjs(isoString).format("YYYY-MM-DD");
     };
@@ -169,7 +171,11 @@ export default function ViewTaskModal({
       ProjectTaskComments: TaskData.ProjectTaskComments || [],
       ProjectTaskChecklists: TaskData.ProjectTaskChecklists || [],
     });
-  }, [TaskData, deleteUpdate, editing]);
+  }
+
+  useEffect(() => {
+    fetchTaskData();
+  }, [TaskData, deleteUpdate]);
 
   useEffect(() => {
     const fetchCommentsAndChecklists = async () => {
@@ -506,6 +512,7 @@ export default function ViewTaskModal({
         socket.emit("task-news", TaskData.ProjectId);
         setUpdate(!update);
         setEditing(false);
+        handleColsesModal();
       });
   }
 

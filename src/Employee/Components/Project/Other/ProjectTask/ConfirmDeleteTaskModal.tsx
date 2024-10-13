@@ -73,6 +73,7 @@ export default function ConfirmDeleteTaskModal({
       size="sm"
       isOpen={isOpen}
       onOpenChange={() => setIsOpen(false)}
+      offset={10}
     >
       <PopoverTrigger>
         <Button

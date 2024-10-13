@@ -35,7 +35,6 @@ export default function DeleteLinkModal({
   DeleteLink,
 }: DeleteLinkModalProps) {
   const [selected, setSelected] = useState<string>("");
-  console.log(LinkData);
   return (
     <Modal
       isOpen={isOpen}
