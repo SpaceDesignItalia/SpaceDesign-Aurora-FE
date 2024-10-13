@@ -159,7 +159,6 @@ export default function TaskCard({
 
   useEffect(() => {
     socket.on("task-update", () => {
-      console.log("task-update");
       setUpdate(!update);
     });
   }, []);
@@ -220,6 +219,21 @@ export default function TaskCard({
     socket.emit("task-news", projectId);
     setUpdate(!update);
   }
+
+  useEffect(() => {
+    setModalData({
+      ...modalData,
+      Task: task,
+    });
+    setModalDeleteData({
+      ...modalDeleteData,
+      Task: task,
+    });
+    setModalEditData({
+      ...modalEditData,
+      Task: task,
+    });
+  }, [task]);
 
   return (
     <>

@@ -166,7 +166,6 @@ export default function ViewTaskModal({
       ProjectTaskComments: TaskData.ProjectTaskComments || [],
       ProjectTaskChecklists: TaskData.ProjectTaskChecklists || [],
     });
-    console.log("update");
   }, [TaskData, deleteUpdate, editing]);
 
   useEffect(() => {
@@ -445,7 +444,6 @@ export default function ViewTaskModal({
     setEditingCheckbox(0);
     isClosed();
     setEditing(false);
-    setDeleteUpdate(!deleteUpdate);
     deleteUpdateComment();
   }
 
