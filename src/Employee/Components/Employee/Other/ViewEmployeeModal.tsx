@@ -12,6 +12,7 @@ interface Employee {
   EmployeeFullName: string;
   EmployeeEmail: string;
   EmployeePhone: string;
+  RoleName: string;
 }
 
 interface ViewEmployeeModalProps {
@@ -45,7 +46,7 @@ export default function ViewEmployeeModal({
                 <dl className="divide-y divide-gray-100">
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt className="text-sm font-medium leading-6 text-gray-900">
-                      Nome Cliente
+                      Nome Dipendente
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                       {EmployeeData.EmployeeFullName}
@@ -53,7 +54,7 @@ export default function ViewEmployeeModal({
                   </div>
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt className="text-sm font-medium leading-6 text-gray-900">
-                      Email Cliente
+                      Email Dipendente
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                       {EmployeeData.EmployeeEmail}
@@ -61,10 +62,27 @@ export default function ViewEmployeeModal({
                   </div>
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt className="text-sm font-medium leading-6 text-gray-900">
-                      Telefono Cliente
+                      Telefono Dipendente
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                       {EmployeeData.EmployeePhone}
+                    </dd>
+                  </div>
+                  <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt className="my-auto text-sm font-medium leading-6 text-gray-900">
+                      Ruolo Dipendente
+                    </dt>
+                    <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                      <span className="inline-flex my-auto items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-2 ring-inset ring-gray-200 bg-white">
+                        <svg
+                          viewBox="0 0 6 6"
+                          aria-hidden="true"
+                          className="h-1.5 w-1.5 fill-blue-500"
+                        >
+                          <circle r={3} cx={3} cy={3} />
+                        </svg>
+                        {EmployeeData.RoleName}
+                      </span>
                     </dd>
                   </div>
                 </dl>
