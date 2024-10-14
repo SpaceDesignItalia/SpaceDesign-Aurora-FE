@@ -105,7 +105,6 @@ export default function EmployeeTable() {
         params: { EmployeeData },
       });
 
-      // Simulazione della chiamata API con setTimeout
       if (res.status === 200) {
         fetchData();
       }
@@ -220,8 +219,6 @@ export default function EmployeeTable() {
     },
     []
   );
-
-  console.log(items);
 
   const topContent = React.useMemo(() => {
     return (
