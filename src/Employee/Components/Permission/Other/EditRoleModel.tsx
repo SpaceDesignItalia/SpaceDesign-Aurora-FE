@@ -7,6 +7,8 @@ import {
   Textarea,
   CheckboxGroup,
   Checkbox,
+  Select,
+  SelectItem,
 } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
@@ -14,6 +16,7 @@ import StatusAlert from "../../Layout/StatusAlert";
 interface Role {
   RoleName: string;
   RoleDescription: string;
+  RolePriority: number;
 }
 
 interface PermissionGroup {
@@ -33,7 +36,11 @@ interface AlertData {
   alertColor: "red" | "green" | "yellow";
 }
 
-const initialRoleDataStruct: Role = { RoleName: "", RoleDescription: "" };
+const initialRoleDataStruct: Role = {
+  RoleName: "",
+  RoleDescription: "",
+  RolePriority: 0,
+};
 
 const initialAlertData: AlertData = {
   isOpen: false,
@@ -74,10 +81,12 @@ const EditRoleModel: React.FC = () => {
           setRoleData({
             RoleName: role.RoleName,
             RoleDescription: role.RoleDescription,
+            RolePriority: role.RolePriority,
           });
           setInitialRoleData({
             RoleName: role.RoleName,
             RoleDescription: role.RoleDescription,
+            RolePriority: role.RolePriority,
           });
 
           const permissionIds = role.permissions.map(
@@ -114,6 +123,7 @@ const EditRoleModel: React.FC = () => {
       rolePermissions.length === 0 ||
       (roleData.RoleName === initialRoleData.RoleName &&
         roleData.RoleDescription === initialRoleData.RoleDescription &&
+        roleData.RolePriority === initialRoleData.RolePriority &&
         rolePermissions.length === initialRolePermissions.length &&
         rolePermissions.every((id) => initialRolePermissions.includes(id)))
     );
@@ -205,6 +215,67 @@ const EditRoleModel: React.FC = () => {
                 onChange={handleRoleChange("RoleDescription")}
                 fullWidth
               />
+            </div>
+
+            <div className="col-span-6 sm:col-span-2">
+              <label
+                htmlFor="role-priority"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Grado priorità ruolo{" "}
+              </label>
+              <Select
+                disallowEmptySelection
+                selectedKeys={[String(roleData.RolePriority)]}
+                label="Selezionare grado"
+                id="role-priority"
+                variant="bordered"
+                radius="lg"
+                aria-label="Selezionare grado"
+                onChange={(e) =>
+                  setRoleData({
+                    ...roleData,
+                    RolePriority: Number(e.target.value),
+                  })
+                }
+              >
+                <SelectItem key={1} value={1}>
+                  1
+                </SelectItem>
+                <SelectItem key={2} value={2}>
+                  2
+                </SelectItem>
+                <SelectItem key={3} value={3}>
+                  3
+                </SelectItem>
+                <SelectItem key={4} value={4}>
+                  4
+                </SelectItem>
+                <SelectItem key={5} value={5}>
+                  5
+                </SelectItem>
+                <SelectItem key={6} value={6}>
+                  6
+                </SelectItem>
+                <SelectItem key={7} value={7}>
+                  7
+                </SelectItem>
+                <SelectItem key={8} value={8}>
+                  8
+                </SelectItem>
+                <SelectItem key={9} value={9}>
+                  9
+                </SelectItem>
+                <SelectItem key={10} value={10}>
+                  10
+                </SelectItem>
+                <SelectItem key={11} value={11}>
+                  11
+                </SelectItem>
+                <SelectItem key={12} value={12}>
+                  12
+                </SelectItem>
+              </Select>
             </div>
 
             <div className="col-span-6 sm:col-span-6">

@@ -19,12 +19,14 @@ interface Role {
   RoleId: number;
   RoleName: string;
   RoleDescription: string;
+  RolePriority: number;
 }
 
 interface RoleModal {
   RoleId: number;
   RoleName: string;
   RoleDescription: string;
+  RolePriority: number;
   permissions: Permission[];
 }
 
@@ -38,6 +40,7 @@ const initialRoleData: RoleModal = {
   RoleId: 0,
   RoleName: "",
   RoleDescription: "",
+  RolePriority: 0,
   permissions: [],
 };
 
@@ -95,6 +98,14 @@ export default function ViewRoleModal({
                     </dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                       {Role.RoleDescription}
+                    </dd>
+                  </div>
+                  <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt className="text-sm font-medium leading-6 text-gray-900">
+                      Grado priorità Ruolo
+                    </dt>
+                    <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                      {Role.RolePriority}
                     </dd>
                   </div>
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">

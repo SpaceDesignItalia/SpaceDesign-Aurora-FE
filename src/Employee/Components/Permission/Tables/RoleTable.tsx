@@ -34,6 +34,7 @@ interface Role {
   RoleId: number;
   RoleName: string;
   RoleDescription: string;
+  RolePriority: number;
 }
 
 interface ModalData {
@@ -44,6 +45,7 @@ interface ModalData {
 const columns = [
   { name: "Ruolo", uid: "RoleName" },
   { name: "Descrizione", uid: "RoleDescription" },
+  { name: "Grado di priorità", uid: "RolePriority" },
   { name: "Azioni", uid: "actions" },
 ];
 
