@@ -46,6 +46,7 @@ interface Task {
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
   ProjectTaskExpiration: DateValue;
+  ProjectTaskCreation: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
@@ -56,36 +57,50 @@ export default function EditTaskModal({
   isOpen,
   isClosed,
   TaskData,
+  socket,
 }: {
   isOpen: boolean;
   isClosed: () => void;
   TaskData: Task;
+  socket: any;
 }) {
   const [newTask, setNewTask] = useState<Task>(TaskData);
   const [members, setMembers] = useState<Member[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [update, setUpdate] = useState(false);
+  const [dateError, setDateError] = useState(false); // Nuovo stato per l'errore
 
   useEffect(() => {
+    // Validation: check if the start date is after the expiration date
+    if (newTask.ProjectTaskCreation && newTask.ProjectTaskExpiration) {
+      const start = new Date(newTask.ProjectTaskCreation.toString());
+      const end = new Date(newTask.ProjectTaskExpiration.toString());
+
+      setDateError(start > end); // If start is after end, show error
+    }
+  }, [newTask.ProjectTaskCreation, newTask.ProjectTaskExpiration]);
+
+  useEffect(() => {
+    const formatDate = (isoString: string) => {
+      return dayjs(isoString).format("YYYY-MM-DD"); // Format to YYYY-MM-DD
+    };
+
     setNewTask({
-      ProjectTaskId: TaskData.ProjectTaskId,
-      ProjectTaskName: TaskData.ProjectTaskName,
-      ProjectTaskDescription: TaskData.ProjectTaskDescription,
-      ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
-      ProjectId: TaskData.ProjectId,
-      ProjectTaskExpiration: parseDate(
-        dayjs(new Date(TaskData.ProjectTaskExpiration.toString())).format(
-          "YYYY-MM-DD"
-        )
+      ...newTask,
+      ProjectTaskCreation: parseDate(
+        formatDate(TaskData.ProjectTaskCreation.toString())
       ),
-      ProjectTaskTags:
-        TaskData.ProjectTaskTags.length === 0 ? [] : TaskData.ProjectTaskTags,
-      ProjectTaskMembers:
-        TaskData.ProjectTaskMembers.length === 0
-          ? []
-          : TaskData.ProjectTaskMembers,
+      ProjectTaskExpiration: parseDate(
+        formatDate(TaskData.ProjectTaskExpiration.toString())
+      ),
+      ProjectTaskDescription: TaskData.ProjectTaskDescription,
+      ProjectTaskId: TaskData.ProjectTaskId,
+      ProjectId: TaskData.ProjectId,
+      ProjectTaskName: TaskData.ProjectTaskName,
+      ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
+      ProjectTaskMembers: TaskData.ProjectTaskMembers,
+      ProjectTaskTags: TaskData.ProjectTaskTags,
     });
-    console.log(TaskData);
   }, [TaskData]);
 
   useEffect(() => {
@@ -188,15 +203,18 @@ export default function EditTaskModal({
 
   function handleUpdate() {
     const formattedDate = new Date(newTask.ProjectTaskExpiration.toString());
-    console.log(newTask.ProjectTaskMembers);
+    const formattedCreationDate = new Date(
+      newTask.ProjectTaskCreation.toString()
+    );
     axios
       .put("/Project/UPDATE/UpdateTask", {
         FormattedDate: formattedDate,
+        FormattedCreationDate: formattedCreationDate,
         TaskData: newTask,
       })
       .then(() => {
-        setUpdate(!update);
-        window.location.reload();
+        socket.emit("task-news", TaskData.ProjectId);
+        isClosed();
       });
   }
 
@@ -205,6 +223,7 @@ export default function EditTaskModal({
       ...newTask,
       ProjectTaskMembers: [...newTask.ProjectTaskMembers, member],
     });
+    setUpdate(!update);
   }
 
   function addTaskTag(tag: Tag) {
@@ -212,6 +231,7 @@ export default function EditTaskModal({
       ...newTask,
       ProjectTaskTags: [...newTask.ProjectTaskTags, tag],
     });
+    setUpdate(!update);
   }
 
   function deleteTaskMember(stafferId: number) {
@@ -221,6 +241,7 @@ export default function EditTaskModal({
         (member) => member.StafferId !== stafferId
       ),
     });
+    setUpdate(!update);
   }
 
   function deleteTaskTag(tagId: number) {
@@ -230,9 +251,9 @@ export default function EditTaskModal({
         (tag) => tag.ProjectTaskTagId !== tagId
       ),
     });
+    setUpdate(!update);
   }
 
-  console.log(newTask);
   return (
     <Modal
       isOpen={isOpen}
@@ -246,7 +267,7 @@ export default function EditTaskModal({
         {() => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              Modifica della task: {TaskData.ProjectTaskName}
+              Modifica della task: {newTask.ProjectTaskName}
             </ModalHeader>
             <ModalBody>
               <div className="mt-6 border-t border-gray-100">
@@ -289,19 +310,46 @@ export default function EditTaskModal({
                     <dt className="text-sm font-medium leading-6 text-gray-900">
                       Scadenza
                     </dt>
-                    <I18nProvider locale="it-GB">
+                    <I18nProvider locale="it">
                       <DatePicker
-                        className="sm:col-span-2 sm:mt-0"
-                        value={newTask.ProjectTaskExpiration}
+                        className={`sm:col-span-2 sm:mt-0 ${
+                          dateError ? "border-red-500" : ""
+                        }`}
                         variant="bordered"
-                        radius="sm"
-                        onChange={(e) =>
+                        value={newTask.ProjectTaskExpiration}
+                        onChange={(date) =>
                           setNewTask({
                             ...newTask,
-                            ProjectTaskExpiration: e,
+                            ProjectTaskExpiration: date,
                           })
                         }
                       />
+                    </I18nProvider>
+                  </div>
+                  <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:px-0">
+                    <dt className="text-sm font-medium leading-6 text-gray-900">
+                      Inizio
+                    </dt>
+                    <I18nProvider locale="it">
+                      <DatePicker
+                        className={`sm:col-span-2 sm:mt-0 ${
+                          dateError ? "border-red-500" : ""
+                        }`}
+                        variant="bordered"
+                        value={newTask.ProjectTaskCreation}
+                        onChange={(date) =>
+                          setNewTask({
+                            ...newTask,
+                            ProjectTaskCreation: date,
+                          })
+                        }
+                      />
+                      {dateError && (
+                        <span className="text-red-500 text-sm col-span-3 col-start-2 mt-2">
+                          La data di inizio non può essere successiva alla data
+                          di scadenza.
+                        </span>
+                      )}
                     </I18nProvider>
                   </div>
                   <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -423,10 +471,11 @@ export default function EditTaskModal({
             </ModalBody>
             <ModalFooter>
               <Button
-                color="success"
-                variant="light"
+                color={dateError ? "default" : "success"}
+                variant={dateError ? "flat" : "light"}
                 onClick={handleUpdate}
                 radius="sm"
+                isDisabled={dateError} // Disabilita il pulsante se c'è un errore
               >
                 Aggiorna
               </Button>

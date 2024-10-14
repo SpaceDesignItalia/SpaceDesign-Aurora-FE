@@ -46,6 +46,7 @@ interface Task {
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
   ProjectTaskExpiration: DateValue;
+  ProjectTaskCreation: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
@@ -66,6 +67,7 @@ export default function AddTaskModal({
     ProjectTaskName: "",
     ProjectTaskDescription: "",
     ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
+    ProjectTaskCreation: parseDate(dayjs().format("YYYY-MM-DD")),
     ProjectTaskStatusId: 0,
     ProjectTaskTags: [],
     ProjectTaskMembers: [],
@@ -154,7 +156,7 @@ export default function AddTaskModal({
               placeholder="Cerca per nome..."
               className="max-w-xs"
               variant="bordered"
-              radius="sm"
+              radius="full"
             >
               {(tag) => (
                 <AutocompleteItem
@@ -175,9 +177,13 @@ export default function AddTaskModal({
 
   function handleAddTask() {
     const formattedDate = new Date(newTask.ProjectTaskExpiration.toString());
+    const formattedCreationDate = new Date(
+      newTask.ProjectTaskCreation.toString()
+    );
     axios
       .post("/Project/POST/AddTask", {
         FormattedDate: formattedDate,
+        FormattedCreationDate: formattedCreationDate,
         TaskData: newTask,
       })
       .then(() => {
@@ -244,7 +250,7 @@ export default function AddTaskModal({
                       placeholder="Es. Task 1"
                       className=" sm:col-span-2 sm:mt-0"
                       variant="bordered"
-                      radius="sm"
+                      radius="full"
                       value={newTask.ProjectTaskName}
                       onChange={(e) =>
                         setNewTask({
@@ -260,7 +266,7 @@ export default function AddTaskModal({
                     </dt>
 
                     <ReactQuill
-                      className="sm:col-span-2 sm:mt-0 h-fit"
+                      className="sm:col-span-2 sm:mt-0 h-fit rounded-full"
                       theme="snow"
                       value={newTask.ProjectTaskDescription}
                       onChange={(e) =>
@@ -279,12 +285,31 @@ export default function AddTaskModal({
                       <DatePicker
                         className=" sm:col-span-2 sm:mt-0"
                         variant="bordered"
-                        radius="sm"
+                        radius="full"
                         value={newTask.ProjectTaskExpiration}
                         onChange={(e) =>
                           setNewTask({
                             ...newTask,
                             ProjectTaskExpiration: e,
+                          })
+                        }
+                      />
+                    </I18nProvider>
+                  </div>
+                  <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt className="text-sm font-medium leading-6 text-gray-900">
+                      Scadenza
+                    </dt>
+                    <I18nProvider locale="it-GB">
+                      <DatePicker
+                        className=" sm:col-span-2 sm:mt-0"
+                        variant="bordered"
+                        radius="sm"
+                        value={newTask.ProjectTaskCreation}
+                        onChange={(e) =>
+                          setNewTask({
+                            ...newTask,
+                            ProjectTaskCreation: e,
                           })
                         }
                       />
@@ -307,7 +332,7 @@ export default function AddTaskModal({
                                   <Button
                                     color="danger"
                                     size="sm"
-                                    radius="sm"
+                                    radius="full"
                                     isIconOnly
                                     onClick={() =>
                                       deleteTaskMember(member.StafferId)
@@ -339,7 +364,13 @@ export default function AddTaskModal({
                         backdrop="blur"
                       >
                         <PopoverTrigger>
-                          <Button color="primary" isIconOnly>
+                          <Button
+                            color="primary"
+                            variant="faded"
+                            isIconOnly
+                            radius="full"
+                            size="sm"
+                          >
                             <AddRoundedIcon />
                           </Button>
                         </PopoverTrigger>
@@ -395,7 +426,13 @@ export default function AddTaskModal({
                         backdrop="blur"
                       >
                         <PopoverTrigger>
-                          <Button color="primary" isIconOnly>
+                          <Button
+                            color="primary"
+                            variant="faded"
+                            isIconOnly
+                            radius="full"
+                            size="sm"
+                          >
                             <AddRoundedIcon />
                           </Button>
                         </PopoverTrigger>
@@ -407,14 +444,24 @@ export default function AddTaskModal({
               </div>
             </ModalBody>
             <ModalFooter>
-              <Button
-                color="success"
-                variant="light"
-                onClick={handleAddTask}
-                radius="sm"
-              >
-                Inserisci
-              </Button>
+              <div className="flex flex-col sm:flex-row w-full justify-end gap-3">
+                <Button
+                  color="primary"
+                  variant="light"
+                  onClick={isClosed}
+                  radius="full"
+                >
+                  Annulla
+                </Button>
+                <Button
+                  color="primary"
+                  onClick={handleAddTask}
+                  radius="full"
+                  className="w-full sm:w-1/4 md:w-1/6"
+                >
+                  Aggiungi task
+                </Button>
+              </div>
             </ModalFooter>
           </>
         )}
