@@ -34,10 +34,10 @@ export default function LeadGraph() {
 
   const fetchContacts = async () => {
     try {
-      const [readResponse, pendingResponse] = await Promise.all([
-        axios.get(`/Lead/GET/GetReadLeadsByMonth`),
-        axios.get(`/Lead/GET/GetPendingLeadsByMonth`),
-      ]);
+      const readResponse = await axios.get(`/Lead/GET/GetReadLeadsByMonth`);
+      const pendingResponse = await axios.get(
+        `/Lead/GET/GetPendingLeadsByMonth`
+      );
 
       const readDataMap = new Map(
         readResponse.data.map((item) => [
@@ -63,7 +63,6 @@ export default function LeadGraph() {
           total: readCount + unreadCount,
         };
       });
-
       setChartData(processedData);
 
       const allYears = new Set([
