@@ -6,11 +6,18 @@ import {
   Avatar,
   AvatarGroup,
   Button,
+  Card,
+  CardBody,
+  CardFooter,
   Checkbox,
   Chip,
   CircularProgress,
   DatePicker,
   DateValue,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Input,
   Modal,
   ModalBody,
@@ -33,6 +40,8 @@ import "react-quill/dist/quill.snow.css"; // Import styles
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { parseDate } from "@internationalized/date";
+import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
+
 import {
   Comment,
   EditRounded,
@@ -51,6 +60,10 @@ import {
   SaveRounded as SaveRoundedIcon,
 } from "@mui/icons-material";
 import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
+import FileUploaderModal from "./FileUploaderModal";
+import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
+import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -104,6 +117,18 @@ interface PopoverStates {
   [key: number]: boolean; // chiavi di tipo number, valori di tipo boolean
 }
 
+interface ModalData {
+  TaskId: number;
+  open: boolean;
+}
+
+interface File {
+  TaskFileId: number;
+  FileName: string;
+  FilePath: string;
+  TaskId: number;
+}
+
 export default function ViewTaskModal({
   isOpen,
   isClosed,
@@ -132,6 +157,28 @@ export default function ViewTaskModal({
   const [deleteUpdate, setDeleteUpdate] = useState(false);
   const [editing, setEditing] = useState(false);
   const [commentEditingId, setCommentEditingId] = useState(0);
+  const [modalUploadFile, setModalUploadFile] = useState<ModalData>({
+    TaskId: 0,
+    open: false,
+  });
+  const [files, setFiles] = useState<File[]>([]);
+  const [fileUpdate, setFileUpdate] = useState(false);
+
+  const fetchFiles = async () => {
+    try {
+      const response = await axios.get("/Project/GET/GetFilesByTaskId", {
+        params: { TaskId: TaskData.ProjectTaskId },
+      });
+      setFiles(response.data);
+    } catch (err) {
+      console.error("Error fetching files:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchFiles();
+    setFileUpdate(false);
+  }, [TaskData.ProjectTaskId, fileUpdate]);
 
   //Formatter data
   const formatter = useDateFormatter({ dateStyle: "full" });
@@ -218,6 +265,8 @@ export default function ViewTaskModal({
           ProjectTaskComments: commentResponse.data,
           ProjectTaskChecklists: updatedChecklists,
         }));
+
+        fetchFiles();
       } catch (error) {
         console.error("Errore nel fetch di commenti o checklist", error);
       }
@@ -576,6 +625,43 @@ export default function ViewTaskModal({
       setUpdate(!update);
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  const downloadFile = async (filePath: string, fileName: string) => {
+    try {
+      const response = await axios({
+        url: "/Project/GET/DownloadProjectFileByPath",
+        method: "GET",
+        params: { filePath, fileName },
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+    }
+  };
+
+  async function DeleteFile(FileData: File) {
+    try {
+      const res = await axios.delete("/Project/DELETE/DeleteTaskFile", {
+        params: { TaskId: FileData.TaskId, FilePath: FileData.FilePath },
+      });
+
+      if (res.status === 200) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Errore nella cancellazione del file:", error);
     }
   }
 
@@ -982,6 +1068,81 @@ export default function ViewTaskModal({
 
                     {!editing ? (
                       <>
+                        <FileUploaderModal
+                          TaskId={newTask!.ProjectTaskId}
+                          isOpen={modalUploadFile.open}
+                          isClosed={() =>
+                            setModalUploadFile({
+                              ...modalUploadFile,
+                              open: false,
+                            })
+                          }
+                          setFileUpdate={setFileUpdate}
+                        />
+                        <div className="grid grid-cols-3 gap-4">
+                          {files.length > 0 &&
+                            files.map((file, index) => (
+                              <Card
+                                radius="sm"
+                                key={index}
+                                className="col-span-1"
+                              >
+                                <CardBody className="flex flex-row gap-5">
+                                  <div className="w-full">
+                                    <h4>{file.FileName}</h4>
+                                  </div>
+                                  <Dropdown radius="sm">
+                                    <DropdownTrigger>
+                                      <Button
+                                        isIconOnly
+                                        size="sm"
+                                        variant="light"
+                                      >
+                                        <MoreVertRoundedIcon />
+                                      </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu>
+                                      <DropdownItem
+                                        color="danger"
+                                        startContent={<DeleteOutlinedIcon />}
+                                      >
+                                        Rimuovi
+                                      </DropdownItem>
+                                    </DropdownMenu>
+                                  </Dropdown>
+                                </CardBody>
+
+                                <CardFooter>
+                                  <Button
+                                    color="primary"
+                                    radius="sm"
+                                    startContent={<FileDownloadRoundedIcon />}
+                                    onClick={() =>
+                                      downloadFile(file.FilePath, file.FileName)
+                                    }
+                                    fullWidth
+                                  >
+                                    Scarica file
+                                  </Button>
+                                </CardFooter>
+                              </Card>
+                            ))}
+                        </div>
+                        <Button
+                          radius="sm"
+                          color="primary"
+                          startContent={<NoteAddRoundedIcon />}
+                          className="text-white"
+                          variant="solid"
+                          onClick={() =>
+                            setModalUploadFile({
+                              ...modalUploadFile,
+                              open: true,
+                            })
+                          }
+                        >
+                          Carica file
+                        </Button>
                         <div className="px-4 py-6 flex flex-row justify-between items-start sm:gap-4 sm:px-0">
                           <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 w-full mr-5">
                             <div className="flex flex-row items-center justify-end w-full">
