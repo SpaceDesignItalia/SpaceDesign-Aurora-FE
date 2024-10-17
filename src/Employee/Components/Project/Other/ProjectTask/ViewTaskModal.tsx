@@ -64,6 +64,7 @@ import FileUploaderModal from "./FileUploaderModal";
 import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import ConfirmDeleteFileModal from "./ConfirmDeleteFileModal";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -129,6 +130,18 @@ interface File {
   TaskId: number;
 }
 
+interface ModalDeleteFileData {
+  File: File;
+  open: boolean;
+}
+
+const DEFAULT_FILE: File = {
+  TaskFileId: 0,
+  FileName: "",
+  FilePath: "",
+  TaskId: 0,
+};
+
 export default function ViewTaskModal({
   isOpen,
   isClosed,
@@ -159,6 +172,10 @@ export default function ViewTaskModal({
   const [commentEditingId, setCommentEditingId] = useState(0);
   const [modalUploadFile, setModalUploadFile] = useState<ModalData>({
     TaskId: 0,
+    open: false,
+  });
+  const [modalDeleteFile, setModalDeleteFile] = useState<ModalDeleteFileData>({
+    File: DEFAULT_FILE,
     open: false,
   });
   const [files, setFiles] = useState<File[]>([]);
@@ -658,7 +675,8 @@ export default function ViewTaskModal({
       });
 
       if (res.status === 200) {
-        window.location.reload();
+        setFileUpdate(!fileUpdate);
+        socket.emit("file-update", TaskData.ProjectTaskId);
       }
     } catch (error) {
       console.error("Errore nella cancellazione del file:", error);
@@ -1091,25 +1109,10 @@ export default function ViewTaskModal({
                                   <div className="w-full">
                                     <h4>{file.FileName}</h4>
                                   </div>
-                                  <Dropdown radius="sm">
-                                    <DropdownTrigger>
-                                      <Button
-                                        isIconOnly
-                                        size="sm"
-                                        variant="light"
-                                      >
-                                        <MoreVertRoundedIcon />
-                                      </Button>
-                                    </DropdownTrigger>
-                                    <DropdownMenu>
-                                      <DropdownItem
-                                        color="danger"
-                                        startContent={<DeleteOutlinedIcon />}
-                                      >
-                                        Rimuovi
-                                      </DropdownItem>
-                                    </DropdownMenu>
-                                  </Dropdown>
+                                  <ConfirmDeleteFileModal
+                                    FileData={file}
+                                    DeleteFile={DeleteFile}
+                                  />
                                 </CardBody>
 
                                 <CardFooter>

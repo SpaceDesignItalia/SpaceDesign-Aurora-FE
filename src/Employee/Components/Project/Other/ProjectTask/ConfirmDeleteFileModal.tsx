@@ -2,78 +2,85 @@
 
 import {
   Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@nextui-org/react";
+import { useState } from "react";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 
 interface File {
-  ProjectFileId: number;
+  TaskFileId: number;
   FileName: string;
   FilePath: string;
-  ForClient: boolean;
-  ProjectId: number;
+  TaskId: number;
 }
 
-interface ConfirmDeleteModalProps {
-  isOpen: boolean;
-  isClosed: () => void;
+interface ConfirmDeleteTaskFileModalProps {
   FileData: File;
-  DeleteProject: (project: File) => void;
+  DeleteFile: (File: File) => void;
 }
 
 export default function ConfirmDeleteFileModal({
-  isOpen,
-  isClosed,
   FileData,
-  DeleteProject,
-}: ConfirmDeleteModalProps) {
+  DeleteFile,
+}: ConfirmDeleteTaskFileModalProps) {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   return (
-    <Modal
+    <Popover
+      placement="top"
+      showArrow={true}
+      size="sm"
       isOpen={isOpen}
-      onOpenChange={isClosed}
-      size="2xl"
-      scrollBehavior="inside"
-      placement="center"
-      backdrop="blur"
+      onOpenChange={() => setIsOpen(false)}
+      offset={10}
     >
-      <ModalContent>
-        {(isClosed) => (
-          <>
-            <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">
-                Conferma eliminazione del file {FileData.FileName}
-              </h3>
-            </ModalHeader>
-            <ModalBody>
-              <p className="text-gray-600">
-                Sei sicuro di voler eliminare il file
-                {FileData.FileName}? <br />
-                Questa azione non potrà essere annullata.
-              </p>
-            </ModalBody>
-            <ModalFooter className="flex sm:flex-row flex-col">
-              <Button
-                color="success"
-                variant="light"
-                onClick={() => {
-                  DeleteProject(FileData);
-                  isClosed();
-                }}
-                radius="sm"
-                className="mr-2"
-              >
-                Conferma eliminazione
-              </Button>
-              <Button variant="light" onClick={isClosed} radius="sm">
-                Annulla
-              </Button>
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+      <PopoverTrigger>
+        <Button
+          size="sm"
+          color="danger"
+          variant="light"
+          radius="full"
+          startContent={<DeleteRoundedIcon sx={{ fontSize: 17 }} />}
+          aria-label="Remove"
+          aria-labelledby="Remove"
+          isIconOnly
+          onClick={() => {
+            setIsOpen(true);
+          }}
+        />
+      </PopoverTrigger>
+      <PopoverContent>
+        <div className="px-1 py-2">
+          <div className="flex flex-row gap-2 items-center text-small font-bold mb-2">
+            <ErrorRoundedIcon className="text-warning" sx={{ fontSize: 20 }} />
+            Sei sicuro?
+          </div>
+          <div className="flex flex-row gap-2">
+            <Button
+              variant="light"
+              radius="sm"
+              size="sm"
+              onClick={() => setIsOpen(false)}
+            >
+              Annulla
+            </Button>
+            <Button
+              color="danger"
+              variant="ghost"
+              onClick={() => {
+                DeleteFile(FileData);
+                setIsOpen(false);
+              }}
+              radius="sm"
+              size="sm"
+            >
+              Elimina
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
