@@ -29,7 +29,7 @@ const chartConfig = {
 interface Project {
   ProjectId: number;
   ProjectName: string;
-  Status: "Appena Creato" | "In Sviluppo" | "Terminato";
+  Status: "Appena Creato " | "In Sviluppo " | "Terminato ";
 }
 
 export default function ProjectChart() {
