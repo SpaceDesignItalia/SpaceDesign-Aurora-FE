@@ -14,10 +14,6 @@ import {
   CircularProgress,
   DatePicker,
   DateValue,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
   Input,
   Modal,
   ModalBody,
@@ -62,8 +58,6 @@ import {
 import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
 import FileUploaderModal from "./FileUploaderModal";
 import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import ConfirmDeleteFileModal from "./ConfirmDeleteFileModal";
 
 interface Tag {
@@ -130,18 +124,6 @@ interface File {
   TaskId: number;
 }
 
-interface ModalDeleteFileData {
-  File: File;
-  open: boolean;
-}
-
-const DEFAULT_FILE: File = {
-  TaskFileId: 0,
-  FileName: "",
-  FilePath: "",
-  TaskId: 0,
-};
-
 export default function ViewTaskModal({
   isOpen,
   isClosed,
@@ -172,10 +154,6 @@ export default function ViewTaskModal({
   const [commentEditingId, setCommentEditingId] = useState(0);
   const [modalUploadFile, setModalUploadFile] = useState<ModalData>({
     TaskId: 0,
-    open: false,
-  });
-  const [modalDeleteFile, setModalDeleteFile] = useState<ModalDeleteFileData>({
-    File: DEFAULT_FILE,
     open: false,
   });
   const [files, setFiles] = useState<File[]>([]);
