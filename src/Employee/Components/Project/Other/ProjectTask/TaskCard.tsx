@@ -37,6 +37,7 @@ import { useEffect } from "react";
 import { usePermissions } from "../../../Layout/PermissionProvider";
 import ReactQuill from "react-quill";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
+import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -175,6 +176,21 @@ export default function TaskCard({
     fetchCheckboxes();
   }, [update]);
 
+  const [fileCount, setFileCount] = useState(0);
+  useEffect(() => {
+    const fetchFiles = async () => {
+      try {
+        const response = await axios.get("/Project/GET/GetFilesByTaskId", {
+          params: { TaskId: task.ProjectTaskId },
+        });
+        setFileCount(response.data.length);
+      } catch (err) {
+        console.error("Error fetching files:", err);
+      }
+    };
+    fetchFiles();
+  }, [update]);
+
   function formatDate(date: DateValue) {
     let formatter = useDateFormatter({ dateStyle: "full" });
     return dayjs(formatter.format(new Date(date.toString()))).format(
@@ -258,15 +274,27 @@ export default function TaskCard({
                 <NotesRoundedIcon />
               </Tooltip>
             )}
-            {commentsCount > 0 && (
+            {task.ProjectTaskTags.length > 0 && (
               <Tooltip
-                content="Commenti riguardo la task"
+                content="Tags assegnati alla task"
                 showArrow
                 placement="bottom"
               >
                 <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <ChatRoundedIcon />
-                  {commentsCount}
+                  <LocalOfferRoundedIcon />
+                  {task.ProjectTaskTags.length}
+                </div>
+              </Tooltip>
+            )}
+            {fileCount > 0 && (
+              <Tooltip
+                content="File assegnati alla task"
+                showArrow
+                placement="bottom"
+              >
+                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
+                  <FolderCopyRoundedIcon />
+                  {fileCount}
                 </div>
               </Tooltip>
             )}
@@ -282,15 +310,15 @@ export default function TaskCard({
                 </div>
               </Tooltip>
             )}
-            {task.ProjectTaskTags.length > 0 && (
+            {commentsCount > 0 && (
               <Tooltip
-                content="Tags assegnati alla task"
+                content="Commenti riguardo la task"
                 showArrow
                 placement="bottom"
               >
                 <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <LocalOfferRoundedIcon />
-                  {task.ProjectTaskTags.length}
+                  <ChatRoundedIcon />
+                  {commentsCount}
                 </div>
               </Tooltip>
             )}

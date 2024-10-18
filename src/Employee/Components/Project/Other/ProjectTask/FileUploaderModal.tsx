@@ -24,7 +24,7 @@ export default function FileUploaderModal({
   TaskId: number;
   isOpen: boolean;
   isClosed: () => void;
-  setFileUpdate: React.Dispatch<React.SetStateAction<boolean>>;
+  setFileUpdate: (update: boolean) => void;
 }) {
   const [files, setFiles] = useState<{ file: File; forClient: boolean }[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);

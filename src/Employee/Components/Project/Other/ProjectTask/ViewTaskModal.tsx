@@ -173,7 +173,7 @@ export default function ViewTaskModal({
   useEffect(() => {
     fetchFiles();
     setFileUpdate(false);
-  }, [TaskData.ProjectTaskId, fileUpdate]);
+  }, [TaskData.ProjectTaskId, update]);
 
   //Formatter data
   const formatter = useDateFormatter({ dateStyle: "full" });
@@ -653,7 +653,7 @@ export default function ViewTaskModal({
       });
 
       if (res.status === 200) {
-        setFileUpdate(!fileUpdate);
+        setUpdate(!update);
         socket.emit("file-update", TaskData.ProjectTaskId);
       }
     } catch (error) {
@@ -1073,7 +1073,7 @@ export default function ViewTaskModal({
                               open: false,
                             })
                           }
-                          setFileUpdate={setFileUpdate}
+                          setFileUpdate={setUpdate}
                         />
                         <div className="grid grid-cols-3 gap-4">
                           {files.length > 0 &&
