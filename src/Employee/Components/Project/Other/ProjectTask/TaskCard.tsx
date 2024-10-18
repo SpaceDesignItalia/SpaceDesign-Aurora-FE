@@ -198,6 +198,21 @@ export default function TaskCard({
     );
   }
 
+  function hasValidDescription(content) {
+    let splittedContent: string[] = content.split(">");
+    let valid = false;
+    splittedContent.forEach((element) => {
+      if (!element.startsWith("<") && element.length > 0) {
+        valid = true;
+      }
+    });
+    if (valid) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   return (
     <>
       <ViewTaskModal
@@ -207,6 +222,7 @@ export default function TaskCard({
         socket={socket}
         update={update}
         setUpdate={setUpdate}
+        hasValidDescription={hasValidDescription}
       />
 
       <div
@@ -265,7 +281,7 @@ export default function TaskCard({
             </div>
           </CardHeader>
           <CardBody className="flex flex-row gap-3 px-3 py-0 text-small">
-            {task.ProjectTaskDescription && (
+            {hasValidDescription(task.ProjectTaskDescription) && (
               <Tooltip
                 content="Questa task ha una descrizione"
                 showArrow
@@ -324,19 +340,29 @@ export default function TaskCard({
             )}
           </CardBody>
           <CardFooter className="gap-3 flex flex-col items-end">
-            <AvatarGroup isBordered>
-              {task.ProjectTaskMembers.map((member) => (
-                <Avatar
-                  size="sm"
-                  key={member.StafferId}
-                  src={
-                    member.StafferImageUrl &&
-                    API_URL_IMG + "/profileIcons/" + member.StafferImageUrl
-                  }
-                  alt={member.StafferFullName}
-                />
-              ))}
-            </AvatarGroup>
+            {task.ProjectTaskMembers.length !== 0 && (
+              <AvatarGroup
+                isBordered
+                isGrid
+                className={`grid-cols-${task.ProjectTaskMembers.length}`}
+              >
+                {task.ProjectTaskMembers.map((member) => (
+                  <Tooltip
+                    key={member.StafferId}
+                    content={member.StafferFullName}
+                  >
+                    <Avatar
+                      size="sm"
+                      src={
+                        member.StafferImageUrl &&
+                        `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
+                      }
+                      alt={member.StafferFullName}
+                    />
+                  </Tooltip>
+                ))}
+              </AvatarGroup>
+            )}
             <div className="flex flex-row items-center justify-between gap-3 w-full">
               <Tooltip content="Scadenza task" showArrow placement="bottom">
                 <span className="flex flex-row gap-2 justify-center items-center font-semibold text-sm">

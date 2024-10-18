@@ -131,6 +131,7 @@ export default function ViewTaskModal({
   socket,
   update,
   setUpdate,
+  hasValidDescription,
 }: {
   isOpen: boolean;
   isClosed: () => void;
@@ -138,6 +139,7 @@ export default function ViewTaskModal({
   socket: any;
   update: boolean;
   setUpdate: (update: boolean) => void;
+  hasValidDescription: (content: string) => boolean;
 }) {
   // Variabili di stato
   const [newTask, setNewTask] = useState<Task>();
@@ -157,7 +159,6 @@ export default function ViewTaskModal({
     open: false,
   });
   const [files, setFiles] = useState<File[]>([]);
-  const [fileUpdate, setFileUpdate] = useState(false);
 
   const fetchFiles = async () => {
     try {
@@ -172,7 +173,6 @@ export default function ViewTaskModal({
 
   useEffect(() => {
     fetchFiles();
-    setFileUpdate(false);
   }, [TaskData.ProjectTaskId, update]);
 
   //Formatter data
@@ -1030,37 +1030,41 @@ export default function ViewTaskModal({
                       </dd>
                     </div>
 
-                    <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <NotesRoundedIcon />
-                        Descrizione
-                      </dt>
-                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        {editing ? (
-                          <>
-                            <></>
+                    {((newTask!.ProjectTaskDescription &&
+                      hasValidDescription(newTask!.ProjectTaskDescription)) ||
+                      editing) && (
+                      <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
+                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                          <NotesRoundedIcon />
+                          Descrizione
+                        </dt>
+                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                          {editing ? (
+                            <>
+                              <></>
+                              <ReactQuill
+                                className="sm:col-span-2 sm:mt-0 h-fit"
+                                theme="snow"
+                                value={newTask!.ProjectTaskDescription}
+                                onChange={(e) =>
+                                  setNewTask({
+                                    ...newTask!,
+                                    ProjectTaskDescription: e,
+                                  })
+                                }
+                              />
+                            </>
+                          ) : (
                             <ReactQuill
+                              readOnly
                               className="sm:col-span-2 sm:mt-0 h-fit"
-                              theme="snow"
+                              theme="bubble"
                               value={newTask!.ProjectTaskDescription}
-                              onChange={(e) =>
-                                setNewTask({
-                                  ...newTask!,
-                                  ProjectTaskDescription: e,
-                                })
-                              }
                             />
-                          </>
-                        ) : (
-                          <ReactQuill
-                            readOnly
-                            className="sm:col-span-2 sm:mt-0 h-fit"
-                            theme="bubble"
-                            value={newTask!.ProjectTaskDescription}
-                          />
-                        )}
-                      </dd>
-                    </div>
+                          )}
+                        </dd>
+                      </div>
+                    )}
 
                     {!editing ? (
                       <>
