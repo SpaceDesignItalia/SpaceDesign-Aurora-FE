@@ -752,7 +752,7 @@ export default function ViewTaskModal({
                       className="w-full"
                       variant="underlined"
                       color="primary"
-                      placeholder="Titolo della checklist"
+                      placeholder="Titolo della Task"
                       value={newTask!.ProjectTaskName}
                       onChange={(e) => {
                         setNewTask({
