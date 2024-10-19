@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Link,
+  Tooltip,
 } from "@nextui-org/react";
 import { useEffect, useState } from "react";
 import { API_URL_IMG } from "../../../../API/API";
@@ -247,13 +248,15 @@ export default function TableCard({ project }: { project: Project }) {
             <dd className="text-gray-700">
               <AvatarGroup
                 isBordered
-                max={4}
-                total={teamMembers.length - 4}
+                isGrid
+                className={`grid-cols-${teamMembers.length}`}
                 size="sm"
               >
-                {teamMembers
-                  .slice(0, 4)
-                  .map((member: Member, index: number) => (
+                {teamMembers.map((member: Member, index: number) => (
+                  <Tooltip
+                    key={member.StafferId}
+                    content={member.StafferFullName}
+                  >
                     <Avatar
                       key={index}
                       src={
@@ -261,7 +264,8 @@ export default function TableCard({ project }: { project: Project }) {
                         API_URL_IMG + "/profileIcons/" + member.StafferImageUrl
                       }
                     />
-                  ))}
+                  </Tooltip>
+                ))}
               </AvatarGroup>
             </dd>
           </div>
