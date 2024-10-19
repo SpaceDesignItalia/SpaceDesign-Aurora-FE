@@ -242,6 +242,16 @@ export default function AddTaskModal({
     }
   }, [newTask]);
 
+  const [isValidTask, setIsValidTask] = useState(false);
+  useEffect(() => {
+    setIsValidTask(
+      newTask.ProjectTaskName.length > 0 &&
+        newTask.ProjectTaskCreation.toString().length > 0 &&
+        newTask.ProjectTaskExpiration.toString().length > 0 &&
+        dateError === false
+    );
+  }, [newTask]);
+
   const calculateProgress = (
     startDate: DateValue,
     endDate: DateValue
@@ -532,7 +542,7 @@ export default function AddTaskModal({
                 onClick={handleAddTask}
                 radius="sm"
                 startContent={<SaveRoundedIcon />}
-                isDisabled={dateError}
+                isDisabled={!isValidTask}
                 variant={dateError ? "flat" : "solid"}
               >
                 Salva
