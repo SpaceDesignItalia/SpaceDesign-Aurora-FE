@@ -4,6 +4,7 @@ import RoleTable from "../../Components/Permission/Tables/RoleTable";
 import PermissionTable from "../../Components/Permission/Tables/PermissionTable";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/react";
+import RoleTree from "../../Components/Permission/Other/RoleTree";
 
 export default function PermissionDashboard() {
   const { hasPermission } = usePermissions();
@@ -46,6 +47,7 @@ export default function PermissionDashboard() {
         </div>
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
+        <div className="py-6 lg:py-8">{permissions.role && <RoleTree />}</div>
         <div className="py-6 lg:py-8">{permissions.role && <RoleTable />}</div>
         {permissions.permission && (
           <>

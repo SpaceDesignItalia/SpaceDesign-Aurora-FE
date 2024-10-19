@@ -27,10 +27,10 @@ export default function ProjectDashboard() {
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
         <div className="py-6 lg:py-6">
-          <ProjectTable />
+          <ProjectChart />
         </div>
         <div className="py-6 lg:py-6">
-          <ProjectChart />
+          <ProjectTable />
         </div>
       </main>
     </div>
