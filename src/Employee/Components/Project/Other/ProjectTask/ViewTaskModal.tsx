@@ -1090,7 +1090,7 @@ export default function ViewTaskModal({
                                   ))}
                               </div>
                               <Button
-                                radius="sm"
+                                radius="full"
                                 color="primary"
                                 startContent={<NoteAddRoundedIcon />}
                                 className="text-white"
@@ -1490,6 +1490,7 @@ export default function ViewTaskModal({
 
                                         <div className="mt-3 flex flex-row justify-end w-full">
                                           <Button
+                                            radius="full"
                                             isDisabled={comment == ""}
                                             color="primary"
                                             size="sm"
@@ -1597,6 +1598,7 @@ export default function ViewTaskModal({
                                                   comment.ProjectTaskCommentId ? (
                                                     <>
                                                       <Button
+                                                        radius="full"
                                                         size="sm"
                                                         variant="light"
                                                         onClick={
@@ -1607,9 +1609,13 @@ export default function ViewTaskModal({
                                                       </Button>
                                                       <Button
                                                         size="sm"
-                                                        variant="faded"
+                                                        color="primary"
                                                         onClick={
                                                           handleUpdateComment
+                                                        }
+                                                        radius="full"
+                                                        startContent={
+                                                          <SaveRoundedIcon />
                                                         }
                                                         isDisabled={
                                                           updateComment ===
@@ -1617,8 +1623,13 @@ export default function ViewTaskModal({
                                                           updateComment ===
                                                             comment.Text
                                                         }
+                                                        variant={
+                                                          dateError
+                                                            ? "flat"
+                                                            : "solid"
+                                                        }
                                                       >
-                                                        Conferma
+                                                        Salva
                                                       </Button>
                                                     </>
                                                   ) : (
@@ -1686,14 +1697,14 @@ export default function ViewTaskModal({
                           color="primary"
                           variant="light"
                           onClick={closeEditing}
-                          radius="sm"
+                          radius="full"
                         >
                           Annulla
                         </Button>
                         <Button
                           color="primary"
                           onClick={handleUpdate}
-                          radius="sm"
+                          radius="full"
                           startContent={<SaveRoundedIcon />}
                           isDisabled={dateError}
                           variant={dateError ? "flat" : "solid"}
@@ -1711,7 +1722,7 @@ export default function ViewTaskModal({
                     color="primary"
                     variant="light"
                     onClick={handleColsesModal}
-                    radius="sm"
+                    radius="full"
                   >
                     Chiudi
                   </Button>

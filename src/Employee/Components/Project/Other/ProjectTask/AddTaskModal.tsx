@@ -533,14 +533,14 @@ export default function AddTaskModal({
                 color="primary"
                 variant="light"
                 onClick={handleCloseModal}
-                radius="sm"
+                radius="full"
               >
                 Chiudi
               </Button>
               <Button
                 color="primary"
                 onClick={handleAddTask}
-                radius="sm"
+                radius="full"
                 startContent={<SaveRoundedIcon />}
                 isDisabled={!isValidTask}
                 variant={dateError ? "flat" : "solid"}
