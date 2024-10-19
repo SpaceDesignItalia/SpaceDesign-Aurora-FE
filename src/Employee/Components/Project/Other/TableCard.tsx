@@ -249,7 +249,12 @@ export default function TableCard({ project }: { project: Project }) {
               <AvatarGroup
                 isBordered
                 isGrid
-                className={`grid-cols-${teamMembers.length}`}
+                className={
+                  teamMembers.length > 4
+                    ? `grid-cols-4`
+                    : `grid-cols-${teamMembers.length}`
+                }
+                max={3}
                 size="sm"
               >
                 {teamMembers.map((member: Member, index: number) => (

@@ -6,9 +6,6 @@ import {
   Avatar,
   AvatarGroup,
   Button,
-  Card,
-  CardBody,
-  CardFooter,
   Checkbox,
   Chip,
   CircularProgress,
@@ -54,11 +51,11 @@ import {
   ModeEditRounded as ModeEditRoundedIcon,
   CloseRounded as CloseRoundedIcon,
   SaveRounded as SaveRoundedIcon,
+  AttachFileRounded as AttachFileRoundedIcon,
 } from "@mui/icons-material";
 import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
 import FileUploaderModal from "./FileUploaderModal";
-import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
-import ConfirmDeleteFileModal from "./ConfirmDeleteFileModal";
+import FileCard from "./FileCard";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -410,7 +407,7 @@ export default function ViewTaskModal({
     return (
       <>
         {checklist.Checkboxes.length !== 0 && (
-          <div>
+          <div className="text-sm">
             {checked.length}/{checklist.Checkboxes.length}
           </div> // Mostra la proporzione di checkbox selezionate
         )}
@@ -623,29 +620,6 @@ export default function ViewTaskModal({
     }
   }
 
-  const downloadFile = async (filePath: string, fileName: string) => {
-    try {
-      const response = await axios({
-        url: "/Project/GET/DownloadProjectFileByPath",
-        method: "GET",
-        params: { filePath, fileName },
-        responseType: "blob",
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-
-      link.href = url;
-      link.setAttribute("download", fileName);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error downloading file:", error);
-    }
-  };
-
   async function DeleteFile(FileData: File) {
     try {
       const res = await axios.delete("/Project/DELETE/DeleteTaskFile", {
@@ -753,6 +727,7 @@ export default function ViewTaskModal({
                       variant="underlined"
                       color="primary"
                       placeholder="Titolo della Task"
+                      maxLength={50}
                       value={newTask!.ProjectTaskName}
                       onChange={(e) => {
                         setNewTask({
@@ -760,11 +735,19 @@ export default function ViewTaskModal({
                           ProjectTaskName: e.target.value,
                         });
                       }}
+                      endContent={
+                        <div className="text-sm">
+                          {newTask?.ProjectTaskName.length}/50
+                        </div>
+                      }
                     />
                   </div>
                 ) : (
                   <div className="w-full">
                     <div className="w-full flex flex-row items-center justify-end gap-2 border-b-2 pb-2">
+                      <div className="w-full py-3 flex flex-row items-center gap-2">
+                        <CreditCardRoundedIcon /> {newTask!.ProjectTaskName}
+                      </div>
                       <Button
                         isIconOnly
                         color="warning"
@@ -793,9 +776,6 @@ export default function ViewTaskModal({
                           />
                         }
                       />
-                    </div>
-                    <div className="w-full py-3 flex flex-row items-center gap-2">
-                      <CreditCardRoundedIcon /> {newTask!.ProjectTaskName}
                     </div>
                   </div>
                 )}
@@ -1067,7 +1047,7 @@ export default function ViewTaskModal({
                     )}
 
                     {!editing ? (
-                      <>
+                      <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                         <FileUploaderModal
                           TaskId={newTask!.ProjectTaskId}
                           isOpen={modalUploadFile.open}
@@ -1079,55 +1059,56 @@ export default function ViewTaskModal({
                           }
                           setFileUpdate={setUpdate}
                         />
-                        <div className="grid grid-cols-3 gap-4">
-                          {files.length > 0 &&
-                            files.map((file, index) => (
-                              <Card
+                        <Accordion variant="light" className="px-[-2px]">
+                          <AccordionItem
+                            key="1"
+                            aria-label="Accordion 1"
+                            title={
+                              <div className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                                <AttachFileRoundedIcon />
+                                Allegati
+                                <Chip
+                                  color="primary"
+                                  variant="faded"
+                                  size="sm"
+                                  radius="full"
+                                >
+                                  {files && files.length}
+                                </Chip>
+                              </div>
+                            }
+                          >
+                            <ScrollShadow className="flex flex-col gap-3 h-96">
+                              <div className="flex flex-col gap-4 w-full">
+                                {files.length > 0 &&
+                                  files.map((file, index) => (
+                                    <FileCard
+                                      file={file}
+                                      DeleteFile={DeleteFile}
+                                      key={index}
+                                    />
+                                  ))}
+                              </div>
+                              <Button
                                 radius="sm"
-                                key={index}
-                                className="col-span-1"
+                                color="primary"
+                                startContent={<NoteAddRoundedIcon />}
+                                className="text-white"
+                                variant="solid"
+                                onClick={() =>
+                                  setModalUploadFile({
+                                    ...modalUploadFile,
+                                    open: true,
+                                  })
+                                }
+                                fullWidth
                               >
-                                <CardBody className="flex flex-row gap-5">
-                                  <div className="w-full">
-                                    <h4>{file.FileName}</h4>
-                                  </div>
-                                  <ConfirmDeleteFileModal
-                                    FileData={file}
-                                    DeleteFile={DeleteFile}
-                                  />
-                                </CardBody>
+                                Carica file
+                              </Button>
+                            </ScrollShadow>
+                          </AccordionItem>
+                        </Accordion>
 
-                                <CardFooter>
-                                  <Button
-                                    color="primary"
-                                    radius="sm"
-                                    startContent={<FileDownloadRoundedIcon />}
-                                    onClick={() =>
-                                      downloadFile(file.FilePath, file.FileName)
-                                    }
-                                    fullWidth
-                                  >
-                                    Scarica file
-                                  </Button>
-                                </CardFooter>
-                              </Card>
-                            ))}
-                        </div>
-                        <Button
-                          radius="sm"
-                          color="primary"
-                          startContent={<NoteAddRoundedIcon />}
-                          className="text-white"
-                          variant="solid"
-                          onClick={() =>
-                            setModalUploadFile({
-                              ...modalUploadFile,
-                              open: true,
-                            })
-                          }
-                        >
-                          Carica file
-                        </Button>
                         <div className="px-4 py-6 flex flex-row justify-between items-start sm:gap-4 sm:px-0">
                           <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 w-full mr-5">
                             <div className="flex flex-row items-center justify-end w-full">
@@ -1158,6 +1139,7 @@ export default function ViewTaskModal({
                                       </p>
                                       <div className="mt-2 flex flex-col gap-2 w-full">
                                         <Input
+                                          autoFocus
                                           variant="underlined"
                                           color="primary"
                                           placeholder="Titolo della checklist"
@@ -1165,6 +1147,11 @@ export default function ViewTaskModal({
                                           onChange={(e) =>
                                             setNewChecklistName(e.target.value)
                                           }
+                                          onKeyDown={(e) => {
+                                            if (e.key === "Enter") {
+                                              handleAddChecklist(); // Chiama la funzione quando premi "Enter"
+                                            }
+                                          }}
                                         />
                                         <Button
                                           color="primary"
@@ -1182,219 +1169,263 @@ export default function ViewTaskModal({
                                 </PopoverContent>
                               </Popover>
                             </div>
-                            <div className="flex flex-col gap-16 w-full mt-5">
+
+                            <div className="flex flex-col gap-5 w-full mt-5">
                               {newTask?.ProjectTaskChecklists?.map(
                                 (checklist) => (
-                                  <div
-                                    key={checklist.ChecklistId}
-                                    className="w-full"
+                                  <Accordion
+                                    variant="light"
+                                    className="px-[-2px]"
                                   >
-                                    <div className="flex items-center justify-between border-b">
-                                      <h4 className="flex flex-row gap-2 items-center font-medium py-5">
-                                        <CheckBoxOutlinedIcon />{" "}
-                                        {checklist.Text}
-                                      </h4>
-                                      <div className="flex flex-row gap-2 items-center">
-                                        {calculateChecklistChecked(checklist)}
-                                        <CircularProgress
-                                          size="lg"
-                                          value={calculateChecklistPercentage(
-                                            checklist
-                                          )}
-                                          color="primary"
-                                        />
-
-                                        <Button
-                                          color="danger"
-                                          variant="light"
-                                          size="sm"
-                                          radius="full"
-                                          isIconOnly
-                                          onClick={() =>
-                                            handleDeleteChecklist(
-                                              checklist.ChecklistId
-                                            )
-                                          }
-                                          startContent={<DeleteRoundedIcon />}
-                                        />
-                                      </div>
-                                    </div>
-                                    {/* Display the checkboxes */}
-                                    <div className="flex flex-col gap-2 w-full mt-3">
-                                      {memoizedCheckboxes
-                                        .filter(
-                                          (checkbox) =>
-                                            checkbox.ChecklistId ===
-                                            checklist.ChecklistId
-                                        ) // Filter checkboxes for the current checklist
-                                        .map((checkbox) => (
-                                          <div className="flex flex-row justify-between gap-2 items-center w-full">
-                                            {editingCheckbox ===
-                                            checkbox.CheckboxId ? (
-                                              <Input
-                                                variant="underlined"
-                                                radius="full"
-                                                value={checkboxText}
-                                                onChange={(e) =>
-                                                  setCheckboxText(
-                                                    e.target.value
-                                                  )
-                                                }
-                                                onKeyDown={(e) =>
-                                                  handleKeyDown(
-                                                    e,
-                                                    checkbox.CheckboxId
-                                                  )
-                                                }
-                                                autoFocus
-                                              />
-                                            ) : (
-                                              <Checkbox
-                                                lineThrough={
-                                                  checkbox.IsSelected
-                                                }
-                                                radius="full"
-                                                value={String(
-                                                  checkbox.CheckboxId
+                                    <AccordionItem
+                                      key="1"
+                                      aria-label="Accordion 1"
+                                      title={
+                                        <div className="flex items-center justify-between border-b">
+                                          <h4 className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                                            <CheckBoxOutlinedIcon />{" "}
+                                            {checklist.Text}
+                                          </h4>
+                                          <div className="flex flex-row gap-2 items-center">
+                                            {checklist.Checkboxes.length >
+                                              0 && (
+                                              <>
+                                                {calculateChecklistChecked(
+                                                  checklist
                                                 )}
-                                                isSelected={checkbox.IsSelected}
-                                                onChange={() =>
-                                                  handleCheckboxChange(
-                                                    checkbox.CheckboxId,
-                                                    !checkbox.IsSelected
-                                                  )
-                                                }
-                                              >
-                                                {checkbox.Text}
-                                              </Checkbox>
+                                                <CircularProgress
+                                                  size="lg"
+                                                  value={calculateChecklistPercentage(
+                                                    checklist
+                                                  )}
+                                                  color="primary"
+                                                />
+                                              </>
                                             )}
-                                            {editingCheckbox ===
-                                            checkbox.CheckboxId ? (
-                                              <Button
-                                                size="sm"
-                                                radius="full"
-                                                onClick={() =>
-                                                  handleSaveEdit(
-                                                    checkbox.CheckboxId
-                                                  )
-                                                }
-                                                disabled={checkboxText === ""}
-                                                color="primary"
-                                              >
-                                                Salva
-                                              </Button>
-                                            ) : (
-                                              !checkbox.IsSelected && (
-                                                <div className="flex flex-row justify-end">
-                                                  <Button
-                                                    color="warning"
-                                                    variant="light"
-                                                    size="sm"
-                                                    radius="full"
-                                                    isIconOnly
-                                                    startContent={
-                                                      <ModeEditRoundedIcon />
-                                                    }
-                                                    onClick={() =>
-                                                      handleEditClick(checkbox)
-                                                    }
-                                                  />
-                                                  <Button
-                                                    color="danger"
-                                                    variant="light"
-                                                    size="sm"
-                                                    radius="full"
-                                                    isIconOnly
-                                                    onClick={() =>
-                                                      handleDeleteCheckbox(
-                                                        checkbox.CheckboxId
-                                                      )
-                                                    }
-                                                    startContent={
-                                                      <DeleteRoundedIcon />
-                                                    }
-                                                  />
-                                                </div>
-                                              )
-                                            )}
-                                          </div>
-                                        ))}
-
-                                      <div className="flex items-center gap-2">
-                                        <Popover
-                                          radius="lg"
-                                          placement="bottom"
-                                          showArrow
-                                          shouldBlockScroll
-                                          isOpen={
-                                            popoverStates[checklist.ChecklistId]
-                                          }
-                                          onClose={() =>
-                                            togglePopover(checklist.ChecklistId)
-                                          }
-                                        >
-                                          <PopoverTrigger>
                                             <Button
-                                              color="primary"
+                                              color="danger"
+                                              variant="light"
                                               size="sm"
                                               radius="full"
-                                              startContent={<AddRoundedIcon />}
-                                              className="ml-7"
+                                              isIconOnly
                                               onClick={() =>
-                                                togglePopover(
+                                                handleDeleteChecklist(
                                                   checklist.ChecklistId
                                                 )
                                               }
-                                            >
-                                              Aggiungi elemento
-                                            </Button>
-                                          </PopoverTrigger>
-                                          <PopoverContent className="p-5 w-80">
-                                            {(titleProps) => (
-                                              <div className="px-1 py-2 w-full">
-                                                <p
-                                                  className="text-small font-bold text-foreground"
-                                                  {...titleProps}
+                                              startContent={
+                                                <DeleteRoundedIcon
+                                                  sx={{
+                                                    fontSize: 17,
+                                                  }}
+                                                />
+                                              }
+                                            />
+                                          </div>
+                                        </div>
+                                      }
+                                    >
+                                      <div className="flex flex-col gap-2 w-full mt-3">
+                                        {memoizedCheckboxes
+                                          .filter(
+                                            (checkbox) =>
+                                              checkbox.ChecklistId ===
+                                              checklist.ChecklistId
+                                          ) // Filter checkboxes for the current checklist
+                                          .map((checkbox) => (
+                                            <div className="flex flex-row justify-between gap-2 items-center w-full">
+                                              {editingCheckbox ===
+                                              checkbox.CheckboxId ? (
+                                                <Input
+                                                  variant="underlined"
+                                                  radius="full"
+                                                  value={checkboxText}
+                                                  onChange={(e) =>
+                                                    setCheckboxText(
+                                                      e.target.value
+                                                    )
+                                                  }
+                                                  onKeyDown={(e) =>
+                                                    handleKeyDown(
+                                                      e,
+                                                      checkbox.CheckboxId
+                                                    )
+                                                  }
+                                                  autoFocus
+                                                />
+                                              ) : (
+                                                <Checkbox
+                                                  lineThrough={
+                                                    checkbox.IsSelected
+                                                  }
+                                                  radius="full"
+                                                  value={String(
+                                                    checkbox.CheckboxId
+                                                  )}
+                                                  isSelected={
+                                                    checkbox.IsSelected
+                                                  }
+                                                  onChange={() =>
+                                                    handleCheckboxChange(
+                                                      checkbox.CheckboxId,
+                                                      !checkbox.IsSelected
+                                                    )
+                                                  }
                                                 >
-                                                  Aggiungi elemento
-                                                </p>
-                                                <div className="mt-2 flex flex-col gap-2 w-full">
-                                                  <Input
-                                                    variant="underlined"
-                                                    placeholder="Aggiungi un nuovo elemento"
-                                                    value={checklistText}
-                                                    onChange={(e) =>
-                                                      setChecklistText(
-                                                        e.target.value
-                                                      )
-                                                    }
-                                                  />
-                                                  <Button
-                                                    color="primary"
-                                                    size="sm"
-                                                    radius="full"
-                                                    onClick={() =>
-                                                      handleAddCheckboxToChecklist(
-                                                        checklist.ChecklistId
-                                                      )
-                                                    }
-                                                    isDisabled={
-                                                      checklistText === ""
-                                                    }
-                                                    startContent={
-                                                      <AddRoundedIcon />
-                                                    }
+                                                  {checkbox.Text}
+                                                </Checkbox>
+                                              )}
+                                              {editingCheckbox ===
+                                              checkbox.CheckboxId ? (
+                                                <Button
+                                                  size="sm"
+                                                  radius="full"
+                                                  onClick={() =>
+                                                    handleSaveEdit(
+                                                      checkbox.CheckboxId
+                                                    )
+                                                  }
+                                                  disabled={checkboxText === ""}
+                                                  color="primary"
+                                                >
+                                                  Salva
+                                                </Button>
+                                              ) : (
+                                                !checkbox.IsSelected && (
+                                                  <div className="flex flex-row justify-end">
+                                                    <Button
+                                                      color="warning"
+                                                      variant="light"
+                                                      size="sm"
+                                                      radius="full"
+                                                      isIconOnly
+                                                      startContent={
+                                                        <ModeEditRoundedIcon
+                                                          sx={{
+                                                            fontSize: 17,
+                                                          }}
+                                                        />
+                                                      }
+                                                      onClick={() =>
+                                                        handleEditClick(
+                                                          checkbox
+                                                        )
+                                                      }
+                                                    />
+                                                    <Button
+                                                      color="danger"
+                                                      variant="light"
+                                                      size="sm"
+                                                      radius="full"
+                                                      isIconOnly
+                                                      onClick={() =>
+                                                        handleDeleteCheckbox(
+                                                          checkbox.CheckboxId
+                                                        )
+                                                      }
+                                                      startContent={
+                                                        <DeleteRoundedIcon
+                                                          sx={{
+                                                            fontSize: 17,
+                                                          }}
+                                                        />
+                                                      }
+                                                    />
+                                                  </div>
+                                                )
+                                              )}
+                                            </div>
+                                          ))}
+
+                                        <div className="flex items-center gap-2 mt-5">
+                                          <Popover
+                                            radius="lg"
+                                            placement="bottom"
+                                            showArrow
+                                            shouldBlockScroll
+                                            isOpen={
+                                              popoverStates[
+                                                checklist.ChecklistId
+                                              ]
+                                            }
+                                            onClose={() =>
+                                              togglePopover(
+                                                checklist.ChecklistId
+                                              )
+                                            }
+                                          >
+                                            <PopoverTrigger>
+                                              <Button
+                                                color="primary"
+                                                size="sm"
+                                                radius="full"
+                                                startContent={
+                                                  <AddRoundedIcon />
+                                                }
+                                                onClick={() =>
+                                                  togglePopover(
+                                                    checklist.ChecklistId
+                                                  )
+                                                }
+                                              >
+                                                Aggiungi elemento
+                                              </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="p-5 w-80">
+                                              {(titleProps) => (
+                                                <div className="px-1 py-2 w-full">
+                                                  <p
+                                                    className="text-small font-bold text-foreground"
+                                                    {...titleProps}
                                                   >
                                                     Aggiungi elemento
-                                                  </Button>
+                                                  </p>
+                                                  <div className="mt-2 flex flex-col gap-2 w-full">
+                                                    <Input
+                                                      variant="underlined"
+                                                      autoFocus
+                                                      placeholder="Aggiungi un nuovo elemento"
+                                                      value={checklistText}
+                                                      onChange={(e) =>
+                                                        setChecklistText(
+                                                          e.target.value
+                                                        )
+                                                      }
+                                                      onKeyDown={(e) => {
+                                                        if (e.key === "Enter") {
+                                                          handleAddCheckboxToChecklist(
+                                                            checklist.ChecklistId
+                                                          ); // Chiama la funzione quando premi "Enter"
+                                                        }
+                                                      }}
+                                                    />
+                                                    <Button
+                                                      color="primary"
+                                                      size="sm"
+                                                      radius="full"
+                                                      onClick={() =>
+                                                        handleAddCheckboxToChecklist(
+                                                          checklist.ChecklistId
+                                                        )
+                                                      }
+                                                      isDisabled={
+                                                        checklistText === ""
+                                                      }
+                                                      startContent={
+                                                        <AddRoundedIcon />
+                                                      }
+                                                    >
+                                                      Aggiungi elemento
+                                                    </Button>
+                                                  </div>
                                                 </div>
-                                              </div>
-                                            )}
-                                          </PopoverContent>
-                                        </Popover>
+                                              )}
+                                            </PopoverContent>
+                                          </Popover>
+                                        </div>
                                       </div>
-                                    </div>
-                                  </div>
+                                    </AccordionItem>
+                                  </Accordion>
                                 )
                               )}
                             </div>
@@ -1483,7 +1514,7 @@ export default function ViewTaskModal({
                             newTask.ProjectTaskComments.length === 0 ? (
                               <p>Nessun commento trovato</p>
                             ) : (
-                              <Accordion variant="light">
+                              <Accordion variant="light" className="px-[-2px]">
                                 <AccordionItem
                                   key="1"
                                   aria-label="Accordion 1"
@@ -1561,7 +1592,7 @@ export default function ViewTaskModal({
 
                                               {comment.StafferId ===
                                                 loggedStafferId && (
-                                                <div className="flex flex-row gap-2">
+                                                <div className="flex flex-row justify-end gap-2">
                                                   {commentEditingId ===
                                                   comment.ProjectTaskCommentId ? (
                                                     <>
@@ -1593,7 +1624,9 @@ export default function ViewTaskModal({
                                                   ) : (
                                                     <>
                                                       <Button
+                                                        color="warning"
                                                         size="sm"
+                                                        radius="full"
                                                         variant="light"
                                                         onClick={() => {
                                                           setCommentEditingId(
@@ -1603,20 +1636,35 @@ export default function ViewTaskModal({
                                                             comment.Text
                                                           );
                                                         }}
-                                                      >
-                                                        Modifica
-                                                      </Button>
+                                                        startContent={
+                                                          <EditRounded
+                                                            sx={{
+                                                              fontSize: 17,
+                                                            }}
+                                                          />
+                                                        }
+                                                        isIconOnly
+                                                      />
+
                                                       <Button
+                                                        color="danger"
                                                         size="sm"
-                                                        variant="faded"
+                                                        radius="full"
+                                                        variant="light"
                                                         onClick={() =>
                                                           handleDeleteComment(
                                                             comment.ProjectTaskCommentId
                                                           )
                                                         }
-                                                      >
-                                                        Elimina
-                                                      </Button>
+                                                        startContent={
+                                                          <DeleteRoundedIcon
+                                                            sx={{
+                                                              fontSize: 17,
+                                                            }}
+                                                          />
+                                                        }
+                                                        isIconOnly
+                                                      />
                                                     </>
                                                   )}
                                                 </div>
@@ -1631,7 +1679,7 @@ export default function ViewTaskModal({
                             )}
                           </dd>
                         </div>
-                      </>
+                      </div>
                     ) : (
                       <div className="flex flex-row justify-end gap-2">
                         <Button

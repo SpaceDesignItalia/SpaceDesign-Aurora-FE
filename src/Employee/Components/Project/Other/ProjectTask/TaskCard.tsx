@@ -25,6 +25,7 @@ import ChatRoundedIcon from "@mui/icons-material/ChatRounded";
 import LocalOfferRoundedIcon from "@mui/icons-material/LocalOfferRounded";
 import NotesRoundedIcon from "@mui/icons-material/NotesRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
+import AttachFileRoundedIcon from "@mui/icons-material/AttachFileRounded";
 import { API_URL_IMG } from "../../../../../API/API";
 import dayjs from "dayjs";
 import { useDateFormatter } from "@react-aria/i18n";
@@ -239,13 +240,10 @@ export default function TaskCard({
       >
         <Card className="h-full p-2" radius="sm">
           <CardHeader className="justify-between items-start">
-            <div className="flex gap-5">
-              <div className="flex flex-col gap-3 items-start justify-center w-auto h-fit">
-                <h1 className="text-normal font-bold text-default-600">
-                  {task.ProjectTaskName}
-                </h1>
-              </div>
-            </div>
+            <h1 className="text-normal font-bold text-default-600 text-ellipsis overflow-hidden">
+              {task.ProjectTaskName}
+            </h1>
+
             <div className="flex flex-row">
               {/*  {Number(task.ProjectTaskStatusId) > 1 && (
                 <Button
@@ -309,7 +307,7 @@ export default function TaskCard({
                 placement="bottom"
               >
                 <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <FolderCopyRoundedIcon />
+                  <AttachFileRoundedIcon />
                   {fileCount}
                 </div>
               </Tooltip>
