@@ -6,6 +6,10 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import axios from "axios";
 import { Link } from "react-router-dom"; // Assuming you're using React Router
 import StatusAlert from "../../Components/Layout/StatusAlert";
+import { io } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../API/API";
+
+const socket = io(API_WEBSOCKET_URL);
 
 interface LoginData {
   email: string;
@@ -59,7 +63,12 @@ export default function Login() {
         { withCredentials: true }
       );
       if (res.status == 200) {
-        window.location.href = "/";
+        axios
+          .get("/Authentication/GET/GetSessionData", { withCredentials: true })
+          .then(async (res) => {
+            socket.emit("new-user-add", res.data.StafferId);
+            window.location.href = "/";
+          });
       }
     } catch (error) {
       console.error(error);
