@@ -50,45 +50,71 @@ const TicketModal: React.FC<TicketModalProps> = ({
   onClose,
   ticket,
 }) => {
-  const [newTicket, setNewTicket] = useState<Ticket | null>(ticket);
-  const [selectedStatusId, setSelectedStatusId] = useState<number | null>(null);
-  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false); // Stato per il modale di aggiunta task
+  const [newTicket, setNewTicket] = useState<Ticket | null>(null);
+  const [inputValue, setInputValue] = useState<string>("");
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
 
+  // Inizializza lo stato del ticket quando il modale viene aperto o il ticket cambia
   useEffect(() => {
     if (ticket) {
       setNewTicket(ticket);
-      setSelectedStatusId(ticket.TicketStatusId); // Imposta lo stato selezionato inizialmente
+      setInputValue(ticket.TicketStatusName);
     }
   }, [ticket]);
 
-  const handleStatusChange = (key: string | number | null) => {
-    if (key !== null) {
+  const handleStatusChange = (keys: Set<React.Key>) => {
+    const key = Array.from(keys)[0];
+    if (key !== undefined && newTicket) {
       const selectedStatus = TICKET_STATUSES.find(
         (status) => status.TicketStatusId === Number(key)
       );
       if (selectedStatus) {
-        setSelectedStatusId(selectedStatus.TicketStatusId);
         setNewTicket({
-          ...newTicket!,
+          ...newTicket,
           TicketStatusId: selectedStatus.TicketStatusId,
           TicketStatusName: selectedStatus.TicketStatusName,
         });
+        setInputValue(selectedStatus.TicketStatusName);
       }
     }
   };
 
-  const handleUpdate = () => {
-    axios
-      .put(`/Ticket/PUT/UpdateTicketStatus`, {
-        TicketStatusId: newTicket?.TicketStatusId,
-        ProjectTicketId: newTicket?.ProjectTicketId,
-      })
-      .then(() => {
-        onClose(); // Chiude il modale dei ticket
-      })
-      .catch((error) => {
-        console.error("Error updating ticket status", error);
+  const handleInputChange = (value: string) => {
+    setInputValue(value);
+  };
+
+  const handleBlur = () => {
+    const status = TICKET_STATUSES.find(
+      (status) => status.TicketStatusName === inputValue
+    );
+    if (status && newTicket) {
+      setNewTicket({
+        ...newTicket,
+        TicketStatusId: status.TicketStatusId,
+        TicketStatusName: status.TicketStatusName,
       });
+    } else {
+      // Reimposta l'input al nome dello stato corrente se il valore non è valido
+      setInputValue(newTicket?.TicketStatusName || "");
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (newTicket) {
+      try {
+        await axios.put(`/Ticket/PUT/UpdateTicketStatus`, {
+          TicketStatusId: newTicket.TicketStatusId,
+          ProjectTicketId: newTicket.ProjectTicketId,
+        });
+        onClose(); // Chiude il modale dei ticket
+      } catch (error) {
+        console.error(
+          "Errore durante l'aggiornamento dello stato del ticket",
+          error
+        );
+        // Puoi aggiungere un feedback visivo per l'utente qui
+      }
+    }
   };
 
   const handleAddTask = () => {
@@ -114,8 +140,9 @@ const TicketModal: React.FC<TicketModalProps> = ({
                 </h2>
               </ModalHeader>
               <ModalBody className="space-y-6 px-8 py-6">
+                {/* Codice Richiesta */}
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4">
-                  <dt className="text-sm font-medium leading-6 text-gray-900">
+                  <dt className="text-sm font-medium text-gray-900">
                     Codice Richiesta
                   </dt>
                   <Input
@@ -125,10 +152,9 @@ const TicketModal: React.FC<TicketModalProps> = ({
                     className="sm:col-span-2"
                   />
                 </div>
+                {/* Titolo */}
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4">
-                  <dt className="text-sm font-medium leading-6 text-gray-900">
-                    Titolo
-                  </dt>
+                  <dt className="text-sm font-medium text-gray-900">Titolo</dt>
                   <Input
                     value={newTicket.ProjectTicketTitle}
                     readOnly
@@ -136,8 +162,9 @@ const TicketModal: React.FC<TicketModalProps> = ({
                     className="sm:col-span-2"
                   />
                 </div>
+                {/* Tipo di Richiesta */}
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4">
-                  <dt className="text-sm font-medium leading-6 text-gray-900">
+                  <dt className="text-sm font-medium text-gray-900">
                     Tipo di Richiesta
                   </dt>
                   <Input
@@ -147,8 +174,9 @@ const TicketModal: React.FC<TicketModalProps> = ({
                     className="sm:col-span-2"
                   />
                 </div>
+                {/* Descrizione */}
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4">
-                  <dt className="text-sm font-medium leading-6 text-gray-900">
+                  <dt className="text-sm font-medium text-gray-900">
                     Descrizione
                   </dt>
                   <Textarea
@@ -159,23 +187,28 @@ const TicketModal: React.FC<TicketModalProps> = ({
                     rows={3}
                   />
                 </div>
+                {/* Stato Ticket */}
                 <div className="sm:grid sm:grid-cols-3 sm:gap-4">
-                  <dt className="text-sm font-medium leading-6 text-gray-900">
+                  <dt className="text-sm font-medium text-gray-900">
                     Stato Ticket
                   </dt>
                   <Autocomplete
-                    selectedKeys={[selectedStatusId?.toString() || ""]}
-                    defaultItems={TICKET_STATUSES}
-                    placeholder="Seleziona lo stato del ticket"
+                    selectedKeys={
+                      newTicket?.TicketStatusId
+                        ? new Set([newTicket.TicketStatusId.toString()])
+                        : new Set()
+                    }
                     onSelectionChange={handleStatusChange}
-                    variant="bordered"
-                    radius="sm"
-                    aria-label="Stato Ticket"
-                    className="sm:col-span-2"
+                    onInputChange={handleInputChange}
+                    inputValue={inputValue}
+                    onBlur={handleBlur}
                     fullWidth
+                    className="sm:col-span-2"
+                    aria-label="Stato Ticket"
+                    defaultItems={TICKET_STATUSES}
                   >
                     {(status) => (
-                      <AutocompleteItem key={status.TicketStatusId}>
+                      <AutocompleteItem key={status.TicketStatusId.toString()}>
                         {status.TicketStatusName}
                       </AutocompleteItem>
                     )}
@@ -210,8 +243,10 @@ const TicketModal: React.FC<TicketModalProps> = ({
         <AddTaskModal
           isOpen={isAddTaskModalOpen}
           isClosed={() => setIsAddTaskModalOpen(false)}
-          ProjectId={newTicket.ProjectId} // Passa l'ID del progetto al modale
-          TicketId={newTicket.ProjectTicketId} // Passa l'ID del ticket
+          ProjectId={newTicket.ProjectId}
+          TicketId={newTicket.ProjectTicketId}
+          defaultTitle={newTicket.ProjectTicketTitle}
+          defaultDescription={newTicket.ProjectTicketDescription}
         />
       )}
     </>

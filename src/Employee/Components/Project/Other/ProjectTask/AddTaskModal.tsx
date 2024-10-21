@@ -56,15 +56,21 @@ export default function AddTaskModal({
   isOpen,
   isClosed,
   ProjectId,
+  TicketId,
+  defaultTitle,
+  defaultDescription,
 }: {
   isOpen: boolean;
   isClosed: () => void;
   ProjectId: number;
+  TicketId: number;
+  defaultTitle: string;
+  defaultDescription: string;
 }) {
   const [newTask, setNewTask] = useState<Task>({
     ProjectTaskId: 0,
-    ProjectTaskName: "",
-    ProjectTaskDescription: "",
+    ProjectTaskName: defaultTitle || "", // Pre-popolato con il titolo del ticket
+    ProjectTaskDescription: defaultDescription || "", // Pre-popolato con la descrizione del ticket
     ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
     ProjectTaskStatusId: 0,
     ProjectTaskTags: [],
@@ -89,6 +95,7 @@ export default function AddTaskModal({
         setMembers(filteredMembers);
       });
 
+    // Ottiene i tag disponibili
     axios.get("/Project/GET/GetAllTags").then((res) => {
       setTags(
         res.data.filter((tag: Tag) => {
@@ -98,7 +105,7 @@ export default function AddTaskModal({
         })
       );
     });
-  }, [newTask, update]);
+  }, [newTask, update, ProjectId]);
 
   const memberPopoverContent = (
     <PopoverContent className="w-[350px]">
@@ -179,10 +186,12 @@ export default function AddTaskModal({
       .post("/Project/POST/AddTask", {
         FormattedDate: formattedDate,
         TaskData: newTask,
+        TicketId: TicketId, // Associa il task al ticket
       })
       .then(() => {
         setUpdate(!update);
-        window.location.reload();
+        isClosed(); // Chiude il modale
+        window.location.reload(); // Aggiorna la pagina
       });
   }
 
