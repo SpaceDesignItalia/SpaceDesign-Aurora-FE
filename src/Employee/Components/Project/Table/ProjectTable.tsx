@@ -29,6 +29,7 @@ import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
 import { API_URL_IMG } from "../../../../API/API";
+import ConfirmDeleteProjectModal from "../Other/ConfirmDeleteProjectModal";
 
 interface Project {
   ProjectId: number;
@@ -74,8 +75,6 @@ export default function ProjectTable() {
   const [teamMembers, setTeamMembers] = useState<Member[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [adminCompanyPermission, setAdminCompanyPermission] = useState({
-    addCompanyPermission: false,
-    editCompanyermission: false,
     deleteCompanyPermission: false,
   });
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
@@ -87,8 +86,6 @@ export default function ProjectTable() {
   useEffect(() => {
     async function checkPermissions() {
       setAdminCompanyPermission({
-        addCompanyPermission: await hasPermission("CREATE_COMPANY"),
-        editCompanyermission: await hasPermission("EDIT_COMPANY"),
         deleteCompanyPermission: await hasPermission("DELETE_COMPANY"),
       });
     }
@@ -137,12 +134,12 @@ export default function ProjectTable() {
 
   async function DeleteProject(ProjectData: Project) {
     try {
-      const res = await axios.delete("/Company/DELETE/DeleteCompany", {
-        params: { ProjectData },
+      const res = await axios.delete("/Project/DELETE/DeleteProject", {
+        params: { ProjectId: ProjectData.ProjectId },
       });
 
       if (res.status === 200) {
-        fetchData();
+        window.location.reload();
       }
     } catch (error) {
       console.error("Errore nella cancellazione dell'azienda:", error);
@@ -202,6 +199,12 @@ export default function ProjectTable() {
                 aria-labelledby="View"
                 isIconOnly
               />
+              {adminCompanyPermission.deleteCompanyPermission && (
+                <ConfirmDeleteProjectModal
+                  ProjectData={project}
+                  DeleteProject={DeleteProject}
+                />
+              )}
             </div>
           );
         default:
