@@ -3,16 +3,18 @@ import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
+import LeadStats from "../../Components/Lead/Other/LeadStats";
+import LeadGraph from "../../Components/Lead/Other/LeadGraph";
 
 export default function LeadDashboard() {
   const { hasPermission } = usePermissions();
 
   useEffect(() => {
     async function fetchData() {
-      // const permission = await hasPermission("VIEW_LEAD");
-      //if (!permission) {
-      //  return (window.location.href = "/");
-      //}
+      const permission = await hasPermission("VIEW_LEAD");
+      if (!permission) {
+        return (window.location.href = "/");
+      }
     }
     fetchData();
   }, [hasPermission]);
@@ -30,12 +32,14 @@ export default function LeadDashboard() {
             </BreadcrumbItem>
             <BreadcrumbItem href="/administration/lead">Lead</BreadcrumbItem>
           </Breadcrumbs>
+          <LeadStats />
         </div>
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
         <div className="py-6 lg:py-8">
-          <LeadTable /> {/* Usa il componente della tabella dei lead */}
+          <LeadTable />
         </div>
+        <LeadGraph />
       </main>
     </div>
   );

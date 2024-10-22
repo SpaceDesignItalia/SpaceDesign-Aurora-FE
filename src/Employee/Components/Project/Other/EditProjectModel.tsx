@@ -149,12 +149,10 @@ export default function EditProjectModel() {
   function handleProjectDescriptionChange(
     e: React.ChangeEvent<HTMLInputElement>
   ) {
-    if (e.target.value.length <= 200) {
-      setNewProjectData({
-        ...newProjectData,
-        ProjectDescription: e.target.value,
-      });
-    }
+    setNewProjectData({
+      ...newProjectData,
+      ProjectDescription: e.target.value,
+    });
   }
 
   function handleProjectCreationDateChange(date: DateValue) {
@@ -332,7 +330,6 @@ export default function EditProjectModel() {
                 </label>
                 <Textarea
                   variant="bordered"
-                  type="textarea"
                   radius="sm"
                   value={newProjectData.ProjectDescription}
                   onChange={handleProjectDescriptionChange}

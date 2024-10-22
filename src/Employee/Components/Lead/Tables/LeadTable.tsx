@@ -10,7 +10,6 @@ import {
   Button,
   Pagination,
   SortDescriptor,
-  Link,
 } from "@nextui-org/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
@@ -29,7 +28,7 @@ interface Lead {
   Company: string;
   Name: string;
   Range: string;
-  CreatedAt: Date | null;
+  CreatedAt: string;
   Message: string;
 }
 
@@ -118,7 +117,7 @@ export default function EmployeeTable() {
       Company: "",
       Name: "",
       Range: "",
-      CreatedAt: null,
+      CreatedAt: "",
       Message: "",
     },
     open: false,

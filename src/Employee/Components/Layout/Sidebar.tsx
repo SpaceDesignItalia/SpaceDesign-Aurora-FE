@@ -14,7 +14,6 @@ import EngineeringOutlinedIcon from "@mui/icons-material/EngineeringOutlined";
 import FolderCopyOutlinedIcon from "@mui/icons-material/FolderCopyOutlined";
 import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
 import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
-import ConfirmationNumberOutlinedIcon from "@mui/icons-material/ConfirmationNumberOutlined";
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import axios from "axios";
@@ -244,12 +243,6 @@ export default function Sidebar() {
       href: "/lead",
       icon: MailOutlineRoundedIcon,
       current: currentUrl === "/lead",
-    },
-    {
-      name: "Ticket",
-      href: "/tickets",
-      icon: ConfirmationNumberOutlinedIcon,
-      current: currentUrl === "/tickets",
     },
   ];
 

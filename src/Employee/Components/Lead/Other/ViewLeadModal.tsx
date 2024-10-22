@@ -9,6 +9,7 @@ import {
 } from "@nextui-org/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import dayjs from "dayjs";
 
 interface Lead {
   IdContact: number;
@@ -18,7 +19,7 @@ interface Lead {
   Company: string;
   Name: string;
   Range: string;
-  CreatedAt: Date | null;
+  CreatedAt: string;
   Message: string;
 }
 
@@ -54,7 +55,7 @@ export default function ViewLeadModal({
               Message: leadData.Message,
               Name: leadData.Name,
               Range: leadData.Range,
-              CreatedAt: new Date(leadData.CreatedAt),
+              CreatedAt: leadData.CreatedAt,
             });
             setError(null);
           })
@@ -147,7 +148,7 @@ export default function ViewLeadModal({
                         </dt>
                         <dd className="mt-1 text-sm leading-6 text-gray-700">
                           {lead.CreatedAt !== null &&
-                            lead.CreatedAt.toLocaleString()}
+                            dayjs(lead.CreatedAt).format("DD MMM YYYY HH:mm")}
                         </dd>
                       </div>
                       <div>

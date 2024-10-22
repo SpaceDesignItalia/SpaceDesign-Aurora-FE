@@ -28,7 +28,6 @@ export default function ProjectTable() {
   useEffect(() => {
     axios.get("/Project/GET/GetAllProjects").then((res) => {
       setProjects(res.data);
-      console.log(res.data);
     });
 
     async function checkPermissions() {
@@ -39,7 +38,7 @@ export default function ProjectTable() {
     checkPermissions();
   }, []);
   async function SearchProject(e: { target: { value: string } }) {
-    const searchQuery = e.target.value.trim(); // Otteniamo il valore di ricerca e rimuoviamo gli spazi vuoti
+    const searchQuery = e.target.value.trim();
     try {
       const res = await axios.get("/Project/GET/SearchProjectByName", {
         params: { ProjectName: searchQuery },

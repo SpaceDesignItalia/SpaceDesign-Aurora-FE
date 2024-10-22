@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import ProjectTable from "../../Components/Project/Table/ProjectTable";
+import ProjectChart from "../../Components/Project/Other/ProjectChart";
 
 export default function ProjectDashboard() {
   const { hasPermission } = usePermissions();
@@ -25,7 +26,10 @@ export default function ProjectDashboard() {
         </div>
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
-        <div className="py-6 lg:py-8">
+        <div className="py-6 lg:py-6">
+          <ProjectChart />
+        </div>
+        <div className="py-6 lg:py-6">
           <ProjectTable />
         </div>
       </main>

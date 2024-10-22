@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import LibraryAddRoundedIcon from "@mui/icons-material/LibraryAddRounded";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { Button, DateValue, cn } from "@nextui-org/react";
+import { Button, Chip, DateValue, cn } from "@nextui-org/react";
 import AddTaskModal from "../ProjectTask/AddTaskModal";
 import TaskCard from "../ProjectTask/TaskCard";
 import { io } from "socket.io-client";
@@ -29,14 +29,25 @@ interface Member {
   StafferImageUrl: string;
 }
 
+interface Comment {
+  ProjectTaskCommentId: number;
+  StafferId: number;
+  StafferFullName: string;
+  StafferImageUrl: string;
+  Text: string;
+  CommentDate: Date;
+}
+
 interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
   ProjectTaskExpiration: DateValue;
+  ProjectTaskCreation: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
+  ProjectTaskComments: Comment[];
   ProjectId: number;
 }
 
@@ -127,10 +138,18 @@ export default function TaskContainer({
                 }
               );
 
+              const commentResponse = await axios.get<Comment[]>(
+                "/Project/GET/GetCommentsByTaskId",
+                {
+                  params: { ProjectTaskId: task.ProjectTaskId },
+                }
+              );
+
               return {
                 ...task,
                 ProjectTaskTags: tagsResponse.data,
                 ProjectTaskMembers: membersResponse.data,
+                ProjectTaskComments: commentResponse.data,
               };
             })
           );
@@ -223,19 +242,31 @@ export default function TaskContainer({
 
       <div className="w-full flex justify-end">
         {permissions.assignActivity && (
-          <Button
-            color="primary"
-            radius="sm"
-            onClick={() => setModalAddData({ ...modalAddData, open: true })}
-            startContent={<LibraryAddRoundedIcon />}
-          >
-            Aggiungi Task
-          </Button>
+          <>
+            <Button
+              color="primary"
+              radius="full"
+              onClick={() => setModalAddData({ ...modalAddData, open: true })}
+              startContent={<LibraryAddRoundedIcon />}
+              className="hidden sm:flex"
+            >
+              Aggiungi Task
+            </Button>
+
+            <Button
+              color="primary"
+              radius="full"
+              onClick={() => setModalAddData({ ...modalAddData, open: true })}
+              startContent={<LibraryAddRoundedIcon />}
+              isIconOnly
+              className="sm:hidden"
+            />
+          </>
         )}
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-between p-5 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 justify-between py-5 gap-5 mb-14">
           {columns.map((column) => {
             const columnTaskList =
               columnTasks[column.ProjectTaskStatusId] || [];
@@ -248,9 +279,11 @@ export default function TaskContainer({
                     : "min-h-[200px]"
                 }`}
               >
-                <h2 className="text-xl font-bold p-3">
-                  {column.ProjectTaskStatusName} (
-                  {taskCounts[column.ProjectTaskStatusId]})
+                <h2 className="text-xl font-bold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
+                  {column.ProjectTaskStatusName}
+                  <Chip radius="full" color="primary" variant="faded" size="sm">
+                    {taskCounts[column.ProjectTaskStatusId]}
+                  </Chip>
                 </h2>
                 <Droppable
                   droppableId={column.ProjectTaskStatusId.toString()}
@@ -282,6 +315,8 @@ export default function TaskContainer({
                               update={update}
                               socket={socket}
                               projectId={projectId}
+                              updateTaskStatus={updateTaskStatus}
+                              columnCount={columns.length}
                             />
                           )}
                         </Draggable>

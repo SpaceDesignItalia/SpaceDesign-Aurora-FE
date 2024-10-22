@@ -1,8 +1,6 @@
 import {
   Button,
   Avatar,
-  Radio,
-  cn,
   Modal,
   ModalBody,
   ModalContent,
@@ -41,7 +39,7 @@ interface AlertData {
   isOpen: boolean;
   alertTitle: string;
   alertDescription: string;
-  alertColor: string;
+  alertColor: "green" | "red" | "yellow";
 }
 
 export default function AddProjectLink({
@@ -62,7 +60,7 @@ export default function AddProjectLink({
     isOpen: false,
     alertTitle: "",
     alertDescription: "",
-    alertColor: "",
+    alertColor: "red",
   });
 
   useEffect(() => {
@@ -95,11 +93,13 @@ export default function AddProjectLink({
     }
   }
 
-  function handleProjectLinkTypeChange(e: React.Key) {
-    setNewLinkData({
-      ...newLinkData,
-      ProjectLinkTypeId: parseInt(e),
-    });
+  function handleProjectLinkTypeChange(key: React.Key | null) {
+    if (key !== null) {
+      setNewLinkData({
+        ...newLinkData,
+        ProjectLinkTypeId: parseInt(key.toString()),
+      });
+    }
   }
 
   function handleProjectLinkURLChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -165,7 +165,7 @@ export default function AddProjectLink({
             <>
               <ModalHeader className="flex flex-col gap-1">
                 <h3 className="text-xl font-semibold">
-                  Aggiungi un nuovo collegamento
+                  Aggiungi un nuovo collegamento:
                 </h3>
               </ModalHeader>
               <ModalBody>
@@ -178,10 +178,11 @@ export default function AddProjectLink({
                       Testo visualizzato
                     </label>
                     <Input
+                      placeholder="Es. Repository GitHub"
                       variant="bordered"
                       onChange={handleProjectLinkTitleChange}
                       type="text"
-                      radius="sm"
+                      radius="full"
                       fullWidth
                     />
                   </div>
@@ -198,7 +199,7 @@ export default function AddProjectLink({
                       placeholder="Seleziona il tipo di collegamento"
                       onSelectionChange={handleProjectLinkTypeChange}
                       variant="bordered"
-                      radius="sm"
+                      radius="full"
                       aria-label="manager"
                       fullWidth
                     >
@@ -242,17 +243,20 @@ export default function AddProjectLink({
                       placeholder="https://www.spacedesign-italia.it"
                       onChange={handleProjectLinkURLChange}
                       type="text"
-                      radius="sm"
+                      radius="full"
                       fullWidth
                     />
                   </div>
                 </div>
               </ModalBody>
-              <ModalFooter className="flex sm:flex-row flex-col">
+              <ModalFooter className="flex sm:flex-row flex-col-reverse">
+                <Button variant="light" onClick={isClosed} radius="full">
+                  Annulla
+                </Button>
                 <Button
-                  color="success"
+                  color="primary"
                   className="text-white"
-                  radius="sm"
+                  radius="full"
                   startContent={!isAddingData && <SaveIcon />}
                   isDisabled={checkAllDataCompiled()}
                   isLoading={isAddingData}
@@ -261,9 +265,6 @@ export default function AddProjectLink({
                   {isAddingData
                     ? "Salvando il collegamento..."
                     : "Salva collegamento"}
-                </Button>
-                <Button variant="light" onClick={isClosed} radius="sm">
-                  Annulla
                 </Button>
               </ModalFooter>
             </>

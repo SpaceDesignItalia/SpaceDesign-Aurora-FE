@@ -6,6 +6,8 @@ import {
   Textarea,
   CheckboxGroup,
   Checkbox,
+  Select,
+  SelectItem,
 } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
@@ -13,6 +15,7 @@ import StatusAlert from "../../Layout/StatusAlert";
 interface Role {
   RoleName: string;
   RoleDescription: string;
+  RolePriority: number;
 }
 
 interface RolePermission {
@@ -39,6 +42,7 @@ interface AlertData {
 const initialRoleData: Role = {
   RoleName: "",
   RoleDescription: "",
+  RolePriority: 0,
 };
 
 const initialAlertData: AlertData = {
@@ -94,6 +98,7 @@ const AddRoleModel: React.FC = () => {
     return !(
       newRole.RoleName &&
       newRole.RoleDescription &&
+      newRole.RolePriority &&
       newRolePermissions.length
     );
   };
@@ -140,7 +145,7 @@ const AddRoleModel: React.FC = () => {
             <h3 className="text-base font-semibold leading-6 text-gray-900">
               Aggiungi ruolo
             </h3>
-            <p className="mt-1 text-sm text-gray-500 w-1/3">
+            <p className="mt-1 text-sm text-gray-500 sm:w-1/3 w-full">
               In questo pannello potrai aggiungere un nuovo ruolo al database. I
               campi contrassegnati con un asterisco (
               <span className="text-danger font-bold">*</span>) sono
@@ -183,6 +188,68 @@ const AddRoleModel: React.FC = () => {
                 onChange={handleRoleChange("RoleDescription")}
                 fullWidth
               />
+            </div>
+
+            <div className="col-span-6 sm:col-span-2">
+              <label
+                htmlFor="role-priority"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Grado priorità ruolo{" "}
+                <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Select
+                disallowEmptySelection
+                label="Selezionare grado"
+                id="role-priority"
+                variant="bordered"
+                radius="lg"
+                aria-label="Selezionare grado"
+                value={newRole.RolePriority}
+                onChange={(e) =>
+                  setNewRole((prevRole) => ({
+                    ...prevRole,
+                    RolePriority: parseInt(e.target.value, 10),
+                  }))
+                }
+              >
+                <SelectItem key={1} value={1}>
+                  1
+                </SelectItem>
+                <SelectItem key={2} value={2}>
+                  2
+                </SelectItem>
+                <SelectItem key={3} value={3}>
+                  3
+                </SelectItem>
+                <SelectItem key={4} value={4}>
+                  4
+                </SelectItem>
+                <SelectItem key={5} value={5}>
+                  5
+                </SelectItem>
+                <SelectItem key={6} value={6}>
+                  6
+                </SelectItem>
+                <SelectItem key={7} value={7}>
+                  7
+                </SelectItem>
+                <SelectItem key={8} value={8}>
+                  8
+                </SelectItem>
+                <SelectItem key={9} value={9}>
+                  9
+                </SelectItem>
+                <SelectItem key={10} value={10}>
+                  10
+                </SelectItem>
+                <SelectItem key={11} value={11}>
+                  11
+                </SelectItem>
+                <SelectItem key={12} value={12}>
+                  12
+                </SelectItem>
+              </Select>
             </div>
 
             <div className="col-span-6 sm:col-span-6">
