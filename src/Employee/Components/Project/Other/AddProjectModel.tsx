@@ -6,12 +6,12 @@ import {
   Textarea,
   Autocomplete,
   AutocompleteItem,
-  Chip,
   DatePicker,
   Avatar,
   RadioGroup,
   Radio,
   cn,
+  User,
 } from "@nextui-org/react";
 import { I18nProvider } from "@react-aria/i18n";
 import SaveIcon from "@mui/icons-material/Save";
@@ -44,6 +44,7 @@ interface Manager {
   StafferId: number;
   StafferFullName: string;
   StafferEmail: string;
+  StafferImageUrl: string;
   RoleName: "CEO";
 }
 
@@ -56,10 +57,10 @@ interface AlertData {
   isOpen: boolean;
   alertTitle: string;
   alertDescription: string;
-  alertColor: string;
+  alertColor: "green" | "red" | "yellow";
 }
 
-export const CustomRadio = (props) => {
+export const CustomRadio = (props: any) => {
   const { children, ...otherProps } = props;
 
   return (
@@ -95,7 +96,7 @@ export default function AddProjectModel() {
     isOpen: false,
     alertTitle: "",
     alertDescription: "",
-    alertColor: "",
+    alertColor: "red",
   });
 
   useEffect(() => {
@@ -111,7 +112,10 @@ export default function AddProjectModel() {
   }, []);
 
   function handleProjectBannerChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setNewProjectData({ ...newProjectData, ProjectBannerId: e.target.value });
+    setNewProjectData({
+      ...newProjectData,
+      ProjectBannerId: Number(e.target.value),
+    });
   }
 
   function handleProjectNameChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -138,12 +142,12 @@ export default function AddProjectModel() {
     });
   }
 
-  function handleProjectProjectManagerIdChange(e: React.Key) {
-    setNewProjectData({ ...newProjectData, ProjectManagerId: String(e) });
+  function handleProjectProjectManagerIdChange(e: string | number | null) {
+    setNewProjectData({ ...newProjectData, ProjectManagerId: Number(e) });
   }
 
-  function handleProjectCompanyIdChange(e: React.Key) {
-    setNewProjectData({ ...newProjectData, CompanyId: String(e) });
+  function handleProjectCompanyIdChange(e: string | number | null) {
+    setNewProjectData({ ...newProjectData, CompanyId: Number(e) });
   }
 
   function checkAllDataCompiled() {
@@ -219,199 +223,194 @@ export default function AddProjectModel() {
     <>
       <StatusAlert AlertData={alertData} />
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
-        <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
-          <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
-            <div>
-              <h3 className="text-base font-semibold leading-6 text-gray-900">
-                Progetto
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                In questo pannello potrai creare un nuovo progetto nel database.
-              </p>
+        <div className="space-y-6 bg-white py-6">
+          <div>
+            <h3 className="text-base font-semibold leading-6 text-gray-900">
+              Progetto
+            </h3>
+            <p className="mt-1 text-sm text-gray-500 sm:w-1/3">
+              In questo pannello potrai creare un nuovo progetto nel database. I
+              campi contrassegnati con un asterisco (
+              <span className="text-danger font-bold">*</span>) sono obbligatori
+              e devono essere compilati per completare la registrazione.
+              Assicurati di fornire tutte le informazioni necessarie per
+              garantire un inserimento corretto.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-6 gap-6">
+            <div className="col-span-6 sm:col-span-6">
+              <label
+                htmlFor="last-name"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Banner
+              </label>
+              <div className="flex flex-wrap gap-5 mt-3">
+                <RadioGroup
+                  orientation="horizontal"
+                  value={String(newProjectData.ProjectBannerId)}
+                  onChange={handleProjectBannerChange}
+                >
+                  {banners.length > 0 &&
+                    banners.map((banner) => (
+                      <CustomRadio
+                        key={banner.ProjectBannerId}
+                        value={banner.ProjectBannerId.toString()}
+                      >
+                        <Avatar
+                          radius="sm"
+                          src={
+                            API_URL_IMG + "/banners/" + banner.ProjectBannerPath
+                          }
+                        />
+                      </CustomRadio>
+                    ))}
+                </RadioGroup>
+              </div>
+            </div>
+            <div className="col-span-6 sm:col-span-4">
+              <label
+                htmlFor="project-name"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Nome progetto <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Input
+                variant="bordered"
+                type="text"
+                radius="full"
+                placeholder="Es. Nuova App Mobile"
+                value={newProjectData.ProjectName}
+                onChange={handleProjectNameChange}
+                fullWidth
+              />
             </div>
 
-            <div className="grid grid-cols-6 gap-6">
-              <div className="col-span-6 sm:col-span-6">
-                <label
-                  htmlFor="last-name"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Banner
-                </label>
-                <div className="flex flex-wrap gap-5 mt-3">
-                  <RadioGroup
-                    orientation="horizontal"
-                    value={String(newProjectData.ProjectBannerId)}
-                    onChange={handleProjectBannerChange}
+            <div className="col-span-6 sm:col-span-2">
+              <label
+                htmlFor="project-end-date"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Fine Progetto <span className="text-red-600 font-bold">*</span>
+              </label>
+              <I18nProvider locale="it-GB">
+                <DatePicker
+                  variant="bordered"
+                  radius="full"
+                  value={newProjectData.ProjectEndDate}
+                  onChange={handleProjectEndDateChange}
+                />
+              </I18nProvider>
+            </div>
+
+            <div className="col-span-6 sm:col-span-6">
+              <label
+                htmlFor="project-description"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Descrizione <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Textarea
+                variant="bordered"
+                type="textarea"
+                radius="full"
+                placeholder="Es. Creazione di un'app mobile per la gestione delle attività quotidiane"
+                value={newProjectData.ProjectDescription}
+                onChange={handleProjectDescriptionChange}
+                fullWidth
+              />
+            </div>
+
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="project-manager"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Project Manager{" "}
+                <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Autocomplete
+                defaultItems={managers}
+                placeholder="Seleziona Project Manager"
+                onSelectionChange={handleProjectProjectManagerIdChange}
+                variant="bordered"
+                radius="full"
+                aria-label="manager"
+                fullWidth
+              >
+                {(manager) => (
+                  <AutocompleteItem
+                    key={manager.StafferId}
+                    textValue={manager.StafferFullName}
                   >
-                    {banners.length > 0 &&
-                      banners.map((banner) => (
-                        <CustomRadio
-                          key={banner.ProjectBannerId}
-                          value={banner.ProjectBannerId.toString()}
-                        >
-                          <Avatar
-                            radius="sm"
-                            src={
-                              API_URL_IMG +
-                              "/banners/" +
-                              banner.ProjectBannerPath
-                            }
-                          />
-                        </CustomRadio>
-                      ))}
-                  </RadioGroup>
-                </div>
-              </div>
-              <div className="col-span-6 sm:col-span-4">
-                <label
-                  htmlFor="project-name"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Nome progetto
-                </label>
-                <Input
-                  variant="bordered"
-                  type="text"
-                  radius="sm"
-                  value={newProjectData.ProjectName}
-                  onChange={handleProjectNameChange}
-                  fullWidth
-                />
-              </div>
+                    <User
+                      name={manager.StafferFullName}
+                      description={manager.RoleName}
+                      avatarProps={{
+                        src:
+                          manager.StafferImageUrl &&
+                          API_URL_IMG +
+                            "/profileIcons/" +
+                            manager.StafferImageUrl,
+                        name: manager.StafferFullName,
+                      }}
+                    />
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
+            </div>
 
-              <div className="col-span-6 sm:col-span-2">
-                <label
-                  htmlFor="project-end-date"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Fine Progetto
-                </label>
-                <I18nProvider locale="it-GB">
-                  <DatePicker
-                    variant="bordered"
-                    radius="sm"
-                    value={newProjectData.ProjectEndDate}
-                    onChange={handleProjectEndDateChange}
-                  />
-                </I18nProvider>
-              </div>
-
-              <div className="col-span-6 sm:col-span-6">
-                <label
-                  htmlFor="project-description"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Descrizione
-                </label>
-                <Textarea
-                  variant="bordered"
-                  type="textarea"
-                  radius="sm"
-                  value={newProjectData.ProjectDescription}
-                  onChange={handleProjectDescriptionChange}
-                  fullWidth
-                />
-              </div>
-
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="project-manager"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Project Manager
-                </label>
-                <Autocomplete
-                  defaultItems={managers}
-                  placeholder="Seleziona Project Manager"
-                  onSelectionChange={handleProjectProjectManagerIdChange}
-                  variant="bordered"
-                  radius="sm"
-                  aria-label="manager"
-                  fullWidth
-                >
-                  {(manager) => (
-                    <AutocompleteItem
-                      key={manager.StafferId}
-                      textValue={manager.StafferFullName}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex gap-2 items-center">
-                          <div className="flex flex-col">
-                            <span className="text-small">
-                              {manager.StafferFullName}{" "}
-                              <Chip
-                                color="primary"
-                                size="sm"
-                                radius="sm"
-                                variant="flat"
-                              >
-                                {manager.RoleName}
-                              </Chip>
-                            </span>
-                            <span className="text-tiny text-default-400">
-                              {manager.StafferEmail}
-                            </span>
-                          </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="company"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Azienda <span className="text-red-600 font-bold">*</span>
+              </label>
+              <Autocomplete
+                defaultItems={companies}
+                placeholder="Seleziona azienda"
+                onSelectionChange={handleProjectCompanyIdChange}
+                variant="bordered"
+                radius="full"
+                aria-label="company"
+                fullWidth
+              >
+                {(company) => (
+                  <AutocompleteItem
+                    key={company.CompanyId}
+                    textValue={company.CompanyName}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="flex gap-2 items-center">
+                        <div className="flex flex-col">
+                          <span className="text-small">
+                            {company.CompanyName}
+                          </span>
+                          <span className="text-tiny text-default-400">
+                            {company.CompanyAddress}
+                          </span>
                         </div>
                       </div>
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
-              </div>
-
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="company"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Azienda
-                </label>
-                <Autocomplete
-                  defaultItems={companies}
-                  placeholder="Seleziona azienda"
-                  onSelectionChange={handleProjectCompanyIdChange}
-                  variant="bordered"
-                  radius="sm"
-                  aria-label="company"
-                  fullWidth
-                >
-                  {(company) => (
-                    <AutocompleteItem
-                      key={company.CompanyId}
-                      textValue={company.CompanyName}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex gap-2 items-center">
-                          <div className="flex flex-col">
-                            <span className="text-small">
-                              {company.CompanyName}
-                            </span>
-                            <span className="text-tiny text-default-400">
-                              {company.CompanyAddress}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
-              </div>
+                    </div>
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
             </div>
           </div>
-          <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-            <Button
-              color="success"
-              className="text-white"
-              radius="sm"
-              startContent={!isAddingData && <SaveIcon />}
-              isDisabled={checkAllDataCompiled()}
-              isLoading={isAddingData}
-              onClick={handleCreateNewCompany}
-            >
-              {isAddingData ? "Salvando il progetto..." : "Salva progetto"}
-            </Button>
-          </div>
+        </div>
+        <div className="py-3 text-right">
+          <Button
+            color="primary"
+            radius="sm"
+            startContent={!isAddingData && <SaveIcon />}
+            isDisabled={checkAllDataCompiled()}
+            isLoading={isAddingData}
+            onClick={handleCreateNewCompany}
+          >
+            {isAddingData ? "Salvando il progetto..." : "Salva progetto"}
+          </Button>
         </div>
       </div>
     </>

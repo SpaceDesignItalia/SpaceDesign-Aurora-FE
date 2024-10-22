@@ -31,8 +31,8 @@ export default {
       },
       colors: {
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#000000",
+          foreground: "#FFFFFF",
         },
         warning: {
           DEFAULT: "#FFA726",

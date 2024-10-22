@@ -1,83 +1,90 @@
 // ConfirmDeleteModal.tsx
-
+import { useState } from "react";
 import {
   Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
+  DateValue,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@nextui-org/react";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 
 interface Project {
   ProjectId: number;
   ProjectName: string;
-  ProjectDescription: string;
-  ProjectCreationDate: string;
-  ProjectEndDate: string;
-  ProjectManagerId: number;
-  ProjectBannerId: number;
+  ProjectCreationDate: DateValue;
+  ProjectEndDate: DateValue;
+  ProjectManagerName: string;
+  StafferImageUrl: string;
+  RoleName: string;
   CompanyId: number;
+  CompanyName: string;
   StatusId: number;
+  StatusName: string;
 }
 
-interface ConfirmDeleteModalProps {
-  isOpen: boolean;
-  isClosed: () => void;
+interface ConfirmDeleteCustomerModalProps {
   ProjectData: Project;
-  DeleteProject: (project: Project) => void;
+  DeleteProject: (ProjectData: Project) => void;
 }
 
 export default function ConfirmDeleteProjectModal({
-  isOpen,
-  isClosed,
   ProjectData,
   DeleteProject,
-}: ConfirmDeleteModalProps) {
+}: ConfirmDeleteCustomerModalProps) {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   return (
-    <Modal
+    <Popover
+      placement="top"
+      showArrow={true}
+      size="sm"
       isOpen={isOpen}
-      onOpenChange={isClosed}
-      size="2xl"
-      scrollBehavior="inside"
-      placement="center"
-      backdrop="blur"
+      onOpenChange={() => setIsOpen(false)}
     >
-      <ModalContent>
-        {(isClosed) => (
-          <>
-            <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">
-                Conferma eliminazione del progetto {ProjectData.ProjectName}
-              </h3>
-            </ModalHeader>
-            <ModalBody>
-              <p className="text-gray-600">
-                Sei sicuro di voler eliminare il progetto{" "}
-                {ProjectData.ProjectName}? <br />
-                Questa azione non potrà essere annullata.
-              </p>
-            </ModalBody>
-            <ModalFooter className="flex sm:flex-row flex-col">
-              <Button
-                color="success"
-                variant="light"
-                onClick={() => {
-                  DeleteProject(ProjectData);
-                  isClosed();
-                }}
-                radius="sm"
-                className="mr-2"
-              >
-                Conferma eliminazione
-              </Button>
-              <Button variant="light" onClick={isClosed} radius="sm">
-                Annulla
-              </Button>
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+      <PopoverTrigger>
+        <Button
+          variant="light"
+          size="sm"
+          color="danger"
+          startContent={<DeleteOutlinedIcon />}
+          aria-label="Remove"
+          aria-labelledby="Remove"
+          isIconOnly
+          onClick={() => {
+            setIsOpen(true);
+          }}
+        />
+      </PopoverTrigger>
+      <PopoverContent>
+        <div className="px-1 py-2">
+          <div className="flex flex-row gap-2 items-center text-small font-bold mb-2">
+            <ErrorRoundedIcon className="text-warning" sx={{ fontSize: 20 }} />
+            Sei sicuro?
+          </div>
+          <div className="flex flex-row gap-2">
+            <Button
+              variant="light"
+              radius="sm"
+              size="sm"
+              onClick={() => setIsOpen(false)}
+            >
+              Annulla
+            </Button>
+            <Button
+              color="danger"
+              variant="ghost"
+              onClick={() => {
+                DeleteProject(ProjectData);
+              }}
+              radius="sm"
+              size="sm"
+            >
+              Elimina
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

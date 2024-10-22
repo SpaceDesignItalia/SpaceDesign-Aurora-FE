@@ -1,23 +1,22 @@
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import AddRoleModel from "../../Components/Permission/Other/AddRoleModel";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
 import EditProjectModel from "../../Components/Project/Other/EditProjectModel";
 
 export default function EditProjectPage() {
-  /* const { hasPermission } = usePermissions();
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     async function fetchData() {
-      const permission = await hasPermission("CREATE_ROLE");
+      const permission = await hasPermission("EDIT_PROJECT");
 
       if (!permission) {
         return (window.location.href = "/");
       }
     }
     fetchData();
-  }, [hasPermission]); */
+  }, [hasPermission]);
   return (
     <div className="py-10 m-0 lg:ml-72">
       <header>
@@ -25,7 +24,7 @@ export default function EditProjectPage() {
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
             Modifica progetto
           </h1>
-          <Breadcrumbs variant="bordered" radius="sm">
+          <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
               <DashboardOutlinedIcon />
             </BreadcrumbItem>
