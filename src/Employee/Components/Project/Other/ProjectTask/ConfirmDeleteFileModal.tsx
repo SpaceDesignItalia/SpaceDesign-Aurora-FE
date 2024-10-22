@@ -1,70 +1,31 @@
-import { useState } from "react";
+// ConfirmDeleteModal.tsx
+
 import {
   Button,
-  DateValue,
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@nextui-org/react";
+import { useState } from "react";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 
-interface Tag {
-  ProjectTaskTagId: number;
-  ProjectTaskTagName: string;
+interface File {
+  TaskFileId: number;
+  FileName: string;
+  FilePath: string;
+  TaskId: number;
 }
 
-interface Member {
-  StafferId: number;
-  StafferFullName: string;
-  StafferEmail: string;
-  StafferImageUrl: string;
+interface ConfirmDeleteTaskFileModalProps {
+  FileData: File;
+  DeleteFile: (File: File) => void;
 }
 
-interface Comment {
-  ProjectTaskCommentId: number;
-  StafferId: number;
-  StafferFullName: string;
-  StafferImageUrl: string;
-  Text: string;
-  CommentDate: Date;
-}
-
-interface Task {
-  ProjectTaskId: number;
-  ProjectTaskName: string;
-  ProjectTaskDescription?: string;
-  ProjectTaskExpiration: DateValue;
-  ProjectTaskCreation: DateValue;
-  ProjectTaskStatusId: number;
-  ProjectTaskTags: Tag[];
-  ProjectTaskMembers: Member[];
-  ProjectTaskComments: Comment[];
-  ProjectId: number;
-  ProjectTaskChecklists: Checklist[];
-}
-
-interface Checkbox {
-  CheckboxId: number;
-  Text: string;
-  IsSelected: boolean;
-  ChecklistId: number;
-}
-
-interface Checklist {
-  ChecklistId: number;
-  Text: string;
-  Checkboxes: Checkbox[];
-}
-
-interface ConfirmDeleteTaskModalProps {
-  TaskData: Task;
-  DeleteTask: (Task: Task) => void;
-}
-export default function ConfirmDeleteTaskModal({
-  TaskData,
-  DeleteTask,
-}: ConfirmDeleteTaskModalProps) {
+export default function ConfirmDeleteFileModal({
+  FileData,
+  DeleteFile,
+}: ConfirmDeleteTaskFileModalProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   return (
     <Popover
@@ -109,7 +70,8 @@ export default function ConfirmDeleteTaskModal({
               color="danger"
               variant="ghost"
               onClick={() => {
-                DeleteTask(TaskData);
+                DeleteFile(FileData);
+                setIsOpen(false);
               }}
               radius="sm"
               size="sm"
