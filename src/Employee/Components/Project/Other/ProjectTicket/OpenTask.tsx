@@ -21,7 +21,9 @@ const OpenTask: React.FC = () => {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setTask((prevTask) => ({
@@ -33,8 +35,6 @@ const OpenTask: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Funzionalità per salvare il task (da integrare con backend API o Redux store)
-    console.log("Task creato:", task);
-
     // Al termine, reindirizza alla dashboard dei ticket o alla lista dei task
     navigate("/tickets");
   };
