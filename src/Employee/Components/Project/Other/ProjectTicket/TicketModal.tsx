@@ -11,6 +11,7 @@ import {
   Textarea,
 } from "@nextui-org/react";
 import React, { useState, useEffect } from "react";
+import SaveRounded from "@mui/icons-material/SaveRounded";
 import axios from "axios";
 import AddTaskModal from "../ProjectTask/AddTaskModal"; // Importa il modale per aggiungere task
 
@@ -217,7 +218,7 @@ const TicketModal: React.FC<TicketModalProps> = ({
               </ModalBody>
               <ModalFooter className="flex justify-end gap-4 px-8 py-6">
                 <Button
-                  color="success"
+                  color="primary"
                   variant="light"
                   radius="sm"
                   onClick={handleUpdate}
@@ -225,10 +226,10 @@ const TicketModal: React.FC<TicketModalProps> = ({
                   Salva Modifiche
                 </Button>
                 <Button
-                  color="secondary"
-                  variant="flat"
+                  color="primary"
                   radius="sm"
                   onClick={handleAddTask}
+                  startContent={<SaveRounded />}
                 >
                   Aggiungi Task
                 </Button>
