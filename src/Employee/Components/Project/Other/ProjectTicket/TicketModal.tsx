@@ -11,8 +11,9 @@ import {
   Textarea,
 } from "@nextui-org/react";
 import React, { useState, useEffect } from "react";
+import SaveRounded from "@mui/icons-material/SaveRounded";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Importa useNavigate per la navigazione
+import AddTaskModal from "../ProjectTask/AddTaskModal"; // Importa il modale per aggiungere task
 
 interface Ticket {
   ProjectTicketId: number;
@@ -21,6 +22,14 @@ interface Ticket {
   ProjectTicketDescription: string;
   TicketStatusId: number;
   TicketStatusName: string;
+  CompanyName: string;
+  ProjectId: number;
+  ProjectName: string;
+}
+
+interface TicketStatus {
+  key: string;
+  textValue: string;
 }
 
 interface TicketModalProps {
@@ -29,49 +38,55 @@ interface TicketModalProps {
   ticket: Ticket | null;
 }
 
-// Lista degli stati del ticket
-const TICKET_STATUSES = [
-  { TicketStatusId: 1, TicketStatusName: "Aperto" },
-  { TicketStatusId: 2, TicketStatusName: "In Corso" },
-  { TicketStatusId: 3, TicketStatusName: "In Attesa" },
-  { TicketStatusId: 4, TicketStatusName: "Risolto" },
-  { TicketStatusId: 5, TicketStatusName: "Chiuso" },
-  { TicketStatusId: 6, TicketStatusName: "Annullato" },
-  { TicketStatusId: 7, TicketStatusName: "Riaperto" },
-  { TicketStatusId: 8, TicketStatusName: "In attesa del Project Manager" },
-  { TicketStatusId: 9, TicketStatusName: "In attesa di Terzi" },
-  { TicketStatusId: 10, TicketStatusName: "Scalato" },
-];
-
 const TicketModal: React.FC<TicketModalProps> = ({
   isOpen,
   onClose,
   ticket,
 }) => {
   const [newTicket, setNewTicket] = useState<Ticket | null>(ticket);
-  const [selectedStatusId, setSelectedStatusId] = useState<number | null>(null); // Stato selezionato
+  const [ticketStatuses, setTicketStatuses] = useState<TicketStatus[]>([]);
+  const [selectedStatusId, setSelectedStatusId] = useState<string | null>(null);
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false); // Stato per il modale di aggiunta task
 
-  const navigate = useNavigate(); // Inizializza useNavigate
-
+  // Aggiorna lo stato del ticket selezionato
   useEffect(() => {
     if (ticket) {
       setNewTicket(ticket);
-      setSelectedStatusId(ticket.TicketStatusId); // Stato pre-selezionato
+      // Imposta lo stato attuale del ticket come stato selezionato
+      setSelectedStatusId(ticket.TicketStatusId.toString());
     }
   }, [ticket]);
+
+  // Effettua una richiesta API per ottenere gli stati dei ticket
+  useEffect(() => {
+    axios
+      .get("/Ticket/GET/GetAllTicketStatusTypes")
+      .then((response) => {
+        console.log("Risposta API:", response.data);
+        const statuses = response.data.map((status: any) => ({
+          key: status.TicketStatusId.toString(),
+          textValue: status.TicketStatusName,
+        }));
+
+        setTicketStatuses(statuses);
+      })
+      .catch((error) => {
+        console.error("Errore nel recupero degli stati del ticket", error);
+      });
+  }, []);
 
   // Cambio di stato dal campo Autocomplete
   const handleStatusChange = (key: string | number | null) => {
     if (key !== null) {
-      const selectedStatus = TICKET_STATUSES.find(
-        (status) => status.TicketStatusId === Number(key)
+      const selectedStatus = ticketStatuses.find(
+        (status) => status.key === key.toString()
       );
       if (selectedStatus) {
-        setSelectedStatusId(selectedStatus.TicketStatusId); // Aggiorna lo stato selezionato
+        setSelectedStatusId(selectedStatus.key);
         setNewTicket({
           ...newTicket!,
-          TicketStatusId: selectedStatus.TicketStatusId,
-          TicketStatusName: selectedStatus.TicketStatusName,
+          TicketStatusId: Number(selectedStatus.key),
+          TicketStatusName: selectedStatus.textValue,
         });
       }
     }
@@ -81,7 +96,7 @@ const TicketModal: React.FC<TicketModalProps> = ({
   const handleUpdate = () => {
     console.log("Updating ticket:", newTicket);
     axios
-      .put(`/Ticket/PUT/UpdateTicketStatus`, {
+      .put("/Ticket/PUT/UpdateTicketStatus", {
         TicketStatusId: newTicket?.TicketStatusId,
         ProjectTicketId: newTicket?.ProjectTicketId,
       })
@@ -96,126 +111,146 @@ const TicketModal: React.FC<TicketModalProps> = ({
 
   // Naviga alla schermata di aggiunta task
   const handleAddTask = () => {
-    navigate(`/add-task/${newTicket?.ProjectTicketId}`); // Naviga alla pagina AddTask con l'ID del ticket
+    setIsAddTaskModalOpen(true); // Apre il modale per aggiungere un task
+    console.log("Apertura modale per aggiungere task");
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onOpenChange={onClose}
-      size="5xl" // Aumentiamo la larghezza del modal
-      scrollBehavior="inside"
-      placement="center"
-      backdrop="blur"
-    >
-      <ModalContent>
-        {newTicket && (
-          <>
-            <ModalHeader className="flex flex-col gap-1 text-center">
-              <h2 className="text-2xl font-semibold text-gray-900">
-                Modifica stato del ticket
-              </h2>
-            </ModalHeader>
-            <ModalBody className="space-y-6 px-8 py-6">
-              {" "}
-              {/* Aggiunto più spazio interno */}
-              {/* Codice Richiesta */}
-              <div className="sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium leading-6 text-gray-900">
-                  Codice Richiesta
-                </dt>
-                <Input
-                  value={newTicket.ProjectTicketId.toString()}
-                  readOnly
-                  fullWidth
-                  className="sm:col-span-2"
-                />
-              </div>
-              {/* Titolo */}
-              <div className="sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium leading-6 text-gray-900">
-                  Titolo
-                </dt>
-                <Input
-                  value={newTicket.ProjectTicketTitle}
-                  readOnly
-                  fullWidth
-                  className="sm:col-span-2"
-                />
-              </div>
-              {/* Tipo di Richiesta */}
-              <div className="sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium leading-6 text-gray-900">
-                  Tipo di Richiesta
-                </dt>
-                <Input
-                  value={newTicket.TicketRequestName}
-                  readOnly
-                  fullWidth
-                  className="sm:col-span-2"
-                />
-              </div>
-              {/* Descrizione */}
-              <div className="sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium leading-6 text-gray-900">
-                  Descrizione
-                </dt>
-                <Textarea
-                  value={newTicket.ProjectTicketDescription}
-                  readOnly
-                  fullWidth
-                  className="sm:col-span-2"
-                  rows={3}
-                />
-              </div>
-              {/* Stato Ticket - Autocomplete */}
-              <div className="sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium leading-6 text-gray-900">
-                  Stato Ticket
-                </dt>
-                <Autocomplete
-                  selectedKeys={[selectedStatusId?.toString() || ""]} // Mostra lo stato corrente
-                  defaultItems={TICKET_STATUSES}
-                  placeholder="Seleziona lo stato del ticket"
-                  onSelectionChange={handleStatusChange}
-                  variant="bordered"
+    <>
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={onClose}
+        size="5xl"
+        scrollBehavior="inside"
+        placement="center"
+        backdrop="blur"
+      >
+        <ModalContent>
+          {newTicket && (
+            <>
+              <ModalHeader className="flex flex-col gap-1 text-center">
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  Modifica stato del ticket
+                </h2>
+              </ModalHeader>
+              <ModalBody className="space-y-6 px-8 py-6">
+                {/* Codice Richiesta */}
+                <div className="sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-medium leading-6 text-gray-900">
+                    Codice Richiesta
+                  </dt>
+                  <Input
+                    value={newTicket.ProjectTicketId.toString()}
+                    readOnly
+                    fullWidth
+                    className="sm:col-span-2"
+                  />
+                </div>
+                {/* Titolo */}
+                <div className="sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-medium leading-6 text-gray-900">
+                    Titolo
+                  </dt>
+                  <Input
+                    value={newTicket.ProjectTicketTitle}
+                    readOnly
+                    fullWidth
+                    className="sm:col-span-2"
+                  />
+                </div>
+                {/* Tipo di Richiesta */}
+                <div className="sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-medium leading-6 text-gray-900">
+                    Tipo di Richiesta
+                  </dt>
+                  <Input
+                    value={newTicket.TicketRequestName}
+                    readOnly
+                    fullWidth
+                    className="sm:col-span-2"
+                  />
+                </div>
+                {/* Descrizione */}
+                <div className="sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-medium leading-6 text-gray-900">
+                    Descrizione
+                  </dt>
+                  <Textarea
+                    value={newTicket.ProjectTicketDescription}
+                    readOnly
+                    fullWidth
+                    className="sm:col-span-2"
+                    rows={3}
+                  />
+                </div>
+                {/* Stato Ticket - Autocomplete */}
+                <div className="sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-medium leading-6 text-gray-900">
+                    Stato Ticket
+                  </dt>
+                  <Autocomplete
+                    selectedKey={
+                      selectedStatusId ? selectedStatusId : undefined
+                    }
+                    defaultItems={ticketStatuses}
+                    placeholder={
+                      ticketStatuses.length > 0
+                        ? "Seleziona lo stato del ticket"
+                        : "Nessun stato disponibile"
+                    }
+                    onSelectionChange={handleStatusChange}
+                    variant="bordered"
+                    radius="sm"
+                    aria-label="Stato Ticket"
+                    className="sm:col-span-2"
+                    fullWidth
+                  >
+                    {(item) => (
+                      <AutocompleteItem
+                        key={item.key}
+                        textValue={item.textValue}
+                      >
+                        {item.textValue}
+                      </AutocompleteItem>
+                    )}
+                  </Autocomplete>
+                </div>
+              </ModalBody>
+              <ModalFooter className="flex justify-end gap-4 px-8 py-6">
+                <Button
+                  color="primary"
+                  variant="light"
                   radius="sm"
-                  aria-label="Stato Ticket"
-                  className="sm:col-span-2"
-                  fullWidth
+                  onClick={handleUpdate}
                 >
-                  {(status) => (
-                    <AutocompleteItem key={status.TicketStatusId}>
-                      {status.TicketStatusName}
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
-              </div>
-            </ModalBody>
-            <ModalFooter className="flex justify-end gap-4 px-8 py-6">
-              {" "}
-              {/* Più spazio per i bottoni */}
-              <Button
-                color="success"
-                variant="light"
-                radius="sm"
-                onClick={handleUpdate}
-              >
-                Salva Modifiche
-              </Button>
-              <Button
-                color="secondary"
-                variant="flat"
-                radius="sm"
-                onClick={handleAddTask} // Chiama la funzione per aggiungere una task
-              >
-                Aggiungi Task
-              </Button>
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+                  Salva Modifiche
+                </Button>
+                <Button
+                  color="primary"
+                  radius="sm"
+                  onClick={handleAddTask}
+                  startContent={<SaveRounded />}
+                >
+                  Aggiungi Task
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      {/* Modale per aggiungere un task */}
+      {newTicket && (
+        <AddTaskModal
+          isOpen={isAddTaskModalOpen}
+          isClosed={() => setIsAddTaskModalOpen(false)}
+          ProjectId={newTicket.ProjectId} // Passa l'ID del progetto al modale
+          TicketId={newTicket.ProjectTicketId} // Passa l'ID del ticket
+          defaultTitle={newTicket.ProjectTicketTitle} // Passa il titolo del ticket
+          defaultDescription={newTicket.ProjectTicketDescription} // Passa la descrizione del ticket
+        />
+      )}
+    </>
   );
 };
 

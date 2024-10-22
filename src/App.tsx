@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { usePermissions } from "./Employee/Components/Layout/PermissionProvider";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import axios from "axios";
-import { API_URL } from "./API/API";
+import { API_URL, API_WEBSOCKET_URL } from "./API/API";
 import Dashboard from "./Employee/Pages/Dashboard/Dashboard";
 import Sidebar from "./Employee/Components/Layout/Sidebar";
 import CustomerDashboard from "./Employee/Pages/Customer/CustomerDashboard";
@@ -38,7 +38,11 @@ import SettingsCustomerDashboard from "./Customer/Pages/Settings/SettingsCustome
 import PasswordRecovery from "./Employee/Components/Login/PasswordRecovery";
 import PasswordReset from "./Employee/Components/Login/PasswordReset";
 import Loader from "./Employee/Components/Layout/Loader";
+import { io } from "socket.io-client";
 
+const socket = io(API_WEBSOCKET_URL);
+
+import OpenTask from "./Employee/Components/Project/Other/ProjectTicket/OpenTask";
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
   axios.defaults.withCredentials = true;
@@ -68,6 +72,8 @@ const App: React.FC = () => {
             sessionRes.data.IsStaffer
           ) {
             setIsStaffer(sessionRes.data.IsStaffer);
+            socket.emit("new-user-add", sessionRes.data.StafferId);
+            localStorage.setItem("socketId", socket.id!);
             await loadPermissions(sessionRes.data.StafferId);
           }
         } else {
@@ -206,6 +212,11 @@ const EmployeeProtectedRoutes: React.FC = () => {
           path="/administration/permission/edit-permission/:PermissionId"
         />
         <Route element={<LeadDashboard />} path="/lead" />
+
+        <Route
+          element={<OpenTask />}
+          path="/projects/:CompanyName/:ProjectId/:ProjectName/ticket/:ticketId/open-task"
+        />
       </Route>
     </Routes>
   );

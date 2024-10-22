@@ -17,7 +17,6 @@ import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContai
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import FilesContainer from "../../Components/Project/Other/ProjectPage/FilesContainer";
 import TicketContainer from "../../Components/Project/Other/ProjectPage/TicketContainer";
-import ResponseTicket from "../../Components/Project/Other/ProjectTicket/ResponseTicket";
 
 interface Project {
   ProjectId: number;

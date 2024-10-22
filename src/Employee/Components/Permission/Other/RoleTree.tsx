@@ -135,7 +135,6 @@ const RoleTree = () => {
         onConnect={onConnect}
         fitView
       >
-        <MiniMap />
         <Controls />
         <Background />
       </ReactFlow>

@@ -12,6 +12,7 @@ import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import { usePermissions } from "../../../Layout/PermissionProvider";
 
 const socket = io(API_WEBSOCKET_URL);
+socket.id = localStorage.getItem("stafferId")!;
 
 interface Message {
   MessageId: number;
@@ -52,6 +53,12 @@ interface ModalData {
   open: boolean;
 }
 
+interface onlineUser {
+  socketId: string;
+  status: string;
+  userId: number;
+}
+
 export default function TeamContainer({
   projectData,
 }: {
@@ -71,7 +78,6 @@ export default function TeamContainer({
     editTeamMember: false,
   });
   const { hasPermission } = usePermissions();
-
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -118,6 +124,46 @@ export default function TeamContainer({
         handleOpenChat(res.data[0].ConversationId);
       });
   }, [messages.length]);
+
+  const [onlineUsers, setOnlineUsers] = useState<onlineUser[]>([]);
+  console.log(onlineUsers);
+
+  useEffect(() => {
+    console.log("Richiesta utenti");
+    socket.emit("get-users");
+
+    socket.on("get-users", (users) => {
+      setOnlineUsers(users);
+    });
+  }, []);
+
+  useEffect(() => {
+    // Tab has focus
+    const handleFocus = async () => {
+      socket.emit("new-user-add", loggedStafferId);
+      socket.on("get-users", (users) => {
+        setOnlineUsers(users);
+      });
+    };
+
+    // Tab closed
+    const handleBlur = () => {
+      if (loggedStafferId !== 0) {
+        {
+          socket.emit("offline");
+        }
+      }
+    };
+
+    // Track if the user changes the tab to determine when they are online
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("blur", handleBlur);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, [loggedStafferId]);
 
   function handleOpenChat(conversationId: number) {
     try {
@@ -266,19 +312,37 @@ export default function TeamContainer({
           <div className="grid grid-cols-2 gap-5">
             {members.map((member) =>
               member.StafferId !== projectData.ProjectManagerId ? (
-                <ProjectTeamMemberCard
-                  MemberData={member}
-                  ProjectId={projectData.ProjectId}
-                  type={editTeam}
-                  key={member.StafferId}
-                />
+                <div>
+                  <ProjectTeamMemberCard
+                    MemberData={member}
+                    ProjectId={projectData.ProjectId}
+                    type={editTeam}
+                    key={member.StafferId}
+                  />
+                  {onlineUsers.some(
+                    (user) => user.userId === member.StafferId
+                  ) ? (
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  ) : (
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  )}
+                </div>
               ) : (
-                <ProjectTeamMemberCard
-                  MemberData={member}
-                  ProjectId={projectData.ProjectId}
-                  type={false}
-                  key={member.StafferId}
-                />
+                <div>
+                  <ProjectTeamMemberCard
+                    MemberData={member}
+                    ProjectId={projectData.ProjectId}
+                    type={false}
+                    key={member.StafferId}
+                  />
+                  {onlineUsers.some(
+                    (user) => user.userId === member.StafferId
+                  ) ? (
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  ) : (
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  )}
+                </div>
               )
             )}
           </div>

@@ -64,15 +64,21 @@ export default function AddTaskModal({
   isOpen,
   isClosed,
   ProjectId,
+  TicketId,
+  defaultTitle,
+  defaultDescription,
 }: {
   isOpen: boolean;
   isClosed: () => void;
   ProjectId: number;
+  TicketId: number;
+  defaultTitle: string;
+  defaultDescription: string;
 }) {
   const [newTask, setNewTask] = useState<Task>({
     ProjectTaskId: 0,
-    ProjectTaskName: "",
-    ProjectTaskDescription: "",
+    ProjectTaskName: defaultTitle || "", // Pre-popolato con il titolo del ticket
+    ProjectTaskDescription: defaultDescription || "", // Pre-popolato con la descrizione del ticket
     ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
     ProjectTaskCreation: parseDate(dayjs().format("YYYY-MM-DD")),
     ProjectTaskStatusId: 0,
@@ -98,6 +104,7 @@ export default function AddTaskModal({
         setMembers(filteredMembers);
       });
 
+    // Ottiene i tag disponibili
     axios.get("/Project/GET/GetAllTags").then((res) => {
       setTags(
         res.data.filter((tag: Tag) => {
@@ -107,7 +114,7 @@ export default function AddTaskModal({
         })
       );
     });
-  }, [newTask, update]);
+  }, [newTask, update, ProjectId]);
 
   const memberPopoverContent = (
     <PopoverContent className="w-[350px]">
@@ -192,10 +199,12 @@ export default function AddTaskModal({
         FormattedDate: formattedDate,
         FormattedCreationDate: formattedCreationDate,
         TaskData: newTask,
+        TicketId: TicketId, // Associa il task al ticket
       })
       .then(() => {
         setUpdate(!update);
-        window.location.reload();
+        isClosed(); // Chiude il modale
+        window.location.reload(); // Aggiorna la pagina
       });
   }
 
@@ -533,14 +542,14 @@ export default function AddTaskModal({
                 color="primary"
                 variant="light"
                 onClick={handleCloseModal}
-                radius="sm"
+                radius="full"
               >
                 Chiudi
               </Button>
               <Button
                 color="primary"
                 onClick={handleAddTask}
-                radius="sm"
+                radius="full"
                 startContent={<SaveRoundedIcon />}
                 isDisabled={!isValidTask}
                 variant={dateError ? "flat" : "solid"}
