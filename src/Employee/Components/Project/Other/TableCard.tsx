@@ -1,22 +1,7 @@
 import axios from "axios";
-import {
-  Avatar,
-  AvatarGroup,
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Link,
-  Tooltip,
-} from "@nextui-org/react";
+import { Avatar, AvatarGroup, Tooltip } from "@nextui-org/react";
 import { useEffect, useState } from "react";
 import { API_URL_IMG } from "../../../../API/API";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import ConfirmDeleteProjectModal from "./ConfirmDeleteProjectModal";
-import { usePermissions } from "../../Layout/PermissionProvider";
 
 interface Project {
   ProjectId: number;
@@ -50,11 +35,6 @@ interface Status {
   StatusColor: string;
 }
 
-interface ModalDeleteData {
-  Project: Project;
-  open: boolean;
-}
-
 export default function TableCard({ project }: { project: Project }) {
   const [company, setCompany] = useState<Company>({
     CompanyId: 0,
@@ -64,24 +44,6 @@ export default function TableCard({ project }: { project: Project }) {
   const [toDoTasks, setToDoTasks] = useState<number>(0);
   const [statusList, setStatusList] = useState<Status[]>([]);
   const [teamMembers, setTeamMembers] = useState<Member[]>([]);
-  const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
-    Project: {
-      ProjectId: 0,
-      ProjectName: "",
-      ProjectDescription: "",
-      ProjectCreationDate: "",
-      ProjectEndDate: "",
-      ProjectManagerId: 0,
-      ProjectBannerId: 0,
-      CompanyId: 0,
-      StatusId: 0,
-    },
-    open: false,
-  });
-  const [adminPermission, setAdminPermission] = useState({
-    deleteProject: false,
-  });
-  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     axios.get("/Project/GET/GetAllStatus").then((res) => {
@@ -109,12 +71,6 @@ export default function TableCard({ project }: { project: Project }) {
       .then((res) => {
         setToDoTasks(res.data[0].TasksNumber);
       });
-    async function checkPermissions() {
-      setAdminPermission({
-        deleteProject: await hasPermission("DELETE_PROJECT"),
-      });
-    }
-    checkPermissions();
   }, []);
 
   const statuses = [
@@ -142,33 +98,21 @@ export default function TableCard({ project }: { project: Project }) {
     });
   }
 
-  async function DeleteProject(ProjectData: Project) {
-    try {
-      const res = await axios.delete("/Project/DELETE/DeleteProject", {
-        params: { ProjectId: ProjectData.ProjectId },
-      });
-
-      if (res.status === 200) {
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error("Errore nella cancellazione dell'azienda:", error);
-    }
-  }
-
   function classNames(...classes: (string | boolean | undefined)[]): string {
     return classes.filter((className) => !!className).join(" ");
   }
 
   return (
     <>
-      <ConfirmDeleteProjectModal
-        isOpen={modalDeleteData.open}
-        isClosed={() => setModalDeleteData({ ...modalDeleteData, open: false })}
-        ProjectData={modalDeleteData.Project}
-        DeleteProject={DeleteProject}
-      />
-      <div
+      <a
+        href={
+          "/projects/" +
+          company.CompanyName +
+          "/" +
+          project.ProjectId +
+          "/" +
+          project.ProjectName
+        }
         key={project.ProjectId}
         className="overflow-hidden rounded-xl border border-gray-200 list-none"
       >
@@ -194,49 +138,6 @@ export default function TableCard({ project }: { project: Project }) {
               </div>
             </div>
           </div>
-          <Dropdown radius="sm">
-            <DropdownTrigger>
-              <Button isIconOnly size="sm" variant="light">
-                <MoreVertRoundedIcon />
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu>
-              <DropdownItem
-                as={Link}
-                color="primary"
-                startContent={<RemoveRedEyeOutlinedIcon />}
-                aria-label="View"
-                aria-labelledby="View"
-                href={
-                  "/projects/" +
-                  company.CompanyName +
-                  "/" +
-                  project.ProjectId +
-                  "/" +
-                  project.ProjectName
-                }
-              >
-                Visualizza
-              </DropdownItem>
-              {adminPermission.deleteProject && (
-                <DropdownItem
-                  color="danger"
-                  startContent={<DeleteOutlinedIcon />}
-                  aria-label="Remove"
-                  aria-labelledby="Remove"
-                  onClick={() =>
-                    setModalDeleteData({
-                      ...modalDeleteData,
-                      open: true,
-                      Project: project,
-                    })
-                  }
-                >
-                  Rimuovi
-                </DropdownItem>
-              )}
-            </DropdownMenu>
-          </Dropdown>
         </div>
         <dl className="-my-3 divide-y divide-gray-100 px-6 py-4 text-sm leading-6">
           <div className="flex justify-between gap-x-4 py-3">
@@ -279,7 +180,7 @@ export default function TableCard({ project }: { project: Project }) {
             <dd className="flex items-start gap-x-2">{displayStatus()}</dd>
           </div>
         </dl>
-      </div>
+      </a>
     </>
   );
 }

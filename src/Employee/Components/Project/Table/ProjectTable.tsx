@@ -57,7 +57,7 @@ const columns = [
   { name: "Nome Progetto", uid: "ProjectName" },
   { name: "Azienda", uid: "CompanyName" },
   { name: "Project Manager", uid: "ProjectManager" },
-  { name: "Status", uid: "Status" },
+  { name: "Stato", uid: "Status" },
   { name: "Azioni", uid: "actions" },
 ];
 
