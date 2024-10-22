@@ -8,6 +8,7 @@ import VerticalSplitRoundedIcon from "@mui/icons-material/VerticalSplitRounded";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import ViewListRoundedIcon from "@mui/icons-material/ViewListRounded";
 import ProjectTable from "../../Components/Project/Table/ProjectTable";
+import ProjectList from "../../Components/Project/Table/ProjectList";
 
 // Funzione per impostare un cookie
 function setCookie(name: string, value: string, days: number): void {
@@ -145,7 +146,7 @@ export default function ProjectDashboard() {
           <div className="py-5">
             {activeTab === "Griglia" && <ProjectGrid />}
             {activeTab === "Tabella" && <ProjectTable />}
-            {activeTab === "Lista" && <div>Testone</div>}
+            {activeTab === "Lista" && <ProjectList />}
           </div>
         </div>
       </main>
