@@ -68,7 +68,6 @@ const App: React.FC = () => {
             sessionRes.data.IsStaffer
           ) {
             setIsStaffer(sessionRes.data.IsStaffer);
-            console.log(isStaffer);
             await loadPermissions(sessionRes.data.StafferId);
           }
         } else {
@@ -95,7 +94,7 @@ const App: React.FC = () => {
       {isAuth && !isStaffer && <Navbar />}
       <Routes>
         <Route path="/password-recovery" element={<PasswordRecovery />} />
-        <Route path="/password-reset" element={<PasswordReset />} />
+        <Route path="/password-reset" element={<PasswordReset email="" />} />
         {!isAuth && <Route element={<Login />} path="/login" />}
         <Route
           path="/*"

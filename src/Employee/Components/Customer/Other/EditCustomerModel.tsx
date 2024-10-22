@@ -170,7 +170,7 @@ export default function EditCustomerModel() {
               <h3 className="text-base font-semibold leading-6 text-gray-900">
                 Cliente
               </h3>
-              <p className="mt-1 text-sm text-gray-500 w-1/3">
+              <p className="mt-1 text-sm text-gray-500 sm:w-1/3">
                 In questo pannello potrai modificare un cliente dal database. I
                 campi contrassegnati con un asterisco (
                 <span className="text-danger font-bold">*</span>) sono

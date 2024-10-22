@@ -1,97 +1,358 @@
-import { Button, Input, Link } from "@nextui-org/react";
-import TableCard from "../Other/TableCard";
-import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import { useEffect, useState } from "react";
-import axios from "axios";
+// @ts-nocheck
+import React, { useEffect, useState } from "react";
 import { usePermissions } from "../../Layout/PermissionProvider";
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  Input,
+  Button,
+  DropdownTrigger,
+  Dropdown,
+  DropdownMenu,
+  DropdownItem,
+  Pagination,
+  SortDescriptor,
+  Link,
+  User,
+  cn,
+} from "@nextui-org/react";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
+import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
+import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import axios from "axios";
+import { API_URL_IMG } from "../../../../API/API";
 
 interface Project {
   ProjectId: number;
   ProjectName: string;
-  ProjectDescription: string;
   ProjectCreationDate: string;
   ProjectEndDate: string;
-  ProjectManagerId: number;
-  ProjectBannerId: number;
-  CompanyId: number;
+  ProjectManagerName: string;
+  StafferImageUrl: string;
+  RoleName: string;
+  CompanyName: string;
   StatusId: number;
+  StatusName: string;
 }
 
+interface ModalData {
+  Project: Project;
+  open: boolean;
+}
+
+interface ModalDeleteData {
+  Project: Project;
+  open: boolean;
+}
+
+const columns = [
+  { name: "Nome Progetto", uid: "ProjectName" },
+  { name: "Azienda", uid: "CompanyName" },
+  { name: "Project Manager", uid: "ProjectManager" },
+  { name: "Status", uid: "Status" },
+  { name: "Azioni", uid: "actions" },
+];
+
 export default function ProjectTable() {
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [projects, setProjects] = useState<Project[]>([]);
-  const [adminPermission, setAdminPermission] = useState({
-    addProject: false,
+  const [company, setCompany] = useState<Company>({
+    CompanyId: 0,
+    CompanyName: "",
+    CompnayPhoto: "",
+  });
+  const [toDoTasks, setToDoTasks] = useState<number>(0);
+  const [statusList, setStatusList] = useState<Status[]>([]);
+  const [teamMembers, setTeamMembers] = useState<Member[]>([]);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [adminCompanyPermission, setAdminCompanyPermission] = useState({
+    addCompanyPermission: false,
+    editCompanyermission: false,
+    deleteCompanyPermission: false,
+  });
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: "age",
+    direction: "ascending",
   });
   const { hasPermission } = usePermissions();
 
   useEffect(() => {
-    axios.get("/Project/GET/GetAllProjects").then((res) => {
-      setProjects(res.data);
-    });
-
     async function checkPermissions() {
-      setAdminPermission({
-        addProject: await hasPermission("CREATE_PROJECT"),
+      setAdminCompanyPermission({
+        addCompanyPermission: await hasPermission("CREATE_COMPANY"),
+        editCompanyermission: await hasPermission("EDIT_COMPANY"),
+        deleteCompanyPermission: await hasPermission("DELETE_COMPANY"),
       });
     }
     checkPermissions();
+    fetchData();
   }, []);
-  async function SearchProject(e: { target: { value: string } }) {
-    const searchQuery = e.target.value.trim();
+
+  function fetchData() {
+    axios.get("/Project/GET/GetAllProjectsTable").then((res) => {
+      setProjects(res.data);
+      console.log(res.data);
+    });
+  }
+  const [page, setPage] = useState(1);
+
+  async function SearchProject() {
     try {
-      const res = await axios.get("/Project/GET/SearchProjectByName", {
-        params: { ProjectName: searchQuery },
+      const res = await axios.get("/Project/GET/SearchProjectByNameTable", {
+        params: { ProjectName: searchTerm },
       });
       setProjects(res.data);
     } catch (error) {
       console.error("Errore durante la ricerca delle aziende:", error);
     }
   }
-  return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-row justify-between gap-3 items-end">
-        <Input
-          radius="sm"
-          variant="bordered"
-          startContent={<SearchOutlinedIcon />}
-          onChange={SearchProject}
-          className="md:w-1/3"
-          placeholder="Cerca progetto per nome..."
-        />
-        <div className="mt-3 sm:ml-4 sm:mt-0">
-          {adminPermission.addProject && (
-            <>
+
+  function displayStatus(project: Project) {
+    const statuses = [
+      "text-green-700 bg-green-50 ring-green-600/20",
+      "text-orange-600 bg-orange-50 ring-orange-500/20",
+      "text-red-700 bg-red-50 ring-red-600/10",
+    ];
+
+    return (
+      <span
+        key={project.StatusId}
+        className={cn(
+          statuses[project.StatusId - 1],
+          "rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset"
+        )}
+      >
+        {project.StatusName}
+      </span>
+    );
+  }
+
+  async function DeleteProject(ProjectData: Project) {
+    try {
+      const res = await axios.delete("/Company/DELETE/DeleteCompany", {
+        params: { ProjectData },
+      });
+
+      if (res.status === 200) {
+        fetchData();
+      }
+    } catch (error) {
+      console.error("Errore nella cancellazione dell'azienda:", error);
+    }
+  }
+
+  const pages = Math.ceil(projects.length / rowsPerPage);
+
+  const items = React.useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    return projects.slice(start, end);
+  }, [page, projects, rowsPerPage]);
+
+  const renderCell = React.useCallback(
+    (project: Project, columnKey: React.Key) => {
+      const cellValue = project[columnKey as keyof Project];
+
+      switch (columnKey) {
+        case "ProjectManager":
+          return (
+            <div className="flex justify-start">
+              <User
+                name={project.ProjectManagerName}
+                description={project.RoleName}
+                avatarProps={{
+                  isBordered: true,
+                  size: "sm",
+                  src:
+                    project.StafferImageUrl &&
+                    API_URL_IMG + "/profileIcons/" + project.StafferImageUrl,
+                }}
+              />
+            </div>
+          );
+        case "Status":
+          return <div> {displayStatus(project)}</div>;
+        case "actions":
+          return (
+            <div className="relative flex justify-center items-center gap-2">
               <Button
                 as={Link}
+                href={
+                  "/projects/" +
+                  project.CompanyName +
+                  "/" +
+                  project.ProjectId +
+                  "/" +
+                  project.ProjectName
+                }
+                variant="light"
+                size="sm"
                 color="primary"
-                radius="sm"
-                startContent={<CreateNewFolderIcon />}
-                href="/projects/add-project"
-                className="hidden sm:flex"
-              >
-                Crea progetto
-              </Button>
-              <Button
-                as={Link}
-                color="primary"
-                radius="sm"
-                href="/projects/add-project"
-                className="sm:hidden"
+                startContent={<RemoveRedEyeOutlinedIcon />}
+                aria-label="View"
+                aria-labelledby="View"
                 isIconOnly
-              >
-                <CreateNewFolderIcon />
-              </Button>
-            </>
-          )}
+              />
+            </div>
+          );
+        default:
+          return cellValue;
+      }
+    },
+    [adminCompanyPermission]
+  );
+
+  const onRowsPerPageChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setRowsPerPage(Number(e.target.value));
+      setPage(1);
+    },
+    []
+  );
+
+  const topContent = React.useMemo(() => {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-row justify-between gap-3 items-end">
+          <div className="flex flex-row gap-3 w-full">
+            <Input
+              radius="full"
+              variant="bordered"
+              startContent={<SearchOutlinedIcon className="text-gray-400" />}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value.trim() === "") {
+                  fetchData();
+                }
+              }}
+              value={searchTerm}
+              className="md:w-1/3"
+              placeholder="Cerca per nome progetto..."
+            />
+            <Button
+              color="primary"
+              radius="full"
+              endContent={<SearchOutlinedIcon />}
+              isDisabled={searchTerm == ""}
+              onClick={SearchProject}
+              className="hidden sm:flex"
+            >
+              Cerca
+            </Button>
+            <Button
+              color="primary"
+              radius="full"
+              isDisabled={searchTerm == ""}
+              onClick={SearchProject}
+              className="sm:hidden"
+              isIconOnly
+            >
+              <SearchOutlinedIcon />
+            </Button>
+          </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {projects.length > 0 &&
-          projects.map((project) => {
-            return <TableCard project={project} key={project.ProjectId} />;
-          })}
+    );
+  }, [onRowsPerPageChange, projects.length, searchTerm, SearchProject]);
+
+  const bottomContent = React.useMemo(() => {
+    return (
+      <div className="py-2 px-2 flex justify-center items-center">
+        <Pagination
+          isCompact
+          showControls
+          showShadow
+          color="primary"
+          radius="full"
+          page={page}
+          total={pages || 1}
+          onChange={setPage}
+        />
       </div>
+    );
+  }, [items.length, page, pages]);
+
+  return (
+    <div className="bg-white">
+      <Table
+        aria-label="Example table with custom cells, pagination and sorting"
+        isHeaderSticky
+        isStriped
+        bottomContent={bottomContent}
+        bottomContentPlacement="inside"
+        sortDescriptor={sortDescriptor}
+        topContent={topContent}
+        topContentPlacement="inside"
+        onSortChange={setSortDescriptor}
+        radius="full"
+        classNames={{
+          wrapper: "border rounded-lg shadow-none",
+        }}
+      >
+        <TableHeader columns={columns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody
+          emptyContent={
+            searchTerm == "" ? (
+              <div className="text-center p-10">
+                <CreateNewFolderRoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun progetto trovato!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Inizia creando una nuovo progetto al database.
+                </p>
+                <div className="mt-6">
+                  <Button
+                    color="primary"
+                    radius="full"
+                    startContent={<CreateNewFolderRoundedIcon />}
+                  >
+                    Crea progetto
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center p-10">
+                <CreateNewFolderRoundedIcon sx={{ fontSize: 50 }} />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun progetto trovato!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Nessun risultato corrisponde alla tua ricerca:{" "}
+                  <span className="font-semibold italic">{searchTerm}</span>
+                </p>
+              </div>
+            )
+          }
+          items={items}
+        >
+          {(item: Project) => (
+            <TableRow key={item.ProjectId}>
+              {(columnKey) => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }
