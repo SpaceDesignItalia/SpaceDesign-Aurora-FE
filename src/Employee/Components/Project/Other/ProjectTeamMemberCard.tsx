@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Card, CardBody, Badge, User, Chip } from "@nextui-org/react";
-import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import { Card, CardBody, Badge, User, Button } from "@nextui-org/react";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { API_URL_IMG } from "../../../../API/API";
 import axios from "axios";
 import StatusAlert from "../../Layout/StatusAlert";
@@ -17,25 +17,33 @@ interface ProjectTeamMemberCardProps {
   MemberData: Member;
   ProjectId: number;
   type: boolean;
+  onlineUser: onlineUser[];
+}
+
+interface onlineUser {
+  socketId: string;
+  status: string;
+  userId: number;
 }
 
 interface AlertData {
   isOpen: boolean;
   alertTitle: string;
   alertDescription: string;
-  alertColor: string;
+  alertColor: "green" | "red" | "yellow";
 }
 
 export default function ProjectTeamMemberCard({
   MemberData,
   ProjectId,
+  onlineUser,
   type,
 }: ProjectTeamMemberCardProps) {
   const [alertData, setAlertData] = useState<AlertData>({
     isOpen: false,
     alertTitle: "",
     alertDescription: "",
-    alertColor: "",
+    alertColor: "red",
   });
 
   async function handleMemberRemove() {
@@ -78,33 +86,10 @@ export default function ProjectTeamMemberCard({
     <>
       <StatusAlert AlertData={alertData} />
       {type ? (
-        <Badge
-          shape="rectangle"
-          className="p-1 cursor-pointer"
-          content={<DeleteOutlineRoundedIcon />}
-          color="danger"
-          onClick={handleMemberRemove}
-        >
-          <Card className="w-full" radius="sm">
-            <CardBody className="flex flex-row justify-start items-center">
-              <User
-                name={MemberData.StafferFullName}
-                description={MemberData.RoleName}
-                avatarProps={{
-                  src:
-                    MemberData.StafferImageUrl &&
-                    API_URL_IMG + "/profileIcons/" + MemberData.StafferImageUrl,
-                  name: MemberData.StafferFullName,
-                }}
-              />
-            </CardBody>
-          </Card>
-        </Badge>
-      ) : (
         <Card className="w-full" radius="sm">
-          <CardBody className="flex flex-row justify-start items-center">
+          <CardBody className="flex flex-row justify-between items-center">
             <User
-              name={<>{MemberData.StafferFullName} </>}
+              name={MemberData.StafferFullName}
               description={MemberData.RoleName}
               avatarProps={{
                 src:
@@ -113,6 +98,40 @@ export default function ProjectTeamMemberCard({
                 name: MemberData.StafferFullName,
               }}
             />
+            <Button
+              color="primary"
+              radius="full"
+              variant="light"
+              size="sm"
+              onClick={handleMemberRemove}
+              startContent={<CloseRoundedIcon sx={{ fontSize: 15 }} />}
+              isIconOnly
+            />
+          </CardBody>
+        </Card>
+      ) : (
+        <Card className="w-full" radius="sm">
+          <CardBody className="flex flex-row justify-start items-center">
+            <Badge
+              content=""
+              placement="bottom-left"
+              color={
+                onlineUser.some((user) => user.userId === MemberData.StafferId)
+                  ? "success"
+                  : "danger"
+              }
+            >
+              <User
+                name={<>{MemberData.StafferFullName} </>}
+                description={MemberData.RoleName}
+                avatarProps={{
+                  src:
+                    MemberData.StafferImageUrl &&
+                    API_URL_IMG + "/profileIcons/" + MemberData.StafferImageUrl,
+                  name: MemberData.StafferFullName,
+                }}
+              />
+            </Badge>
           </CardBody>
         </Card>
       )}

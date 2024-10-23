@@ -78,7 +78,7 @@ export default function TeamContainer({
     editTeamMember: false,
   });
   const { hasPermission } = usePermissions();
-  const scrollRef = useRef(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -149,9 +149,7 @@ export default function TeamContainer({
     // Tab closed
     const handleBlur = () => {
       if (loggedStafferId !== 0) {
-        {
-          socket.emit("offline");
-        }
+        socket.emit("offline");
       }
     };
 
@@ -215,6 +213,25 @@ export default function TeamContainer({
     }
   }
 
+  // Funzione per raggruppare i messaggi per data
+  const groupMessagesByDate = (messages: Message[]) => {
+    const groupedMessages: { [key: string]: Message[] } = {};
+
+    messages.forEach((message) => {
+      const date = new Date(message.Date).toLocaleDateString();
+
+      if (!groupedMessages[date]) {
+        groupedMessages[date] = [];
+      }
+      groupedMessages[date].push(message);
+    });
+
+    return groupedMessages;
+  };
+
+  // Raggruppa i messaggi per data
+  const groupedMessages = groupMessagesByDate(messages);
+
   return (
     <>
       <AddProjectTeamMember
@@ -232,24 +249,37 @@ export default function TeamContainer({
               hideScrollBar
             >
               <div className="flex flex-col">
-                {messages.map((message) => {
-                  if (message.StafferSenderId !== loggedStafferId) {
-                    return (
-                      <ChatMessage
-                        message={message}
-                        type="recive"
-                        key={message.MessageId}
-                      />
-                    );
-                  } else
-                    return (
-                      <ChatMessage
-                        message={message}
-                        type="send"
-                        key={message.MessageId}
-                      />
-                    );
-                })}
+                {Object.keys(groupedMessages).map((date) => (
+                  <div key={date}>
+                    <div className="relative py-5">
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0 flex items-center"
+                      >
+                        <div className="w-full border-t border-gray-300" />
+                      </div>
+                      <div className="relative flex justify-center">
+                        <span className="bg-white px-2 text-sm text-gray-500">
+                          {date}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Data dei messaggi */}
+                    {groupedMessages[date].map((message) => {
+                      return (
+                        <ChatMessage
+                          message={message}
+                          type={
+                            message.StafferSenderId !== loggedStafferId
+                              ? "recive"
+                              : "send"
+                          }
+                          key={message.MessageId}
+                        />
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             </ScrollShadow>
             <div className="flex flex-row items-center gap-3 w-full">
@@ -267,7 +297,7 @@ export default function TeamContainer({
                 color="primary"
                 radius="full"
                 isIconOnly
-                isDisabled={newMessage.trim() === "" ? true : false}
+                isDisabled={newMessage.trim() === ""}
               >
                 <SendRoundedIcon />
               </Button>
@@ -280,21 +310,23 @@ export default function TeamContainer({
             <div className="flex flex-row gap-2">
               {adminPermission.editTeamMember && (
                 <>
-                  <Button
-                    color="primary"
-                    radius="full"
-                    size="sm"
-                    onClick={() =>
-                      setModalData({
-                        ...modalData,
-                        open: true,
-                        ProjectId: projectData.ProjectId,
-                      })
-                    }
-                    isIconOnly
-                  >
-                    <AddRoundedIcon />
-                  </Button>
+                  {editTeam && (
+                    <Button
+                      color="primary"
+                      radius="full"
+                      size="sm"
+                      onClick={() =>
+                        setModalData({
+                          ...modalData,
+                          open: true,
+                          ProjectId: projectData.ProjectId,
+                        })
+                      }
+                      isIconOnly
+                    >
+                      <AddRoundedIcon sx={{ fontSize: 20 }} />
+                    </Button>
+                  )}
                   <Button
                     onClick={handleEditTeam}
                     color="warning"
@@ -303,7 +335,7 @@ export default function TeamContainer({
                     size="sm"
                     isIconOnly
                   >
-                    <EditRoundedIcon />
+                    <EditRoundedIcon sx={{ fontSize: 20 }} />
                   </Button>
                 </>
               )}
@@ -312,36 +344,22 @@ export default function TeamContainer({
           <div className="grid grid-cols-2 gap-5">
             {members.map((member) =>
               member.StafferId !== projectData.ProjectManagerId ? (
-                <div>
+                <div key={member.StafferId}>
                   <ProjectTeamMemberCard
                     MemberData={member}
                     ProjectId={projectData.ProjectId}
+                    onlineUser={onlineUsers}
                     type={editTeam}
-                    key={member.StafferId}
                   />
-                  {onlineUsers.some(
-                    (user) => user.userId === member.StafferId
-                  ) ? (
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  ) : (
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  )}
                 </div>
               ) : (
-                <div>
+                <div key={member.StafferId}>
                   <ProjectTeamMemberCard
                     MemberData={member}
                     ProjectId={projectData.ProjectId}
+                    onlineUser={onlineUsers}
                     type={false}
-                    key={member.StafferId}
                   />
-                  {onlineUsers.some(
-                    (user) => user.userId === member.StafferId
-                  ) ? (
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  ) : (
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  )}
                 </div>
               )
             )}

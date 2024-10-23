@@ -41,6 +41,30 @@ interface ModalData {
   open: boolean;
 }
 
+// Funzione per impostare un cookie
+function setCookie(name: string, value: string, days: number): void {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+
+  // Construct the cookie string
+  const cookieString = `${name}=${value}; expires=${expires.toUTCString()}; path=/; Secure; SameSite=Strict`;
+
+  document.cookie = cookieString;
+}
+
+// Funzione per ottenere un cookie
+function getCookie(name: string): string | undefined {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    const cookieValue = parts.pop(); // Questo può essere undefined
+    if (cookieValue) {
+      return cookieValue.split(";").shift(); // Restituisce il valore del cookie
+    }
+  }
+  return undefined; // Restituisce undefined se il cookie non esiste
+}
+
 export default function ProjectPage() {
   const { ProjectId, ProjectName, CompanyName } = useParams<{
     ProjectId: string;
@@ -68,7 +92,9 @@ export default function ProjectPage() {
     ProjectBannerId: 0,
     open: false,
   });
-  const [activeTab, setActiveTab] = useState("Panoramica");
+  const [activeTab, setActiveTab] = useState(
+    getCookie("activeProjectTab") || "Panoramica"
+  );
   const [adminPermission, setAdminPermission] = useState({
     editProject: false,
   });
@@ -97,6 +123,11 @@ export default function ProjectPage() {
     }
     checkPermissions();
   }, [ProjectId, ProjectName]);
+
+  // Aggiorna il cookie ogni volta che cambia la scheda
+  useEffect(() => {
+    setCookie("activeProjectTab", activeTab, 7); // Salva per 7 giorni
+  }, [activeTab]);
 
   return (
     <>

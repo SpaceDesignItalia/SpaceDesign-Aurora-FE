@@ -5,9 +5,6 @@ import {
   Modal,
   ModalContent,
   ModalHeader,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
   ScrollShadow,
   cn,
   useDisclosure,
@@ -26,7 +23,6 @@ import AddConversationModal from "../Other/AddConversationModal";
 import { API_URL_IMG, API_WEBSOCKET_URL } from "../../../../API/API";
 import dayjs from "dayjs";
 import "dayjs/locale/it";
-import { Update } from "@mui/icons-material";
 
 dayjs.locale("it");
 
@@ -60,7 +56,7 @@ interface ModalAddData {
 }
 
 export default function ChatTable() {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { isOpen, onOpenChange } = useDisclosure();
   const [modalAddData, setModalAddData] = useState<ModalAddData>({
     loggedStafferId: 0,
     open: false,
@@ -145,6 +141,23 @@ export default function ChatTable() {
       setMessagesLoaded(true);
     }
   }, [conversations, messagesLoaded]);
+
+  const groupMessagesByDate = (messages: Message[]) => {
+    const groupedMessages: { [key: string]: Message[] } = {};
+
+    messages.forEach((message) => {
+      const date = new Date(message.Date).toLocaleDateString();
+
+      if (!groupedMessages[date]) {
+        groupedMessages[date] = [];
+      }
+      groupedMessages[date].push(message);
+    });
+
+    return groupedMessages;
+  };
+
+  const groupedMessages = groupMessagesByDate(messages);
 
   async function getLastMessageInfo(conversations: Conversation[]) {
     // Fetch last messages for each conversation
@@ -571,21 +584,39 @@ export default function ChatTable() {
                     className="h-fit py-10"
                     hideScrollBar
                   >
-                    {messages.map((message) =>
-                      message.StafferSenderId !== loggedStafferId ? (
-                        <ChatMessage
-                          key={message.MessageId}
-                          message={message}
-                          type="recive"
-                        />
-                      ) : (
-                        <ChatMessage
-                          key={message.MessageId}
-                          message={message}
-                          type="send"
-                        />
-                      )
-                    )}
+                    {Object.keys(groupedMessages).map((date) => (
+                      <div key={date}>
+                        <div className="relative py-5">
+                          <div
+                            aria-hidden="true"
+                            className="absolute inset-0 flex items-center"
+                          >
+                            <div className="w-full border-t border-gray-300" />
+                          </div>
+                          <div className="relative flex justify-center">
+                            <span className="bg-white px-2 text-sm text-gray-500">
+                              {date}
+                            </span>
+                          </div>
+                        </div>
+                        {/* Mostra la data */}
+                        {groupedMessages[date].map((message) =>
+                          message.StafferSenderId !== loggedStafferId ? (
+                            <ChatMessage
+                              key={message.MessageId}
+                              message={message}
+                              type="recive"
+                            />
+                          ) : (
+                            <ChatMessage
+                              key={message.MessageId}
+                              message={message}
+                              type="send"
+                            />
+                          )
+                        )}
+                      </div>
+                    ))}
                   </ScrollShadow>
                 </div>
 
