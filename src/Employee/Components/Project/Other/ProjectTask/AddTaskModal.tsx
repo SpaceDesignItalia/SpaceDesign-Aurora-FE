@@ -75,29 +75,43 @@ export default function AddTaskModal({
   defaultTitle: string;
   defaultDescription: string;
 }) {
-  const [newTask, setNewTask] = useState<Task>({
-    ProjectTaskId: 0,
-    ProjectTaskName: defaultTitle || "", // Pre-popolato con il titolo del ticket
-    ProjectTaskDescription: defaultDescription || "", // Pre-popolato con la descrizione del ticket
-    ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
-    ProjectTaskCreation: parseDate(dayjs().format("YYYY-MM-DD")),
-    ProjectTaskStatusId: 0,
-    ProjectTaskTags: [],
-    ProjectTaskMembers: [],
-    ProjectId: ProjectId,
-  });
+  // Inizializza newTask come null
+  const [newTask, setNewTask] = useState<Task | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [update, setUpdate] = useState(false);
 
+  // Aggiorna newTask quando il modale viene aperto o chiuso
   useEffect(() => {
+    if (isOpen) {
+      setNewTask({
+        ProjectTaskId: 0,
+        ProjectTaskName: defaultTitle || "",
+        ProjectTaskDescription: defaultDescription || "",
+        ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
+        ProjectTaskCreation: parseDate(dayjs().format("YYYY-MM-DD")),
+        ProjectTaskStatusId: 0,
+        ProjectTaskTags: [],
+        ProjectTaskMembers: [],
+        ProjectId: ProjectId,
+      });
+    } else {
+      // Resetta newTask quando il modale è chiuso
+      setNewTask(null);
+    }
+  }, [isOpen, defaultTitle, defaultDescription, ProjectId]);
+
+  // Carica membri e tag quando il modale è aperto
+  useEffect(() => {
+    if (!isOpen) return;
+
     axios
       .get("Project/GET/GetProjetTeamMembers", {
         params: { ProjectId: ProjectId },
       })
       .then((res) => {
         const filteredMembers = res.data.filter((member: Member) => {
-          return !newTask.ProjectTaskMembers.some(
+          return !newTask?.ProjectTaskMembers.some(
             (taskMember) => taskMember.StafferId === member.StafferId
           );
         });
@@ -108,13 +122,13 @@ export default function AddTaskModal({
     axios.get("/Project/GET/GetAllTags").then((res) => {
       setTags(
         res.data.filter((tag: Tag) => {
-          return !newTask.ProjectTaskTags.some(
+          return !newTask?.ProjectTaskTags.some(
             (taskTag) => taskTag.ProjectTaskTagId === tag.ProjectTaskTagId
           );
         })
       );
     });
-  }, [newTask, update, ProjectId]);
+  }, [isOpen, update, ProjectId]);
 
   const memberPopoverContent = (
     <PopoverContent className="w-[350px]">
@@ -190,6 +204,8 @@ export default function AddTaskModal({
   );
 
   function handleAddTask() {
+    if (!newTask) return;
+
     const formattedDate = new Date(newTask.ProjectTaskExpiration.toString());
     const formattedCreationDate = new Date(
       newTask.ProjectTaskCreation.toString()
@@ -209,6 +225,7 @@ export default function AddTaskModal({
   }
 
   function addTaskMember(member: Member) {
+    if (!newTask) return;
     setNewTask({
       ...newTask,
       ProjectTaskMembers: [...newTask.ProjectTaskMembers, member],
@@ -216,6 +233,7 @@ export default function AddTaskModal({
   }
 
   function addTaskTag(tag: Tag) {
+    if (!newTask) return;
     setNewTask({
       ...newTask,
       ProjectTaskTags: [...newTask.ProjectTaskTags, tag],
@@ -223,6 +241,7 @@ export default function AddTaskModal({
   }
 
   function deleteTaskMember(stafferId: number) {
+    if (!newTask) return;
     setNewTask({
       ...newTask,
       ProjectTaskMembers: newTask.ProjectTaskMembers.filter(
@@ -232,6 +251,7 @@ export default function AddTaskModal({
   }
 
   function deleteTaskTag(tagId: number) {
+    if (!newTask) return;
     setNewTask({
       ...newTask,
       ProjectTaskTags: newTask.ProjectTaskTags.filter(
@@ -242,24 +262,24 @@ export default function AddTaskModal({
 
   const [dateError, setDateError] = useState(false);
   useEffect(() => {
-    // Validation: check if the start date is after the expiration date
     if (newTask?.ProjectTaskCreation && newTask?.ProjectTaskExpiration) {
       const start = new Date(newTask.ProjectTaskCreation.toString());
       const end = new Date(newTask.ProjectTaskExpiration.toString());
 
-      setDateError(start > end); // If start is after end, show error
+      setDateError(start > end); // Se la data di inizio è dopo la data di fine, mostra errore
     }
   }, [newTask]);
 
   const [isValidTask, setIsValidTask] = useState(false);
   useEffect(() => {
     setIsValidTask(
-      newTask.ProjectTaskName.length > 0 &&
+      newTask !== null &&
+        newTask.ProjectTaskName.length > 0 &&
         newTask.ProjectTaskCreation.toString().length > 0 &&
         newTask.ProjectTaskExpiration.toString().length > 0 &&
         dateError === false
     );
-  }, [newTask]);
+  }, [newTask, dateError]);
 
   const calculateProgress = (
     startDate: DateValue,
@@ -275,17 +295,6 @@ export default function AddTaskModal({
   };
 
   function handleCloseModal() {
-    setNewTask({
-      ProjectTaskId: 0,
-      ProjectTaskName: "",
-      ProjectTaskDescription: "",
-      ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
-      ProjectTaskCreation: parseDate(dayjs().format("YYYY-MM-DD")),
-      ProjectTaskStatusId: 0,
-      ProjectTaskTags: [],
-      ProjectTaskMembers: [],
-      ProjectId: ProjectId,
-    });
     isClosed();
   }
 
@@ -306,14 +315,16 @@ export default function AddTaskModal({
               <div className="flex flex-row justify-between items-center gap-2 w-full">
                 <CreditCardRoundedIcon />
                 <Input
+                  key={defaultTitle} // Forza il re-render quando defaultTitle cambia
                   className="w-full"
                   variant="underlined"
                   color="primary"
                   placeholder="Titolo della Task"
-                  value={newTask!.ProjectTaskName}
+                  value={newTask?.ProjectTaskName || ""}
                   onChange={(e) => {
+                    if (!newTask) return;
                     setNewTask({
-                      ...newTask!,
+                      ...newTask,
                       ProjectTaskName: e.target.value,
                     });
                   }}
@@ -334,229 +345,242 @@ export default function AddTaskModal({
                 />
               </div>
             </ModalHeader>
-            <ModalBody>
-              <div className="mt-4">
-                <dl>
-                  <div className="px-4 flex flex-col sm:gap-4 sm:px-0">
-                    <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                      <LocalOfferRoundedIcon />
-                      Tag associati
-                    </dt>
-                    <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
-                      {newTask!.ProjectTaskTags.length === 0 ? (
-                        <div className="flex flex-row items-center gap-3">
-                          <p>Nessun tag trovato</p>
-                          <Popover offset={10} placement="bottom">
-                            <PopoverTrigger>
-                              <Button
-                                color="primary"
-                                variant="faded"
-                                radius="full"
-                                isIconOnly
-                              >
-                                <AddRoundedIcon />
-                              </Button>
-                            </PopoverTrigger>
-                            {tagPopoverContent}
-                          </Popover>
-                        </div>
-                      ) : (
-                        <div className="flex flex-wrap gap-2 items-center">
-                          {newTask!.ProjectTaskTags.map((tag) => (
-                            <Chip
-                              key={tag.ProjectTaskTagId}
-                              onClose={() =>
-                                deleteTaskTag(tag.ProjectTaskTagId)
-                              }
-                              color="primary"
-                              variant="faded"
-                              radius="sm"
-                            >
-                              {tag.ProjectTaskTagName}
-                            </Chip>
-                          ))}
-                          <Popover offset={10} placement="bottom">
-                            <PopoverTrigger>
-                              <Button
-                                color="primary"
-                                variant="faded"
-                                radius="full"
-                                isIconOnly
-                              >
-                                <AddRoundedIcon />
-                              </Button>
-                            </PopoverTrigger>
-                            {tagPopoverContent}
-                          </Popover>
-                        </div>
-                      )}
-                    </dd>
-                  </div>
-                  <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                    <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                      <Groups2RoundedIcon />
-                      Membri
-                    </dt>
-                    <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
-                      {newTask!.ProjectTaskMembers.length === 0 ? (
-                        <div className="flex flex-row items-center gap-2">
-                          <p>Nessun membro trovato</p>
-                          <Popover offset={10} placement="bottom">
-                            <PopoverTrigger>
-                              <Button
-                                color="primary"
-                                variant="faded"
-                                radius="full"
-                                isIconOnly
-                              >
-                                <AddRoundedIcon />
-                              </Button>
-                            </PopoverTrigger>
-                            {memberPopoverContent}
-                          </Popover>
-                        </div>
-                      ) : (
-                        <div className="flex flex-wrap gap-3 items-center">
-                          {newTask!.ProjectTaskMembers.map((member) => (
-                            <Chip
-                              size="lg"
-                              onClose={() => deleteTaskMember(member.StafferId)}
-                              variant="flat"
-                              avatar={
-                                <Avatar
-                                  src={
-                                    member.StafferImageUrl &&
-                                    `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
+            {/* Assicurati che newTask sia non nullo prima di renderizzare il contenuto */}
+            {newTask && (
+              <>
+                <ModalBody>
+                  <div className="mt-4">
+                    <dl>
+                      {/* Sezione Tag */}
+                      <div className="px-4 flex flex-col sm:gap-4 sm:px-0">
+                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                          <LocalOfferRoundedIcon />
+                          Tag associati
+                        </dt>
+                        <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
+                          {newTask.ProjectTaskTags.length === 0 ? (
+                            <div className="flex flex-row items-center gap-3">
+                              <p>Nessun tag trovato</p>
+                              <Popover offset={10} placement="bottom">
+                                <PopoverTrigger>
+                                  <Button
+                                    color="primary"
+                                    variant="faded"
+                                    radius="full"
+                                    isIconOnly
+                                  >
+                                    <AddRoundedIcon />
+                                  </Button>
+                                </PopoverTrigger>
+                                {tagPopoverContent}
+                              </Popover>
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap gap-2 items-center">
+                              {newTask.ProjectTaskTags.map((tag) => (
+                                <Chip
+                                  key={tag.ProjectTaskTagId}
+                                  onClose={() =>
+                                    deleteTaskTag(tag.ProjectTaskTagId)
                                   }
-                                  alt={member.StafferFullName}
-                                />
-                              }
-                            >
-                              {member.StafferFullName}
-                            </Chip>
-                          ))}
-
-                          <Popover offset={10} placement="bottom">
-                            <PopoverTrigger>
-                              <Button
-                                color="primary"
-                                variant="faded"
-                                radius="full"
-                                isIconOnly
-                              >
-                                <AddRoundedIcon />
-                              </Button>
-                            </PopoverTrigger>
-                            {memberPopoverContent}
-                          </Popover>
-                        </div>
-                      )}
-                    </dd>
-                  </div>
-
-                  <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
-                    <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                      <CalendarMonthRoundedIcon />
-                      Durata task
-                    </dt>
-                    <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
-                      <div className="flex flex-row justify-between w-full">
-                        <div className="flex flex-col w-full">
-                          <div className="flex flex-row justify-between w-full">
-                            <I18nProvider locale="it">
-                              <DatePicker
-                                labelPlacement="outside"
-                                label="Data inizio"
-                                className="w-1/3"
-                                radius="full"
-                                color={dateError ? "danger" : "default"}
-                                variant="bordered"
-                                value={newTask!.ProjectTaskCreation}
-                                onChange={(date) =>
-                                  setNewTask((prevTask) => ({
-                                    ...prevTask!,
-                                    ProjectTaskCreation: date,
-                                  }))
-                                }
-                              />
-                            </I18nProvider>
-                            <I18nProvider locale="it">
-                              <DatePicker
-                                labelPlacement="outside"
-                                label="Data fine"
-                                className="w-1/3"
-                                radius="full"
-                                color={dateError ? "danger" : "default"}
-                                variant="bordered"
-                                value={newTask!.ProjectTaskExpiration}
-                                onChange={(date) =>
-                                  setNewTask((prevTask) => ({
-                                    ...prevTask!,
-                                    ProjectTaskExpiration: date,
-                                  }))
-                                }
-                              />
-                            </I18nProvider>
-                          </div>
-                          {dateError && (
-                            <span className="text-red-500 text-sm col-span-3 col-start-2 mt-2">
-                              La data di inizio non può essere successiva alla
-                              data di scadenza.
-                            </span>
+                                  color="primary"
+                                  variant="faded"
+                                  radius="sm"
+                                >
+                                  {tag.ProjectTaskTagName}
+                                </Chip>
+                              ))}
+                              <Popover offset={10} placement="bottom">
+                                <PopoverTrigger>
+                                  <Button
+                                    color="primary"
+                                    variant="faded"
+                                    radius="full"
+                                    isIconOnly
+                                  >
+                                    <AddRoundedIcon />
+                                  </Button>
+                                </PopoverTrigger>
+                                {tagPopoverContent}
+                              </Popover>
+                            </div>
                           )}
-                        </div>
+                        </dd>
                       </div>
-                      <Progress
-                        value={calculateProgress(
-                          newTask!.ProjectTaskCreation,
-                          newTask!.ProjectTaskExpiration
-                        )}
-                      />
-                    </dd>
-                  </div>
+                      {/* Sezione Membri */}
+                      <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
+                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                          <Groups2RoundedIcon />
+                          Membri
+                        </dt>
+                        <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
+                          {newTask.ProjectTaskMembers.length === 0 ? (
+                            <div className="flex flex-row items-center gap-2">
+                              <p>Nessun membro trovato</p>
+                              <Popover offset={10} placement="bottom">
+                                <PopoverTrigger>
+                                  <Button
+                                    color="primary"
+                                    variant="faded"
+                                    radius="full"
+                                    isIconOnly
+                                  >
+                                    <AddRoundedIcon />
+                                  </Button>
+                                </PopoverTrigger>
+                                {memberPopoverContent}
+                              </Popover>
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap gap-3 items-center">
+                              {newTask.ProjectTaskMembers.map((member) => (
+                                <Chip
+                                  size="lg"
+                                  key={member.StafferId}
+                                  onClose={() =>
+                                    deleteTaskMember(member.StafferId)
+                                  }
+                                  variant="flat"
+                                  avatar={
+                                    <Avatar
+                                      src={
+                                        member.StafferImageUrl &&
+                                        `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
+                                      }
+                                      alt={member.StafferFullName}
+                                    />
+                                  }
+                                >
+                                  {member.StafferFullName}
+                                </Chip>
+                              ))}
 
-                  <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                    <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                      <NotesRoundedIcon />
-                      Descrizione
-                    </dt>
-                    <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                      <ReactQuill
-                        className="sm:col-span-2 sm:mt-0 h-fit"
-                        theme="snow"
-                        value={newTask!.ProjectTaskDescription}
-                        onChange={(e) =>
-                          setNewTask({
-                            ...newTask!,
-                            ProjectTaskDescription: e,
-                          })
-                        }
-                      />
-                    </dd>
+                              <Popover offset={10} placement="bottom">
+                                <PopoverTrigger>
+                                  <Button
+                                    color="primary"
+                                    variant="faded"
+                                    radius="full"
+                                    isIconOnly
+                                  >
+                                    <AddRoundedIcon />
+                                  </Button>
+                                </PopoverTrigger>
+                                {memberPopoverContent}
+                              </Popover>
+                            </div>
+                          )}
+                        </dd>
+                      </div>
+                      {/* Sezione Durata */}
+                      <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
+                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                          <CalendarMonthRoundedIcon />
+                          Durata task
+                        </dt>
+                        <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
+                          <div className="flex flex-row justify-between w-full">
+                            <div className="flex flex-col w-full">
+                              <div className="flex flex-row justify-between w-full">
+                                <I18nProvider locale="it">
+                                  <DatePicker
+                                    aria-label="Data inizio"
+                                    labelPlacement="outside"
+                                    label="Data inizio"
+                                    className="w-1/3"
+                                    radius="full"
+                                    color={dateError ? "danger" : "default"}
+                                    variant="bordered"
+                                    value={newTask.ProjectTaskCreation}
+                                    onChange={(date) =>
+                                      setNewTask((prevTask) => ({
+                                        ...prevTask!,
+                                        ProjectTaskCreation: date,
+                                      }))
+                                    }
+                                  />
+                                </I18nProvider>
+                                <I18nProvider locale="it">
+                                  <DatePicker
+                                    aria-label="Data fine"
+                                    labelPlacement="outside"
+                                    label="Data fine"
+                                    className="w-1/3"
+                                    radius="full"
+                                    color={dateError ? "danger" : "default"}
+                                    variant="bordered"
+                                    value={newTask.ProjectTaskExpiration}
+                                    onChange={(date) =>
+                                      setNewTask((prevTask) => ({
+                                        ...prevTask!,
+                                        ProjectTaskExpiration: date,
+                                      }))
+                                    }
+                                  />
+                                </I18nProvider>
+                              </div>
+                              {dateError && (
+                                <span className="text-red-500 text-sm col-span-3 col-start-2 mt-2">
+                                  La data di inizio non può essere successiva
+                                  alla data di scadenza.
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <Progress
+                            aria-label="Progresso della task"
+                            value={calculateProgress(
+                              newTask.ProjectTaskCreation,
+                              newTask.ProjectTaskExpiration
+                            )}
+                          />
+                        </dd>
+                      </div>
+                      {/* Sezione Descrizione */}
+                      <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
+                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                          <NotesRoundedIcon />
+                          Descrizione
+                        </dt>
+                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                          <ReactQuill
+                            className="sm:col-span-2 sm:mt-0 h-fit"
+                            theme="snow"
+                            value={newTask.ProjectTaskDescription}
+                            onChange={(e) =>
+                              setNewTask({
+                                ...newTask,
+                                ProjectTaskDescription: e,
+                              })
+                            }
+                          />
+                        </dd>
+                      </div>
+                    </dl>
                   </div>
-                </dl>
-              </div>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                color="primary"
-                variant="light"
-                onClick={handleCloseModal}
-                radius="full"
-              >
-                Chiudi
-              </Button>
-              <Button
-                color="primary"
-                onClick={handleAddTask}
-                radius="full"
-                startContent={<SaveRoundedIcon />}
-                isDisabled={!isValidTask}
-                variant={dateError ? "flat" : "solid"}
-              >
-                Salva
-              </Button>
-            </ModalFooter>
+                </ModalBody>
+                <ModalFooter>
+                  <Button
+                    color="primary"
+                    variant="light"
+                    onClick={handleCloseModal}
+                    radius="full"
+                  >
+                    Chiudi
+                  </Button>
+                  <Button
+                    color="primary"
+                    onClick={handleAddTask}
+                    radius="full"
+                    startContent={<SaveRoundedIcon />}
+                    isDisabled={!isValidTask}
+                    variant={dateError ? "flat" : "solid"}
+                  >
+                    Salva
+                  </Button>
+                </ModalFooter>
+              </>
+            )}
           </>
         )}
       </ModalContent>

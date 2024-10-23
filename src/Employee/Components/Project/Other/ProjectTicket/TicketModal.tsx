@@ -62,7 +62,6 @@ const TicketModal: React.FC<TicketModalProps> = ({
     axios
       .get("/Ticket/GET/GetAllTicketStatusTypes")
       .then((response) => {
-        console.log("Risposta API:", response.data);
         const statuses = response.data.map((status: any) => ({
           key: status.TicketStatusId.toString(),
           textValue: status.TicketStatusName,
@@ -70,9 +69,7 @@ const TicketModal: React.FC<TicketModalProps> = ({
 
         setTicketStatuses(statuses);
       })
-      .catch((error) => {
-        console.error("Errore nel recupero degli stati del ticket", error);
-      });
+      .catch((error) => {});
   }, []);
 
   // Cambio di stato dal campo Autocomplete
@@ -94,14 +91,12 @@ const TicketModal: React.FC<TicketModalProps> = ({
 
   // Aggiornamento del ticket tramite API
   const handleUpdate = () => {
-    console.log("Updating ticket:", newTicket);
     axios
       .put("/Ticket/PUT/UpdateTicketStatus", {
         TicketStatusId: newTicket?.TicketStatusId,
         ProjectTicketId: newTicket?.ProjectTicketId,
       })
       .then((response) => {
-        console.log("Ticket status updated successfully");
         onClose(); // Chiudi il modal dopo il salvataggio
       })
       .catch((error) => {
@@ -112,7 +107,6 @@ const TicketModal: React.FC<TicketModalProps> = ({
   // Naviga alla schermata di aggiunta task
   const handleAddTask = () => {
     setIsAddTaskModalOpen(true); // Apre il modale per aggiungere un task
-    console.log("Apertura modale per aggiungere task");
   };
 
   return (
@@ -238,7 +232,6 @@ const TicketModal: React.FC<TicketModalProps> = ({
           )}
         </ModalContent>
       </Modal>
-
       {/* Modale per aggiungere un task */}
       {newTicket && (
         <AddTaskModal
@@ -249,7 +242,7 @@ const TicketModal: React.FC<TicketModalProps> = ({
           defaultTitle={newTicket.ProjectTicketTitle} // Passa il titolo del ticket
           defaultDescription={newTicket.ProjectTicketDescription} // Passa la descrizione del ticket
         />
-      )}
+      )}{" "}
     </>
   );
 };
