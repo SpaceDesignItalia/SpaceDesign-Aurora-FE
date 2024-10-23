@@ -15,6 +15,7 @@ import { usePermissions } from "../../../Layout/PermissionProvider";
 import { Folder } from "lucide-react";
 import AddRounded from "@mui/icons-material/AddRounded";
 import FilesContainer from "../ProjectFiles/FilesContainer";
+import FolderSettingsModal from "../ProjectFiles/FolderSettingsModal";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -40,6 +41,12 @@ interface Folder {
   ProjectId: number;
 }
 
+interface FolderSettingsModalProps {
+  isOpen: boolean;
+  isClosed: () => void;
+  FolderData: Folder;
+}
+
 export default function FolderContainer({
   projectData,
 }: {
@@ -56,6 +63,16 @@ export default function FolderContainer({
     customerView: false,
   });
   const [activeFolder, setActiveFolder] = useState<Folder | null>(null);
+  const [folderModalData, setFolderModalData] =
+    useState<FolderSettingsModalProps>({
+      isOpen: false,
+      isClosed: () => {},
+      FolderData: {
+        FolderId: 0,
+        FolderName: "",
+        ProjectId: 0,
+      },
+    });
 
   useEffect(() => {
     socket.on("file-update", () => {
@@ -149,6 +166,11 @@ export default function FolderContainer({
   if (!activeFolder) {
     return (
       <>
+        <FolderSettingsModal
+          isOpen={folderModalData.isOpen}
+          isClosed={folderModalData.isClosed}
+          FolderData={folderModalData.FolderData}
+        />
         <div className="flex flex-col gap-10 border border-gray-200 rounded-xl p-5">
           <div className="flex flex-row justify-between gap-5 items-center">
             <div className="flex flex-row gap-3 w-full">
@@ -223,31 +245,50 @@ export default function FolderContainer({
               </PopoverContent>
             </Popover>
           </div>
-        </div>
-
-        <div className="flex flex-wrap gap-5 mt-5">
-          {folders.map((folder, index) => (
-            <div
-              className="flex items-center justify-center p-4"
-              key={index}
-              onClick={() => setActiveFolder(folder)}
-            >
-              <div className="relative">
-                <div className="bg-zinc-800 w-64 h-40 rounded-lg shadow-lg relative">
-                  {/* Parte superiore della cartella */}
-                  <div className="absolute top-0 left-0 w-32 h-10 bg-zinc-700 rounded-tl-lg rounded-tr-lg transform -translate-y-4"></div>
-                </div>
-                {/* Parte interna della cartella */}
-                <div className="bg-zinc-600 w-64 h-36 rounded-lg absolute top-0 left-0 mt-2">
-                  <div className="flex items-center justify-center h-full">
-                    <span className="text-lg font-bold text-white">
-                      {folder.FolderName}
-                    </span>
+          <div className="flex flex-wrap gap-5 mt-5">
+            {folders.map((folder, index) => (
+              <div
+                className="flex items-center justify-center p-4"
+                key={index}
+                onClick={() => setActiveFolder(folder)}
+              >
+                <div className="relative">
+                  <div className="bg-zinc-800 w-64 h-40 rounded-lg shadow-lg relative">
+                    {/* Parte superiore della cartella */}
+                    <div className="absolute top-0 left-0 w-32 h-10 bg-zinc-700 rounded-tl-lg rounded-tr-lg transform -translate-y-4"></div>
+                  </div>
+                  {/* Parte interna della cartella */}
+                  <div className="bg-zinc-600 w-64 h-36 rounded-lg absolute top-0 left-0 mt-2">
+                    <div>
+                      <Button
+                        color="primary"
+                        radius="full"
+                        startContent={<Folder size={48} />}
+                        onClick={() =>
+                          setFolderModalData({
+                            isOpen: true,
+                            isClosed: () => {},
+                            FolderData: folder,
+                          })
+                        }
+                      />
+                      <Button
+                        color="danger"
+                        radius="full"
+                        startContent={<Folder size={48} />}
+                        onClick={() => DeleteFolder(folder)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-center h-full">
+                      <span className="text-lg font-bold text-white">
+                        {folder.FolderName}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </>
     );
@@ -255,7 +296,7 @@ export default function FolderContainer({
     return (
       <FilesContainer
         projectData={projectData}
-        FolderId={activeFolder.FolderId}
+        Folder={activeFolder}
         setFolderId={() => setActiveFolder(null)}
       />
     );

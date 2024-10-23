@@ -63,6 +63,12 @@ interface ModalDeleteData {
   open: boolean;
 }
 
+interface Folder {
+  FolderId: number;
+  FolderName: string;
+  ProjectId: number;
+}
+
 const DEFAULT_FILE: File = {
   ProjectFileId: 0,
   FileName: "",
@@ -73,11 +79,11 @@ const DEFAULT_FILE: File = {
 
 export default function FilesContainer({
   projectData,
-  FolderId,
+  Folder,
   setFolderId,
 }: {
   projectData: Project;
-  FolderId: number;
+  Folder: Folder;
   setFolderId: () => void;
 }) {
   const { ProjectId } = useParams();
@@ -119,7 +125,7 @@ export default function FilesContainer({
   const fetchFiles = async () => {
     try {
       const response = await axios.get("/Project/GET/GetFilesByFolderId", {
-        params: { FolderId: FolderId },
+        params: { FolderId: Folder.FolderId },
       });
       setFiles(response.data);
     } catch (err) {
@@ -134,7 +140,7 @@ export default function FilesContainer({
       // Esegui la ricerca dei file per nome
       axios
         .get("/Project/GET/SearchFilesByFolderIdAndName", {
-          params: { FolderId: FolderId, FileName: searchQuery },
+          params: { FolderId: Folder.FolderId, FileName: searchQuery },
         })
         .then((res) => {
           setFiles(res.data);
@@ -177,7 +183,7 @@ export default function FilesContainer({
   async function DeleteFile(FileData: File) {
     try {
       const res = await axios.delete("/Project/DELETE/DeleteFile", {
-        params: { FolderId: FolderId, FilePath: FileData.FilePath },
+        params: { FolderId: Folder.FolderId, FilePath: FileData.FilePath },
       });
 
       if (res.status === 200) {
@@ -195,7 +201,7 @@ export default function FilesContainer({
         AllowCustomerView={adminPermission.customerView}
         isOpen={modalUploadFile.open}
         isClosed={() => setModalUploadFile({ ...modalUploadFile, open: false })}
-        FolderId={FolderId}
+        FolderId={Folder.FolderId}
       />
       <ConfirmDeleteFileModal
         FileData={modalDeleteFile.File}
@@ -207,6 +213,7 @@ export default function FilesContainer({
         <div className="flex flex-row justify-between gap-5 items-center">
           <div className="flex flex-row gap-3 w-full">
             <Button
+              color="primary"
               isIconOnly
               startContent={<ArrowBackIosNewRoundedIcon />}
               onClick={setFolderId}
