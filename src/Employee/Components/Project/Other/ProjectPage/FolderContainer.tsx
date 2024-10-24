@@ -145,7 +145,6 @@ export default function FolderContainer({
   console.log("Current folder:", currentFolder);
 
   useEffect(() => {
-    fetchFolders(); // Carica i file iniziali quando cambia ProjectId o quando c'è un aggiornamento
     axios
       .get("/Project/GET/GetDefaultProjectFolder", {
         params: { ProjectId: ProjectId },
