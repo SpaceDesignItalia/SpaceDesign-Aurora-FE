@@ -28,6 +28,7 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
 import ViewCompanyModal from "../Other/ViewCompanyModal";
 import ConfirmDeleteCompanyModal from "../Other/ConfirmDeleteCompanyModal";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 
 interface Company {
   CompanyId: number;
@@ -130,11 +131,52 @@ export default function CompanyTable() {
 
       if (res.status === 200) {
         fetchData();
+        window.location.reload();
       }
     } catch (error) {
       console.error("Errore nella cancellazione dell'azienda:", error);
     }
   }
+
+  const exportCSV = () => {
+    const headers = [
+      "Id Azienda",
+      "Nome Azienda",
+      "Indirizzo Azienda",
+      "Email Azienda",
+      "Telefono Azienda",
+    ];
+
+    const wrapInQuotes = (value) => {
+      return typeof value === "string" ? `"${value}"` : value;
+    };
+
+    const sortedCompanies = companies.sort((a, b) => a.CompanyId - b.CompanyId);
+
+    const rows = sortedCompanies.map((company) => [
+      wrapInQuotes(company.CompanyId),
+      wrapInQuotes(company.CompanyName),
+      wrapInQuotes(company.CompanyAddress),
+      wrapInQuotes(company.CompanyEmail),
+      wrapInQuotes(company.CompanyPhone),
+    ]);
+    console.log(rows);
+
+    let csvContent =
+      "data:text/csv;charset=utf-8," +
+      headers.map(wrapInQuotes).join(",") +
+      "\n" +
+      rows.map((row) => row.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "companies_table.csv");
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const pages = Math.ceil(companies.length / rowsPerPage);
 
@@ -261,6 +303,16 @@ export default function CompanyTable() {
             </Button>
           </div>
           <div className="flex gap-3">
+            {companies.length > 0 && (
+              <Button
+                color="primary"
+                radius="full"
+                startContent={<FileDownloadOutlinedIcon />}
+                onClick={exportCSV}
+              >
+                Esporta tabella aziende
+              </Button>
+            )}
             {adminCompanyPermission.addCompanyPermission && (
               <>
                 <Button

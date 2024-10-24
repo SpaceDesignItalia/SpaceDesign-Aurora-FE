@@ -9,30 +9,82 @@ import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import ViewListRoundedIcon from "@mui/icons-material/ViewListRounded";
 import ProjectTable from "../../Components/Project/Table/ProjectTable";
 import ProjectList from "../../Components/Project/Table/ProjectList";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import axios from "axios";
+import dayjs from "dayjs";
 
 // Funzione per impostare un cookie
 function setCookie(name: string, value: string, days: number): void {
   const expires = new Date();
   expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-
-  // Construct the cookie string
   const cookieString = `${name}=${value}; expires=${expires.toUTCString()}; path=/; Secure; SameSite=Strict`;
-
   document.cookie = cookieString;
 }
 
-// Funzione per ottenere un cookie
 function getCookie(name: string): string | undefined {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) {
-    const cookieValue = parts.pop(); // Questo può essere undefined
+    const cookieValue = parts.pop();
     if (cookieValue) {
-      return cookieValue.split(";").shift(); // Restituisce il valore del cookie
+      return cookieValue.split(";").shift();
     }
   }
-  return undefined; // Restituisce undefined se il cookie non esiste
+  return undefined;
 }
+
+const exportCSV = async () => {
+  const headers = [
+    "Id Progetto",
+    "Nome Progetto",
+    "Azienda",
+    "Data inizio",
+    "Data fine",
+    "Project Manager",
+    "Stato",
+  ];
+
+  const wrapInQuotes = (value) => {
+    return typeof value === "string" ? `"${value}"` : value;
+  };
+
+  try {
+    const response = await axios.get("/Project/GET/GetAllProjectsTable");
+    const projects = response.data;
+
+    const sortedProjects = projects.sort((a, b) => a.ProjectId - b.ProjectId);
+
+    const rows = [];
+    projects.forEach((project) => {
+      rows.push([
+        wrapInQuotes(project.ProjectId),
+        wrapInQuotes(project.ProjectName),
+        wrapInQuotes(project.CompanyName),
+        wrapInQuotes(dayjs(project.ProjectCreationDate).format("DD/MM/YYYY")),
+        wrapInQuotes(dayjs(project.ProjectEndDate).format("DD/MM/YYYY")),
+        wrapInQuotes(project.ProjectManagerName),
+        wrapInQuotes(project.StatusName),
+      ]);
+    });
+
+    let csvContent =
+      "data:text/csv;charset=utf-8," +
+      headers.map(wrapInQuotes).join(",") +
+      "\n" +
+      rows.map((row) => row.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "projects_table.csv");
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error("Errore nell'esportazione dei progetti:", error);
+  }
+};
 
 export default function ProjectDashboard() {
   const { hasPermission } = usePermissions();
@@ -44,6 +96,8 @@ export default function ProjectDashboard() {
   }>({
     addProject: false,
   });
+
+  const [projectsData, setProjectsData] = useState([]);
 
   const tabs = [
     { title: "Griglia", icon: GridViewRoundedIcon },
@@ -64,9 +118,8 @@ export default function ProjectDashboard() {
     fetchData();
   }, [hasPermission]);
 
-  // Aggiorna il cookie ogni volta che cambia la scheda
   useEffect(() => {
-    setCookie("activeTab", activeTab, 7); // Salva per 7 giorni
+    setCookie("activeTab", activeTab, 7);
   }, [activeTab]);
 
   return (
@@ -119,7 +172,15 @@ export default function ProjectDashboard() {
               ))}
             </Tabs>
             {adminPermission.addProject && (
-              <div className="flex flex-row w-full items-center justify-end">
+              <div className="flex flex-row w-full items-center gap-3 justify-end">
+                <Button
+                  color="primary"
+                  radius="full"
+                  startContent={<FileDownloadOutlinedIcon />}
+                  onClick={exportCSV}
+                >
+                  Esporta tabella progetti
+                </Button>
                 <Button
                   as={Link}
                   color="primary"

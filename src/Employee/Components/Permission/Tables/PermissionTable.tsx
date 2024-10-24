@@ -30,6 +30,7 @@ import axios from "axios";
 import ViewPermissionModal from "../Other/ViewPermissionModal";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import ConfirmDeletePermissionModal from "../Other/ConfirmDeletePermissionModal";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 
 interface Permission {
   PermissionId: number;
@@ -152,12 +153,54 @@ export default function PermissionTable() {
       .then((res) => {
         if (res.status === 200) {
           fetchData();
+          window.location.reload();
         }
       })
       .catch((error) => {
         console.error("Errore nella cancellazione del permesso:", error);
       });
   }
+
+  const exportCSV = () => {
+    const headers = [
+      "Permission Id",
+      "Permission Name",
+      "Permission Description",
+      "Permission Group Name",
+    ];
+
+    const wrapInQuotes = (value: any) => {
+      return typeof value === "string" ? `"${value}"` : value;
+    };
+
+    const sortedPermissions = permissions.sort(
+      (a, b) => a.PermissionId - b.PermissionId
+    );
+
+    const rows = sortedPermissions.map((permission) => [
+      wrapInQuotes(permission.PermissionId),
+      wrapInQuotes(permission.PermissionName),
+      wrapInQuotes(permission.PermissionDescription),
+      wrapInQuotes(permission.GroupName),
+    ]);
+
+    console.log(rows);
+
+    let csvContent =
+      "data:text/csv;charset=utf-8," +
+      headers.map(wrapInQuotes).join(",") +
+      "\n" +
+      rows.map((row) => row.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "permissions_table.csv");
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const pages = Math.ceil(permissions.length / rowsPerPage);
 
@@ -280,6 +323,16 @@ export default function PermissionTable() {
           <div className="flex gap-3">
             {adminPermission.addPermission && (
               <>
+                {permissions.length > 0 && (
+                  <Button
+                    color="primary"
+                    radius="full"
+                    startContent={<FileDownloadOutlinedIcon />}
+                    onClick={exportCSV}
+                  >
+                    Esporta tabella permessi
+                  </Button>
+                )}
                 <Button
                   as={Link}
                   href="./permission/add-permission"
