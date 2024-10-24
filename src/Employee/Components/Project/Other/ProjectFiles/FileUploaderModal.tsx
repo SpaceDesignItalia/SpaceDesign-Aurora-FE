@@ -21,11 +21,13 @@ export default function FileUploaderModal({
   AllowCustomerView,
   isOpen,
   isClosed,
+  FolderId,
 }: {
   ProjectId: number;
   AllowCustomerView: boolean;
   isOpen: boolean;
   isClosed: () => void;
+  FolderId: number;
 }) {
   const [files, setFiles] = useState<{ file: File; forClient: boolean }[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -79,7 +81,7 @@ export default function FileUploaderModal({
         formData.append("files", file);
         formData.append("forClient", forClient.toString());
       });
-      formData.append("ProjectId", ProjectId.toString());
+      formData.append("FolderId", FolderId.toString());
 
       try {
         const res = await axios.post("/Project/POST/UploadFile", formData);
@@ -88,6 +90,7 @@ export default function FileUploaderModal({
         }
         setFiles([]);
         socket.emit("file-update", ProjectId);
+        window.location.reload();
       } catch (error) {
         console.error(error);
       }
