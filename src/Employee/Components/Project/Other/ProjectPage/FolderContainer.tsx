@@ -242,7 +242,7 @@ export default function FolderContainer({
       });
 
       if (res.status === 200) {
-        window.location.reload();
+        fetchFolders();
       }
     } catch (error) {
       console.error("Errore nella cancellazione della cartella:", error);
@@ -259,7 +259,7 @@ export default function FolderContainer({
       });
 
       if (res.status === 200) {
-        window.location.reload();
+        fetchFolders();
       }
     } catch (error) {
       console.error("Errore nell'aggiunta della cartella:", error);
