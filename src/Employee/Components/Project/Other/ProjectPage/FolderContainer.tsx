@@ -2,6 +2,13 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import {
   Button,
+  Card,
+  CardBody,
+  CardFooter,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Input,
   Popover,
   PopoverContent,
@@ -16,6 +23,11 @@ import { Folder } from "lucide-react";
 import AddRounded from "@mui/icons-material/AddRounded";
 import FilesContainer from "../ProjectFiles/FilesContainer";
 import FolderSettingsModal from "../ProjectFiles/FolderSettingsModal";
+import FileUploaderModal from "../ProjectFiles/FileUploaderModal";
+import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
+import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -41,11 +53,37 @@ interface Folder {
   ProjectId: number;
 }
 
+interface File {
+  ProjectFileId: number;
+  FileName: string;
+  FilePath: string;
+  ForClient: boolean;
+  ProjectId: number;
+}
+
 interface FolderSettingsModalProps {
   isOpen: boolean;
   isClosed: () => void;
   FolderData: Folder;
 }
+
+interface ModalData {
+  ProjectId: number;
+  open: boolean;
+}
+
+interface ModalDeleteData {
+  File: File;
+  open: boolean;
+}
+
+const DEFAULT_FILE: File = {
+  ProjectFileId: 0,
+  FileName: "",
+  FilePath: "",
+  ForClient: false,
+  ProjectId: 0,
+};
 
 export default function FolderContainer({
   projectData,
@@ -63,6 +101,7 @@ export default function FolderContainer({
     customerView: false,
   });
   const [activeFolder, setActiveFolder] = useState<Folder | null>(null);
+  const [defaultFiles, setDefaultFiles] = useState<File[]>([]);
   const [folderModalData, setFolderModalData] =
     useState<FolderSettingsModalProps>({
       isOpen: false,
@@ -73,6 +112,21 @@ export default function FolderContainer({
         ProjectId: 0,
       },
     });
+  const [currentFolder, setCurrentFolder] = useState<Folder>({
+    FolderId: 0,
+    FolderName: "",
+    ProjectId: 0,
+  });
+
+  const [modalUploadFile, setModalUploadFile] = useState<ModalData>({
+    ProjectId: 0,
+    open: false,
+  });
+
+  const [modalDeleteFile, setModalDeleteFile] = useState<ModalDeleteData>({
+    File: DEFAULT_FILE,
+    open: false,
+  });
 
   useEffect(() => {
     socket.on("file-update", () => {
@@ -82,7 +136,19 @@ export default function FolderContainer({
 
   useEffect(() => {
     fetchFolders(); // Carica i file iniziali quando cambia ProjectId o quando c'è un aggiornamento
+    axios
+      .get("/Project/GET/GetDefaultProjectFolder", {
+        params: { ProjectId: ProjectId },
+      })
+      .then((res) => {
+        console.log(res.data);
+        setCurrentFolder(res.data);
+      });
   }, []);
+
+  useEffect(() => {
+    fetchDefaultFiles();
+  }, [currentFolder]);
 
   /*useEffect(() => {
     async function checkPermissions() {
@@ -103,7 +169,21 @@ export default function FolderContainer({
       });
       setFolders(response.data);
     } catch (err) {
-      console.error("Error fetching fodlers:", err);
+      console.error("Error fetching folders:", err);
+    }
+  };
+
+  const fetchDefaultFiles = async () => {
+    try {
+      const response = await axios.get(
+        "/Project/GET/GetDefaultFilesByFolderId",
+        {
+          params: { FolderId: currentFolder.FolderId },
+        }
+      );
+      setDefaultFiles(response.data);
+    } catch (err) {
+      console.error("Error fetching files:", err);
     }
   };
 
@@ -163,9 +243,58 @@ export default function FolderContainer({
     }
   }
 
+  const downloadFile = async (filePath: string, fileName: string) => {
+    try {
+      const response = await axios({
+        url: "/Project/GET/DownloadProjectFileByPath",
+        method: "GET",
+        params: { filePath, fileName },
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+    }
+  };
+
+  async function DeleteFile(FileData: File) {
+    try {
+      const res = await axios.delete("/Project/DELETE/DeleteFile", {
+        params: {
+          FolderId: currentFolder.FolderId,
+          FilePath: FileData.FilePath,
+        },
+      });
+
+      if (res.status === 200) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Errore nella cancellazione del file:", error);
+    }
+  }
+
   if (!activeFolder) {
     return (
       <>
+        <FileUploaderModal
+          ProjectId={projectData.ProjectId}
+          AllowCustomerView={adminPermission.customerView}
+          isOpen={modalUploadFile.open}
+          isClosed={() =>
+            setModalUploadFile({ ...modalUploadFile, open: false })
+          }
+          FolderId={currentFolder.FolderId}
+        />
         <FolderSettingsModal
           isOpen={folderModalData.isOpen}
           isClosed={folderModalData.isClosed}
@@ -244,6 +373,21 @@ export default function FolderContainer({
                 )}
               </PopoverContent>
             </Popover>
+            <Button
+              radius="sm"
+              color="primary"
+              startContent={<NoteAddRoundedIcon />}
+              className="text-white"
+              variant="solid"
+              onClick={() =>
+                setModalUploadFile({
+                  ...modalUploadFile,
+                  open: true,
+                })
+              }
+            >
+              Carica file
+            </Button>
           </div>
           <div className="flex flex-wrap gap-5 mt-5">
             {folders.map((folder, index) => (
@@ -288,6 +432,52 @@ export default function FolderContainer({
                 </div>
               </div>
             ))}
+            {defaultFiles.length > 0 &&
+              defaultFiles.map((file, index) => (
+                <Card radius="sm" key={index} className="col-span-1">
+                  <CardBody className="flex flex-row gap-5">
+                    <div className="w-full">
+                      <h4>{file.FileName}</h4>
+                    </div>
+                    {adminPermission.removeFile && (
+                      <Dropdown radius="sm">
+                        <DropdownTrigger>
+                          <Button isIconOnly size="sm" variant="light">
+                            <MoreVertRoundedIcon />
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu>
+                          <DropdownItem
+                            color="danger"
+                            startContent={<DeleteOutlinedIcon />}
+                            onClick={() =>
+                              setModalDeleteFile({
+                                ...modalDeleteFile,
+                                File: file,
+                                open: true,
+                              })
+                            }
+                          >
+                            Rimuovi
+                          </DropdownItem>
+                        </DropdownMenu>
+                      </Dropdown>
+                    )}
+                  </CardBody>
+
+                  <CardFooter>
+                    <Button
+                      color="primary"
+                      radius="sm"
+                      startContent={<FileDownloadRoundedIcon />}
+                      onClick={() => downloadFile(file.FilePath, file.FileName)}
+                      fullWidth
+                    >
+                      Scarica file
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
           </div>
         </div>
       </>
