@@ -25,6 +25,7 @@ import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutl
 import ConfirmDeleteFileModal from "../ConfirmDeleteFileModal";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { usePermissions } from "../../../Layout/PermissionProvider";
+import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -62,6 +63,12 @@ interface ModalDeleteData {
   open: boolean;
 }
 
+interface Folder {
+  FolderId: number;
+  FolderName: string;
+  ProjectId: number;
+}
+
 const DEFAULT_FILE: File = {
   ProjectFileId: 0,
   FileName: "",
@@ -72,8 +79,12 @@ const DEFAULT_FILE: File = {
 
 export default function FilesContainer({
   projectData,
+  Folder,
+  setFolderId,
 }: {
   projectData: Project;
+  Folder: Folder;
+  setFolderId: () => void;
 }) {
   const { ProjectId } = useParams();
   const { hasPermission } = usePermissions();
@@ -113,8 +124,8 @@ export default function FilesContainer({
 
   const fetchFiles = async () => {
     try {
-      const response = await axios.get("/Project/GET/GetFilesByProjectId", {
-        params: { ProjectId: ProjectId },
+      const response = await axios.get("/Project/GET/GetFilesByFolderId", {
+        params: { FolderId: Folder.FolderId },
       });
       setFiles(response.data);
     } catch (err) {
@@ -128,8 +139,8 @@ export default function FilesContainer({
     } else {
       // Esegui la ricerca dei file per nome
       axios
-        .get("/Project/GET/SearchFilesByProjectIdAndName", {
-          params: { ProjectId: ProjectId, FileName: searchQuery },
+        .get("/Project/GET/SearchFilesByFolderIdAndName", {
+          params: { FolderId: Folder.FolderId, FileName: searchQuery },
         })
         .then((res) => {
           setFiles(res.data);
@@ -172,14 +183,14 @@ export default function FilesContainer({
   async function DeleteFile(FileData: File) {
     try {
       const res = await axios.delete("/Project/DELETE/DeleteFile", {
-        params: { ProjectId: FileData.ProjectId, FilePath: FileData.FilePath },
+        params: { FolderId: Folder.FolderId, FilePath: FileData.FilePath },
       });
 
       if (res.status === 200) {
         window.location.reload();
       }
     } catch (error) {
-      console.error("Errore nella cancellazione dell'azienda:", error);
+      console.error("Errore nella cancellazione del file:", error);
     }
   }
 
@@ -190,6 +201,7 @@ export default function FilesContainer({
         AllowCustomerView={adminPermission.customerView}
         isOpen={modalUploadFile.open}
         isClosed={() => setModalUploadFile({ ...modalUploadFile, open: false })}
+        FolderId={Folder.FolderId}
       />
       <ConfirmDeleteFileModal
         FileData={modalDeleteFile.File}
@@ -200,6 +212,12 @@ export default function FilesContainer({
       <div className="flex flex-col gap-10 border border-gray-200 rounded-xl p-5">
         <div className="flex flex-row justify-between gap-5 items-center">
           <div className="flex flex-row gap-3 w-full">
+            <Button
+              color="primary"
+              isIconOnly
+              startContent={<ArrowBackIosNewRoundedIcon />}
+              onClick={setFolderId}
+            />
             <Input
               radius="sm"
               variant="bordered"
