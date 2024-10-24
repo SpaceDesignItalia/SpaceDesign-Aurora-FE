@@ -29,6 +29,7 @@ import axios from "axios";
 import ViewCustomerModal from "../Other/ViewCustomerModal";
 import ConfirmDeleteCustomerModal from "../Other/ConfirmDeleteCustomerModal";
 import { Edit } from "@mui/icons-material";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 
 interface Customer {
   CustomerId: number;
@@ -78,6 +79,7 @@ export default function CustomersTable() {
         deleteCustomerPermission: await hasPermission("DELETE_CUSTOMER"),
       });
     }
+
     checkPermissions();
     fetchData();
   }, []);
@@ -127,11 +129,85 @@ export default function CustomersTable() {
 
       if (res.status === 200) {
         fetchData();
+        window.location.reload();
       }
     } catch (error) {
       console.error("Errore nella cancellazione del cliente:", error);
     }
   }
+
+  const exportCSV = async () => {
+    const headers = [
+      "ID Cliente",
+      "Nome Cliente",
+      "Email Cliente",
+      "Telefono Cliente",
+      "Azienda associata",
+    ];
+
+    const wrapInQuotes = (value) => {
+      return typeof value === "string" ? `"${value}"` : value;
+    };
+
+    const sortedCustomers = customers.sort(
+      (a, b) => a.CustomerId - b.CustomerId
+    );
+
+    // Recupera le aziende per tutti i clienti
+    const getCompanyNames = async () => {
+      const updatedCustomers = await Promise.all(
+        sortedCustomers.map(async (customer) => {
+          try {
+            const res = await axios.get(
+              "/Customer/GET/GetCompanyAssociatedByCustomerId",
+              {
+                params: { CustomerId: customer.CustomerId },
+              }
+            );
+            return {
+              ...customer,
+              CustomerCompany: res.data[0]?.CompanyName,
+            };
+          } catch (error) {
+            console.error("Si è verificato un errore:", error);
+            return {
+              ...customer,
+              CustomerCompany: "Non presente",
+            };
+          }
+        })
+      );
+      return updatedCustomers;
+    };
+
+    const generateCSV = (updatedCustomers) => {
+      const rows = updatedCustomers.map((customer) => [
+        wrapInQuotes(customer.CustomerId),
+        wrapInQuotes(customer.CustomerFullName),
+        wrapInQuotes(customer.CustomerEmail),
+        wrapInQuotes(customer.CustomerPhone),
+        wrapInQuotes(customer.CustomerCompany),
+      ]);
+
+      let csvContent =
+        "data:text/csv;charset=utf-8," +
+        headers.map(wrapInQuotes).join(",") +
+        "\n" +
+        rows.map((row) => row.join(",")).join("\n");
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "customers_table.csv");
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    const updatedCustomers = await getCompanyNames();
+    generateCSV(updatedCustomers);
+  };
 
   const pages = Math.ceil(customers.length / rowsPerPage);
 
@@ -256,6 +332,16 @@ export default function CustomersTable() {
             </Button>
           </div>
           <div className="flex gap-3">
+            {customers.length > 0 && (
+              <Button
+                color="primary"
+                radius="full"
+                startContent={<FileDownloadOutlinedIcon />}
+                onClick={exportCSV}
+              >
+                Esporta tabella clienti
+              </Button>
+            )}
             {adminCustomerPermission.addCustomerPermission && (
               <>
                 <Button

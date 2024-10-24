@@ -29,6 +29,7 @@ import axios from "axios";
 import ViewRoleModal from "../Other/ViewRoleModal";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import ConfirmDeleteRoleModal from "../Other/ConfirmDeleteRoleModal";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 
 interface Role {
   RoleId: number;
@@ -112,11 +113,49 @@ export default function RoleTable() {
 
       if (res.status === 200) {
         fetchData();
+        window.location.reload();
       }
     } catch (error) {
       console.error("Errore nella cancellazione del ruolo:", error);
     }
   }
+
+  const exportCSV = () => {
+    const headers = [
+      "Role ID",
+      "Role Name",
+      "Role Description",
+      "Role Priority",
+    ];
+
+    const wrapInQuotes = (value) => {
+      return typeof value === "string" ? `"${value}"` : value;
+    };
+
+    const sortedRoles = roles.sort((a, b) => a.RoleId - b.RoleId);
+
+    const rows = sortedRoles.map((role) => [
+      wrapInQuotes(role.RoleId),
+      wrapInQuotes(role.RoleName),
+      wrapInQuotes(role.RoleDescription),
+      wrapInQuotes(role.RolePriority),
+    ]);
+
+    let csvContent =
+      "data:text/csv;charset=utf-8," +
+      headers.map(wrapInQuotes).join(",") +
+      "\n" +
+      rows.map((row) => row.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "roles_table.csv");
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const pages = Math.ceil(roles.length / rowsPerPage);
 
@@ -208,7 +247,7 @@ export default function RoleTable() {
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 if (e.target.value.trim() === "") {
-                  fetchData(); // Chiama SearchEmployee se il campo è vuoto
+                  fetchData();
                 }
               }}
               className="md:w-1/3"
@@ -238,6 +277,17 @@ export default function RoleTable() {
           <div className="flex gap-3">
             {adminRolePermission.addRolePermission && (
               <>
+                {roles.length > 0 && (
+                  <Button
+                    color="primary"
+                    radius="full"
+                    startContent={<FileDownloadOutlinedIcon />}
+                    onClick={exportCSV}
+                  >
+                    Esporta tabella ruoli
+                  </Button>
+                )}
+
                 <Button
                   as={Link}
                   href="./permission/add-role"

@@ -19,6 +19,7 @@ import axios from "axios";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import dayjs from "dayjs";
 import ConfirmDeleteLeadModal from "../Other/ConfirmDeleteModal";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 
 interface Lead {
   IdContact: number;
@@ -101,10 +102,58 @@ export default function EmployeeTable() {
 
       if (res.status === 200) {
         fetchData();
+        window.location.reload();
       }
     } catch (error) {
       console.error("Errore nella cancellazione del lead:", error);
     }
+  };
+
+  const exportCSV = () => {
+    const headers = [
+      "Lead ID",
+      "First Name",
+      "Last Name",
+      "Email",
+      "Company",
+      "Type",
+      "Range",
+      "Created At",
+      "Message",
+    ];
+
+    const wrapInQuotes = (value) => {
+      return typeof value === "string" ? `"${value}"` : value;
+    };
+
+    const sortedLeads = leads.sort((a, b) => a.IdContact - b.IdContact);
+
+    const rows = sortedLeads.map((lead) => [
+      wrapInQuotes(lead.IdContact),
+      wrapInQuotes(lead.FirstName),
+      wrapInQuotes(lead.LastName),
+      wrapInQuotes(lead.Email),
+      wrapInQuotes(lead.Company),
+      wrapInQuotes(lead.Name),
+      wrapInQuotes(lead.Range),
+      wrapInQuotes(dayjs(lead.CreatedAt).format("DD MMM YYYY")),
+      wrapInQuotes(lead.Message),
+    ]);
+
+    let csvContent =
+      "data:text/csv;charset=utf-8," +
+      headers.map(wrapInQuotes).join(",") +
+      "\n" +
+      rows.map((row) => row.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "leads_table.csv");
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const [page, setPage] = useState(1);
@@ -217,6 +266,18 @@ export default function EmployeeTable() {
               <SearchOutlinedIcon />
             </Button>
           </div>
+          {leads.length > 0 && (
+            <div className="flex gap-3">
+              <Button
+                color="primary"
+                radius="full"
+                startContent={<FileDownloadOutlinedIcon />}
+                onClick={exportCSV}
+              >
+                Esporta tabella lead
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     );
