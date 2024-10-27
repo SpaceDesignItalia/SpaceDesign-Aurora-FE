@@ -123,7 +123,7 @@ export default function TeamContainer({
         socket.emit("join", res.data[0].ConversationId);
         handleOpenChat(res.data[0].ConversationId);
       });
-  }, [messages.length]);
+  }, [messages.length, projectData.ProjectId]);
 
   const [onlineUsers, setOnlineUsers] = useState<onlineUser[]>([]);
   console.log(onlineUsers);
