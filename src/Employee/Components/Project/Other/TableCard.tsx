@@ -106,12 +106,14 @@ export default function TableCard({ project }: { project: Project }) {
     <>
       <a
         href={
-          "/projects/" +
-          company.CompanyName +
-          "/" +
-          project.ProjectId +
-          "/" +
-          project.ProjectName
+          company
+            ? "/projects/" +
+              company.CompanyName +
+              "/" +
+              project.ProjectId +
+              "/" +
+              project.ProjectName
+            : "#"
         }
         key={project.ProjectId}
         className="overflow-hidden rounded-xl border border-gray-200 list-none"
@@ -122,7 +124,7 @@ export default function TableCard({ project }: { project: Project }) {
               size="lg"
               radius="sm"
               src={
-                company.CompnayPhoto
+                company?.CompnayPhoto
                   ? company.CompnayPhoto
                   : API_URL_IMG + "/companyImages/defaultLogo.png"
               }
@@ -134,7 +136,7 @@ export default function TableCard({ project }: { project: Project }) {
                 {project.ProjectName}
               </div>
               <div className="text-sm font-medium leading-6 text-gray-500">
-                {company.CompanyName}
+                {company?.CompanyName || ""}
               </div>
             </div>
           </div>

@@ -55,6 +55,12 @@ interface ModalAddData {
   open: boolean;
 }
 
+interface onlineUser {
+  socketId: string;
+  status: string;
+  userId: number;
+}
+
 export default function ChatTable() {
   const { isOpen, onOpenChange } = useDisclosure();
   const [modalAddData, setModalAddData] = useState<ModalAddData>({
@@ -314,6 +320,44 @@ export default function ChatTable() {
     }
   }
 
+  const [onlineUsers, setOnlineUsers] = useState<onlineUser[]>([]);
+
+  useEffect(() => {
+    socket.emit("get-users");
+
+    socket.on("get-users", (users) => {
+      setOnlineUsers(users);
+    });
+  }, []);
+
+  useEffect(() => {
+    // Tab has focus
+    const handleFocus = async () => {
+      socket.emit("new-user-add", loggedStafferId);
+      socket.on("get-users", (users) => {
+        setOnlineUsers(users);
+      });
+    };
+
+    // Tab closed
+    const handleBlur = () => {
+      if (loggedStafferId !== 0) {
+        {
+          socket.emit("offline");
+        }
+      }
+    };
+
+    // Track if the user changes the tab to determine when they are online
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("blur", handleBlur);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, [loggedStafferId]);
+
   return (
     <div className="flex flex-col lg:flex-row w-full h-5/6">
       <AddConversationModal
@@ -559,11 +603,32 @@ export default function ChatTable() {
                       }
                       size="lg"
                     />
-                    <h2 className="ml-2 font-bold">
-                      {selectedConversation.Staffer1Id === loggedStafferId
-                        ? selectedConversation.Staffer2FullName
-                        : selectedConversation.Staffer1FullName}
-                    </h2>
+                    <div className="flex flex-col">
+                      <h2 className="ml-2 font-bold">
+                        {selectedConversation.Staffer1Id === loggedStafferId
+                          ? selectedConversation.Staffer2FullName
+                          : selectedConversation.Staffer1FullName}
+                      </h2>
+                      <p className="ml-2 text-gray-500 text-sm">
+                        {selectedConversation.Staffer1Id === loggedStafferId ? (
+                          onlineUsers.some(
+                            (user) =>
+                              user.userId === selectedConversation.Staffer2Id
+                          ) ? (
+                            <span className="text-green-500">Online</span>
+                          ) : (
+                            <span className="text-red-500">Offline</span>
+                          )
+                        ) : onlineUsers.some(
+                            (user) =>
+                              user.userId === selectedConversation.Staffer1Id
+                          ) ? (
+                          <span className="text-green-500">Online</span>
+                        ) : (
+                          <span className="text-red-500">Offline</span>
+                        )}
+                      </p>
+                    </div>
                   </div>
                   <Button
                     size="sm"

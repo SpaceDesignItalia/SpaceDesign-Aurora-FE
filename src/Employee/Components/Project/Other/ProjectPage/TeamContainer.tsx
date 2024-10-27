@@ -12,7 +12,6 @@ import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import { usePermissions } from "../../../Layout/PermissionProvider";
 
 const socket = io(API_WEBSOCKET_URL);
-socket.id = localStorage.getItem("stafferId")!;
 
 interface Message {
   MessageId: number;
@@ -126,10 +125,8 @@ export default function TeamContainer({
   }, [messages.length, projectData.ProjectId]);
 
   const [onlineUsers, setOnlineUsers] = useState<onlineUser[]>([]);
-  console.log(onlineUsers);
 
   useEffect(() => {
-    console.log("Richiesta utenti");
     socket.emit("get-users");
 
     socket.on("get-users", (users) => {
