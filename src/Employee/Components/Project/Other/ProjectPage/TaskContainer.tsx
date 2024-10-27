@@ -161,7 +161,7 @@ export default function TaskContainer({
     };
 
     fetchData();
-  }, [update]);
+  }, [update, projectData.ProjectId]);
 
   // Handler for drag end
   const onDragEnd = (result: {
