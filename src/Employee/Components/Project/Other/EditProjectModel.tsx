@@ -54,10 +54,11 @@ interface AlertData {
 }
 
 export default function EditProjectModel() {
-  const { ProjectId, ProjectName } = useParams<{
-    ProjectId: string;
-    ProjectName: string;
+  const { UniqueCode } = useParams<{
+    UniqueCode: string;
   }>();
+  const [ProjectId, setProjectId] = useState<number>(0);
+  const [ProjectName, setProjectName] = useState<string>("");
   const [initialProjectData, setInitialProjectData] = useState<Project>({
     ProjectName: "",
     ProjectDescription: "",
@@ -109,8 +110,8 @@ export default function EditProjectModel() {
           axios.get("/Project/GET/GetAllStatus"),
         ]);
 
-        const projectData = projectResponse.data;
-        const formattedProjectData = {
+        let projectData = projectResponse.data;
+        projectData = {
           ...projectData,
           ProjectEndDate: parseDate(
             dayjs(projectData.ProjectEndDate).format("YYYY-MM-DD")
@@ -122,8 +123,8 @@ export default function EditProjectModel() {
         };
 
         // Aggiorna lo stato combinando i dati
-        setInitialProjectData(formattedProjectData);
-        setNewProjectData(formattedProjectData);
+        setInitialProjectData(projectData);
+        setNewProjectData(projectData);
         setCompanies(companiesResponse.data);
         setManagers(managersResponse.data);
         setStatusList(statusListResponse.data);
@@ -135,10 +136,17 @@ export default function EditProjectModel() {
       }
     };
 
-    fetchProjectData();
+    axios
+      .get("/Project/GET/GetProjectByUniqueCode", { params: { UniqueCode } })
+      .then((res: any) => {
+        setProjectId(res.data.ProjectId);
+        setProjectName(res.data.ProjectName);
+        fetchProjectData();
+      })
+      .catch((error) => {
+        console.error("Errore durante il recupero del progetto:", error);
+      });
   }, [ProjectId, ProjectName]);
-
-  console.log(newProjectData);
 
   function handleProjectNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.value.length <= 200) {
@@ -234,7 +242,6 @@ export default function EditProjectModel() {
         setTimeout(() => {
           window.location.href = "/projects";
         }, 2000);
-        console.log("Successo:", res.data);
       }
       // Esegui altre azioni dopo la creazione del progetto, se necessario
     } catch (error) {
@@ -347,7 +354,10 @@ export default function EditProjectModel() {
                   defaultItems={managers}
                   placeholder="Seleziona Project Manager"
                   onSelectionChange={handleProjectProjectManagerIdChange}
-                  selectedKey={newProjectData.ProjectManagerId.toString()}
+                  selectedKey={
+                    newProjectData.ProjectManagerId &&
+                    newProjectData.ProjectManagerId.toString()
+                  }
                   variant="bordered"
                   radius="sm"
                   aria-label="manager"
@@ -393,7 +403,10 @@ export default function EditProjectModel() {
                   defaultItems={companies}
                   placeholder="Seleziona azienda"
                   onSelectionChange={handleProjectCompanyIdChange}
-                  selectedKey={newProjectData.CompanyId.toString()}
+                  selectedKey={
+                    newProjectData.CompanyId &&
+                    newProjectData.CompanyId.toString()
+                  }
                   variant="bordered"
                   radius="sm"
                   aria-label="company"
@@ -432,7 +445,10 @@ export default function EditProjectModel() {
                   defaultItems={statusList}
                   placeholder="Seleziona stato"
                   onSelectionChange={handleProjectStatusChange}
-                  selectedKey={newProjectData.StatusId.toString()}
+                  selectedKey={
+                    newProjectData.StatusId &&
+                    newProjectData.StatusId.toString()
+                  }
                   variant="bordered"
                   radius="sm"
                   aria-label="status"

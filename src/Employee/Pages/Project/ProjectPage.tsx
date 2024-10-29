@@ -268,15 +268,7 @@ export default function ProjectPage() {
                       as={Link}
                       color="primary"
                       radius="full"
-                      href={
-                        "/projects/" +
-                        CompanyName +
-                        "/" +
-                        ProjectId +
-                        "/" +
-                        ProjectName +
-                        "/edit-project"
-                      }
+                      href={"/projects/" + UniqueCode + "/edit-project"}
                       className="hidden sm:flex"
                       isIconOnly
                     >
