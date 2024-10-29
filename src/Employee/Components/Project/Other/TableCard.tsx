@@ -35,7 +35,13 @@ interface Status {
   StatusColor: string;
 }
 
-export default function TableCard({ project }: { project: Project }) {
+export default function TableCard({
+  project,
+  UniqueCode,
+}: {
+  project: Project;
+  UniqueCode: string;
+}) {
   const [company, setCompany] = useState<Company>({
     CompanyId: 0,
     CompanyName: "",
@@ -105,16 +111,7 @@ export default function TableCard({ project }: { project: Project }) {
   return (
     <>
       <a
-        href={
-          company
-            ? "/projects/" +
-              company.CompanyName +
-              "/" +
-              project.ProjectId +
-              "/" +
-              project.ProjectName
-            : "#"
-        }
+        href={"/projects/" + UniqueCode}
         key={project.ProjectId}
         className="overflow-hidden rounded-xl border border-gray-200 list-none"
       >
