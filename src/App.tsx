@@ -199,13 +199,10 @@ const EmployeeProtectedRoutes: React.FC = () => {
         <Route element={<ChatDashboard />} path="/comunications/chat" />
         <Route element={<ProjectDashboard />} path="/projects" />
         <Route element={<AddProjectPage />} path="/projects/add-project" />
-        <Route
-          element={<ProjectPage />}
-          path="/projects/:CompanyName/:ProjectId/:ProjectName"
-        />
+        <Route element={<ProjectPage />} path="/projects/:UniqueCode" />
         <Route
           element={<EditProjectPage />}
-          path="/projects/:CompanyName/:ProjectId/:ProjectName/edit-project"
+          path="/projects/:UniqueCode/edit-project"
         />
         <Route
           element={<EditPermissionPage />}

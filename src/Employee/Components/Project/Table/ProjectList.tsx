@@ -21,6 +21,7 @@ interface Project {
   CompanyName: string;
   StatusId: number;
   StatusName: string;
+  UniqueCode: string;
 }
 
 interface Permissions {
@@ -249,7 +250,9 @@ export default function ProjectList() {
                           colSpan={5}
                           className="bg-gray-100 py-2 pl-4 pr-3 text-left text-lg font-semibold sm:pl-3"
                         >
-                          {companyName}
+                          {companyName != "null"
+                            ? companyName
+                            : "Senza Azienda"}
                         </th>
                       </tr>
                       {projects[companyName].map((project: Project) => (
@@ -290,14 +293,7 @@ export default function ProjectList() {
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 flex flex-row gap-3">
                             <Button
                               as={Link}
-                              href={
-                                "/projects/" +
-                                project.CompanyName +
-                                "/" +
-                                project.ProjectId +
-                                "/" +
-                                project.ProjectName
-                              }
+                              href={"/projects/" + project.UniqueCode}
                               variant="light"
                               size="sm"
                               color="primary"

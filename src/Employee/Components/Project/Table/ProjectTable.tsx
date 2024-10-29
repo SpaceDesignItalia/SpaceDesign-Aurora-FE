@@ -42,6 +42,7 @@ interface Project {
   CompanyName: string;
   StatusId: number;
   StatusName: string;
+  UniqueCode: string;
 }
 
 interface ModalData {
@@ -183,14 +184,7 @@ export default function ProjectTable() {
             <div className="relative flex justify-center items-center gap-2">
               <Button
                 as={Link}
-                href={
-                  "/projects/" +
-                  project.CompanyName +
-                  "/" +
-                  project.ProjectId +
-                  "/" +
-                  project.ProjectName
-                }
+                href={"/projects/" + project.UniqueCode}
                 variant="light"
                 size="sm"
                 color="primary"

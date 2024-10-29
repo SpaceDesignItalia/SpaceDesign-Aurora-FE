@@ -14,6 +14,7 @@ interface Project {
   ProjectBannerId: number;
   CompanyId: number;
   StatusId: number;
+  UniqueCode: string;
 }
 
 export default function ProjectGrid() {
@@ -50,7 +51,13 @@ export default function ProjectGrid() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {projects.length > 0 &&
           projects.map((project) => {
-            return <TableCard project={project} key={project.ProjectId} />;
+            return (
+              <TableCard
+                project={project}
+                UniqueCode={project.UniqueCode}
+                key={project.ProjectId}
+              />
+            );
           })}
       </div>
     </div>

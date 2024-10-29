@@ -91,7 +91,7 @@ export default function FolderContainer({
 }: {
   projectData: Project;
 }) {
-  const { ProjectId } = useParams();
+  const [ProjectId, setProjectId] = useState<number>(projectData.ProjectId);
   const { hasPermission } = usePermissions();
   const [folders, setFolders] = useState<Folder[]>([]);
   const [newFolderName, setNewFolderName] = useState<string>("");
