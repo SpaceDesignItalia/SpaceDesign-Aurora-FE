@@ -44,15 +44,13 @@ const exportCSV = async () => {
     "Stato",
   ];
 
-  const wrapInQuotes = (value) => {
+  const wrapInQuotes = (value: any) => {
     return typeof value === "string" ? `"${value}"` : value;
   };
 
   try {
     const response = await axios.get("/Project/GET/GetAllProjectsTable");
     const projects = response.data;
-
-    const sortedProjects = projects.sort((a, b) => a.ProjectId - b.ProjectId);
 
     const rows = [];
     projects.forEach((project) => {
@@ -96,8 +94,6 @@ export default function ProjectDashboard() {
   }>({
     addProject: false,
   });
-
-  const [projectsData, setProjectsData] = useState([]);
 
   const tabs = [
     { title: "Griglia", icon: GridViewRoundedIcon },

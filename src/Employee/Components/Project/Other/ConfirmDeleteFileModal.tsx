@@ -21,7 +21,7 @@ interface ConfirmDeleteModalProps {
   isOpen: boolean;
   isClosed: () => void;
   FileData: File;
-  DeleteProject: (project: File) => void;
+  DeleteProject: (file: File) => void;
 }
 
 export default function ConfirmDeleteFileModal({

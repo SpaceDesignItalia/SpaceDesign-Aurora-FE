@@ -225,7 +225,7 @@ export default function ProjectPage() {
                       />
                     ))}
                   </Tabs>
-                  <div className="bg-white p-4 fixed bottom-0 z-50 w-full left-0 border-t-1 shadow-large rounded-tr-xl rounded-tl-xl">
+                  <div className="sm:hidden bg-white p-4 fixed bottom-0 z-50 w-full left-0 border-t-1 shadow-large rounded-tr-xl rounded-tl-xl">
                     <Tabs
                       aria-label="Options"
                       color="primary"
