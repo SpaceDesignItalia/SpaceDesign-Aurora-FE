@@ -1,11 +1,9 @@
-import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
-import GridViewRoundedIcon from "@mui/icons-material/GridViewRounded";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
-import ViewListRoundedIcon from "@mui/icons-material/ViewListRounded";
 import BorderColorRoundedIcon from "@mui/icons-material/BorderColorRounded";
+import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import FolderRoundedIcon from "@mui/icons-material/FolderRounded";
+import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
+import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
 import {
   BreadcrumbItem,
   Breadcrumbs,
@@ -24,17 +22,13 @@ import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import AddFolderModal from "../ProjectFiles/AddFolderModal";
 import {
   ContextMenu,
-  ContextMenuCheckboxItem,
   ContextMenuContent,
   ContextMenuItem,
-  ContextMenuSub,
-  ContextMenuSubContent,
-  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "../ProjectFiles/context-menu";
+import FileCard from "../ProjectFiles/FileCard";
 import FileUploaderModal from "../ProjectFiles/FileUploaderModal";
 import FolderSettingsModal from "../ProjectFiles/FolderSettingsModal";
-import FileCard from "../ProjectFiles/FileCard";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -84,25 +78,6 @@ interface ModalAddFolderData {
   open: boolean;
 }
 
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date();
-  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-  const cookieString = `${name}=${value}; expires=${expires.toUTCString()}; path=/; Secure; SameSite=Strict`;
-  document.cookie = cookieString;
-}
-
-function getCookie(name: string) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    const cookieValue = parts.pop();
-    if (cookieValue) {
-      return cookieValue.split(";").shift();
-    }
-  }
-  return undefined;
-}
-
 export default function FolderContainer({
   projectData,
 }: {
@@ -137,10 +112,6 @@ export default function FolderContainer({
     ProjectId: 0,
     open: false,
   });
-
-  const [fileView, setFileView] = useState<string>(
-    getCookie("fileView") || "Grid"
-  );
 
   useEffect(() => {
     socket.on("file-update", () => {
@@ -262,10 +233,6 @@ export default function FolderContainer({
     }
   }
 
-  useEffect(() => {
-    setCookie("fileView", fileView, 7);
-  }, [fileView]);
-
   return (
     <>
       <FileUploaderModal
@@ -299,10 +266,10 @@ export default function FolderContainer({
             <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
               Cartelle
             </h2>
-            <div className="flex flex-wrap gap-3 mt-5 items-start justify-start">
+            <div className="flex flex-row flex-wrap gap-3 mt-5 items-start justify-start">
               {folders.map((folder, index) => (
                 <div
-                  className="flex items-center justify-between p-4 border-2 rounded-xl w-72 bg-gray-50 hover:shadow-md hover:scale-[102%] transition-all duration-200"
+                  className="flex items-center justify-between p-4 border-2 rounded-xl w-full md:w-72 bg-gray-50 hover:shadow-md hover:scale-[102%] transition-all duration-200"
                   key={index}
                   onClick={() => setCurrentFolder(folder)}
                 >
@@ -364,7 +331,7 @@ export default function FolderContainer({
                 <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
                   File
                 </h2>
-                <div className="grid grid-cols-4 gap-3 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full">
                   {files.map((file, index) => (
                     <FileCard
                       file={file}
@@ -405,28 +372,6 @@ export default function FolderContainer({
           >
             <NoteAddRoundedIcon sx={{ fontSize: 20 }} /> Carica file
           </ContextMenuItem>
-
-          <ContextMenuSub>
-            <ContextMenuSubTrigger inset>Visualizzazione</ContextMenuSubTrigger>
-            <ContextMenuSubContent className="w-48">
-              <ContextMenuCheckboxItem
-                checked={fileView === "Grid"}
-                className="flex flex-row items-center gap-3"
-                onClick={() => setFileView("Grid")}
-              >
-                <GridViewRoundedIcon sx={{ fontSize: 20 }} />
-                Griglia
-              </ContextMenuCheckboxItem>
-              <ContextMenuCheckboxItem
-                checked={fileView === "List"}
-                className="flex flex-row items-center gap-3"
-                onClick={() => setFileView("List")}
-              >
-                <ViewListRoundedIcon sx={{ fontSize: 20 }} />
-                Lista
-              </ContextMenuCheckboxItem>
-            </ContextMenuSubContent>
-          </ContextMenuSub>
         </ContextMenuContent>
       </ContextMenu>
     </>

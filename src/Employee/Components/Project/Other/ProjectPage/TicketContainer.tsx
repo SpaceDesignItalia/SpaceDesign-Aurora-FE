@@ -120,13 +120,8 @@ export default function TicketContainer({
   }
 
   return (
-    <>
-      {/* Ticket Table Section */}
-      {/* Call the ResponseTicket component and pass ProjectId */}
-      <ResponseTicket ProjectId={projectData.ProjectId} />
-
-      {/* Customer Chat Section */}
-      <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div className="col-span-1 flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
         <div className="flex flex-col gap-5">
           <h1 className="font-bold">Customer chat</h1>
           <ScrollShadow
@@ -176,6 +171,9 @@ export default function TicketContainer({
           </div>
         </div>
       </div>
-    </>
+      <div className="col-span-2">
+        <ResponseTicket />
+      </div>
+    </div>
   );
 }

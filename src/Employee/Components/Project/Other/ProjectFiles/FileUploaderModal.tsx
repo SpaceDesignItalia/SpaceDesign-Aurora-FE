@@ -96,7 +96,7 @@ export default function FileUploaderModal({
       isOpen={isOpen}
       onOpenChange={isClosed}
       size="2xl"
-      scrollBehavior="inside"
+      scrollBehavior="outside"
       placement="center"
       backdrop="blur"
       hideCloseButton

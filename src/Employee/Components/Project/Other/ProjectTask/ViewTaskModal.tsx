@@ -1078,7 +1078,7 @@ export default function ViewTaskModal({
                               </div>
                             }
                           >
-                            <ScrollShadow className="flex flex-col gap-3 h-96">
+                            <ScrollShadow className="flex flex-col gap-3 max-h-96">
                               <div className="flex flex-col gap-4 w-full">
                                 {files.length > 0 &&
                                   files.map((file, index) => (
@@ -1093,7 +1093,7 @@ export default function ViewTaskModal({
                                 radius="full"
                                 color="primary"
                                 startContent={<NoteAddRoundedIcon />}
-                                className="text-white"
+                                className="w-1/3 sm:w-1/4"
                                 variant="solid"
                                 onClick={() =>
                                   setModalUploadFile({

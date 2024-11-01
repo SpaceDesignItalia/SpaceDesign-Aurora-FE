@@ -13,6 +13,7 @@ interface Role {
   RoleId: number;
   RoleName: string;
   RoleDescription: string;
+  RolePriority: number;
 }
 
 interface ConfirmDeleteRoleModalProps {

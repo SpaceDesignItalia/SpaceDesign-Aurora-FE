@@ -12,6 +12,7 @@ import {
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import BorderColorRoundedIcon from "@mui/icons-material/BorderColorRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
 
 interface FileCardProps {
   file: any;
@@ -40,6 +41,22 @@ export default function FileCard({
     fetchFileIcon();
   }, [file, variant]);
 
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isEditing) {
+        setIsEditing(false);
+      }
+    };
+
+    if (isEditing) {
+      window.addEventListener("keydown", handleEsc);
+    } else {
+      window.removeEventListener("keydown", handleEsc);
+    }
+
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [isEditing]);
+
   async function fetchFileIcon() {
     try {
       const fileName = variant === "default" ? file.FileName : file.file.name;
@@ -62,14 +79,32 @@ export default function FileCard({
     }
 
     try {
-      const updatedFileName = `${newFileName.trim()}${extension}`; // Combina il nuovo nome con l'estensione
+      const updatedFileName = `${newFileName.trim()}${extension}`;
       setIsEditing(false);
-      await axios.post("/Project/POST/RenameFile", {
-        filePath: file.FilePath,
+      await axios.put("/Project/UPDATE/RenameFile", {
+        fileId: file.ProjectFileId,
         newName: updatedFileName,
       });
     } catch (error) {
       console.error("Errore durante la rinomina del file:", error);
+    }
+  };
+
+  const downloadFile = async () => {
+    try {
+      const res = await axios.get("/Project/GET/DownloadProjectFileByPath", {
+        params: { filePath: file.FilePath, fileName: file.FileName },
+      });
+
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", initialFileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Errore durante il download del file:", error);
     }
   };
 
@@ -78,7 +113,7 @@ export default function FileCard({
       {variant === "default" && (
         <div className="col-span-1 border bg-gray-100 p-2 px-7 flex flex-row items-center rounded-xl justify-between">
           <div className="w-1/2 md:w-5/6 flex flex-row gap-3 items-center">
-            <div className="border rounded-xl h-12 w-12 p-2 bg-white">
+            <div className="flex items-center border rounded-xl h-12 w-12 p-2 bg-white">
               <img src={API_URL_IMG + fileIcon} alt={fileIcon} />
             </div>
             {isEditing ? (
@@ -93,8 +128,7 @@ export default function FileCard({
                   }}
                   className="text-sm truncate w-3/4 border-b border-black focus:outline-none p-1 bg-transparent"
                 />
-                <span>{extension}</span>{" "}
-                {/* Mostra l'estensione come testo fisso */}
+                <span>{extension}</span>
               </div>
             ) : (
               <h4 className="text-sm truncate w-3/4">
@@ -118,6 +152,13 @@ export default function FileCard({
                 aria-label="Dropdown menu with description"
               >
                 <DropdownItem
+                  key="download"
+                  startContent={<FileDownloadRoundedIcon />}
+                  onClick={downloadFile} // Scarica il file
+                >
+                  Scarica file
+                </DropdownItem>
+                <DropdownItem
                   key="edit"
                   startContent={<BorderColorRoundedIcon />}
                   onClick={() => setIsEditing(true)} // Entra in modalità di modifica
@@ -131,7 +172,7 @@ export default function FileCard({
                   startContent={<DeleteRoundedIcon />}
                   onClick={() => DeleteFile(file)}
                 >
-                  Rimuovi cartella
+                  Rimuovi file
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>
