@@ -66,11 +66,12 @@ function getCookie(name: string): string | undefined {
 }
 
 export default function ProjectPage() {
-  const { ProjectId, ProjectName, CompanyName } = useParams<{
-    ProjectId: string;
-    ProjectName: string;
-    CompanyName: string;
+  const { UniqueCode } = useParams<{
+    UniqueCode: string;
   }>();
+  const [ProjectId, setProjectId] = useState("");
+  const [ProjectName, setProjectName] = useState("");
+  const [CompanyName, setCompanyName] = useState("");
   const [projectData, setProjectData] = useState<Project>({
     ProjectId: 0,
     ProjectName: "",
@@ -110,19 +111,32 @@ export default function ProjectPage() {
 
   useEffect(() => {
     axios
-      .get("/Project/GET/GetProjectByIdAndName", {
-        params: { ProjectId: ProjectId, ProjectName: ProjectName },
-      })
+      .get("/Project/GET/GetProjectByUniqueCode", { params: { UniqueCode } })
       .then((res) => {
-        setProjectData(res.data);
+        setProjectId(res.data.ProjectId);
+        setProjectName(res.data.ProjectName);
+        setCompanyName(res.data.CompanyName);
+
+        return axios
+          .get("/Project/GET/GetProjectByIdAndName", {
+            params: {
+              ProjectId: res.data.ProjectId,
+              ProjectName: res.data.ProjectName,
+            },
+          })
+          .then((res) => {
+            setProjectData(res.data);
+          });
+      })
+      .then(() => {
+        async function checkPermissions() {
+          setAdminPermission({
+            editProject: await hasPermission("EDIT_PROJECT"),
+          });
+        }
+        checkPermissions();
       });
-    async function checkPermissions() {
-      setAdminPermission({
-        editProject: await hasPermission("EDIT_PROJECT"),
-      });
-    }
-    checkPermissions();
-  }, [ProjectId, ProjectName]);
+  }, [UniqueCode, ProjectId, ProjectName]);
 
   // Aggiorna il cookie ogni volta che cambia la scheda
   useEffect(() => {
@@ -152,15 +166,7 @@ export default function ProjectPage() {
                   as={Link}
                   color="primary"
                   radius="full"
-                  href={
-                    "/projects/" +
-                    CompanyName +
-                    "/" +
-                    ProjectId +
-                    "/" +
-                    ProjectName +
-                    "/edit-project"
-                  }
+                  href={"/projects/" + UniqueCode}
                   isIconOnly
                 >
                   <TuneRoundedIcon />
@@ -262,15 +268,7 @@ export default function ProjectPage() {
                       as={Link}
                       color="primary"
                       radius="full"
-                      href={
-                        "/projects/" +
-                        CompanyName +
-                        "/" +
-                        ProjectId +
-                        "/" +
-                        ProjectName +
-                        "/edit-project"
-                      }
+                      href={"/projects/" + UniqueCode + "/edit-project"}
                       className="hidden sm:flex"
                       isIconOnly
                     >

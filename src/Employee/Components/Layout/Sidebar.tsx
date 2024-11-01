@@ -58,6 +58,7 @@ interface Project {
   ProjectName: string;
   CompanyName: string;
   NotificationCount: number;
+  UniqueCode: string;
 }
 
 const USERDATA_VALUE: Employee = {
@@ -75,6 +76,7 @@ const PROJECT_DATA: Project[] = [
     ProjectName: "",
     CompanyName: "",
     NotificationCount: 0,
+    UniqueCode: "",
   },
 ];
 
@@ -526,14 +528,7 @@ export default function Sidebar() {
                             {projects.map((project: Project) => (
                               <li key={project.ProjectId}>
                                 <a
-                                  href={
-                                    "/projects/" +
-                                    project.CompanyName +
-                                    "/" +
-                                    project.ProjectId +
-                                    "/" +
-                                    project.ProjectName
-                                  }
+                                  href={"/projects/" + project.UniqueCode}
                                   className="group flex gap-x-3 rounded-full p-2 px-4 text-sm font-semibold leading-6 text-gray-700 hover:text-white hover:bg-gray-500"
                                 >
                                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-gray-700 group-hover:text-gray-700">
@@ -753,14 +748,7 @@ export default function Sidebar() {
                     {projects.map((project: Project) => (
                       <li key={project.ProjectId}>
                         <a
-                          href={
-                            "/projects/" +
-                            project.CompanyName +
-                            "/" +
-                            project.ProjectId +
-                            "/" +
-                            project.ProjectName
-                          }
+                          href={"/projects/" + project.UniqueCode}
                           className="group flex gap-x-3 rounded-full p-2 px-4 text-sm font-semibold leading-6 text-gray-700 hover:text-white hover:bg-gray-500"
                         >
                           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-gray-700 group-hover:text-gray-700">

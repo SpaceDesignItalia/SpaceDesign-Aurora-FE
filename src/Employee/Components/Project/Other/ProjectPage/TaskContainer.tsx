@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import LibraryAddRoundedIcon from "@mui/icons-material/LibraryAddRounded";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { Button, Chip, DateValue, cn } from "@nextui-org/react";
+import { Button, Chip, DateValue, cn, modal } from "@nextui-org/react";
 import AddTaskModal from "../ProjectTask/AddTaskModal";
 import TaskCard from "../ProjectTask/TaskCard";
 import { io } from "socket.io-client";
@@ -237,7 +237,7 @@ export default function TaskContainer({
       <AddTaskModal
         isOpen={modalAddData.open}
         isClosed={() => setModalAddData({ ...modalAddData, open: false })}
-        ProjectId={modalAddData.ProjectId}
+        ProjectId={projectId}
       />
 
       <div className="w-full flex justify-end">

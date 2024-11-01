@@ -199,7 +199,8 @@ export default function AddTaskModal({
         FormattedDate: formattedDate,
         FormattedCreationDate: formattedCreationDate,
         TaskData: newTask,
-        TicketId: TicketId, // Associa il task al ticket
+        TicketId: TicketId,
+        ProjectId: ProjectId,
       })
       .then(() => {
         setUpdate(!update);
