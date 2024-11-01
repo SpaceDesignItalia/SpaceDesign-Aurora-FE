@@ -311,12 +311,18 @@ export default function AddTaskModal({
                   color="primary"
                   placeholder="Titolo della Task"
                   value={newTask!.ProjectTaskName}
+                  maxLength={50}
                   onChange={(e) => {
                     setNewTask({
                       ...newTask!,
                       ProjectTaskName: e.target.value,
                     });
                   }}
+                  endContent={
+                    <div className="text-sm">
+                      {newTask?.ProjectTaskName.length}/50
+                    </div>
+                  }
                 />
                 <Button
                   color="primary"

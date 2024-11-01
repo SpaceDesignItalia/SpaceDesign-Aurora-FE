@@ -1,17 +1,17 @@
-import axios from "axios";
-import React, { useState, useRef } from "react";
-import { io } from "socket.io-client";
-import { API_WEBSOCKET_URL } from "../../../../../API/API";
+import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import {
+  Button,
   Modal,
-  ModalHeader,
-  ModalFooter,
   ModalBody,
   ModalContent,
-  Button,
+  ModalFooter,
+  ModalHeader,
 } from "@nextui-org/react";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import FileUploadRoundedIcon from "@mui/icons-material/FileUploadRounded";
+import axios from "axios";
+import React, { useRef, useState } from "react";
+import { io } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../../../API/API";
+import FileCard from "../ProjectFiles/FileCard";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -114,35 +114,31 @@ export default function FileUploaderModal({
             ref={fileInputRef}
             className="hidden"
           />
+
           <div
-            className="flex flex-row gap-2 border-2 border-dashed border-blue-500 p-4 rounded-lg cursor-pointer hover:bg-blue-50"
+            className="rounded-xl bg-white text-gray-500 font-semibold text-base w-full h-52 flex flex-col items-center justify-center cursor-pointer border-2 border-gray-300 border-dashed mx-auto font-[sans-serif]"
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             ref={dropRef}
             onClick={() => fileInputRef.current?.click()} // Add this line
           >
-            <FileUploadRoundedIcon className="text-blue-500" />
-            <p className="text-blue-500">
+            <CloudUploadRoundedIcon />
+            <p className="text-xs font-medium text-gray-400 mt-2">
               Clicca o trascina i file per caricarli
             </p>
           </div>
           {files.length > 0 && (
             <section className="mt-4 text-left">
-              <h4 className="font-bold">File selezionati:</h4>
+              <h4 className="font-semibold">File selezionati</h4>
               <ul className="flex flex-col list-disc mt-3 gap-2">
-                {files.map(({ file }, index) => (
-                  <li key={index} className="flex items-center space-x-2">
-                    <Button
-                      color="danger"
-                      size="sm"
-                      radius="sm"
-                      onClick={() => handleRemoveFile(index)}
-                      isIconOnly
-                    >
-                      <CloseRoundedIcon />
-                    </Button>
-                    <span>{file.name}</span>
-                  </li>
+                {files.map((file, index) => (
+                  <FileCard
+                    file={file}
+                    variant="delete"
+                    DeleteFile={handleRemoveFile}
+                    index={index}
+                    key={index}
+                  />
                 ))}
               </ul>
             </section>

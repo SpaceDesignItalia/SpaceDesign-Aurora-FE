@@ -18,13 +18,15 @@ import AddTaskModal from "../ProjectTask/AddTaskModal"; // Importa il modale per
 interface Ticket {
   ProjectTicketId: number;
   ProjectTicketTitle: string;
-  TicketRequestName: string;
   ProjectTicketDescription: string;
+  ProjectTicketCreationDate: string;
+  ProjectTicketCompletedDate: null;
+  CustomerId: number;
+  ProjectId: number;
+  TicketRequestTypeId: number;
+  TicketRequestName: string;
   TicketStatusId: number;
   TicketStatusName: string;
-  CompanyName: string;
-  ProjectId: number;
-  ProjectName: string;
 }
 
 interface TicketStatus {
@@ -211,6 +213,15 @@ const TicketModal: React.FC<TicketModalProps> = ({
                     )}
                   </Autocomplete>
                 </div>
+                <Button
+                  color="primary"
+                  radius="sm"
+                  onClick={handleAddTask}
+                  startContent={<SaveRounded />}
+                  className="w-1/4"
+                >
+                  Crea Task
+                </Button>
               </ModalBody>
               <ModalFooter className="flex justify-end gap-4 px-8 py-6">
                 <Button
@@ -219,15 +230,15 @@ const TicketModal: React.FC<TicketModalProps> = ({
                   radius="sm"
                   onClick={handleUpdate}
                 >
-                  Salva Modifiche
+                  Annulla
                 </Button>
                 <Button
                   color="primary"
+                  variant="light"
                   radius="sm"
-                  onClick={handleAddTask}
-                  startContent={<SaveRounded />}
+                  onClick={handleUpdate}
                 >
-                  Aggiungi Task
+                  Salva Modifiche
                 </Button>
               </ModalFooter>
             </>

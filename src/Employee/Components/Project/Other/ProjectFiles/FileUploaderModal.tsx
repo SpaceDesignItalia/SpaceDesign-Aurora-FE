@@ -9,22 +9,19 @@ import {
   ModalBody,
   ModalContent,
   Button,
-  Checkbox,
 } from "@nextui-org/react";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import FileUploadRoundedIcon from "@mui/icons-material/FileUploadRounded";
+import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
+import FileCard from "./FileCard";
 
 const socket = io(API_WEBSOCKET_URL);
 
 export default function FileUploaderModal({
   ProjectId,
-  AllowCustomerView,
   isOpen,
   isClosed,
   FolderId,
 }: {
   ProjectId: number;
-  AllowCustomerView: boolean;
   isOpen: boolean;
   isClosed: () => void;
   FolderId: number;
@@ -60,14 +57,6 @@ export default function FileUploaderModal({
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-  };
-
-  const handleCheckboxChange = (index: number) => {
-    setFiles((prevFiles) =>
-      prevFiles.map((file, i) =>
-        i === index ? { ...file, forClient: !file.forClient } : file
-      )
-    );
   };
 
   const handleRemoveFile = (index: number) => {
@@ -107,7 +96,7 @@ export default function FileUploaderModal({
       isOpen={isOpen}
       onOpenChange={isClosed}
       size="2xl"
-      scrollBehavior="inside"
+      scrollBehavior="outside"
       placement="center"
       backdrop="blur"
       hideCloseButton
@@ -128,43 +117,31 @@ export default function FileUploaderModal({
             ref={fileInputRef}
             className="hidden"
           />
+
           <div
-            className="flex flex-row gap-2 border-2 border-dashed border-blue-500 p-4 rounded-lg cursor-pointer hover:bg-blue-50"
+            className="rounded-xl bg-white text-gray-500 font-semibold text-base w-full h-52 flex flex-col items-center justify-center cursor-pointer border-2 border-gray-300 border-dashed mx-auto font-[sans-serif]"
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             ref={dropRef}
             onClick={() => fileInputRef.current?.click()} // Add this line
           >
-            <FileUploadRoundedIcon className="text-blue-500" />
-            <p className="text-blue-500">
+            <CloudUploadRoundedIcon />
+            <p className="text-xs font-medium text-gray-400 mt-2">
               Clicca o trascina i file per caricarli
             </p>
           </div>
           {files.length > 0 && (
             <section className="mt-4 text-left">
-              <h4 className="font-bold">File selezionati:</h4>
+              <h4 className="font-semibold">File selezionati</h4>
               <ul className="flex flex-col list-disc mt-3 gap-2">
-                {files.map(({ file, forClient }, index) => (
-                  <li key={index} className="flex items-center space-x-2">
-                    <Button
-                      color="danger"
-                      size="sm"
-                      radius="sm"
-                      onClick={() => handleRemoveFile(index)}
-                      isIconOnly
-                    >
-                      <CloseRoundedIcon />
-                    </Button>
-                    <span>{file.name}</span>
-                    {AllowCustomerView && (
-                      <Checkbox
-                        checked={forClient}
-                        onChange={() => handleCheckboxChange(index)}
-                      >
-                        Visibile al cliente
-                      </Checkbox>
-                    )}
-                  </li>
+                {files.map((file, index) => (
+                  <FileCard
+                    file={file}
+                    variant="delete"
+                    DeleteFile={handleRemoveFile}
+                    index={index}
+                    key={index}
+                  />
                 ))}
               </ul>
             </section>

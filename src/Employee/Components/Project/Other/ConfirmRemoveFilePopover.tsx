@@ -1,30 +1,24 @@
 // ConfirmDeleteModal.tsx
-import { useState } from "react";
+
 import {
   Button,
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@nextui-org/react";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import { useState } from "react";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 
-interface Role {
-  RoleId: number;
-  RoleName: string;
-  RoleDescription: string;
-  RolePriority: number;
+interface ConfirmDeleteTaskFileModalProps {
+  index: number;
+  DeleteFile: (index: number) => void;
 }
 
-interface ConfirmDeleteRoleModalProps {
-  RoleData: Role;
-  DeleteRole: (PermissionId: Role) => void;
-}
-
-export default function ConfirmDeleteRoleModal({
-  RoleData,
-  DeleteRole,
-}: ConfirmDeleteRoleModalProps) {
+export default function ConfirmRemoveFilePopover({
+  index,
+  DeleteFile,
+}: ConfirmDeleteTaskFileModalProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   return (
     <Popover
@@ -33,13 +27,15 @@ export default function ConfirmDeleteRoleModal({
       size="sm"
       isOpen={isOpen}
       onOpenChange={() => setIsOpen(false)}
+      offset={10}
     >
       <PopoverTrigger>
         <Button
-          variant="light"
           size="sm"
           color="danger"
-          startContent={<DeleteOutlinedIcon />}
+          variant="light"
+          radius="full"
+          startContent={<DeleteRoundedIcon sx={{ fontSize: 17 }} />}
           aria-label="Remove"
           aria-labelledby="Remove"
           isIconOnly
@@ -67,7 +63,8 @@ export default function ConfirmDeleteRoleModal({
               color="danger"
               variant="ghost"
               onClick={() => {
-                DeleteRole(RoleData);
+                DeleteFile(index);
+                setIsOpen(false);
               }}
               radius="sm"
               size="sm"

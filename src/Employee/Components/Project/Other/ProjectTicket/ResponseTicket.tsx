@@ -29,6 +29,11 @@ interface Ticket {
   TicketStatusName: string;
 }
 
+interface ModalData {
+  Ticket: Ticket;
+  open: boolean;
+}
+
 const columns = [
   { name: "Codice Richiesta", uid: "ProjectTicketId" },
   { name: "Titolo", uid: "ProjectTicketTitle" },
@@ -46,8 +51,22 @@ export default function ResponseTicket() {
     direction: "ascending",
   });
   const [page, setPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null); // Selected ticket state
+  const [modalData, setModalData] = useState<ModalData>({
+    Ticket: {
+      ProjectTicketId: 0,
+      ProjectTicketTitle: "",
+      ProjectTicketDescription: "",
+      ProjectTicketCreationDate: "",
+      ProjectTicketCompletedDate: null,
+      CustomerId: 0,
+      ProjectId: 0,
+      TicketRequestTypeId: 0,
+      TicketRequestName: "",
+      TicketStatusId: 0,
+      TicketStatusName: "",
+    },
+    open: false,
+  });
 
   useEffect(() => {
     fetchData();
@@ -71,11 +90,6 @@ export default function ResponseTicket() {
     return tickets.slice(start, end);
   }, [page, tickets, rowsPerPage]);
 
-  const handleOpenModal = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setIsModalOpen(true);
-  };
-
   const renderCell = React.useCallback(
     (ticket: Ticket, columnKey: React.Key) => {
       const cellValue = ticket[columnKey as keyof Ticket];
@@ -88,7 +102,9 @@ export default function ResponseTicket() {
                 color="primary"
                 radius="sm"
                 isIconOnly
-                onClick={() => handleOpenModal(ticket)} // Open modal on click
+                onClick={() =>
+                  setModalData({ ...modalData, open: true, Ticket: ticket })
+                }
               >
                 <OpenInNewRoundedIcon />
               </Button>
@@ -137,47 +153,46 @@ export default function ResponseTicket() {
 
   return (
     <>
-      <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
-        <Table
-          aria-label="Ticket table with custom cells, pagination and sorting"
-          isHeaderSticky
-          isStriped
-          bottomContent={bottomContent}
-          bottomContentPlacement="outside"
-          sortDescriptor={sortDescriptor}
-          topContent={topContent}
-          topContentPlacement="outside"
-          onSortChange={setSortDescriptor}
-          radius="sm"
-        >
-          <TableHeader columns={columns}>
-            {(column) => (
-              <TableColumn
-                key={column.uid}
-                align={column.uid === "actions" ? "center" : "start"}
-              >
-                {column.name}
-              </TableColumn>
-            )}
-          </TableHeader>
-          <TableBody emptyContent={"Nessun ticket trovato!"} items={items}>
-            {(item) => (
-              <TableRow key={item.ProjectTicketId}>
-                {(columnKey) => (
-                  <TableCell>{renderCell(item, columnKey)}</TableCell>
-                )}
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Ticket Modal */}
       <TicketModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        ticket={selectedTicket}
+        isOpen={modalData.open}
+        onClose={() => setModalData({ ...modalData, open: false })}
+        ticket={modalData.Ticket}
       />
+      <Table
+        aria-label="Example table with custom cells, pagination and sorting"
+        isHeaderSticky
+        isStriped
+        bottomContent={bottomContent}
+        bottomContentPlacement="inside"
+        sortDescriptor={sortDescriptor}
+        topContent={topContent}
+        topContentPlacement="inside"
+        onSortChange={setSortDescriptor}
+        radius="lg"
+        classNames={{
+          wrapper: "border rounded-lg shadow-none",
+        }}
+      >
+        <TableHeader columns={columns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody emptyContent={"Nessun ticket trovato!"} items={items}>
+          {(item) => (
+            <TableRow key={item.ProjectTicketId}>
+              {(columnKey) => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </>
   );
 }

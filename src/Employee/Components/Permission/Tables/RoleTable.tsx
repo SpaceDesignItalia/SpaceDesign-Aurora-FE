@@ -1,35 +1,28 @@
-// @ts-nocheck
-import React, { useEffect, useState } from "react";
-import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Input,
-  Button,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  DropdownItem,
-  Pagination,
-  SortDescriptor,
-  Link,
-} from "@nextui-org/react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import AddModeratorRoundedIcon from "@mui/icons-material/AddModeratorRounded";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import {
+  Button,
+  Input,
+  Link,
+  Pagination,
+  SortDescriptor,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from "@nextui-org/react";
 import axios from "axios";
-import ViewRoleModal from "../Other/ViewRoleModal";
+import React, { useEffect, useState } from "react";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import ConfirmDeleteRoleModal from "../Other/ConfirmDeleteRoleModal";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import ViewRoleModal from "../Other/ViewRoleModal";
 
 interface Role {
   RoleId: number;
@@ -90,6 +83,7 @@ export default function RoleTable() {
       RoleId: 0,
       RoleName: "",
       RoleDescription: "",
+      RolePriority: 0,
     },
     open: false,
   });
@@ -128,7 +122,7 @@ export default function RoleTable() {
       "Role Priority",
     ];
 
-    const wrapInQuotes = (value) => {
+    const wrapInQuotes = (value: any) => {
       return typeof value === "string" ? `"${value}"` : value;
     };
 
@@ -352,7 +346,6 @@ export default function RoleTable() {
         topContent={topContent}
         topContentPlacement="inside"
         onSortChange={setSortDescriptor}
-        radius="full"
         classNames={{
           wrapper: "border rounded-lg shadow-none",
         }}
