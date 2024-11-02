@@ -45,7 +45,7 @@ interface Manager {
   StafferFullName: string;
   StafferEmail: string;
   StafferImageUrl: string;
-  RoleName: "CEO";
+  RoleName: string;
 }
 
 interface Banner {
@@ -156,7 +156,6 @@ export default function AddProjectModel() {
       newProjectData.ProjectDescription !== "" &&
       newProjectData.ProjectEndDate !== null &&
       newProjectData.ProjectManagerId !== 0 &&
-      newProjectData.CompanyId !== 0 &&
       newProjectData.ProjectBannerId !== 0
     ) {
       return false;
@@ -244,7 +243,7 @@ export default function AddProjectModel() {
                 htmlFor="last-name"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Banner
+                Banner <span className="text-red-600 font-bold">*</span>
               </label>
               <div className="flex flex-wrap gap-5 mt-3">
                 <RadioGroup
@@ -330,6 +329,7 @@ export default function AddProjectModel() {
                 Project Manager{" "}
                 <span className="text-red-600 font-bold">*</span>
               </label>
+
               <Autocomplete
                 defaultItems={managers}
                 placeholder="Seleziona Project Manager"
@@ -366,7 +366,7 @@ export default function AddProjectModel() {
                 htmlFor="company"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Azienda <span className="text-red-600 font-bold">*</span>
+                Azienda
               </label>
               <Autocomplete
                 defaultItems={companies}
@@ -403,7 +403,7 @@ export default function AddProjectModel() {
         <div className="py-3 text-right">
           <Button
             color="primary"
-            radius="sm"
+            radius="full"
             startContent={!isAddingData && <SaveIcon />}
             isDisabled={checkAllDataCompiled()}
             isLoading={isAddingData}

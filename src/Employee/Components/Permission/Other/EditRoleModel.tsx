@@ -327,7 +327,7 @@ const EditRoleModel: React.FC = () => {
         </div>
         <div className="py-3 text-right">
           <Button
-            color="success"
+            color="primary"
             className="text-white"
             radius="full"
             startContent={!isAddingData && <SaveIcon />}

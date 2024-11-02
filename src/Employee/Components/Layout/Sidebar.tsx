@@ -89,10 +89,12 @@ export default function Sidebar() {
   const { hasPermission } = usePermissions();
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [sales, setSales] = useState<NavigationItem[]>([]);
   const [administration, setAdministration] = useState<NavigationItem[]>([]);
   const [projectManagement, setProjectManagement] = useState<NavigationItem[]>(
     []
   );
+
   const [userData, setUserData] = useState<Employee>(USERDATA_VALUE);
   const [projects, setProjects] = useState<Project[]>(PROJECT_DATA);
   const [notificationUpdate, setNotificationUpdate] = useState(false);
@@ -125,6 +127,18 @@ export default function Sidebar() {
   });
 
   async function fetchPermissions() {
+    setSales([
+      {
+        name: "Lead",
+        href: "/lead",
+        icon: MailOutlineRoundedIcon,
+        requiredCondition: await hasPermission("VIEW_LEAD"),
+        current: isSubRoute({
+          currentUrl,
+          parentRoute: { href: "/lead", subRoutes: [] },
+        }),
+      },
+    ]);
     setAdministration([
       {
         name: "Clienti",
@@ -236,15 +250,6 @@ export default function Sidebar() {
         currentUrl,
         parentRoute: { href: "/", subRoutes: [] },
       }),
-    },
-  ];
-
-  const requests = [
-    {
-      name: "Lead",
-      href: "/lead",
-      icon: MailOutlineRoundedIcon,
-      current: currentUrl === "/lead",
     },
   ];
 
@@ -370,37 +375,40 @@ export default function Sidebar() {
                         </ul>
                       </li>
 
-                      <li>
-                        <div className="text-xs font-semibold leading-6 text-gray-400">
-                          Richieste
-                        </div>
-                        <ul role="list" className="-mx-2 mt-2 space-y-1">
-                          {requests.map((item) => (
-                            <li key={item.name}>
-                              <a
-                                href={item.href}
-                                className={classNames(
-                                  item.current
-                                    ? "bg-primary text-white"
-                                    : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
-                                )}
-                              >
-                                <item.icon
-                                  className={classNames(
-                                    item.current
-                                      ? "text-white-700"
-                                      : "text-white-700 group-hover:text-white",
-                                    "h-6 w-6 shrink-0"
-                                  )}
-                                  aria-hidden="true"
-                                />
-                                {item.name}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
+                      {sales &&
+                        sales.some((sale) => sale.requiredCondition) && (
+                          <li>
+                            <div className="text-xs font-semibold leading-6 text-gray-400">
+                              Vendite
+                            </div>
+                            <ul role="list" className="-mx-2 mt-2 space-y-1">
+                              {sales.map((item) => (
+                                <li key={item.name}>
+                                  <a
+                                    href={item.href}
+                                    className={classNames(
+                                      item.current
+                                        ? "bg-primary text-white"
+                                        : "text-gray-700 hover:text-white hover:bg-gray-500",
+                                      "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                                    )}
+                                  >
+                                    <item.icon
+                                      className={classNames(
+                                        item.current
+                                          ? "text-white-700"
+                                          : "text-white-700 group-hover:text-white",
+                                        "h-6 w-6 shrink-0"
+                                      )}
+                                      aria-hidden="true"
+                                    />
+                                    {item.name}
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          </li>
+                        )}
 
                       <li>
                         <div className="text-xs font-semibold leading-6 text-gray-400">
@@ -594,37 +602,41 @@ export default function Sidebar() {
                   ))}
                 </ul>
               </li>
-              <li>
-                <div className="text-xs font-semibold leading-6 text-gray-400">
-                  Richieste
-                </div>
-                <ul role="list" className="-mx-2 mt-2 space-y-1">
-                  {requests.map((item) => (
-                    <li key={item.name}>
-                      <a
-                        href={item.href}
-                        className={classNames(
-                          item.current
-                            ? "bg-primary text-white"
-                            : "text-gray-700 hover:text-white hover:bg-gray-500",
-                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
-                        )}
-                      >
-                        <item.icon
+
+              {sales && sales.some((sale) => sale.requiredCondition) && (
+                <li>
+                  <div className="text-xs font-semibold leading-6 text-gray-400">
+                    Vendite
+                  </div>
+                  <ul role="list" className="-mx-2 mt-2 space-y-1">
+                    {sales.map((item) => (
+                      <li key={item.name}>
+                        <a
+                          href={item.href}
                           className={classNames(
                             item.current
-                              ? "text-white-700"
-                              : "text-white-700 group-hover:text-white",
-                            "h-6 w-6 shrink-0"
+                              ? "bg-primary text-white"
+                              : "text-gray-700 hover:text-white hover:bg-gray-500",
+                            "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
                           )}
-                          aria-hidden="true"
-                        />
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </li>
+                        >
+                          <item.icon
+                            className={classNames(
+                              item.current
+                                ? "text-white-700"
+                                : "text-white-700 group-hover:text-white",
+                              "h-6 w-6 shrink-0"
+                            )}
+                            aria-hidden="true"
+                          />
+                          {item.name}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              )}
+
               <li>
                 <div className="text-xs font-semibold leading-6 text-gray-400">
                   Comunicazioni
