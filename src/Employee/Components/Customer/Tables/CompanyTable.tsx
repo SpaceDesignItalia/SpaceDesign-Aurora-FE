@@ -1,34 +1,27 @@
-// @ts-nocheck
-import React, { useEffect, useState } from "react";
-import { usePermissions } from "../../Layout/PermissionProvider";
+import AddBusinessRoundedIcon from "@mui/icons-material/AddBusinessRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
+import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Input,
   Button,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  DropdownItem,
+  Input,
+  Link,
   Pagination,
   SortDescriptor,
-  Link,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from "@nextui-org/react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import AddBusinessRoundedIcon from "@mui/icons-material/AddBusinessRounded";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
-import ViewCompanyModal from "../Other/ViewCompanyModal";
+import React, { useEffect, useState } from "react";
+import { usePermissions } from "../../Layout/PermissionProvider";
 import ConfirmDeleteCompanyModal from "../Other/ConfirmDeleteCompanyModal";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import ViewCompanyModal from "../Other/ViewCompanyModal";
 
 interface Company {
   CompanyId: number;
@@ -39,11 +32,6 @@ interface Company {
 }
 
 interface ModalData {
-  Company: Company;
-  open: boolean;
-}
-
-interface ModalDeleteData {
   Company: Company;
   open: boolean;
 }
@@ -101,17 +89,6 @@ export default function CompanyTable() {
     open: false,
   });
 
-  const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
-    Company: {
-      CompanyId: 0,
-      CompanyName: "",
-      CompanyAddress: "",
-      CompanyEmail: "",
-      CompanyPhone: "",
-    },
-    open: false,
-  });
-
   async function SearchCompany() {
     try {
       const response = await axios.get("/Company/GET/SearchCompanyByName", {
@@ -147,7 +124,7 @@ export default function CompanyTable() {
       "Telefono Azienda",
     ];
 
-    const wrapInQuotes = (value) => {
+    const wrapInQuotes = (value: any) => {
       return typeof value === "string" ? `"${value}"` : value;
     };
 
@@ -303,16 +280,6 @@ export default function CompanyTable() {
             </Button>
           </div>
           <div className="flex gap-3">
-            {companies.length > 0 && (
-              <Button
-                color="primary"
-                radius="full"
-                startContent={<FileDownloadOutlinedIcon />}
-                onClick={exportCSV}
-              >
-                Esporta tabella aziende
-              </Button>
-            )}
             {adminCompanyPermission.addCompanyPermission && (
               <>
                 <Button
@@ -345,7 +312,21 @@ export default function CompanyTable() {
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-center items-center">
+      <div className="py-2 px-2 flex justify-between items-center">
+        <div className="w-full">
+          {companies.length > 0 && (
+            <Button
+              color="primary"
+              variant="ghost"
+              radius="full"
+              startContent={<FileDownloadOutlinedIcon />}
+              onClick={exportCSV}
+            >
+              Esporta Tabella
+            </Button>
+          )}
+        </div>
+
         <Pagination
           isCompact
           showControls
@@ -355,7 +336,9 @@ export default function CompanyTable() {
           page={page}
           total={pages || 1}
           onChange={setPage}
+          className="w-full flex justify-center"
         />
+        <div className="w-full"></div>
       </div>
     );
   }, [items.length, page, pages]);
@@ -378,7 +361,6 @@ export default function CompanyTable() {
         topContent={topContent}
         topContentPlacement="inside"
         onSortChange={setSortDescriptor}
-        radius="full"
         classNames={{
           wrapper: "border rounded-lg shadow-none",
         }}

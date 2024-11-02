@@ -13,6 +13,24 @@ import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import axios from "axios";
 import dayjs from "dayjs";
 
+interface Project {
+  ProjectId: number;
+  ProjectName: string;
+  ProjectDescription: string;
+  ProjectCreationDate: Date;
+  ProjectEndDate: Date;
+  CompanyId: number;
+  CompanyName: string;
+  ProjectBannerId: number;
+  ProjectBannerPath: string;
+  StatusName: string;
+  ProjectManagerId: number;
+  ProjectManagerName: string;
+  ProjectManagerEmail: string;
+  RoleName: string;
+  StafferImageUrl: string;
+}
+
 // Funzione per impostare un cookie
 function setCookie(name: string, value: string, days: number): void {
   const expires = new Date();
@@ -52,8 +70,8 @@ const exportCSV = async () => {
     const response = await axios.get("/Project/GET/GetAllProjectsTable");
     const projects = response.data;
 
-    const rows = [];
-    projects.forEach((project) => {
+    const rows: any = [];
+    projects.forEach((project: Project) => {
       rows.push([
         wrapInQuotes(project.ProjectId),
         wrapInQuotes(project.ProjectName),
@@ -69,7 +87,7 @@ const exportCSV = async () => {
       "data:text/csv;charset=utf-8," +
       headers.map(wrapInQuotes).join(",") +
       "\n" +
-      rows.map((row) => row.join(",")).join("\n");
+      rows.map((row: any) => row.join(",")).join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -146,7 +164,7 @@ export default function ProjectDashboard() {
           </div>
         </div>
         <div className="py-6 lg:py-6">
-          <div className="flex flex-row justify-between w-full">
+          <div className="flex flex-col sm:flex-row justify-between w-full">
             <Tabs
               aria-label="Options"
               color="primary"
@@ -171,12 +189,27 @@ export default function ProjectDashboard() {
               <div className="flex flex-row w-full items-center gap-3 justify-end">
                 <Button
                   color="primary"
+                  variant="ghost"
                   radius="full"
                   startContent={<FileDownloadOutlinedIcon />}
+                  className="hidden sm:flex"
                   onClick={exportCSV}
                 >
-                  Esporta tabella progetti
+                  Esporta Tabella
                 </Button>
+                <Button
+                  color="primary"
+                  variant="ghost"
+                  radius="full"
+                  size="sm"
+                  startContent={
+                    <FileDownloadOutlinedIcon sx={{ fontSize: 18 }} />
+                  }
+                  className="flex sm:hidden"
+                  onClick={exportCSV}
+                  isIconOnly
+                />
+
                 <Button
                   as={Link}
                   color="primary"
@@ -192,10 +225,11 @@ export default function ProjectDashboard() {
                   color="primary"
                   radius="full"
                   href="/projects/add-project"
+                  size="sm"
                   className="sm:hidden"
                   isIconOnly
                 >
-                  <CreateNewFolderIcon />
+                  <CreateNewFolderIcon sx={{ fontSize: 18 }} />
                 </Button>
               </div>
             )}

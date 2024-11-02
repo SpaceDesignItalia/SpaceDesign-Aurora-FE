@@ -161,6 +161,29 @@ export default function ProjectTable() {
       const cellValue = project[columnKey as keyof Project];
 
       switch (columnKey) {
+        case "CompanyName":
+          return (
+            <div className="text-sm text-gray-500 hover:text-gray-600">
+              {project.CompanyName !== null
+                ? project.CompanyName
+                : "Senza Azienda"}
+            </div>
+          );
+          return (
+            <div className="flex justify-start">
+              <User
+                name={project.ProjectManagerName}
+                description={project.RoleName}
+                avatarProps={{
+                  isBordered: true,
+                  size: "sm",
+                  src:
+                    project.StafferImageUrl &&
+                    API_URL_IMG + "/profileIcons/" + project.StafferImageUrl,
+                }}
+              />
+            </div>
+          );
         case "ProjectManager":
           return (
             <div className="flex justify-start">

@@ -59,6 +59,7 @@ const AddRoleModel: React.FC = () => {
   const [newRolePermissions, setNewRolePermissions] = useState<
     RolePermission[]
   >([]);
+  const [rolePermissions, setRolePermissions] = useState<number[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
 
@@ -79,6 +80,13 @@ const AddRoleModel: React.FC = () => {
     fetchPermissions();
   }, []);
 
+  useEffect(() => {
+    const permissionIds = newRolePermissions.map(
+      (perm: RolePermission) => perm.PermissionId
+    );
+    setRolePermissions(permissionIds);
+  }, [newRolePermissions]);
+
   const handleRoleChange =
     (key: keyof Role) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setNewRole((prevRole) => ({ ...prevRole, [key]: e.target.value }));
@@ -92,6 +100,20 @@ const AddRoleModel: React.FC = () => {
             (permission) => permission.PermissionId !== parseInt(value)
           )
     );
+  };
+
+  const handleCheckboxAllChange = () => {
+    if (newRolePermissions.length === permissions.length) {
+      // Deseleziona tutti se attualmente tutti sono selezionati
+      setNewRolePermissions([]);
+    } else {
+      // Seleziona tutti
+      setNewRolePermissions(
+        permissions.map((permission) => ({
+          PermissionId: Number(permission.PermissionId),
+        }))
+      );
+    }
   };
 
   const checkAllDataCompiled = () => {
@@ -260,6 +282,13 @@ const AddRoleModel: React.FC = () => {
                 Permessi associati{" "}
                 <span className="text-red-600 font-bold">*</span>
               </label>
+              <Checkbox
+                isSelected={newRolePermissions.length === permissions.length}
+                onChange={() => handleCheckboxAllChange()}
+                radius="full"
+              >
+                Seleziona tutti i permessi
+              </Checkbox>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-0 justify-between mt-3">
                 {permissionGroup.map((group) => {
                   const groupPermissions = permissions.filter(
@@ -276,11 +305,15 @@ const AddRoleModel: React.FC = () => {
                       radius="full"
                       label={group.GroupName}
                       key={group.GroupName}
+                      value={rolePermissions.map(String)}
                     >
                       {groupPermissions.map((permission) => (
                         <Checkbox
                           key={permission.PermissionId}
                           value={String(permission.PermissionId)}
+                          isSelected={newRolePermissions.some(
+                            (p) => p.PermissionId === permission.PermissionId
+                          )}
                           onChange={(e) =>
                             handleCheckboxChange(
                               e.target.value,
