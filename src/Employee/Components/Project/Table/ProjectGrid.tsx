@@ -48,7 +48,7 @@ export default function ProjectGrid() {
           placeholder="Cerca per nome progetto..."
         />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      <div className="grid lg:grid-cols-1 xl:grid-cols-2  2xl:grid-cols-3 gap-5">
         {projects.length > 0 &&
           projects.map((project) => {
             return (

@@ -124,7 +124,7 @@ export default function EmployeeTable() {
       "Ruolo",
     ];
 
-    const wrapInQuotes = (value) => {
+    const wrapInQuotes = (value: any) => {
       return typeof value === "string" ? `"${value}"` : value;
     };
 
@@ -308,14 +308,6 @@ export default function EmployeeTable() {
             {adminEmployeePermission.addEmployeePermission && (
               <>
                 <Button
-                  color="primary"
-                  radius="full"
-                  startContent={<FileDownloadOutlinedIcon />}
-                  onClick={exportCSV}
-                >
-                  Esporta tabella dipendenti
-                </Button>
-                <Button
                   as={Link}
                   href="./employee/add-employee"
                   color="primary"
@@ -346,7 +338,21 @@ export default function EmployeeTable() {
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-center items-center">
+      <div className="py-2 px-2 flex justify-between items-center">
+        <div className="w-full">
+          {employees.length > 0 && (
+            <Button
+              color="primary"
+              variant="ghost"
+              radius="full"
+              startContent={<FileDownloadOutlinedIcon />}
+              onClick={exportCSV}
+            >
+              Esporta Tabella
+            </Button>
+          )}
+        </div>
+
         <Pagination
           isCompact
           showControls
@@ -356,7 +362,9 @@ export default function EmployeeTable() {
           page={page}
           total={pages || 1}
           onChange={setPage}
+          className="w-full flex justify-center"
         />
+        <div className="w-full"></div>
       </div>
     );
   }, [items.length, page, pages]);

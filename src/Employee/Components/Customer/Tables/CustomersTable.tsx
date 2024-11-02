@@ -332,16 +332,6 @@ export default function CustomersTable() {
             </Button>
           </div>
           <div className="flex gap-3">
-            {customers.length > 0 && (
-              <Button
-                color="primary"
-                radius="full"
-                startContent={<FileDownloadOutlinedIcon />}
-                onClick={exportCSV}
-              >
-                Esporta tabella clienti
-              </Button>
-            )}
             {adminCustomerPermission.addCustomerPermission && (
               <>
                 <Button
@@ -374,7 +364,21 @@ export default function CustomersTable() {
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-center items-center">
+      <div className="py-2 px-2 flex justify-between items-center">
+        <div className="w-full">
+          {customers.length > 0 && (
+            <Button
+              color="primary"
+              variant="ghost"
+              radius="full"
+              startContent={<FileDownloadOutlinedIcon />}
+              onClick={exportCSV}
+            >
+              Esporta Tabella
+            </Button>
+          )}
+        </div>
+
         <Pagination
           isCompact
           showControls
@@ -384,7 +388,9 @@ export default function CustomersTable() {
           page={page}
           total={pages || 1}
           onChange={setPage}
+          className="w-full flex justify-center"
         />
+        <div className="w-full"></div>
       </div>
     );
   }, [items.length, page, pages]);

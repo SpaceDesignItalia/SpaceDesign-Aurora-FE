@@ -113,7 +113,7 @@ export default function TableCard({
       <a
         href={"/projects/" + UniqueCode}
         key={project.ProjectId}
-        className="overflow-hidden rounded-xl border border-gray-200 list-none"
+        className="overflow-hidden rounded-xl border border-gray-200 list-none shadow-lg"
       >
         <div className="flex items-center justify-between gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
           <div className="flex flex-row gap-5">
@@ -128,13 +128,15 @@ export default function TableCard({
               alt={String(project.CompanyId)}
               isBordered
             />
-            <div className="flex flex-col">
+            <div className="flex flex-col justify-center">
               <div className="text-sm font-medium leading-6 text-gray-900">
                 {project.ProjectName}
               </div>
-              <div className="text-sm font-medium leading-6 text-gray-500">
-                {company?.CompanyName || ""}
-              </div>
+              {company?.CompanyName && (
+                <div className="text-sm font-medium leading-6 text-gray-500">
+                  {company?.CompanyName}
+                </div>
+              )}
             </div>
           </div>
         </div>

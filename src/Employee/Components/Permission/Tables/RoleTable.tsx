@@ -271,17 +271,6 @@ export default function RoleTable() {
           <div className="flex gap-3">
             {adminRolePermission.addRolePermission && (
               <>
-                {roles.length > 0 && (
-                  <Button
-                    color="primary"
-                    radius="full"
-                    startContent={<FileDownloadOutlinedIcon />}
-                    onClick={exportCSV}
-                  >
-                    Esporta tabella ruoli
-                  </Button>
-                )}
-
                 <Button
                   as={Link}
                   href="./permission/add-role"
@@ -313,7 +302,20 @@ export default function RoleTable() {
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-center items-center">
+      <div className="py-2 px-2 flex justify-between items-center">
+        <div className="w-full">
+          {roles.length > 0 && (
+            <Button
+              color="primary"
+              variant="ghost"
+              radius="full"
+              startContent={<FileDownloadOutlinedIcon />}
+              onClick={exportCSV}
+            >
+              Esporta Tabella
+            </Button>
+          )}
+        </div>
         <Pagination
           isCompact
           showControls
@@ -323,7 +325,9 @@ export default function RoleTable() {
           page={page}
           total={pages || 1}
           onChange={setPage}
+          className="w-full flex justify-center"
         />
+        <div className="w-full"></div>
       </div>
     );
   }, [items.length, page, pages]);

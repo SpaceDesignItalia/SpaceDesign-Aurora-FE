@@ -50,7 +50,7 @@ interface AlertData {
   isOpen: boolean;
   alertTitle: string;
   alertDescription: string;
-  alertColor: string;
+  alertColor: "green" | "red" | "yellow";
 }
 
 export default function EditProjectModel() {
@@ -87,7 +87,7 @@ export default function EditProjectModel() {
     isOpen: false,
     alertTitle: "",
     alertDescription: "",
-    alertColor: "",
+    alertColor: "red",
   });
 
   useEffect(() => {
@@ -267,218 +267,215 @@ export default function EditProjectModel() {
     <>
       <StatusAlert AlertData={alertData} />
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
-        <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
-          <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
-            <div>
-              <h3 className="text-base font-semibold leading-6 text-gray-900">
-                Progetto
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                In questo pannello potrai modificare un progetto esistente nel
-                database.
-              </p>
-            </div>
+        <div className="space-y-6 bg-white">
+          <div>
+            <h3 className="text-base font-semibold leading-6 text-gray-900">
+              Progetto
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              In questo pannello potrai modificare un progetto esistente nel
+              database.
+            </p>
+          </div>
 
-            <div className="grid grid-cols-6 gap-6">
-              <div className="col-span-6">
-                <label
-                  htmlFor="project-name"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Nome progetto
-                </label>
-                <Input
+          <div className="grid grid-cols-6 gap-6">
+            <div className="col-span-6">
+              <label
+                htmlFor="project-name"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Nome progetto
+              </label>
+              <Input
+                variant="bordered"
+                type="text"
+                radius="full"
+                value={newProjectData.ProjectName}
+                onChange={handleProjectNameChange}
+                fullWidth
+              />
+            </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="project-end-date"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Inizio Progetto
+              </label>
+              <I18nProvider locale="it-GB">
+                <DatePicker
                   variant="bordered"
-                  type="text"
-                  radius="sm"
-                  value={newProjectData.ProjectName}
-                  onChange={handleProjectNameChange}
-                  fullWidth
+                  radius="full"
+                  value={newProjectData.ProjectCreationDate}
+                  onChange={handleProjectCreationDateChange}
                 />
-              </div>
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="project-end-date"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Inizio Progetto
-                </label>
-                <I18nProvider locale="it-GB">
-                  <DatePicker
-                    variant="bordered"
-                    radius="sm"
-                    value={newProjectData.ProjectCreationDate}
-                    onChange={handleProjectCreationDateChange}
-                  />
-                </I18nProvider>
-              </div>
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="project-end-date"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Fine Progetto
-                </label>
-                <I18nProvider locale="it-GB">
-                  <DatePicker
-                    variant="bordered"
-                    radius="sm"
-                    value={newProjectData.ProjectEndDate}
-                    onChange={handleProjectEndDateChange}
-                  />
-                </I18nProvider>
-              </div>
-              <div className="col-span-6 sm:col-span-6">
-                <label
-                  htmlFor="project-description"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Descrizione
-                </label>
-                <Textarea
+              </I18nProvider>
+            </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="project-end-date"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Fine Progetto
+              </label>
+              <I18nProvider locale="it-GB">
+                <DatePicker
                   variant="bordered"
-                  radius="sm"
-                  value={newProjectData.ProjectDescription}
-                  onChange={handleProjectDescriptionChange}
-                  fullWidth
+                  radius="full"
+                  value={newProjectData.ProjectEndDate}
+                  onChange={handleProjectEndDateChange}
                 />
-              </div>
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="project-manager"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Project Manager
-                </label>
-                <Autocomplete
-                  defaultItems={managers}
-                  placeholder="Seleziona Project Manager"
-                  onSelectionChange={handleProjectProjectManagerIdChange}
-                  selectedKey={
-                    newProjectData.ProjectManagerId &&
-                    newProjectData.ProjectManagerId.toString()
-                  }
-                  variant="bordered"
-                  radius="sm"
-                  aria-label="manager"
-                  fullWidth
-                >
-                  {(manager) => (
-                    <AutocompleteItem
-                      key={manager.StafferId}
-                      textValue={manager.StafferFullName}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex gap-2 items-center">
-                          <div className="flex flex-col">
-                            <span className="text-small">
-                              {manager.StafferFullName}{" "}
-                              <Chip
-                                color="primary"
-                                size="sm"
-                                radius="sm"
-                                variant="flat"
-                              >
-                                {manager.RoleName}
-                              </Chip>
-                            </span>
-                            <span className="text-tiny text-default-400">
-                              {manager.StafferEmail}
-                            </span>
-                          </div>
+              </I18nProvider>
+            </div>
+            <div className="col-span-6 sm:col-span-6">
+              <label
+                htmlFor="project-description"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Descrizione
+              </label>
+              <Textarea
+                variant="bordered"
+                radius="full"
+                value={newProjectData.ProjectDescription}
+                onChange={handleProjectDescriptionChange}
+                fullWidth
+              />
+            </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="project-manager"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Project Manager
+              </label>
+              <Autocomplete
+                defaultItems={managers}
+                placeholder="Seleziona Project Manager"
+                onSelectionChange={handleProjectProjectManagerIdChange}
+                selectedKey={
+                  newProjectData.ProjectManagerId &&
+                  newProjectData.ProjectManagerId.toString()
+                }
+                variant="bordered"
+                radius="full"
+                aria-label="manager"
+                fullWidth
+              >
+                {(manager) => (
+                  <AutocompleteItem
+                    key={manager.StafferId}
+                    textValue={manager.StafferFullName}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="flex gap-2 items-center">
+                        <div className="flex flex-col">
+                          <span className="text-small">
+                            {manager.StafferFullName}{" "}
+                            <Chip
+                              color="primary"
+                              size="sm"
+                              radius="sm"
+                              variant="flat"
+                            >
+                              {manager.RoleName}
+                            </Chip>
+                          </span>
+                          <span className="text-tiny text-default-400">
+                            {manager.StafferEmail}
+                          </span>
                         </div>
                       </div>
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
-              </div>
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="company"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Azienda
-                </label>
-                <Autocomplete
-                  defaultItems={companies}
-                  placeholder="Seleziona azienda"
-                  onSelectionChange={handleProjectCompanyIdChange}
-                  selectedKey={
-                    newProjectData.CompanyId &&
-                    newProjectData.CompanyId.toString()
-                  }
-                  variant="bordered"
-                  radius="sm"
-                  aria-label="company"
-                  fullWidth
-                >
-                  {(company) => (
-                    <AutocompleteItem
-                      key={company.CompanyId}
-                      textValue={company.CompanyName}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex gap-2 items-center">
-                          <div className="flex flex-col">
-                            <span className="text-small">
-                              {company.CompanyName}
-                            </span>
-                            <span className="text-tiny text-default-400">
-                              {company.CompanyAddress}
-                            </span>
-                          </div>
+                    </div>
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
+            </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="company"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Azienda
+              </label>
+              <Autocomplete
+                defaultItems={companies}
+                placeholder="Seleziona azienda"
+                onSelectionChange={handleProjectCompanyIdChange}
+                selectedKey={
+                  newProjectData.CompanyId &&
+                  newProjectData.CompanyId.toString()
+                }
+                variant="bordered"
+                radius="full"
+                aria-label="company"
+                fullWidth
+              >
+                {(company) => (
+                  <AutocompleteItem
+                    key={company.CompanyId}
+                    textValue={company.CompanyName}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="flex gap-2 items-center">
+                        <div className="flex flex-col">
+                          <span className="text-small">
+                            {company.CompanyName}
+                          </span>
+                          <span className="text-tiny text-default-400">
+                            {company.CompanyAddress}
+                          </span>
                         </div>
                       </div>
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
-              </div>
-              <div className="col-span-6 sm:col-span-3">
-                <label
-                  htmlFor="company"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Stato progetto
-                </label>
+                    </div>
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
+            </div>
+            <div className="col-span-6 sm:col-span-3">
+              <label
+                htmlFor="company"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Stato progetto
+              </label>
 
-                <Autocomplete
-                  defaultItems={statusList}
-                  placeholder="Seleziona stato"
-                  onSelectionChange={handleProjectStatusChange}
-                  selectedKey={
-                    newProjectData.StatusId &&
-                    newProjectData.StatusId.toString()
-                  }
-                  variant="bordered"
-                  radius="sm"
-                  aria-label="status"
-                  fullWidth
-                >
-                  {(status) => (
-                    <AutocompleteItem
-                      key={status.StatusId}
-                      value={status.StatusId}
-                    >
-                      {status.StatusName}
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
-              </div>
+              <Autocomplete
+                defaultItems={statusList}
+                placeholder="Seleziona stato"
+                onSelectionChange={handleProjectStatusChange}
+                selectedKey={
+                  newProjectData.StatusId && newProjectData.StatusId.toString()
+                }
+                variant="bordered"
+                radius="full"
+                aria-label="status"
+                fullWidth
+              >
+                {(status) => (
+                  <AutocompleteItem
+                    key={status.StatusId}
+                    value={status.StatusId}
+                  >
+                    {status.StatusName}
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
             </div>
           </div>
-          <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-            <Button
-              color="success"
-              className="text-white"
-              radius="sm"
-              startContent={!isAddingData && <SaveIcon />}
-              isDisabled={checkAllDataCompiled()}
-              isLoading={isAddingData}
-              onClick={handleUpdateProject}
-            >
-              {isAddingData ? "Salvando il progetto..." : "Salva progetto"}
-            </Button>
-          </div>
+        </div>
+        <div className="py-3 text-right">
+          <Button
+            color="primary"
+            className="text-white"
+            radius="full"
+            startContent={!isAddingData && <SaveIcon />}
+            isDisabled={checkAllDataCompiled()}
+            isLoading={isAddingData}
+            onClick={handleUpdateProject}
+          >
+            {isAddingData ? "Salvando il progetto..." : "Salva progetto"}
+          </Button>
         </div>
       </div>
     </>

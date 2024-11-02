@@ -1,36 +1,29 @@
-// @ts-nocheck
-import React, { useEffect, useState } from "react";
+import AddModeratorRoundedIcon from "@mui/icons-material/AddModeratorRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import LocalPoliceRoundedIcon from "@mui/icons-material/LocalPoliceRounded";
+import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
+import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Input,
   Button,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  DropdownItem,
+  Input,
+  Link,
   Pagination,
   SortDescriptor,
-  Link,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from "@nextui-org/react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import AddModeratorRoundedIcon from "@mui/icons-material/AddModeratorRounded";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import LocalPoliceRoundedIcon from "@mui/icons-material/LocalPoliceRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import axios from "axios";
-import ViewPermissionModal from "../Other/ViewPermissionModal";
+import React, { useEffect, useState } from "react";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import ConfirmDeletePermissionModal from "../Other/ConfirmDeletePermissionModal";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import ViewPermissionModal from "../Other/ViewPermissionModal";
 
 interface Permission {
   PermissionId: number;
@@ -63,11 +56,6 @@ interface ModalData {
   open: boolean;
 }
 
-interface ModalDeleteData {
-  Permission: PermissionDelete;
-  open: boolean;
-}
-
 const columns = [
   { name: "Permesso", uid: "PermissionName" },
   { name: "Descrizione", uid: "PermissionDescription" },
@@ -87,14 +75,6 @@ export default function PermissionTable() {
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
-  });
-  const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
-    Permission: {
-      PermissionId: 0,
-      PermissionName: "",
-      PermissionDescription: "",
-    },
-    open: false,
   });
 
   const { hasPermission } = usePermissions();
@@ -145,7 +125,7 @@ export default function PermissionTable() {
     }
   }
 
-  function DeletePermission(PermissionData) {
+  function DeletePermission(PermissionData: PermissionDelete) {
     axios
       .delete("/Permission/DELETE/DeletePermission", {
         params: { PermissionId: PermissionData.PermissionId },
@@ -181,7 +161,7 @@ export default function PermissionTable() {
       wrapInQuotes(permission.PermissionId),
       wrapInQuotes(permission.PermissionName),
       wrapInQuotes(permission.PermissionDescription),
-      wrapInQuotes(permission.GroupName),
+      wrapInQuotes(permission.PermissionGroup.PermissionGroupName),
     ]);
 
     console.log(rows);
@@ -213,15 +193,15 @@ export default function PermissionTable() {
 
   const renderCell = React.useCallback(
     (permission: Permission, columnKey: React.Key) => {
-      const cellValue = permission[columnKey as keyof Permission];
-
       switch (columnKey) {
         case "PermissionName":
-          return <p>{cellValue}</p>;
+          return <p>{permission.PermissionName}</p>;
         case "PermissionDescription":
           return (
             <div className="flex flex-col">
-              <p className="text-bold text-small">{cellValue}</p>
+              <p className="text-bold text-small">
+                {permission.PermissionDescription}
+              </p>
             </div>
           );
         case "actions":
@@ -323,16 +303,6 @@ export default function PermissionTable() {
           <div className="flex gap-3">
             {adminPermission.addPermission && (
               <>
-                {permissions.length > 0 && (
-                  <Button
-                    color="primary"
-                    radius="full"
-                    startContent={<FileDownloadOutlinedIcon />}
-                    onClick={exportCSV}
-                  >
-                    Esporta tabella permessi
-                  </Button>
-                )}
                 <Button
                   as={Link}
                   href="./permission/add-permission"
@@ -364,7 +334,20 @@ export default function PermissionTable() {
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-center items-center">
+      <div className="flex justify-between items-center">
+        <div className="w-full">
+          {permissions.length > 0 && (
+            <Button
+              color="primary"
+              variant="ghost"
+              radius="full"
+              startContent={<FileDownloadOutlinedIcon />}
+              onClick={exportCSV}
+            >
+              Esporta Tabella
+            </Button>
+          )}
+        </div>
         <Pagination
           isCompact
           showControls
@@ -374,7 +357,9 @@ export default function PermissionTable() {
           page={page}
           total={pages || 1}
           onChange={setPage}
+          className="w-full flex justify-center"
         />
+        <div className="w-full"></div>
       </div>
     );
   }, [items.length, page, pages]);
@@ -397,7 +382,9 @@ export default function PermissionTable() {
         topContent={topContent}
         topContentPlacement="inside"
         onSortChange={setSortDescriptor}
-        radius="full"
+        classNames={{
+          wrapper: "border rounded-lg shadow-none",
+        }}
       >
         <TableHeader columns={columns}>
           {(column) => (
