@@ -18,7 +18,7 @@ interface Customer {
 
 interface ConfirmDeleteCustomerModalProps {
   CustomerData: Customer;
-  DeleteCustomer: (CustomerData: Customer) => void;
+  DeleteCustomer: (CustomerId: Number) => void;
 }
 
 export default function ConfirmDeleteCustomerModal({
@@ -67,7 +67,7 @@ export default function ConfirmDeleteCustomerModal({
               color="danger"
               variant="ghost"
               onClick={() => {
-                DeleteCustomer(CustomerData);
+                DeleteCustomer(CustomerData.CustomerId);
               }}
               radius="sm"
               size="sm"

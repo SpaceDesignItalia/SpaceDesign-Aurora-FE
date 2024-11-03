@@ -29,10 +29,19 @@ interface Company {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
 }
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
 
 export default function EditCustomerModel() {
   const { CustomerId } = useParams();
@@ -54,12 +63,7 @@ export default function EditCustomerModel() {
   });
   const [company, setCompany] = useState<Company[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "red",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   useEffect(() => {
     axios
@@ -114,7 +118,8 @@ export default function EditCustomerModel() {
       newCustomerData.CustomerSurname !== initialCustomerData.CustomerSurname ||
       newCustomerData.CustomerEmail !== initialCustomerData.CustomerEmail ||
       newCustomerData.CustomerPhone !== initialCustomerData.CustomerPhone ||
-      newCustomerData.CompanyId !== initialCustomerData.CompanyId
+      (newCustomerData.CompanyId !== initialCustomerData.CompanyId &&
+        newCustomerData.CompanyId !== null)
     ) {
       return false;
     }
@@ -133,6 +138,7 @@ export default function EditCustomerModel() {
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
           alertDescription: "Il cliente è stato modificato con successo.",
           alertColor: "green",
@@ -142,21 +148,32 @@ export default function EditCustomerModel() {
         }, 2000);
         console.log("Successo:", res.data);
       }
-      // Esegui altre azioni dopo la creazione dell'azienda, se necessario
     } catch (error) {
-      setAlertData({
-        isOpen: true,
-        alertTitle: "Errore durante l'operazione",
-        alertDescription:
-          "Si è verificato un errore durante la modifica del cliente. Per favore, riprova più tardi.",
-        alertColor: "red",
-      });
-
-      setTimeout(() => {
-        window.location.href = "/administration/customer";
-      }, 2000);
-      console.error("Errore durante l'aggiornamento del cliente:", error);
-      // Gestisci l'errore in modo appropriato, ad esempio mostrando un messaggio all'utente
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 409) {
+          // Handle 409 Conflict specifically
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Errore di conflitto",
+            alertDescription:
+              "L'email inserita è già in uso da un altro cliente.",
+            alertColor: "yellow",
+          });
+        } else {
+          // Handle other errors
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Errore durante l'operazione",
+            alertDescription:
+              "Si è verificato un errore durante la modifica del cliente. Per favore, riprova più tardi.",
+            alertColor: "red",
+          });
+        }
+      }
+    } finally {
+      setIsAddingData(false);
     }
   }
 
@@ -246,7 +263,7 @@ export default function EditCustomerModel() {
                 />
               </div>
 
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
                   htmlFor="company"
                   className="block text-sm font-medium leading-6 text-gray-900"

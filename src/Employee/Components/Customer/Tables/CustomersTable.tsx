@@ -30,6 +30,7 @@ import ViewCustomerModal from "../Other/ViewCustomerModal";
 import ConfirmDeleteCustomerModal from "../Other/ConfirmDeleteCustomerModal";
 import { Edit } from "@mui/icons-material";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import StatusAlert from "../../Layout/StatusAlert";
 
 interface Customer {
   CustomerId: number;
@@ -47,6 +48,22 @@ interface ModalDeleteData {
   Customer: Customer;
   open: boolean;
 }
+
+interface AlertData {
+  isOpen: boolean;
+  onClose: () => void;
+  alertTitle: string;
+  alertDescription: string;
+  alertColor: "green" | "red" | "yellow";
+}
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
 
 const columns = [
   { name: "Nome Cliente", uid: "CustomerFullName" },
@@ -69,6 +86,7 @@ export default function CustomersTable() {
     column: "age",
     direction: "ascending",
   });
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
   const { hasPermission } = usePermissions();
 
   useEffect(() => {
@@ -121,18 +139,32 @@ export default function CustomersTable() {
     }
   }
 
-  async function DeleteCustomer(CustomerData: any) {
+  async function DeleteCustomer(CustomerId: Number) {
     try {
       const res = await axios.delete("/Customer/DELETE/DeleteCustomer", {
-        params: { CustomerData },
+        params: { CustomerId: CustomerId },
       });
 
       if (res.status === 200) {
-        fetchData();
-        window.location.reload();
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Successo",
+          alertDescription: "Cliente eliminato con successo!",
+          alertColor: "green",
+        });
+        fetchData(); // Re-fetch data after deletion
       }
     } catch (error) {
       console.error("Errore nella cancellazione del cliente:", error);
+      setAlertData({
+        isOpen: true,
+        onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+        alertTitle: "Errore",
+        alertDescription:
+          "Si è verificato un errore durante la cancellazione del cliente. Riprova più tardi.",
+        alertColor: "red",
+      });
     }
   }
 
@@ -270,7 +302,7 @@ export default function CustomersTable() {
 
               {adminCustomerPermission.deleteCustomerPermission ? (
                 <ConfirmDeleteCustomerModal
-                  CustomerData={modalDeleteData.Customer}
+                  CustomerData={customer}
                   DeleteCustomer={DeleteCustomer}
                 />
               ) : null}
@@ -397,6 +429,8 @@ export default function CustomersTable() {
 
   return (
     <div className=" bg-white">
+      <StatusAlert AlertData={alertData} />
+
       <ViewCustomerModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
