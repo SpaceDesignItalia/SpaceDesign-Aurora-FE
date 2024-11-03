@@ -260,7 +260,7 @@ export default function EditCustomerModel() {
                   fullWidth
                 />
               </div>
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
                   htmlFor="company"
                   className="block text-sm font-medium leading-6 text-gray-900"

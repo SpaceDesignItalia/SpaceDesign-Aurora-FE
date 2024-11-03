@@ -25,11 +25,11 @@ interface Role {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
 }
-
 const initialEmployeeData: Employee = {
   EmployeeName: "",
   EmployeeSurname: "",
@@ -38,8 +38,9 @@ const initialEmployeeData: Employee = {
   EmployeePassword: "",
 };
 
-const initialAlertData: AlertData = {
+const INITIAL_ALERT_DATA: AlertData = {
   isOpen: false,
+  onClose: () => {},
   alertTitle: "",
   alertDescription: "",
   alertColor: "red",
@@ -51,7 +52,7 @@ export default function AddEmployeeModel() {
   const [selectedRole, setSelectedRole] = useState<number>(0);
   const [roles, setRoles] = useState<Role[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   useEffect(() => {
     axios
@@ -80,7 +81,6 @@ export default function AddEmployeeModel() {
       employeeData.EmployeeName &&
       employeeData.EmployeeSurname &&
       employeeData.EmployeeEmail &&
-      employeeData.EmployeePhone &&
       selectedRole !== 0
     );
   };
@@ -107,6 +107,7 @@ export default function AddEmployeeModel() {
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
           alertDescription: "Il dipendente è stato aggiunto con successo.",
           alertColor: "green",
@@ -116,16 +117,38 @@ export default function AddEmployeeModel() {
         }, 2000);
       }
     } catch (error) {
-      setAlertData({
-        isOpen: true,
-        alertTitle: "Errore durante l'operazione",
-        alertDescription:
-          "Si è verificato un errore durante l'aggiunta del dipendente. Per favore, riprova più tardi.",
-        alertColor: "red",
-      });
-      setTimeout(() => {
-        window.location.href = "/administration/employee";
-      }, 2000);
+      console.error("Errore durante l'aggiunta del dipendente:", error);
+      // Check if error is an Axios error
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 409) {
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Conflitto durante l'operazione",
+            alertDescription: "Un dipendente con la stessa email esiste già.",
+            alertColor: "yellow",
+          });
+        } else {
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Errore durante l'operazione",
+            alertDescription:
+              "Si è verificato un errore durante l'aggiunta del dipendente. Per favore, riprova più tardi.",
+            alertColor: "red",
+          });
+        }
+      } else {
+        // Handle non-Axios errors
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Errore durante l'operazione",
+          alertDescription:
+            "Si è verificato un errore imprevisto. Riprova più tardi.",
+          alertColor: "red",
+        });
+      }
     } finally {
       setIsAddingData(false);
     }
@@ -225,7 +248,7 @@ export default function AddEmployeeModel() {
                   fullWidth
                 />
               </div>
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
                   htmlFor="role"
                   className="block text-sm font-medium leading-6 text-gray-900"
