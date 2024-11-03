@@ -85,28 +85,31 @@ const AddCompanyModel: React.FC = () => {
         }, 2000);
       }
     } catch (error) {
-      // Controllo dell'errore specifico 409 (azienda con lo stesso nome)
-      if (error.response && error.response.status === 409) {
-        setAlertData({
-          isOpen: true,
-          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
-          alertTitle: "Nome azienda duplicato",
-          alertDescription:
-            "Esiste già un'azienda con questo nome. Per favore, usa un nome differente.",
-          alertColor: "yellow",
-        });
-      } else {
-        // Messaggio di errore generico in caso di altri problemi con la richiesta
-        setAlertData({
-          isOpen: true,
-          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
-          alertTitle: "Errore durante l'operazione",
-          alertDescription:
-            "Si è verificato un errore durante l'aggiunta dell'azienda. Per favore, riprova più tardi.",
-          alertColor: "red",
-        });
+      console.log(error);
+      if (axios.isAxiosError(error)) {
+        // Controllo dell'errore specifico 409 (azienda con lo stesso nome)
+        if (error.response?.status === 409) {
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Conflitto durante l'operazione",
+            alertDescription:
+              "Esiste già un'azienda con questo nome. Per favore, usa un nome differente.",
+            alertColor: "yellow",
+          });
+        } else {
+          // Messaggio di errore generico in caso di altri problemi con la richiesta
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Errore durante l'operazione",
+            alertDescription:
+              "Si è verificato un errore durante l'aggiunta dell'azienda. Per favore, riprova più tardi.",
+            alertColor: "red",
+          });
+        }
+        console.error("Errore durante la creazione dell'azienda:", error);
       }
-      console.error("Errore durante la creazione dell'azienda:", error);
     } finally {
       setIsAddingData(false); // Reimposta lo stato di caricamento su false
     }

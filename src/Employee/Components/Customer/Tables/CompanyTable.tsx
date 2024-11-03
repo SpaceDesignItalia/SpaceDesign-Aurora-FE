@@ -22,6 +22,7 @@ import React, { useEffect, useState } from "react";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import ConfirmDeleteCompanyModal from "../Other/ConfirmDeleteCompanyModal";
 import ViewCompanyModal from "../Other/ViewCompanyModal";
+import StatusAlert from "../../Layout/StatusAlert";
 
 interface Company {
   CompanyId: number;
@@ -31,10 +32,26 @@ interface Company {
   CompanyPhone: string;
 }
 
+interface AlertData {
+  isOpen: boolean;
+  onClose: () => void;
+  alertTitle: string;
+  alertDescription: string;
+  alertColor: "green" | "red" | "yellow";
+}
+
 interface ModalData {
   Company: Company;
   open: boolean;
 }
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
 
 const columns = [
   { name: "Nome azienda", uid: "CompanyName" },
@@ -47,6 +64,7 @@ const columns = [
 export default function CompanyTable() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [adminCompanyPermission, setAdminCompanyPermission] = useState({
     addCompanyPermission: false,
@@ -100,18 +118,32 @@ export default function CompanyTable() {
     }
   }
 
-  async function DeleteCompany(CompanyData: any) {
+  async function DeleteCompany(CompanyData: Company) {
     try {
       const res = await axios.delete("/Company/DELETE/DeleteCompany", {
-        params: { CompanyData },
+        params: { CompanyId: CompanyData.CompanyId }, // Adjusted to send the CompanyId instead of CompanyData directly
       });
 
       if (res.status === 200) {
-        fetchData();
-        window.location.reload();
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData({ ...alertData, isOpen: false }),
+          alertTitle: "Successo",
+          alertDescription: "Azienda eliminata con successo!",
+          alertColor: "green",
+        });
+        fetchData(); // Refresh the company data
       }
     } catch (error) {
       console.error("Errore nella cancellazione dell'azienda:", error);
+      setAlertData({
+        isOpen: true,
+        onClose: () => setAlertData({ ...alertData, isOpen: false }),
+        alertTitle: "Errore",
+        alertDescription:
+          "Si è verificato un errore durante la cancellazione dell'azienda.",
+        alertColor: "red",
+      });
     }
   }
 
@@ -345,6 +377,7 @@ export default function CompanyTable() {
 
   return (
     <div className="bg-white">
+      <StatusAlert AlertData={alertData} />
       <ViewCompanyModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}

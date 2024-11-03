@@ -15,12 +15,13 @@ interface Company {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
 }
 
-const initialCompanyData: Company = {
+const INITIAL_COMPANY_DATA: Company = {
   CompanyId: 0,
   CompanyName: "",
   CompanyAddress: "",
@@ -28,26 +29,32 @@ const initialCompanyData: Company = {
   CompanyPhone: null,
 };
 
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
+
 const EditCompanyModel: React.FC = () => {
   const { CompanyId, CompanyName } = useParams<{
     CompanyId: string;
     CompanyName: string;
   }>();
+
   const [newCompanyData, setNewCompanyData] =
-    useState<Company>(initialCompanyData);
+    useState<Company>(INITIAL_COMPANY_DATA);
+  const [originalCompanyData, setOriginalCompanyData] =
+    useState<Company | null>(null); // Stato per i dati originali
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "red",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   useEffect(() => {
     axios
-      .get(
-        `/Company/GET/GetCompanyByIdAndName?CompanyId=${CompanyId}&CompanyName=${CompanyName}`
-      )
+      .get("/Company/GET/GetCompanyByIdAndName", {
+        params: { CompanyId: CompanyId, CompanyName: CompanyName },
+      })
       .then((res) => {
         const companyData = res.data[0];
         const updatedCompanyData: Company = {
@@ -56,6 +63,7 @@ const EditCompanyModel: React.FC = () => {
             companyData.CompanyPhone !== null ? companyData.CompanyPhone : null,
         };
         setNewCompanyData(updatedCompanyData);
+        setOriginalCompanyData(updatedCompanyData); // Salva i dati originali
       });
   }, [CompanyId, CompanyName]);
 
@@ -68,13 +76,15 @@ const EditCompanyModel: React.FC = () => {
   };
 
   const checkAllDataCompiled = () => {
+    // Se non ci sono dati originali, non disabilitare il pulsante
+    if (!originalCompanyData) return true;
+
+    // Confronta i dati attuali con i dati originali
     return (
-      (newCompanyData.CompanyName === initialCompanyData.CompanyName &&
-        newCompanyData.CompanyAddress === initialCompanyData.CompanyAddress &&
-        newCompanyData.CompanyEmail === initialCompanyData.CompanyEmail &&
-        newCompanyData.CompanyPhone === initialCompanyData.CompanyPhone) ||
-      (newCompanyData.CompanyPhone === null &&
-        initialCompanyData.CompanyPhone === null)
+      newCompanyData.CompanyName === originalCompanyData.CompanyName &&
+      newCompanyData.CompanyAddress === originalCompanyData.CompanyAddress &&
+      newCompanyData.CompanyEmail === originalCompanyData.CompanyEmail &&
+      newCompanyData.CompanyPhone === originalCompanyData.CompanyPhone
     );
   };
 
@@ -92,6 +102,7 @@ const EditCompanyModel: React.FC = () => {
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
           alertDescription: "L'azienda è stata modificata con successo.",
           alertColor: "green",
@@ -102,13 +113,36 @@ const EditCompanyModel: React.FC = () => {
         console.log("Successo:", res.data);
       }
     } catch (error) {
-      setAlertData({
-        isOpen: true,
-        alertTitle: "Errore durante l'operazione",
-        alertDescription:
-          "Si è verificato un errore durante la modifica dell'azienda. Per favore, riprova più tardi.",
-        alertColor: "red",
-      });
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 409) {
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Conflitto durante l'operazione",
+            alertDescription:
+              "Il nome dell'azienda fornito è già presente nel database. Per favore, scegli un nome diverso.",
+            alertColor: "yellow",
+          });
+        } else {
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Errore durante l'operazione",
+            alertDescription:
+              "Si è verificato un errore durante la modifica dell'azienda. Per favore, riprova più tardi.",
+            alertColor: "red",
+          });
+        }
+      } else {
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Errore sconosciuto",
+          alertDescription:
+            "Si è verificato un errore sconosciuto. Per favore, riprova più tardi.",
+          alertColor: "red",
+        });
+      }
       console.error("Errore durante l'aggiornamento dell'azienda:", error);
     } finally {
       setIsAddingData(false);
