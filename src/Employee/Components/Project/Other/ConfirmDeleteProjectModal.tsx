@@ -22,6 +22,7 @@ interface Project {
   CompanyName: string;
   StatusId: number;
   StatusName: string;
+  UniqueCode: string;
 }
 
 interface ConfirmDeleteCustomerModalProps {

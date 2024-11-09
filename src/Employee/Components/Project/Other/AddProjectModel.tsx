@@ -60,6 +60,22 @@ interface AlertData {
   alertColor: "green" | "red" | "yellow";
 }
 
+interface AlertData {
+  isOpen: boolean;
+  onClose: () => void;
+  alertTitle: string;
+  alertDescription: string;
+  alertColor: "green" | "red" | "yellow";
+}
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
+
 export const CustomRadio = (props: any) => {
   const { children, ...otherProps } = props;
 
@@ -92,12 +108,7 @@ export default function AddProjectModel() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [managers, setManagers] = useState<Manager[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "red",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   useEffect(() => {
     axios.get("/Project/GET/GetAllBanners").then((res) => {
@@ -187,11 +198,11 @@ export default function AddProjectModel() {
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
-          alertDescription: "Il progetto è stato aggiunto con successo.",
+          alertDescription: "Il progetto è stato creato con successo.",
           alertColor: "green",
         });
-        console.log("Creating conversation for project...");
 
         setTimeout(() => {
           window.location.href = "/projects";
@@ -200,19 +211,34 @@ export default function AddProjectModel() {
       }
       // Esegui altre azioni dopo la creazione del progetto, se necessario
     } catch (error) {
-      setAlertData({
-        isOpen: true,
-        alertTitle: "Errore durante l'operazione",
-        alertDescription:
-          "Si è verificato un errore durante l'aggiunta del progetto. Per favore, riprova più tardi.",
-        alertColor: "red",
-      });
-
-      setTimeout(() => {
-        window.location.href = "/projects";
-      }, 2000);
-      console.error("Errore durante la creazione del progetto:", error);
-      // Gestisci l'errore in modo appropriato, ad esempio mostrando un messaggio all'utente
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 409) {
+          // Handle conflict error (409)
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Conflitto durante l'operazione",
+            alertDescription: `Un altro progetto con : ${
+              companies.find(
+                (company) => company.CompanyId == newProjectData.CompanyId
+              )?.CompanyName
+            } ha già lo stesso nome. Scegli un nome diverso.`,
+            alertColor: "yellow",
+          });
+        } else {
+          // General error handling
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Errore durante l'operazione",
+            alertDescription:
+              "Si è verificato un errore durante la creazione del progetto. Per favore, riprova più tardi.",
+            alertColor: "red",
+          });
+        }
+      }
+    } finally {
+      setIsAddingData(false);
     }
   }
 
