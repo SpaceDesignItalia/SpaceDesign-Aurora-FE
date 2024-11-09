@@ -23,6 +23,7 @@ import React, { useEffect, useState } from "react";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import ConfirmDeleteRoleModal from "../Other/ConfirmDeleteRoleModal";
 import ViewRoleModal from "../Other/ViewRoleModal";
+import StatusAlert from "../../Layout/StatusAlert";
 
 interface Role {
   RoleId: number;
@@ -36,6 +37,14 @@ interface ModalData {
   open: boolean;
 }
 
+interface AlertData {
+  isOpen: boolean;
+  onClose: () => void;
+  alertTitle: string;
+  alertDescription: string;
+  alertColor: "green" | "red" | "yellow";
+}
+
 const columns = [
   { name: "Ruolo", uid: "RoleName" },
   { name: "Descrizione", uid: "RoleDescription" },
@@ -43,10 +52,19 @@ const columns = [
   { name: "Azioni", uid: "actions" },
 ];
 
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
+
 export default function RoleTable() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [roles, setRoles] = useState<Role[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
   const [adminRolePermission, setAdminRolePermission] = useState({
     addRolePermission: false,
     editRolePermission: false,
@@ -107,10 +125,27 @@ export default function RoleTable() {
 
       if (res.status === 200) {
         fetchData();
-        window.location.reload();
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Operazione completata",
+          alertDescription: "Il ruolo è stato eliminato con successo.",
+          alertColor: "green",
+        });
       }
     } catch (error) {
       console.error("Errore nella cancellazione del ruolo:", error);
+      if (axios.isAxiosError(error)) {
+        // General error handling
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Errore durante l'operazione",
+          alertDescription:
+            "Si è verificato un errore durante l'eliminazione del ruolo. Per favore, riprova più tardi.",
+          alertColor: "red",
+        });
+      }
     }
   }
 
@@ -334,6 +369,7 @@ export default function RoleTable() {
 
   return (
     <div className="bg-white">
+      <StatusAlert AlertData={alertData} />
       <ViewRoleModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
