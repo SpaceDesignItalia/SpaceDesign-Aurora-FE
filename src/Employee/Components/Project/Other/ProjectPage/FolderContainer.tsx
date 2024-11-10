@@ -4,6 +4,7 @@ import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import FolderRoundedIcon from "@mui/icons-material/FolderRounded";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
+import PermMediaIcon from "@mui/icons-material/PermMedia";
 import {
   BreadcrumbItem,
   Breadcrumbs,
@@ -261,90 +262,107 @@ export default function FolderContainer({
             <BreadcrumbItem>{currentFolder.FolderName}</BreadcrumbItem>
           )}
         </Breadcrumbs>
-        <ContextMenuTrigger className="flex flex-col gap-7 mt-5 h-screen border-2 rounded-xl p-5">
-          <div>
-            <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
-              Cartelle
-            </h2>
-            <div className="flex flex-row flex-wrap gap-3 mt-5 items-start justify-start">
-              {folders.map((folder, index) => (
-                <div
-                  className="flex items-center justify-between p-4 border-2 rounded-xl w-full md:w-72 bg-gray-50 hover:shadow-md hover:scale-[102%] transition-all duration-200"
-                  key={index}
-                  onClick={() => setCurrentFolder(folder)}
-                >
-                  <div className="flex flex-row gap-2 items-center w-3/4">
-                    <div className="rounded-full border-2 p-2 bg-white">
-                      <FolderRoundedIcon />
-                    </div>
-                    <h3 className="cursor-default truncate w-full">
-                      {folder.FolderName}
-                    </h3>
-                  </div>
 
-                  <Dropdown>
-                    <DropdownTrigger>
-                      <Button
-                        variant="light"
-                        radius="full"
-                        isIconOnly
-                        startContent={<MoreVertRoundedIcon />}
-                        className="cursor-pointer"
-                      />
-                    </DropdownTrigger>
-                    <DropdownMenu
-                      variant="faded"
-                      aria-label="Dropdown menu with description"
-                    >
-                      <DropdownItem
-                        key="edit"
-                        startContent={<BorderColorRoundedIcon />}
-                        onClick={() =>
-                          setFolderModalData({
-                            isOpen: true,
-                            isClosed: () => {},
-                            FolderData: folder,
-                          })
-                        }
-                      >
-                        Modifica cartella
-                      </DropdownItem>
-                      <DropdownItem
-                        key="delete"
-                        className="text-danger"
-                        color="danger"
-                        startContent={<DeleteRoundedIcon />}
-                        onClick={() => DeleteFolder(folder)}
-                      >
-                        Rimuovi cartella
-                      </DropdownItem>
-                    </DropdownMenu>
-                  </Dropdown>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-col flex-wrap gap-3 mt-5 items-start justify-start">
-            {files.length > 0 && (
-              <>
+        <ContextMenuTrigger className="flex flex-col gap-7 mt-5 max-h-screen border-2 rounded-xl p-5 h-fit">
+          {folders.length > 0 || files.length > 0 ? (
+            <>
+              <div>
                 <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
-                  File
+                  Cartelle
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full">
-                  {files.map((file, index) => (
-                    <FileCard
-                      file={file}
-                      variant="default"
-                      index={index}
+
+                <div className="flex flex-row flex-wrap gap-3 mt-5 items-start justify-start">
+                  {folders.map((folder, index) => (
+                    <div
+                      className="flex items-center justify-between p-4 border-2 rounded-xl w-full md:w-72 bg-gray-50 hover:shadow-md hover:scale-[102%] transition-all duration-200"
                       key={index}
-                      DeleteFile={DeleteFile}
-                    />
+                      onClick={() => setCurrentFolder(folder)}
+                    >
+                      <div className="flex flex-row gap-2 items-center w-3/4">
+                        <div className="rounded-full border-2 p-2 bg-white">
+                          <FolderRoundedIcon />
+                        </div>
+                        <h3 className="cursor-default truncate w-full">
+                          {folder.FolderName}
+                        </h3>
+                      </div>
+
+                      <Dropdown>
+                        <DropdownTrigger>
+                          <Button
+                            variant="light"
+                            radius="full"
+                            isIconOnly
+                            startContent={<MoreVertRoundedIcon />}
+                            className="cursor-pointer"
+                          />
+                        </DropdownTrigger>
+                        <DropdownMenu
+                          variant="faded"
+                          aria-label="Dropdown menu with description"
+                        >
+                          <DropdownItem
+                            key="edit"
+                            startContent={<BorderColorRoundedIcon />}
+                            onClick={() =>
+                              setFolderModalData({
+                                isOpen: true,
+                                isClosed: () => {},
+                                FolderData: folder,
+                              })
+                            }
+                          >
+                            Modifica cartella
+                          </DropdownItem>
+                          <DropdownItem
+                            key="delete"
+                            className="text-danger"
+                            color="danger"
+                            startContent={<DeleteRoundedIcon />}
+                            onClick={() => DeleteFolder(folder)}
+                          >
+                            Rimuovi cartella
+                          </DropdownItem>
+                        </DropdownMenu>
+                      </Dropdown>
+                    </div>
                   ))}
                 </div>
-              </>
-            )}
-          </div>
+              </div>
+
+              <div className="flex flex-col flex-wrap gap-3 mt-5 items-start justify-start">
+                {files.length > 0 && (
+                  <>
+                    <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
+                      File
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full">
+                      {files.map((file, index) => (
+                        <FileCard
+                          file={file}
+                          variant="default"
+                          index={index}
+                          key={index}
+                          DeleteFile={DeleteFile}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="text-center">
+              <PermMediaIcon />
+              <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                Nessun documento o cartella presente!
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Crea una cartella o aggiungi un file cliccando tasto destro o
+                tenendo premuto dentro l'area!
+              </p>
+            </div>
+          )}
         </ContextMenuTrigger>
         <ContextMenuContent className="w-64">
           <ContextMenuItem

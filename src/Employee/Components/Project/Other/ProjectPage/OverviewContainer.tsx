@@ -11,6 +11,7 @@ import axios from "axios";
 import { API_URL_IMG } from "../../../../../API/API";
 import DeleteLinkModal from "../DeleteLinkModal";
 import { usePermissions } from "../../../Layout/PermissionProvider";
+import StatusAlert from "../../../Layout/StatusAlert";
 
 interface Project {
   ProjectId: number;
@@ -49,6 +50,22 @@ interface Link {
   ProjectLinkTypeImage: string;
 }
 
+interface AlertData {
+  isOpen: boolean;
+  onClose: () => void;
+  alertTitle: string;
+  alertDescription: string;
+  alertColor: "green" | "red" | "yellow";
+}
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
+
 export default function OverviewContainer({
   projectData,
 }: {
@@ -61,6 +78,7 @@ export default function OverviewContainer({
     open: false,
     Links: [],
   });
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   const [modalEditData, setModalEditData] = useState<ModalEditData>({
     Links: new Array<Link>(),
@@ -85,6 +103,16 @@ export default function OverviewContainer({
   const [links, setLinks] = useState<Link[]>([]);
 
   useEffect(() => {
+    async function checkPermissions() {
+      setAdminPermission({
+        editProject: await hasPermission("EDIT_PROJECT"),
+      });
+    }
+    fetchAllData();
+    checkPermissions();
+  }, [projectData.ProjectId]);
+
+  function fetchAllData() {
     axios
       .get("/Project/GET/GetAllLinkByProjectId", {
         params: { ProjectId: projectData.ProjectId },
@@ -108,13 +136,7 @@ export default function OverviewContainer({
       .then((res) => {
         setTotalTeamMembers(res.data[0].TotalTeamMembers);
       });
-    async function checkPermissions() {
-      setAdminPermission({
-        editProject: await hasPermission("EDIT_PROJECT"),
-      });
-    }
-    checkPermissions();
-  }, [projectData.ProjectId]);
+  }
 
   function calculateDeadline() {
     if (daysUntilDeadline < 0) {
@@ -123,19 +145,39 @@ export default function OverviewContainer({
     return <>{daysUntilDeadline} g</>;
   }
 
-  function DeleteLink(LinkId: string) {
-    axios
-      .delete("/Project/DELETE/RemoveLinkFromProject", {
+  async function DeleteLink(LinkId: string) {
+    try {
+      const res = await axios.delete("/Project/DELETE/RemoveLinkFromProject", {
         params: {
           ProjectLinkId: Number(LinkId),
           ProjectId: projectData.ProjectId,
         },
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          window.location.reload();
-        }
       });
+
+      if (res.status === 200) {
+        fetchAllData();
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Operazione completata",
+          alertDescription: "Il collegamento è stato eliminato con successo.",
+          alertColor: "green",
+        });
+      }
+    } catch (error) {
+      console.error("Errore nella cancellazione del progetto:", error);
+      if (axios.isAxiosError(error)) {
+        // General error handling
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Errore durante l'operazione",
+          alertDescription:
+            "Si è verificato un errore durante l'eliminazione del collegamento. Per favore, riprova più tardi.",
+          alertColor: "red",
+        });
+      }
+    }
   }
 
   return (
@@ -143,6 +185,7 @@ export default function OverviewContainer({
       <AddProjectLink
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
+        fetchAllData={fetchAllData}
         ProjectId={modalData.ProjectId}
       />
       <DeleteLinkModal
@@ -153,6 +196,7 @@ export default function OverviewContainer({
         LinkData={modalEditData.Links}
         DeleteLink={DeleteLink}
       />
+      <StatusAlert AlertData={alertData} />
       <div className="grid grid-cols-1 sm:grid-cols-6 gap-5 h-screen">
         <div className="grid grid-cols-1 xl:grid-cols-6 gap-6 col-span-6 md:col-span-4 h-fit">
           <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6 xl:col-span-6 h-fit">

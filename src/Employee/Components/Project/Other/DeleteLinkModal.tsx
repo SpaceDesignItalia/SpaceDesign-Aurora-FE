@@ -83,6 +83,7 @@ export default function DeleteLinkModal({
                 color="primary"
                 onClick={() => {
                   DeleteLink(selected);
+                  setSelected("");
                   isClosed();
                 }}
                 isDisabled={selected === ""}

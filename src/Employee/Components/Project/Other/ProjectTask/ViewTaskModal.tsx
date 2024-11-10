@@ -56,6 +56,7 @@ import {
 import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
 import FileUploaderModal from "./FileUploaderModal";
 import FileCard from "./FileCard";
+import StatusAlert from "../../../Layout/StatusAlert";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -121,6 +122,22 @@ interface File {
   TaskId: number;
 }
 
+interface AlertData {
+  isOpen: boolean;
+  onClose: () => void;
+  alertTitle: string;
+  alertDescription: string;
+  alertColor: "green" | "red" | "yellow";
+}
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
+
 export default function ViewTaskModal({
   isOpen,
   isClosed,
@@ -151,6 +168,7 @@ export default function ViewTaskModal({
   const [deleteUpdate, setDeleteUpdate] = useState(false);
   const [editing, setEditing] = useState(false);
   const [commentEditingId, setCommentEditingId] = useState(0);
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
   const [modalUploadFile, setModalUploadFile] = useState<ModalData>({
     TaskId: 0,
     open: false,
@@ -614,9 +632,30 @@ export default function ViewTaskModal({
         params: { ProjectTaskId: Task.ProjectTaskId },
       });
       socket.emit("task-news", Task.ProjectId);
+
       setUpdate(!update);
+      setAlertData({
+        isOpen: true,
+        onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+        alertTitle: "Operazione completata",
+        alertDescription: "La task è stata eliminata con successo.",
+        alertColor: "green",
+      });
     } catch (error) {
       console.error(error);
+      if (axios.isAxiosError(error)) {
+        // General error handling
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Errore durante l'operazione",
+          alertDescription:
+            "Si è verificato un errore durante l'eliminazione della task. Per favore, riprova più tardi.",
+          alertColor: "red",
+        });
+      }
+    } finally {
+      isClosed();
     }
   }
 
@@ -706,6 +745,7 @@ export default function ViewTaskModal({
 
   return (
     <>
+      <StatusAlert AlertData={alertData} />
       <Modal
         isOpen={isOpen}
         onOpenChange={handleColsesModal}

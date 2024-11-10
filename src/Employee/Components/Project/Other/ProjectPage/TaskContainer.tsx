@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import LibraryAddRoundedIcon from "@mui/icons-material/LibraryAddRounded";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { Button, Chip, DateValue, cn, modal } from "@nextui-org/react";
+import { Button, Chip, DateValue, cn } from "@nextui-org/react";
 import AddTaskModal from "../ProjectTask/AddTaskModal";
 import TaskCard from "../ProjectTask/TaskCard";
 import { io } from "socket.io-client";
@@ -99,69 +99,70 @@ export default function TaskContainer({
   }, []);
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchPermission() {
       const permission = await hasPermission("ASSIGN_ACTIVITY");
 
       setPermissions({ ...permissions, assignActivity: permission });
     }
-    fetchData();
+    fetchPermission();
   }, [hasPermission]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    fetchData();
+  }, [update, projectData.ProjectId]);
+
+  async function fetchData() {
+    try {
       const statusResponse = await axios.get<Status[]>(
         "/Project/GET/GetTaskStatuses"
       );
       setColumns(statusResponse.data);
 
-      axios
-        .get<Task[]>("/Project/GET/GetTasksByProjectId", {
-          params: { ProjectId: projectId },
-        })
-        .then(async (res) => {
-          const fetchedTasks = res.data;
-          socket.emit("join", projectId);
+      const res = await axios.get<Task[]>("/Project/GET/GetTasksByProjectId", {
+        params: { ProjectId: projectId },
+      });
 
-          const updatedTasks = await Promise.all(
-            fetchedTasks.map(async (task: Task) => {
-              const tagsResponse = await axios.get<Tag[]>(
-                "/Project/GET/GetTagsByTaskId",
-                {
-                  params: { ProjectTaskId: task.ProjectTaskId },
-                }
-              );
+      if (res.status == 200) {
+        const fetchedTasks = res.data;
+        socket.emit("join", projectId);
 
-              const membersResponse = await axios.get<Member[]>(
-                "/Project/GET/GetMembersByTaskId",
-                {
-                  params: { ProjectTaskId: task.ProjectTaskId },
-                }
-              );
+        const updatedTasks = await Promise.all(
+          fetchedTasks.map(async (task: Task) => {
+            const tagsResponse = await axios.get<Tag[]>(
+              "/Project/GET/GetTagsByTaskId",
+              {
+                params: { ProjectTaskId: task.ProjectTaskId },
+              }
+            );
 
-              const commentResponse = await axios.get<Comment[]>(
-                "/Project/GET/GetCommentsByTaskId",
-                {
-                  params: { ProjectTaskId: task.ProjectTaskId },
-                }
-              );
+            const membersResponse = await axios.get<Member[]>(
+              "/Project/GET/GetMembersByTaskId",
+              {
+                params: { ProjectTaskId: task.ProjectTaskId },
+              }
+            );
 
-              return {
-                ...task,
-                ProjectTaskTags: tagsResponse.data,
-                ProjectTaskMembers: membersResponse.data,
-                ProjectTaskComments: commentResponse.data,
-              };
-            })
-          );
-          setTasks(updatedTasks);
-        })
-        .catch((error) => {
-          console.error("Error fetching tasks:", error);
-        });
-    };
+            const commentResponse = await axios.get<Comment[]>(
+              "/Project/GET/GetCommentsByTaskId",
+              {
+                params: { ProjectTaskId: task.ProjectTaskId },
+              }
+            );
 
-    fetchData();
-  }, [update, projectData.ProjectId]);
+            return {
+              ...task,
+              ProjectTaskTags: tagsResponse.data,
+              ProjectTaskMembers: membersResponse.data,
+              ProjectTaskComments: commentResponse.data,
+            };
+          })
+        );
+        setTasks(updatedTasks);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   // Handler for drag end
   const onDragEnd = (result: {
@@ -237,6 +238,7 @@ export default function TaskContainer({
       <AddTaskModal
         isOpen={modalAddData.open}
         isClosed={() => setModalAddData({ ...modalAddData, open: false })}
+        fetchData={fetchData}
         ProjectId={projectId}
       />
 

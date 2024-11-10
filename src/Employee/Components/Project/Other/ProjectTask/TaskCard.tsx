@@ -128,15 +128,8 @@ export default function TaskCard({
   });
 
   const { hasPermission } = usePermissions();
-
   useEffect(() => {
-    socket.on("task-update", () => {
-      setUpdate(!update);
-    });
-  }, []);
-
-  useEffect(() => {
-    async function fetchData() {
+    async function fetchPermissions() {
       const editActivity = await hasPermission("EDIT_ACTIVITY");
       const removeActivity = await hasPermission("REMOVE_ACTIVITY");
 
@@ -146,7 +139,7 @@ export default function TaskCard({
         removeActivity: removeActivity,
       });
     }
-    fetchData();
+    fetchPermissions();
   }, [hasPermission]);
 
   const [commentsCount, setCommentsCount] = useState(0);
@@ -221,6 +214,7 @@ export default function TaskCard({
         isClosed={() => setModalData({ ...modalData, open: false })}
         TaskData={modalData.Task}
         socket={socket}
+        fetchData={fetchData}
         update={update}
         setUpdate={setUpdate}
         hasValidDescription={hasValidDescription}
