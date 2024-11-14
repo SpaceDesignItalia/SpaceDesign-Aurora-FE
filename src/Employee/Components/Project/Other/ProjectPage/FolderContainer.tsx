@@ -83,12 +83,13 @@ export default function FolderContainer({
 }: {
   projectData: Project;
 }) {
-  const { ProjectId } = useParams();
+  const { UniqueCode } = useParams();
+  const [ProjectId, setProjectId] = useState<number>(0);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [modalAddFolder, setModalAddFolder] = useState<ModalAddFolderData>({
     open: false,
   });
-
+  const [FolderTree, setFolderTree] = useState<Folder[]>([]);
   const [files, setFiles] = useState<File[]>([]);
   const [folderModalData, setFolderModalData] =
     useState<FolderSettingsModalProps>({
@@ -125,9 +126,60 @@ export default function FolderContainer({
     fetchFiles();
   }, [currentFolder.FolderId, files.length > 0]);
 
-  console.log("Current folder:", currentFolder);
+  useEffect(() => {
+    axios
+      .get("/Project/GET/GetProjectByUniqueCode", {
+        params: { UniqueCode: UniqueCode },
+      })
+      .then((res) => {
+        setProjectId(res.data.ProjectId);
+      })
+      .then(() => {
+        fetchDefaultProjectFolder();
+      });
+  }, [ProjectId]);
 
   useEffect(() => {
+    if (currentFolder.FolderId !== 0) {
+      fetchFolderTree();
+    }
+  }, [currentFolder]);
+
+  const fetchFolderTree = async () => {
+    try {
+      // Reset the folder tree state
+      setFolderTree([]);
+
+      // Fetch the initial folder data
+      let response = await axios.get("/Project/GET/GetFolderByFolderId", {
+        params: { FolderId: currentFolder.FolderId },
+      });
+
+      // If response data is not empty, add it to the folder tree
+      if (response.data !== "") {
+        setFolderTree((prev) => [...prev, response.data]);
+
+        // Loop to fetch parent folders until no more are found
+        while (response.data.UpFolderId) {
+          response = await axios.get("/Project/GET/GetFolderByFolderId", {
+            params: { FolderId: response.data.UpFolderId },
+          });
+
+          if (response.data !== "") {
+            setFolderTree((prev) => [...prev, response.data]);
+          } else {
+            break;
+          }
+        }
+      }
+      // Reverse the folder tree array to display the correct hierarchy
+      setFolderTree((prev) => prev.reverse());
+    } catch (error) {
+      console.error("Error fetching folder tree:", error);
+    }
+  };
+
+  const fetchDefaultProjectFolder = () => {
     axios
       .get("/Project/GET/GetDefaultProjectFolder", {
         params: { ProjectId: ProjectId },
@@ -135,7 +187,7 @@ export default function FolderContainer({
       .then((res) => {
         setCurrentFolder(res.data);
       });
-  }, []);
+  };
 
   /*useEffect(() => {
     async function checkPermissions() {
@@ -189,7 +241,6 @@ export default function FolderContainer({
   }
 
   async function handleAddFolder(folderName: string) {
-    console.log(currentFolder);
     try {
       const res = await axios.post("/Project/POST/AddFolder", {
         ProjectId: ProjectId,
@@ -256,9 +307,22 @@ export default function FolderContainer({
       />
       <ContextMenu>
         <Breadcrumbs>
-          <BreadcrumbItem>Test</BreadcrumbItem>
-          {currentFolder.FolderName !== "Default" && (
-            <BreadcrumbItem>{currentFolder.FolderName}</BreadcrumbItem>
+          {FolderTree.map((folder, index) =>
+            folder.FolderName === "Default" ? (
+              <BreadcrumbItem
+                key={index}
+                onClick={() => setCurrentFolder(folder)}
+              >
+                Home
+              </BreadcrumbItem>
+            ) : (
+              <BreadcrumbItem
+                key={index}
+                onClick={() => setCurrentFolder(folder)}
+              >
+                {folder.FolderName}
+              </BreadcrumbItem>
+            )
           )}
         </Breadcrumbs>
         <ContextMenuTrigger className="flex flex-col gap-7 mt-5 h-screen border-2 rounded-xl p-5">
