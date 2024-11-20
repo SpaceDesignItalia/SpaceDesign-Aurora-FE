@@ -48,10 +48,19 @@ interface Manager {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
 }
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
 
 export default function EditProjectModel() {
   const { UniqueCode } = useParams<{
@@ -83,12 +92,7 @@ export default function EditProjectModel() {
   const [managers, setManagers] = useState<Manager[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [statusList, setStatusList] = useState<Status[]>([]);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "red",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -234,30 +238,55 @@ export default function EditProjectModel() {
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
-          alertDescription: "Il progetto è stato aggiornato con successo.",
+          alertDescription: "Il progetto è stato modificato con successo.",
           alertColor: "green",
         });
-
         setTimeout(() => {
           window.location.href = "/projects";
         }, 2000);
       }
       // Esegui altre azioni dopo la creazione del progetto, se necessario
     } catch (error) {
-      setAlertData({
-        isOpen: true,
-        alertTitle: "Errore durante l'operazione",
-        alertDescription:
-          "Si è verificato un errore durante l'aggiornamento del progetto. Per favore, riprova più tardi.",
-        alertColor: "red",
-      });
-
-      setTimeout(() => {
-        window.location.href = "/projects";
-      }, 2000);
-      console.error("Errore durante la creazione del progetto:", error);
-      // Gestisci l'errore in modo appropriato, ad esempio mostrando un messaggio all'utente
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 409) {
+          // Handle conflict error (409)
+          companies.find(
+            (company) => company.CompanyId == newProjectData.CompanyId
+          )?.CompanyName != undefined
+            ? setAlertData({
+                isOpen: true,
+                onClose: () =>
+                  setAlertData((prev) => ({ ...prev, isOpen: false })),
+                alertTitle: "Conflitto durante l'operazione",
+                alertDescription: `Un altro progetto con : ${
+                  companies.find(
+                    (company) => company.CompanyId == newProjectData.CompanyId
+                  )?.CompanyName
+                } ha già lo stesso nome. Scegli un nome diverso.`,
+                alertColor: "yellow",
+              })
+            : setAlertData({
+                isOpen: true,
+                onClose: () =>
+                  setAlertData((prev) => ({ ...prev, isOpen: false })),
+                alertTitle: "Conflitto durante l'operazione",
+                alertDescription: `Un altro progetto ha già lo stesso nome. Scegli un nome diverso.`,
+                alertColor: "yellow",
+              });
+        } else {
+          // General error handling
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Errore durante l'operazione",
+            alertDescription:
+              "Si è verificato un errore durante la modifica del progetto. Per favore, riprova più tardi.",
+            alertColor: "red",
+          });
+        }
+      }
     } finally {
       setIsAddingData(false);
     }

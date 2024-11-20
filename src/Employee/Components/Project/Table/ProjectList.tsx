@@ -8,6 +8,7 @@ import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRound
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import dayjs from "dayjs";
 import ConfirmDeleteProjectModal from "../Other/ConfirmDeleteProjectModal";
+import StatusAlert from "../../Layout/StatusAlert";
 
 interface Project {
   ProjectId: number;
@@ -28,8 +29,25 @@ interface Permissions {
   deleteCompanyPermission: boolean;
 }
 
+interface AlertData {
+  isOpen: boolean;
+  onClose: () => void;
+  alertTitle: string;
+  alertDescription: string;
+  alertColor: "green" | "red" | "yellow";
+}
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
+
 export default function ProjectList() {
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
   const [projects, setProjects] = useState<{ [company: string]: Project[] }>(
     {}
   );
@@ -77,10 +95,28 @@ export default function ProjectList() {
       });
 
       if (res.status === 200) {
-        window.location.reload();
+        fetchData();
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Operazione completata",
+          alertDescription: "Il progetto è stato eliminato con successo.",
+          alertColor: "green",
+        });
       }
     } catch (error) {
-      console.error("Errore nella cancellazione dell'azienda:", error);
+      console.error("Errore nella cancellazione del progetto:", error);
+      if (axios.isAxiosError(error)) {
+        // General error handling
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Errore durante l'operazione",
+          alertDescription:
+            "Si è verificato un errore durante l'eliminazione del progetto. Per favore, riprova più tardi.",
+          alertColor: "red",
+        });
+      }
     }
   }
 
@@ -129,6 +165,7 @@ export default function ProjectList() {
 
   return (
     <div className="border-2 rounded-xl py-5">
+      <StatusAlert AlertData={alertData} />
       <div className="flex flex-row justify-between gap-3 items-end">
         <div className="flex flex-row gap-3 w-full px-4">
           <Input

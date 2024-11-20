@@ -34,6 +34,7 @@ interface Permissions {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
@@ -45,8 +46,9 @@ const initialRoleData: Role = {
   RolePriority: 0,
 };
 
-const initialAlertData: AlertData = {
+const INITIAL_ALERT_DATA: AlertData = {
   isOpen: false,
+  onClose: () => {},
   alertTitle: "",
   alertDescription: "",
   alertColor: "red",
@@ -61,7 +63,7 @@ const AddRoleModel: React.FC = () => {
   >([]);
   const [rolePermissions, setRolePermissions] = useState<number[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -133,9 +135,11 @@ const AddRoleModel: React.FC = () => {
         RolePermissionData: newRolePermissions,
       });
 
-      if (res.status === 200) {
+      if (res.status === 201) {
+        // Check for successful addition
         setAlertData({
           isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
           alertDescription: "Il ruolo è stato aggiunto con successo.",
           alertColor: "green",
@@ -145,14 +149,29 @@ const AddRoleModel: React.FC = () => {
         }, 2000);
       }
     } catch (error) {
-      setAlertData({
-        isOpen: true,
-        alertTitle: "Errore durante l'operazione",
-        alertDescription:
-          "Si è verificato un errore durante l'aggiunta del ruolo. Per favore, riprova più tardi.",
-        alertColor: "red",
-      });
-      console.error("Errore durante la creazione del ruolo:", error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 409) {
+          // Handle duplicate role error
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Conflitto durante l'operazione",
+            alertDescription:
+              "Esiste già un ruolo con questo nome. Usa un nome diverso.",
+            alertColor: "yellow",
+          });
+        } else {
+          // General error handling
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Errore durante l'operazione",
+            alertDescription:
+              "Si è verificato un errore durante l'aggiunta del ruolo. Per favore, riprova più tardi.",
+            alertColor: "red",
+          });
+        }
+      }
     } finally {
       setIsAddingData(false);
     }

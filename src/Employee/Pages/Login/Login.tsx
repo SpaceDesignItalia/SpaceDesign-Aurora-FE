@@ -4,11 +4,12 @@ import EmailIcon from "@mui/icons-material/Email";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import axios from "axios";
-import { Link } from "react-router-dom"; // Assuming you're using React Router
+import { Link } from "react-router-dom";
 import StatusAlert from "../../Components/Layout/StatusAlert";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
 
+// Configura la connessione WebSocket
 const socket = io(API_WEBSOCKET_URL);
 
 interface LoginData {
@@ -19,68 +20,88 @@ interface LoginData {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
 }
 
+// Dati iniziali per il login e le notifiche
+const INITIAL_LOGIN_DATA: LoginData = {
+  email: "",
+  password: "",
+  rememberMe: false,
+};
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
+
 export default function Login() {
-  const [isLogging, setIsLogging] = useState<boolean>(false);
-  const [isVisible, setIsVisible] = useState<boolean>(false);
-  const [loginData, setLoginData] = useState<LoginData>({
-    email: "",
-    password: "",
-    rememberMe: false,
-  });
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "red",
-  });
+  // Gestisce lo stato di caricamento, la visibilità della password e i dati del form
+  const [isLogging, setIsLogging] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [loginData, setLoginData] = useState(INITIAL_LOGIN_DATA);
+  const [alertData, setAlertData] = useState(INITIAL_ALERT_DATA);
 
-  const toggleVisibility = () => setIsVisible(!isVisible);
+  // Alterna la visibilità del campo password
+  const toggleVisibility = () => setIsVisible((prev) => !prev);
 
-  function handleEmailChange(e: any) {
-    const email = e.target.value;
-    setLoginData({ ...loginData, email: email });
-  }
+  // Aggiorna il campo email
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLoginData((prev) => ({ ...prev, email: e.target.value }));
+  };
 
-  function handlePasswordChange(e: any) {
-    const password = e.target.value;
-    setLoginData({ ...loginData, password: password });
-  }
+  // Aggiorna il campo password
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLoginData((prev) => ({ ...prev, password: e.target.value }));
+  };
 
-  async function handleLogin(e: any) {
+  // Effettua la richiesta di login e gestisce la risposta
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLogging(true);
+
     try {
-      e.preventDefault();
-      setIsLogging(true);
+      // Esegue la richiesta di autenticazione
       const res = await axios.post(
         "/Authentication/POST/Login",
-        {
-          LoginData: loginData,
-        },
+        { LoginData: loginData },
         { withCredentials: true }
       );
-      if (res.status == 200) {
-        axios
-          .get("/Authentication/GET/GetSessionData", { withCredentials: true })
-          .then(async (res) => {
-            socket.emit("new-user-add", res.data.StafferId);
-            window.location.href = "/";
-          });
+
+      // Se il login è avvenuto con successo, recupera i dati di sessione
+      if (res.status === 200) {
+        const sessionRes = await axios.get(
+          "/Authentication/GET/GetSessionData",
+          { withCredentials: true }
+        );
+
+        // Aggiunge il nuovo utente alla connessione WebSocket
+        socket.emit("new-user-add", sessionRes.data.StafferId);
+
+        // Reindirizza alla homepage
+        window.location.href = "/";
       }
     } catch (error) {
+      // In caso di errore, mostra una notifica all'utente
       console.error(error);
       setAlertData({
         isOpen: true,
-        alertTitle: "Errore durante il login",
-        alertDescription: "Email o password non validi.",
+        onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+        alertTitle: "Accesso non riuscito",
+        alertDescription:
+          "Controlla l'email e la password inserite e riprova. Se il problema persiste, utilizza il recupero password.",
         alertColor: "red",
       });
+    } finally {
       setIsLogging(false);
     }
-  }
+  };
 
   return (
     <>
@@ -88,13 +109,14 @@ export default function Login() {
       <div className="font-sans text-gray-800">
         <div className="min-h-screen flex flex-col items-center justify-center py-6 px-4">
           <div className="grid md:grid-cols-2 items-center gap-4 max-w-7xl w-full">
+            {/* Form di login */}
             <div className="border border-gray-300 rounded-md p-6 max-w-md shadow-lg mx-auto md:mx-0">
               <form className="space-y-6" onSubmit={handleLogin}>
                 <div className="mb-10">
                   <h3 className="text-3xl font-bold">Accedi</h3>
                   <p className="text-sm mt-4">
                     Accedi per continuare e scoprire tutte le funzionalità a tua
-                    disposizione. Il tuo viaggio inizia qui
+                    disposizione. Il tuo viaggio inizia qui.
                   </p>
                 </div>
                 <div>
@@ -112,10 +134,10 @@ export default function Login() {
                         <EmailIcon className="text-2xl text-default-400 pointer-events-none" />
                       }
                       isInvalid={
-                        alertData.isOpen && alertData.alertColor == "red"
+                        alertData.isOpen && alertData.alertColor === "red"
                       }
                       onChange={handleEmailChange}
-                      isRequired
+                      required
                       fullWidth
                     />
                   </div>
@@ -146,24 +168,25 @@ export default function Login() {
                         </button>
                       }
                       isInvalid={
-                        alertData.isOpen && alertData.alertColor == "red"
+                        alertData.isOpen && alertData.alertColor === "red"
                       }
                       onChange={handlePasswordChange}
-                      isRequired
+                      required
                       fullWidth
                     />
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-2">
+                  {/* Opzione "Ricordami" e link per il recupero password */}
                   <div className="flex items-center">
                     <Checkbox
                       isSelected={loginData.rememberMe}
                       radius="sm"
                       onValueChange={() =>
-                        setLoginData({
-                          ...loginData,
-                          rememberMe: !loginData.rememberMe,
-                        })
+                        setLoginData((prev) => ({
+                          ...prev,
+                          rememberMe: !prev.rememberMe,
+                        }))
                       }
                     >
                       Ricordami
@@ -172,7 +195,7 @@ export default function Login() {
                   <div className="text-sm">
                     <Link
                       to="/password-recovery"
-                      className="text-blue-600 hover:underline"
+                      className="text-primary hover:underline"
                     >
                       Hai dimenticato la password?
                     </Link>
@@ -191,6 +214,7 @@ export default function Login() {
                 </div>
               </form>
             </div>
+            {/* Immagine di accompagnamento */}
             <div className="lg:h-[400px] md:h-[300px] mt-10 md:mt-0">
               <img
                 src="https://readymadeui.com/login-image.webp"

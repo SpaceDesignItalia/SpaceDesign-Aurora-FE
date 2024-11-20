@@ -30,6 +30,7 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import axios from "axios";
 import { API_URL_IMG } from "../../../../API/API";
 import ConfirmDeleteProjectModal from "../Other/ConfirmDeleteProjectModal";
+import StatusAlert from "../../Layout/StatusAlert";
 
 interface Project {
   ProjectId: number;
@@ -55,6 +56,22 @@ interface ModalDeleteData {
   open: boolean;
 }
 
+interface AlertData {
+  isOpen: boolean;
+  onClose: () => void;
+  alertTitle: string;
+  alertDescription: string;
+  alertColor: "green" | "red" | "yellow";
+}
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
+
 const columns = [
   { name: "Nome Progetto", uid: "ProjectName" },
   { name: "Azienda", uid: "CompanyName" },
@@ -66,6 +83,7 @@ const columns = [
 export default function ProjectTable() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [projects, setProjects] = useState<Project[]>([]);
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
   const [company, setCompany] = useState<Company>({
     CompanyId: 0,
     CompanyName: "",
@@ -140,10 +158,27 @@ export default function ProjectTable() {
       });
 
       if (res.status === 200) {
-        window.location.reload();
+        fetchData();
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Operazione completata",
+          alertDescription: "Il progetto è stato eliminato con successo.",
+          alertColor: "green",
+        });
       }
     } catch (error) {
-      console.error("Errore nella cancellazione dell'azienda:", error);
+      if (axios.isAxiosError(error)) {
+        // General error handling
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Errore durante l'operazione",
+          alertDescription:
+            "Si è verificato un errore durante l'eliminazione del progetto. Per favore, riprova più tardi.",
+          alertColor: "red",
+        });
+      }
     }
   }
 
@@ -169,6 +204,7 @@ export default function ProjectTable() {
                 : "Senza Azienda"}
             </div>
           );
+        case "ProjectManager":
           return (
             <div className="flex justify-start">
               <User
@@ -303,6 +339,7 @@ export default function ProjectTable() {
 
   return (
     <div className="bg-white">
+      <StatusAlert AlertData={alertData} />
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky

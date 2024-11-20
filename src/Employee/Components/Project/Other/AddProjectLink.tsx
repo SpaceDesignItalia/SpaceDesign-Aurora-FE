@@ -19,6 +19,7 @@ import StatusAlert from "../../Layout/StatusAlert";
 interface AddProjectLinkModalProps {
   isOpen: boolean;
   isClosed: () => void;
+  fetchAllData: () => void;
   ProjectId: number;
 }
 
@@ -37,31 +38,37 @@ interface ProjectLinkType {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
 }
 
+const INITIAL_LINK_DATA = {
+  ProjectId: 0,
+  ProjectLinkTitle: "",
+  ProjectLinkUrl: "",
+  ProjectLinkTypeId: 0,
+};
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
+
 export default function AddProjectLink({
   isOpen,
   isClosed,
+  fetchAllData,
   ProjectId,
 }: AddProjectLinkModalProps) {
-  const [newLinkData, setNewLinkData] = useState<Link>({
-    ProjectId: ProjectId,
-    ProjectLinkTitle: "",
-    ProjectLinkUrl: "",
-    ProjectLinkTypeId: 0,
-  });
-
+  const [newLinkData, setNewLinkData] = useState<Link>(INITIAL_LINK_DATA);
   const [linkTypes, setLinkTypes] = useState<ProjectLinkType[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "red",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   useEffect(() => {
     setNewLinkData({ ...newLinkData, ProjectId });
@@ -120,32 +127,33 @@ export default function AddProjectLink({
       });
 
       if (res.status === 200) {
+        fetchAllData();
         setAlertData({
           isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
-          alertDescription: "Il collegamento è stato creato con successo.",
+          alertDescription: "Il collegamento è stato aggiunto con successo.",
           alertColor: "green",
         });
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-        console.log("Successo:", res.data);
+
+        isClosed();
       }
       // Esegui altre azioni dopo la creazione del progetto, se necessario
     } catch (error) {
       setAlertData({
         isOpen: true,
+        onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
         alertTitle: "Errore durante l'operazione",
         alertDescription:
           "Si è verificato un errore durante l'aggiunta del collegamento. Per favore, riprova più tardi.",
         alertColor: "red",
       });
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
       console.error("Errore durante la creazione del progetto:", error);
       // Gestisci l'errore in modo appropriato, ad esempio mostrando un messaggio all'utente
+    } finally {
+      setIsAddingData(false);
+      setNewLinkData(INITIAL_LINK_DATA);
     }
   }
 

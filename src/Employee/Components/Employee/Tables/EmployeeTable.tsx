@@ -22,6 +22,7 @@ import ViewEmployeeModal from "../Other/ViewEmployeeModal";
 import ConfirmDeleteModal from "../Other/ConfirmDeleteModal";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import StatusAlert from "../../Layout/StatusAlert";
 
 interface Employee {
   EmployeeId: number;
@@ -31,10 +32,26 @@ interface Employee {
   RoleName: string;
 }
 
+interface AlertData {
+  isOpen: boolean;
+  onClose: () => void;
+  alertTitle: string;
+  alertDescription: string;
+  alertColor: "green" | "red" | "yellow";
+}
+
 interface ModalData {
   Employee: Employee;
   open: boolean;
 }
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
 
 const columns = [
   { name: "Nome Dipendente", uid: "EmployeeFullName" },
@@ -48,6 +65,7 @@ export default function EmployeeTable() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
@@ -100,18 +118,34 @@ export default function EmployeeTable() {
     }
   }
 
-  async function DeleteEmployee(EmployeeData: any) {
+  async function DeleteEmployee(EmployeeData: Employee) {
     try {
       const res = await axios.delete("/Staffer/DELETE/DeleteStaffer", {
-        params: { EmployeeData },
+        params: { EmployeeData: EmployeeData },
       });
 
       if (res.status === 200) {
-        fetchData();
-        window.location.reload();
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "Successo",
+          alertDescription: "Dipendente eliminato con successo!",
+          alertColor: "green",
+        });
+        fetchData(); // Refresh data after deletion
       }
     } catch (error) {
       console.error("Errore nella cancellazione del dipendente:", error);
+
+      // Handle specific error messages if necessary
+      setAlertData({
+        isOpen: true,
+        onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+        alertTitle: "Errore",
+        alertDescription:
+          "Si è verificato un errore durante la cancellazione del dipendente. Per favore, riprova più tardi.",
+        alertColor: "red",
+      });
     }
   }
 
@@ -371,6 +405,8 @@ export default function EmployeeTable() {
 
   return (
     <div className="bg-white">
+      <StatusAlert AlertData={alertData} />
+
       <ViewEmployeeModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}

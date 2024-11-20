@@ -4,6 +4,7 @@ import { Input, Button } from "@nextui-org/react";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
 
+// Interfacce per i dati dell'azienda e per i dati dell'alert
 interface Company {
   companyName: string;
   companyAddress: string;
@@ -13,11 +14,13 @@ interface Company {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
 }
 
+// Dati iniziali vuoti per un'azienda e un alert
 const initialCompanyData: Company = {
   companyName: "",
   companyAddress: "",
@@ -27,17 +30,20 @@ const initialCompanyData: Company = {
 
 const initialAlertData: AlertData = {
   isOpen: false,
+  onClose: () => {},
   alertTitle: "",
   alertDescription: "",
   alertColor: "red",
 };
 
 const AddCompanyModel: React.FC = () => {
+  // Stato per i dati della nuova azienda, il caricamento, e l'alert
   const [newCompanyData, setNewCompanyData] =
     useState<Company>(initialCompanyData);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
 
+  // Gestisce il cambiamento nei campi di input dell'azienda
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setNewCompanyData((prevData) => ({
@@ -46,6 +52,7 @@ const AddCompanyModel: React.FC = () => {
     }));
   };
 
+  // Controlla che i campi obbligatori dell'azienda siano compilati
   const checkAllDataCompiled = () => {
     return !(
       newCompanyData.companyName &&
@@ -54,34 +61,57 @@ const AddCompanyModel: React.FC = () => {
     );
   };
 
+  // Effettua la richiesta per aggiungere una nuova azienda
   const handleCreateNewCompany = async () => {
     try {
-      setIsAddingData(true);
+      setIsAddingData(true); // Imposta lo stato di caricamento su true
 
+      // Esegue la chiamata API per salvare i dati dell'azienda
       const res = await axios.post("/Company/POST/AddCompany", newCompanyData);
 
+      // Messaggio di successo se l'azienda è stata aggiunta correttamente
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
           alertDescription: "L'azienda è stata aggiunta con successo.",
           alertColor: "green",
         });
+
+        // Reindirizza alla pagina specifica dopo 2 secondi
         setTimeout(() => {
           window.location.href = "/administration/customer";
         }, 2000);
       }
     } catch (error) {
-      setAlertData({
-        isOpen: true,
-        alertTitle: "Errore durante l'operazione",
-        alertDescription:
-          "Si è verificato un errore durante l'aggiunta dell'azienda. Per favore, riprova più tardi.",
-        alertColor: "red",
-      });
-      console.error("Errore durante la creazione dell'azienda:", error);
+      console.log(error);
+      if (axios.isAxiosError(error)) {
+        // Controllo dell'errore specifico 409 (azienda con lo stesso nome)
+        if (error.response?.status === 409) {
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Conflitto durante l'operazione",
+            alertDescription:
+              "Esiste già un'azienda con questo nome. Per favore, usa un nome differente.",
+            alertColor: "yellow",
+          });
+        } else {
+          // Messaggio di errore generico in caso di altri problemi con la richiesta
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Errore durante l'operazione",
+            alertDescription:
+              "Si è verificato un errore durante l'aggiunta dell'azienda. Per favore, riprova più tardi.",
+            alertColor: "red",
+          });
+        }
+        console.error("Errore durante la creazione dell'azienda:", error);
+      }
     } finally {
-      setIsAddingData(false);
+      setIsAddingData(false); // Reimposta lo stato di caricamento su false
     }
   };
 
@@ -103,6 +133,7 @@ const AddCompanyModel: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-6 gap-6">
+            {/* Campo per il nome dell'azienda */}
             <div className="col-span-6 sm:col-span-6">
               <label
                 htmlFor="companyName"
@@ -122,6 +153,7 @@ const AddCompanyModel: React.FC = () => {
               />
             </div>
 
+            {/* Campo per l'indirizzo dell'azienda */}
             <div className="col-span-6 sm:col-span-3">
               <label
                 htmlFor="companyAddress"
@@ -141,6 +173,7 @@ const AddCompanyModel: React.FC = () => {
               />
             </div>
 
+            {/* Campo per l'email dell'azienda */}
             <div className="col-span-6 sm:col-span-3">
               <label
                 htmlFor="companyEmail"
@@ -160,6 +193,7 @@ const AddCompanyModel: React.FC = () => {
               />
             </div>
 
+            {/* Campo per il numero di telefono dell'azienda */}
             <div className="col-span-6 sm:col-span-3">
               <label
                 htmlFor="companyPhone"
@@ -180,13 +214,15 @@ const AddCompanyModel: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Bottone per salvare i dati */}
         <div className="py-3 text-right">
           <Button
             color="primary"
             className="text-white"
             radius="full"
             startContent={!isAddingData && <SaveIcon />}
-            isDisabled={checkAllDataCompiled()}
+            isDisabled={checkAllDataCompiled()} // Disabilita se i campi obbligatori sono vuoti
             isLoading={isAddingData}
             onClick={handleCreateNewCompany}
           >

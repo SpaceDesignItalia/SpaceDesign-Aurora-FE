@@ -10,6 +10,7 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 
 interface Company {
+  CompanyId: number;
   CompanyName: string;
   CompanyAddress: string;
   CompanyEmail: string;

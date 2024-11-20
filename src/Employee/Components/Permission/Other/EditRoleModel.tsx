@@ -31,9 +31,10 @@ interface Permissions {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
-  alertColor: "red" | "green" | "yellow";
+  alertColor: "green" | "red" | "yellow";
 }
 
 const initialRoleDataStruct: Role = {
@@ -42,13 +43,13 @@ const initialRoleDataStruct: Role = {
   RolePriority: 0,
 };
 
-const initialAlertData: AlertData = {
+const INITIAL_ALERT_DATA: AlertData = {
   isOpen: false,
+  onClose: () => {},
   alertTitle: "",
   alertDescription: "",
   alertColor: "red",
 };
-
 const EditRoleModel: React.FC = () => {
   const { RoleId } = useParams<{ RoleId: string }>();
   const [permissionGroup, setPermissionGroup] = useState<PermissionGroup[]>([]);
@@ -62,7 +63,7 @@ const EditRoleModel: React.FC = () => {
     number[]
   >([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -141,6 +142,7 @@ const EditRoleModel: React.FC = () => {
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
           alertDescription: "Il ruolo è stato aggiornato con successo.",
           alertColor: "green",
@@ -150,14 +152,30 @@ const EditRoleModel: React.FC = () => {
         }, 2000);
       }
     } catch (error) {
-      setAlertData({
-        isOpen: true,
-        alertTitle: "Errore durante l'operazione",
-        alertDescription:
-          "Si è verificato un errore durante l'aggiornamento del ruolo. Per favore, riprova più tardi.",
-        alertColor: "red",
-      });
       console.error("Errore durante l'aggiornamento del ruolo:", error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 409) {
+          // Handle conflict error (409)
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Conflitto durante l'operazione",
+            alertDescription:
+              "Un altro ruolo ha già lo stesso nome. Scegli un nome diverso.",
+            alertColor: "yellow",
+          });
+        } else {
+          // General error handling
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Errore durante l'operazione",
+            alertDescription:
+              "Si è verificato un errore durante l'aggiornamento del ruolo. Per favore, riprova più tardi.",
+            alertColor: "red",
+          });
+        }
+      }
     } finally {
       setIsAddingData(false);
     }

@@ -14,6 +14,7 @@ interface Employee {
   EmployeeFullName: string;
   EmployeeEmail: string;
   EmployeePhone: string;
+  RoleName: string;
 }
 
 interface ConfirmDeleteModalProps {

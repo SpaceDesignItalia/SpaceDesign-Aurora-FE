@@ -27,6 +27,7 @@ interface Company {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
@@ -41,18 +42,21 @@ const initialCustomerData: Customer = {
   CompanyId: 0,
 };
 
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
+
 export default function EditCustomerModel() {
   const { CustomerId } = useParams();
   const [customerData, setCustomerData] =
     useState<Customer>(initialCustomerData);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "red",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   useEffect(() => {
     axios
@@ -111,7 +115,7 @@ export default function EditCustomerModel() {
     return password;
   };
 
-  const handleUpdateCustomer = async () => {
+  const handleAddCustomer = async () => {
     try {
       setIsSaving(true);
       const res = await axios.post("/Customer/POST/AddCustomer", {
@@ -124,6 +128,7 @@ export default function EditCustomerModel() {
       if (res.status === 200) {
         setAlertData({
           isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
           alertDescription: "Il cliente è stato aggiunto con successo.",
           alertColor: "green",
@@ -133,13 +138,29 @@ export default function EditCustomerModel() {
         }, 2000);
       }
     } catch (error) {
-      setAlertData({
-        isOpen: true,
-        alertTitle: "Errore durante l'operazione",
-        alertDescription:
-          "Si è verificato un errore durante l'aggiunta del cliente. Per favore, riprova più tardi.",
-        alertColor: "red",
-      });
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 409) {
+          // Handle duplicate email error
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Conflitto durante l'operazione",
+            alertDescription:
+              "Esiste già un cliente con questa email. Usa un'email diversa.",
+            alertColor: "yellow",
+          });
+        } else {
+          // General error handling
+          setAlertData({
+            isOpen: true,
+            onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+            alertTitle: "Errore durante l'operazione",
+            alertDescription:
+              "Si è verificato un errore durante l'aggiunta del cliente. Per favore, riprova più tardi.",
+            alertColor: "red",
+          });
+        }
+      }
     } finally {
       setIsSaving(false);
     }
@@ -239,7 +260,7 @@ export default function EditCustomerModel() {
                   fullWidth
                 />
               </div>
-              <div className="col-span-6 sm:col-span-6">
+              <div className="col-span-6 sm:col-span-3">
                 <label
                   htmlFor="company"
                   className="block text-sm font-medium leading-6 text-gray-900"
@@ -287,7 +308,7 @@ export default function EditCustomerModel() {
               startContent={<SaveIcon />}
               isDisabled={checkAllDataCompiled()}
               isLoading={isSaving}
-              onClick={handleUpdateCustomer}
+              onClick={handleAddCustomer}
             >
               {isSaving ? "Salvando il cliente..." : "Salva cliente"}
             </Button>
