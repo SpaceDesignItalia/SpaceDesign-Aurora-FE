@@ -21,7 +21,7 @@ export default function ProjectGrid() {
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    axios.get("/Project/GET/GetAllProjects").then((res) => {
+    axios.get("/Project/GET/GetAllProjectsTable").then((res) => {
       setProjects(res.data);
     });
   }, []);
