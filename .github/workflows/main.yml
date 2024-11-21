@@ -1,0 +1,28 @@
+name: Deploy Space Design Aurora FE
+
+# Trigger per eseguire il workflow
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout del repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Configurazione di Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+
+      # Step 3: Installazione delle dipendenze
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Build del progetto
+      - name: Build project
+        run: npm run build
