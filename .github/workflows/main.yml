@@ -1,6 +1,5 @@
 name: Deploy Space Design Aurora FE
 
-# Trigger per eseguire il workflow
 on:
   push:
     branches:
@@ -9,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: ../../var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
 
     steps:
       # Step 1: Checkout del repository
@@ -23,24 +25,10 @@ jobs:
       - name: Install dependencies
         run: npm i
 
-      # Step 4: Verifica della struttura del progetto prima della build
-      - name: List project directory contents
-        run: ls -R
-
-      # Step 5: Build del progetto con opzioni di debug
+      # Step 5: Build del progetto
       - name: Build project
         run: npm run build
 
-      # Step 6: Verifica se la cartella dist è stata creata
-      - name: Check if dist folder exists
-        run: |
-          if [ -d "dist" ]; then
-            echo "dist folder found!"
-          else
-            echo "dist folder not found!"
-            exit 1
-          fi
-
-      # Step 7: Elenco contenuto della cartella dist (se presente)
+      # Step 7: Elenco contenuto della cartella dist
       - name: List contents of dist directory
         run: ls -R dist || echo "No dist folder found"
