@@ -10,6 +10,8 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "dist", // Assicurati che l'output venga scritto nella cartella dist
+    outDir: "dist", // Assicurati che l'output vada nella cartella dist
+    emptyOutDir: true, // Pulisce la cartella dist prima della build
+    minify: true, // Abilita la minificazione
   },
 });
