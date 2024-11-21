@@ -28,8 +28,8 @@ jobs:
         run: ls -R
 
       # Step 5: Build del progetto con opzioni di debug
-      - name: Build project with debug
-        run: npm run build -- --debug
+      - name: Build project
+        run: npm run build
 
       # Step 6: Verifica se la cartella dist è stata creata
       - name: Check if dist folder exists
