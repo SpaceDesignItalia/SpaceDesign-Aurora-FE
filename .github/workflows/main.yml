@@ -1,6 +1,6 @@
 name: Deploy Space Design Aurora FE
 
-# Trigger del workflow
+# Trigger per eseguire il workflow
 on:
   push:
     branches:
@@ -11,32 +11,33 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # Step 1: Checkout del repository nella directory di destinazione
+      # Step 1: Checkout del repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Configura Node.js
+      # Step 2: Configurazione di Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
-        with:
-          node-version: "16" # Sostituisci con la versione di Node.js che desideri usare
 
       # Step 3: Installazione delle dipendenze
       - name: Install dependencies
-        run: |
-          cd /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
-          npm install
+        run: npm i
 
-      # Step 4: Build del progetto
+      # Step 4: Verifica dei permessi sulla cartella
+      - name: Check permissions of target directory
+        run: ls -ld /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
+
+      # Step 5: Verifica della struttura del progetto prima della build
+      - name: List project directory contents
+        run: ls -R
+
+      # Step 6: Build del progetto con opzioni di debug
       - name: Build project
-        run: |
-          cd /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
-          npm run build
+        run: npm run build
 
-      # Step 5: Verifica della cartella dist
+      # Step 7: Verifica se la cartella dist è stata creata
       - name: Check if dist folder exists
         run: |
-          cd /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
           if [ -d "dist" ]; then
             echo "dist folder found!"
           else
@@ -44,8 +45,6 @@ jobs:
             exit 1
           fi
 
-      # Step 6: Listare il contenuto della cartella dist (se presente)
+      # Step 8: Elenco contenuto della cartella dist (se presente)
       - name: List contents of dist directory
-        run: |
-          cd /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
-          ls -R dist || echo "No dist folder found"
+        run: ls -R dist || echo "No dist folder found"
