@@ -14,41 +14,38 @@ jobs:
       # Step 1: Checkout del repository nella directory di destinazione
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          path: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
 
-      # Step 2: Imposta la directory di lavoro nella directory di destinazione
-      - name: Set working directory
-        working-directory: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
-        run: |
-          # Conferma che siamo nella directory corretta
-          pwd
-          ls -la
-
-      # Step 3: Configura Node.js
+      # Step 2: Configura Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "16" # Sostituisci con la versione di Node.js che desideri usare
-        working-directory: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
 
-      # Step 4: Installa le dipendenze
+      # Step 3: Installazione delle dipendenze
       - name: Install dependencies
-        run: npm install
-        working-directory: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
+        run: |
+          cd /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
+          npm install
 
-      # Step 5: Esegui il build
+      # Step 4: Build del progetto
       - name: Build project
-        run: npm run build
-        working-directory: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
+        run: |
+          cd /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
+          npm run build
 
-      # Step 6: Controlla se la cartella 'dist' è stata creata
+      # Step 5: Verifica della cartella dist
       - name: Check if dist folder exists
         run: |
+          cd /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
           if [ -d "dist" ]; then
             echo "dist folder found!"
           else
             echo "dist folder not found!"
             exit 1
           fi
-        working-directory: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
+
+      # Step 6: Listare il contenuto della cartella dist (se presente)
+      - name: List contents of dist directory
+        run: |
+          cd /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
+          ls -R dist || echo "No dist folder found"
