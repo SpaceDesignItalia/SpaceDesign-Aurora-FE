@@ -46,7 +46,7 @@ export default function ChatTable() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    socket.on("message-update", (conversationIdWeb) => {
+    socket.on("message-update", () => {
       const conversationId = localStorage.getItem("conversationId");
       if (conversationId !== null) {
         handleOpenChat(parseInt(conversationId));

@@ -220,22 +220,6 @@ export default function ProjectTable() {
               />
             </div>
           );
-        case "ProjectManager":
-          return (
-            <div className="flex justify-start">
-              <User
-                name={project.ProjectManagerName}
-                description={project.RoleName}
-                avatarProps={{
-                  isBordered: true,
-                  size: "sm",
-                  src:
-                    project.StafferImageUrl &&
-                    API_URL_IMG + "/profileIcons/" + project.StafferImageUrl,
-                }}
-              />
-            </div>
-          );
         case "Status":
           return <div> {displayStatus(project)}</div>;
         case "actions":

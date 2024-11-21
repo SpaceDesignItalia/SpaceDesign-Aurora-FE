@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { BarChart, CartesianGrid, XAxis, Bar } from "recharts";
 import {
@@ -16,17 +16,38 @@ import { Button } from "@nextui-org/react";
 import NavigateBeforeOutlinedIcon from "@mui/icons-material/NavigateBeforeOutlined";
 import NavigateNextOutlinedIcon from "@mui/icons-material/NavigateNextOutlined";
 
-const chartConfig = {
+// Chart Configuration Type
+interface ChartConfig {
+  label: string;
+  color: string;
+}
+
+// Define `chartConfig` with ChartConfig type
+const chartConfig: Record<string, ChartConfig> = {
   total: {
     label: "Lead Totali",
     color: "hsl(var(--chart-1))",
   },
 };
 
+// Types for Chart Data and API Responses
+interface ChartData {
+  date: string;
+  total: number;
+}
+
+interface LeadResponse {
+  month: string;
+  read_lead_count?: string;
+  unread_lead_count?: string;
+}
+
 export default function LeadGraph() {
-  const [chartData, setChartData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [years, setYears] = useState([]);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  );
+  const [years, setYears] = useState<number[]>([]);
 
   useEffect(() => {
     fetchContacts();
@@ -34,38 +55,47 @@ export default function LeadGraph() {
 
   const fetchContacts = async () => {
     try {
-      const readResponse = await axios.get(`/Lead/GET/GetReadLeadsByMonth`);
-      const pendingResponse = await axios.get(
+      // Define API responses with expected shape
+      const readResponse = await axios.get<LeadResponse[]>(
+        `/Lead/GET/GetReadLeadsByMonth`
+      );
+      const pendingResponse = await axios.get<LeadResponse[]>(
         `/Lead/GET/GetPendingLeadsByMonth`
       );
 
-      const readDataMap = new Map(
+      // Map data for read and pending leads by month
+      const readDataMap = new Map<string, number>(
         readResponse.data.map((item) => [
           item.month.slice(0, 7),
           Number(item.read_lead_count),
         ])
       );
-      const pendingDataMap = new Map(
+      const pendingDataMap = new Map<string, number>(
         pendingResponse.data.map((item) => [
           item.month.slice(0, 7),
           Number(item.unread_lead_count),
         ])
       );
 
-      const processedData = Array.from({ length: 12 }, (_, index) => {
-        const month = new Date(selectedYear, index, 2)
-          .toISOString()
-          .slice(0, 7);
-        const readCount = readDataMap.get(month) || 0;
-        const unreadCount = pendingDataMap.get(month) || 0;
-        return {
-          date: month,
-          total: readCount + unreadCount,
-        };
-      });
+      // Generate data for each month
+      const processedData: ChartData[] = Array.from(
+        { length: 12 },
+        (_, index) => {
+          const month = new Date(selectedYear, index, 2)
+            .toISOString()
+            .slice(0, 7);
+          const readCount = readDataMap.get(month) || 0;
+          const unreadCount = pendingDataMap.get(month) || 0;
+          return {
+            date: month,
+            total: readCount + unreadCount,
+          };
+        }
+      );
       setChartData(processedData);
 
-      const allYears = new Set([
+      // Collect unique years from responses
+      const allYears = new Set<number>([
         ...readResponse.data.map((item) => new Date(item.month).getFullYear()),
         ...pendingResponse.data.map((item) =>
           new Date(item.month).getFullYear()

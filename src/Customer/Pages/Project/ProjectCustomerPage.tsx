@@ -28,7 +28,7 @@ interface Project {
 }
 
 export default function ProjectCustomerPage() {
-  const { ProjectId, ProjectName, CompanyName } = useParams<{
+  const { ProjectId, ProjectName } = useParams<{
     ProjectId: string;
     ProjectName: string;
     CompanyName: string;
@@ -99,7 +99,7 @@ export default function ProjectCustomerPage() {
                   variant="bordered"
                   className="hidden sm:flex"
                   selectedKey={activeTab}
-                  onSelectionChange={setActiveTab}
+                  onSelectionChange={(key) => setActiveTab(key as string)}
                 >
                   {tabs.map((tab) => (
                     <Tab
@@ -123,7 +123,7 @@ export default function ProjectCustomerPage() {
                   variant="bordered"
                   className="flex sm:hidden"
                   selectedKey={activeTab}
-                  onSelectionChange={setActiveTab}
+                  onSelectionChange={(key) => setActiveTab(key as string)}
                 >
                   {tabs.map((tab) => (
                     <Tab

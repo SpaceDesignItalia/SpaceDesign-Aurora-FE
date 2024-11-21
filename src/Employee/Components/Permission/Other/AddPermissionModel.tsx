@@ -17,6 +17,7 @@ interface PermissionGroup {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
@@ -29,8 +30,9 @@ const initialPermissionData = {
   PermissionGroupId: null as number | null,
 };
 
-const initialAlertData: AlertData = {
+const INITIAL_ALERT_DATA: AlertData = {
   isOpen: false,
+  onClose: () => {},
   alertTitle: "",
   alertDescription: "",
   alertColor: "red",
@@ -42,7 +44,7 @@ export default function AddPermissionModel() {
   );
   const [newPermission, setNewPermission] = useState(initialPermissionData);
   const [isAddingData, setIsAddingData] = useState(false);
-  const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   useEffect(() => {
     axios
@@ -110,6 +112,7 @@ export default function AddPermissionModel() {
           isOpen: true,
           alertTitle: "Operazione completata",
           alertDescription: "Il permesso è stato aggiunto con successo.",
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertColor: "green",
         });
         setTimeout(() => {
@@ -122,6 +125,7 @@ export default function AddPermissionModel() {
         alertTitle: "Errore durante l'operazione",
         alertDescription:
           "Si è verificato un errore durante l'aggiunta del permesso. Per favore, riprova più tardi.",
+        onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
         alertColor: "red",
       });
 

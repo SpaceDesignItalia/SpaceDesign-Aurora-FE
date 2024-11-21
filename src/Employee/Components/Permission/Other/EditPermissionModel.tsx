@@ -18,6 +18,7 @@ interface PermissionGroup {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
@@ -31,8 +32,9 @@ const initialPermissionState = {
   PermissionGroupId: 0,
 };
 
-const initialAlertData: AlertData = {
+const INITIAL_ALERT_DATA: AlertData = {
   isOpen: false,
+  onClose: () => {},
   alertTitle: "",
   alertDescription: "",
   alertColor: "red",
@@ -49,7 +51,7 @@ export default function EditPermissionModel() {
     PermissionId,
   });
   const [isUpdatingData, setIsUpdatingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>(initialAlertData);
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -125,6 +127,7 @@ export default function EditPermissionModel() {
           isOpen: true,
           alertTitle: "Operazione completata",
           alertDescription: "Il permesso è stato aggiornato con successo.",
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertColor: "green",
         });
         setTimeout(() => {
@@ -137,6 +140,7 @@ export default function EditPermissionModel() {
         alertTitle: "Errore durante l'operazione",
         alertDescription:
           "Si è verificato un errore durante l'aggiornamento del permesso. Per favore, riprova più tardi.",
+        onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
         alertColor: "red",
       });
     } finally {

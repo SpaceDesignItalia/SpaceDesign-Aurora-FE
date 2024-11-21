@@ -1,6 +1,3 @@
-"use client";
-
-import * as React from "react";
 import { Label, Pie, PieChart } from "recharts";
 import {
   Card,
@@ -16,7 +13,7 @@ import {
   ChartTooltipContent,
 } from "../../../../components/ui/chart";
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export const description = "A donut chart showing project states";
 
@@ -26,17 +23,22 @@ const chartConfig = {
   completed: { label: "Terminato", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
+interface Status {
+  StatusId: number;
+  StatusName: string;
+  StatusColor: string;
+}
+
 interface Project {
   ProjectId: number;
   ProjectName: string;
-  Status: "Appena Creato " | "In Sviluppo " | "Terminato ";
+  StatusId: number;
+  StatusName: "Appena Creato " | "In Sviluppo " | "Terminato ";
 }
 
 export default function ProjectChart() {
-  const [projects, setProjects] = React.useState<Project[]>([]);
-  const [statusList, setStatusList] = React.useState<
-    { StatusId: number; StatusName: string; StatusColor: string }[]
-  >([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [statusList, setStatusList] = useState<Status[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -56,12 +58,15 @@ export default function ProjectChart() {
     fetchData();
   }, []);
 
-  const chartData = React.useMemo(() => {
-    const stateCounts = {};
-    statusList.forEach((status) => {
+  const chartData = useMemo(() => {
+    const stateCounts: Record<string, { count: number; color: string }> = {};
+
+    // Initialize stateCounts with status names as keys
+    statusList.forEach((status: Status) => {
       stateCounts[status.StatusName] = { count: 0, color: status.StatusColor };
     });
 
+    // Count projects by status
     projects.forEach((project) => {
       const status = statusList.find((s) => s.StatusId === project.StatusId);
       if (status) {
@@ -69,6 +74,7 @@ export default function ProjectChart() {
       }
     });
 
+    // Convert stateCounts to an array of chart data objects
     return Object.entries(stateCounts).map(([state, { count, color }]) => ({
       state,
       count,
