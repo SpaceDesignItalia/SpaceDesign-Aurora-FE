@@ -1,5 +1,6 @@
 name: Deploy Space Design Aurora FE
 
+# Trigger del workflow
 on:
   push:
     branches:
@@ -10,18 +11,44 @@ jobs:
     runs-on: self-hosted
 
     steps:
+      # Step 1: Checkout del repository nella directory di destinazione
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          path: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
 
+      # Step 2: Imposta la directory di lavoro nella directory di destinazione
+      - name: Set working directory
+        working-directory: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
+        run: |
+          # Conferma che siamo nella directory corretta
+          pwd
+          ls -la
+
+      # Step 3: Configura Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
+        with:
+          node-version: "16" # Sostituisci con la versione di Node.js che desideri usare
+        working-directory: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
 
+      # Step 4: Installa le dipendenze
       - name: Install dependencies
-        run: npm i
+        run: npm install
+        working-directory: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
 
+      # Step 5: Esegui il build
       - name: Build project
         run: npm run build
+        working-directory: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
 
-      # Copia i file nella cartella finale
-      - name: Copy to deployment directory
-        run: sudo cp -R dist/* /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it/
+      # Step 6: Controlla se la cartella 'dist' è stata creata
+      - name: Check if dist folder exists
+        run: |
+          if [ -d "dist" ]; then
+            echo "dist folder found!"
+          else
+            echo "dist folder not found!"
+            exit 1
+          fi
+        working-directory: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
