@@ -23,6 +23,24 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Step 4: Build del progetto
-      - name: Build project
-        run: npm run build
+      # Step 4: Verifica della struttura del progetto prima della build
+      - name: List project directory contents
+        run: ls -R
+
+      # Step 5: Build del progetto con opzioni di debug
+      - name: Build project with debug
+        run: npm run build -- --debug
+
+      # Step 6: Verifica se la cartella dist è stata creata
+      - name: Check if dist folder exists
+        run: |
+          if [ -d "dist" ]; then
+            echo "dist folder found!"
+          else
+            echo "dist folder not found!"
+            exit 1
+          fi
+
+      # Step 7: Elenco contenuto della cartella dist (se presente)
+      - name: List contents of dist directory
+        run: ls -R dist || echo "No dist folder found"
