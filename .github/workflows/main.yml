@@ -21,7 +21,7 @@ jobs:
 
       # Step 3: Installazione delle dipendenze
       - name: Install dependencies
-        run: npm install
+        run: npm i
 
       # Step 4: Verifica della struttura del progetto prima della build
       - name: List project directory contents
