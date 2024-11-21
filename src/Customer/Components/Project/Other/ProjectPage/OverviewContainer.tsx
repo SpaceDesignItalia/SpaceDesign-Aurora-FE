@@ -1,13 +1,7 @@
-import { Button, Progress, cn, User, Tooltip, Link } from "@nextui-org/react";
 import TimerRoundedIcon from "@mui/icons-material/TimerRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import ModeEditRoundedIcon from "@mui/icons-material/ModeEditRounded";
+import { cn, Progress, User } from "@nextui-org/react";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
-import AddProjectLink from "../AddProjectLink";
-import axios from "axios";
 import { API_URL_IMG } from "../../../../../API/API";
-import DeleteLinkModal from "../DeleteLinkModal";
 
 interface Project {
   ProjectId: number;
@@ -26,39 +20,11 @@ interface Project {
   RoleName: string;
 }
 
-interface ModalData {
-  ProjectId: number;
-  open: boolean;
-}
-
-interface ModalEditData {
-  Links: Link[];
-  open: boolean;
-}
-
-interface Link {
-  ProjectId: number;
-  ProjectLinkTitle: string;
-  ProjectLinkUrl: string;
-  ProjectLinkTypeId: number;
-  ProjectLinkTypeImage: string;
-}
-
 export default function OverviewContainer({
   projectData,
 }: {
   projectData: Project;
 }) {
-  const [modalData, setModalData] = useState<ModalData>({
-    ProjectId: 0,
-    open: false,
-  });
-
-  const [modalEditData, setModalEditData] = useState<ModalEditData>({
-    Links: new Array<Link>(),
-    open: false,
-  });
-
   const daysUntilDeadline =
     dayjs(projectData.ProjectEndDate).diff(dayjs(), "day") + 1;
   const totalDays =
@@ -70,35 +36,11 @@ export default function OverviewContainer({
     ((totalDays - daysUntilDeadline) / totalDays) * 100
   );
 
-  const [links, setLinks] = useState<Link[]>([]);
-
-  useEffect(() => {
-    axios
-      .get("/Project/GET/GetAllLinkByProjectId", {
-        params: { ProjectId: projectData.ProjectId },
-      })
-      .then((res) => {
-        setLinks(res.data);
-      });
-  }, [projectData.ProjectId]);
-
   function calculateDeadline() {
     if (daysUntilDeadline < 0) {
       return <p className="text-red-500">Scaduto</p>;
     }
     return <>{daysUntilDeadline} g</>;
-  }
-
-  function DeleteLink(LinkId: number) {
-    axios
-      .delete("/Project/DELETE/RemoveLinkFromProject", {
-        params: { ProjectLinkId: LinkId, ProjectId: projectData.ProjectId },
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          window.location.reload();
-        }
-      });
   }
 
   return (

@@ -257,17 +257,6 @@ export default function FolderContainer({
     }
   }
 
-  async function handleGoBack() {
-    try {
-      const res = await axios.get("/Project/GET/GetFolderByFolderId", {
-        params: { FolderId: currentFolder.UpFolderId },
-      });
-      setCurrentFolder(res.data);
-    } catch (error) {
-      console.error("Errore nel tornare alla cartella precedente:", error);
-    }
-  }
-
   async function DeleteFile(FileData: File) {
     try {
       const res = await axios.delete("/Project/DELETE/DeleteFile", {

@@ -71,7 +71,6 @@ export default function ProjectPage() {
   }>();
   const [ProjectId, setProjectId] = useState("");
   const [ProjectName, setProjectName] = useState("");
-  const [CompanyName, setCompanyName] = useState("");
   const [projectData, setProjectData] = useState<Project>({
     ProjectId: 0,
     ProjectName: "",
@@ -115,7 +114,6 @@ export default function ProjectPage() {
       .then((res) => {
         setProjectId(res.data.ProjectId);
         setProjectName(res.data.ProjectName);
-        setCompanyName(res.data.CompanyName);
 
         return axios
           .get("/Project/GET/GetProjectByIdAndName", {

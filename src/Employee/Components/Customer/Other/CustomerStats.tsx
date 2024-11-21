@@ -1,7 +1,7 @@
 import Groups2RoundedIcon from "@mui/icons-material/Groups2Rounded";
 import StoreRoundedIcon from "@mui/icons-material/StoreRounded";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function CustomerStats() {
   const [stats, setStats] = useState([{ stat: 0 }, { stat: 0 }]);

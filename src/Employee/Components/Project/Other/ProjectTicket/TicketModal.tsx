@@ -11,9 +11,7 @@ import {
   Textarea,
 } from "@nextui-org/react";
 import React, { useState, useEffect } from "react";
-import SaveRounded from "@mui/icons-material/SaveRounded";
 import axios from "axios";
-import AddTaskModal from "../ProjectTask/AddTaskModal"; // Importa il modale per aggiungere task
 
 interface Ticket {
   ProjectTicketId: number;
@@ -48,7 +46,6 @@ const TicketModal: React.FC<TicketModalProps> = ({
   const [newTicket, setNewTicket] = useState<Ticket | null>(ticket);
   const [ticketStatuses, setTicketStatuses] = useState<TicketStatus[]>([]);
   const [selectedStatusId, setSelectedStatusId] = useState<string | null>(null);
-  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false); // Stato per il modale di aggiunta task
 
   // Aggiorna lo stato del ticket selezionato
   useEffect(() => {
@@ -106,11 +103,6 @@ const TicketModal: React.FC<TicketModalProps> = ({
       .catch((error) => {
         console.error("Error updating ticket status", error);
       });
-  };
-
-  // Naviga alla schermata di aggiunta task
-  const handleAddTask = () => {
-    setIsAddTaskModalOpen(true); // Apre il modale per aggiungere un task
   };
 
   return (
@@ -213,15 +205,6 @@ const TicketModal: React.FC<TicketModalProps> = ({
                     )}
                   </Autocomplete>
                 </div>
-                <Button
-                  color="primary"
-                  radius="sm"
-                  onClick={handleAddTask}
-                  startContent={<SaveRounded />}
-                  className="w-1/4"
-                >
-                  Crea Task
-                </Button>
               </ModalBody>
               <ModalFooter className="flex justify-end gap-4 px-8 py-6">
                 <Button
@@ -245,18 +228,6 @@ const TicketModal: React.FC<TicketModalProps> = ({
           )}
         </ModalContent>
       </Modal>
-
-      {/* Modale per aggiungere un task */}
-      {newTicket && (
-        <AddTaskModal
-          isOpen={isAddTaskModalOpen}
-          isClosed={() => setIsAddTaskModalOpen(false)}
-          ProjectId={newTicket.ProjectId} // Passa l'ID del progetto al modale
-          TicketId={newTicket.ProjectTicketId} // Passa l'ID del ticket
-          defaultTitle={newTicket.ProjectTicketTitle} // Passa il titolo del ticket
-          defaultDescription={newTicket.ProjectTicketDescription} // Passa la descrizione del ticket
-        />
-      )}
     </>
   );
 };

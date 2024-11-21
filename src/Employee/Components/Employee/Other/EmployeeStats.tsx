@@ -1,7 +1,7 @@
 import EngineeringRoundedIcon from "@mui/icons-material/EngineeringRounded";
 import PersonAddRoundedIcon from "@mui/icons-material/PersonAddRounded";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function EmployeeStats() {
   const [stats, setStats] = useState([{ stat: 0 }, { stat: 0 }]);

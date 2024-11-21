@@ -122,7 +122,7 @@ export default function EmployeeTable() {
       "Message",
     ];
 
-    const wrapInQuotes = (value) => {
+    const wrapInQuotes = (value: any) => {
       return typeof value === "string" ? `"${value}"` : value;
     };
 

@@ -22,6 +22,7 @@ interface ChangePassword {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
@@ -42,8 +43,9 @@ const CHANGEPASSWORD_DEFAULT: ChangePassword = {
   ConfirmPassword: "",
 };
 
-const ALERT_DEFAULT: AlertData = {
+const INITIAL_ALERT_DATA: AlertData = {
   isOpen: false,
+  onClose: () => {},
   alertTitle: "",
   alertDescription: "",
   alertColor: "red",
@@ -60,7 +62,7 @@ export default function SettingsModel() {
   const [changePassword, setChangePassword] = useState<ChangePassword>(
     CHANGEPASSWORD_DEFAULT
   );
-  const [alertData, setAlertData] = useState<AlertData>(ALERT_DEFAULT);
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isSavingNewPassword, setIsSavingNewPassword] =
     useState<boolean>(false);
@@ -145,6 +147,7 @@ export default function SettingsModel() {
           isOpen: true,
           alertTitle: "Operazione completata",
           alertDescription: "I dati sono stati aggiornati con successo.",
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertColor: "green",
         });
 
@@ -158,6 +161,7 @@ export default function SettingsModel() {
         alertTitle: "Errore durante l'operazione",
         alertDescription:
           "Si è verificato un errore durante la modifica dei dati. Per favore, riprova più tardi.",
+        onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
         alertColor: "red",
       });
       console.error("Errore durante l'aggiornamento dei dati:", error);
@@ -180,6 +184,7 @@ export default function SettingsModel() {
           isOpen: true,
           alertTitle: "Operazione completata",
           alertDescription: "La password è stata cambiata con successo.",
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertColor: "green",
         });
 
@@ -193,19 +198,16 @@ export default function SettingsModel() {
           isOpen: true,
           alertTitle: "Errore durante l'operazione",
           alertDescription: "La password attuale è errata!",
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertColor: "red",
         });
-
-        setTimeout(() => {
-          setAlertData(ALERT_DEFAULT);
-          setIsSavingNewPassword(false);
-        }, 2000);
       } else {
         setAlertData({
           isOpen: true,
           alertTitle: "Errore durante l'operazione",
           alertDescription:
             "Si è verificato un errore durante la modifica dei dati. Per favore, riprova più tardi.",
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertColor: "red",
         });
         console.error("Errore durante l'aggiornamento dei dati:", error);

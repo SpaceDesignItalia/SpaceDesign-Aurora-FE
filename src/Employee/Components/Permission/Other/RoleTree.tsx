@@ -3,44 +3,49 @@ import ReactFlow, {
   addEdge,
   Background,
   Controls,
-  MiniMap,
   Edge,
   Connection,
   useEdgesState,
   useNodesState,
+  Node,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import axios from "axios";
 
+// Define the Role interface
 interface Role {
   RoleId: number;
   RoleName: string;
   RolePriority: number;
 }
 
-const RoleTree = () => {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+// Define the component
+const RoleTree: React.FC = () => {
+  // Define the state for nodes and edges, using types Node[] and Edge[] respectively
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([]);
 
   useEffect(() => {
     axios.get("/Permission/GET/GetAllRoles").then((res) => {
       const roles: Role[] = res.data.sort(
-        (a, b) => a.RolePriority - b.RolePriority
+        (a: Role, b: Role) => a.RolePriority - b.RolePriority
       );
-      const groupedRoles: { [key: number]: Role[] } = {};
 
+      // Group roles by their priority
+      const groupedRoles: { [key: number]: Role[] } = {};
       roles.forEach((role) => {
         if (!groupedRoles[role.RolePriority])
           groupedRoles[role.RolePriority] = [];
         groupedRoles[role.RolePriority].push(role);
       });
 
-      const roleNodes = [];
+      // Arrays to hold nodes and edges
+      const roleNodes: Node[] = [];
       const roleEdges: Edge[] = [];
       const priorityKeys = Object.keys(groupedRoles);
 
       priorityKeys.slice(0, -1).forEach((priority, priorityIndex) => {
-        const roles = groupedRoles[priority];
+        const roles = groupedRoles[parseInt(priority)];
         const yPosition = priorityIndex * 200;
         const collectionNodeId = `collection-${priority}`;
 
@@ -60,6 +65,7 @@ const RoleTree = () => {
             fontSize: "8px",
             textAlign: "center",
           },
+          data: { label: "" }, // Adding a label property to meet Node type requirements
         });
 
         roles.forEach((role, roleIndex) => {
@@ -80,7 +86,7 @@ const RoleTree = () => {
         });
 
         const nextPriority = priorityKeys[priorityIndex + 1];
-        const nextRoles = groupedRoles[nextPriority];
+        const nextRoles = groupedRoles[parseInt(nextPriority)];
 
         nextRoles.forEach((nextRole) => {
           roleEdges.push({
@@ -93,8 +99,9 @@ const RoleTree = () => {
         });
       });
 
+      // Handling the last priority group
       const lastPriority = priorityKeys[priorityKeys.length - 1];
-      const lastRoles = groupedRoles[lastPriority];
+      const lastRoles = groupedRoles[parseInt(lastPriority)];
       const lastYPosition = (priorityKeys.length - 1) * 200;
 
       lastRoles.forEach((role) => {
@@ -115,14 +122,16 @@ const RoleTree = () => {
         });
       });
 
+      // Set the nodes and edges
       setNodes(roleNodes);
       setEdges(roleEdges);
     });
-  }, []);
+  }, [setNodes, setEdges]);
 
+  // Handle new edge connections
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
-    []
+    [setEdges]
   );
 
   return (

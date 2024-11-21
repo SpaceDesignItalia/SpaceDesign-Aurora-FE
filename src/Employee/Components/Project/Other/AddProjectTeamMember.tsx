@@ -32,10 +32,19 @@ interface Staffer {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
-  alertColor: string;
+  alertColor: "green" | "red" | "yellow";
 }
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
 
 export default function AddProjectTeamMember({
   isOpen,
@@ -45,12 +54,7 @@ export default function AddProjectTeamMember({
   const [newTeamMember, setNewTeamMember] = useState<number>(0);
   const [availableStaff, setAvailableStaff] = useState<Staffer[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   useEffect(() => {
     axios
@@ -69,7 +73,7 @@ export default function AddProjectTeamMember({
     return true;
   }
 
-  function handleProjectTeamMemberChange(e: React.Key) {
+  function handleProjectTeamMemberChange(e: any) {
     setNewTeamMember(parseInt(e));
   }
 
@@ -87,6 +91,7 @@ export default function AddProjectTeamMember({
           isOpen: true,
           alertTitle: "Operazione completata",
           alertDescription: "Il membro è stato aggiunto con successo.",
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertColor: "green",
         });
         setTimeout(() => {
@@ -101,6 +106,7 @@ export default function AddProjectTeamMember({
         alertTitle: "Errore durante l'operazione",
         alertDescription:
           "Si è verificato un errore durante l'aggiunta del membro. Per favore, riprova più tardi.",
+        onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
         alertColor: "red",
       });
 

@@ -28,10 +28,19 @@ interface onlineUser {
 
 interface AlertData {
   isOpen: boolean;
+  onClose: () => void;
   alertTitle: string;
   alertDescription: string;
   alertColor: "green" | "red" | "yellow";
 }
+
+const INITIAL_ALERT_DATA: AlertData = {
+  isOpen: false,
+  onClose: () => {},
+  alertTitle: "",
+  alertDescription: "",
+  alertColor: "red",
+};
 
 export default function ProjectTeamMemberCard({
   MemberData,
@@ -39,12 +48,7 @@ export default function ProjectTeamMemberCard({
   onlineUser,
   type,
 }: ProjectTeamMemberCardProps) {
-  const [alertData, setAlertData] = useState<AlertData>({
-    isOpen: false,
-    alertTitle: "",
-    alertDescription: "",
-    alertColor: "red",
-  });
+  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
 
   async function handleMemberRemove() {
     try {
@@ -60,6 +64,7 @@ export default function ProjectTeamMemberCard({
           isOpen: true,
           alertTitle: "Operazione completata",
           alertDescription: "Il membro è stato eliminato con successo.",
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertColor: "green",
         });
         setTimeout(() => {
@@ -72,6 +77,7 @@ export default function ProjectTeamMemberCard({
         alertTitle: "Errore durante l'operazione",
         alertDescription:
           "Si è verificato un errore durante l'eliminazione del membro. Per favore, riprova più tardi.",
+        onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
         alertColor: "red",
       });
 
