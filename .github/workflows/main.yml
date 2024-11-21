@@ -8,30 +8,20 @@ on:
 jobs:
   build:
     runs-on: self-hosted
-    defaults:
-      run:
-        working-directory: /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
 
     steps:
-      # Step 1: Checkout del repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Configurazione di Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
 
-      - name: Check permissions
-        run: ls -ld /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
-
-      # Step 3: Installazione delle dipendenze
       - name: Install dependencies
         run: npm i
 
-      # Step 5: Build del progetto
       - name: Build project
         run: npm run build
 
-      # Step 7: Elenco contenuto della cartella dist
-      - name: List contents of dist directory
-        run: ls -R dist || echo "No dist folder found"
+      # Copia i file nella cartella finale
+      - name: Copy to deployment directory
+        run: sudo cp -R dist/* /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it/
