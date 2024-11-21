@@ -21,6 +21,9 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
 
+      - name: Check permissions
+        run: ls -ld /var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it
+
       # Step 3: Installazione delle dipendenze
       - name: Install dependencies
         run: npm i
