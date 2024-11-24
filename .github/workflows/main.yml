@@ -1,0 +1,41 @@
+name: Deploy SpaceDesign Aurora FE
+
+on:
+  push:
+    branches:
+      - main  # Esegui il deploy solo quando fai push sulla branch "main"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the code
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # Usa la versione che preferisci o quella del tuo progetto
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Build the project
+      - name: Build the project
+        run: npm run build  # Assicurati che questo comando generi la cartella "dist" o "build"
+
+      # Step 5: Upload 'dist' folder via SFTP to Plesk
+      - name: Upload 'dist' folder to Plesk via SFTP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PLESK_SFTP_SERVER }}
+          username: ${{ secrets.PLESK_SFTP_USERNAME }}
+          password: ${{ secrets.PLESK_SFTP_PASSWORD }}
+          port: 22  # Porta SFTP esplicitamente impostata su 22
+          source: "./dist/*"  # Carica il contenuto della cartella dist
+          target: "/var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it"  # Percorso su Plesk
+          rm: true  # Rimuove i file esistenti nella cartella target prima di caricare quelli nuovi
