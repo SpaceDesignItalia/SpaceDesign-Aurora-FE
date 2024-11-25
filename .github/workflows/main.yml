@@ -1,9 +1,9 @@
-name: Deploy SpaceDesign Aurora FE
+name: Deploy React Project to Plesk via SFTP
 
 on:
   push:
     branches:
-      - main  # Esegui il deploy solo quando fai push sulla branch "main"
+      - main # Esegui il deploy solo quando fai push sulla branch "main"
 
 jobs:
   build-and-deploy:
@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Usa la versione che preferisci o quella del tuo progetto
+          node-version: "16" # Usa la versione che preferisci o quella del tuo progetto
 
       # Step 3: Install dependencies
       - name: Install dependencies
@@ -26,16 +26,26 @@ jobs:
 
       # Step 4: Build the project
       - name: Build the project
-        run: npm run build  # Assicurati che questo comando generi la cartella "dist" o "build"
+        run: npm run build # Assicurati che questo comando generi la cartella "dist" o "build"
 
-      # Step 5: Upload 'dist' folder via SFTP to Plesk
+      # Step 5: Create .htaccess file
+      - name: Create .htaccess file
+        run: |
+          echo "<IfModule mod_rewrite.c>
+          RewriteEngine On
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteRule ^([^/]+)/?$ \$1.html [L]
+          </IfModule>" > ./dist/.htaccess  # Salva .htaccess nella cartella di output (dist)
+
+      # Step 6: Upload 'dist' folder via SFTP to Plesk
       - name: Upload 'dist' folder to Plesk via SFTP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.PLESK_SFTP_SERVER }}
           username: ${{ secrets.PLESK_SFTP_USERNAME }}
           password: ${{ secrets.PLESK_SFTP_PASSWORD }}
-          port: 22  # Porta SFTP esplicitamente impostata su 22
-          source: "./dist/*"  # Carica il contenuto della cartella dist
-          target: "/var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it"  # Percorso su Plesk
-          rm: true  # Rimuove i file esistenti nella cartella target prima di caricare quelli nuovi
+          port: 22 # Porta SFTP
+          source: "./dist/*" # Carica il contenuto della cartella dist
+          target: "/var/www/vhosts/spacedesign-italia.it/app.spacedesign-italia.it" # Percorso su Plesk
+          rm: true # Rimuove i file esistenti nella cartella target prima di caricare quelli nuovi
