@@ -12,6 +12,7 @@ interface Project {
   ProjectCreationDate: string;
   ProjectEndDate: string;
   StatusId: number;
+  UniqueCode: string;
 }
 
 export default function ProjectTable() {

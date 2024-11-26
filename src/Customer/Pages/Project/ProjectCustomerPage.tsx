@@ -25,13 +25,12 @@ interface Project {
   ProjectManagerFullName: string;
   ProjectManagerEmail: string;
   RoleName: string;
+  UniqeCode: string;
 }
 
 export default function ProjectCustomerPage() {
-  const { ProjectId, ProjectName } = useParams<{
-    ProjectId: string;
-    ProjectName: string;
-    CompanyName: string;
+  const { UniqueCode } = useParams<{
+    UniqueCode: string;
   }>();
   const [projectData, setProjectData] = useState<Project>({
     ProjectId: 0,
@@ -48,6 +47,7 @@ export default function ProjectCustomerPage() {
     ProjectManagerFullName: "",
     ProjectManagerEmail: "",
     RoleName: "",
+    UniqeCode: "",
   });
   const [activeTab, setActiveTab] = useState("Panoramica");
 
@@ -59,13 +59,14 @@ export default function ProjectCustomerPage() {
 
   useEffect(() => {
     axios
-      .get("/Project/GET/GetProjectByIdAndName", {
-        params: { ProjectId: ProjectId, ProjectName: ProjectName },
+      .get("/Project/GET/GetProjectByUniqueCode", {
+        params: { UniqueCode },
       })
       .then((res) => {
         setProjectData(res.data);
+        console.log(res.data);
       });
-  }, [ProjectId, ProjectName]);
+  }, [UniqueCode]);
 
   return (
     <>
