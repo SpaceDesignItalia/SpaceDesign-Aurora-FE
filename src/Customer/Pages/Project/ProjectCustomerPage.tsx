@@ -143,7 +143,9 @@ export default function ProjectCustomerPage() {
             {activeTab === "Panoramica" && (
               <OverviewContainer projectData={projectData} />
             )}
-            {activeTab === "Files" && <FilesCustomerContainer />}
+            {activeTab === "Files" && (
+              <FilesCustomerContainer projectData={projectData} />
+            )}
             {activeTab === "Ticket" && <TicketContainer />}
           </div>
         </main>
