@@ -128,10 +128,7 @@ const CustomerProtectedRoutes: React.FC = () => {
         <Route element={<DashboardCustomer />} path="/" />
         <Route element={<SettingsCustomerDashboard />} path="/settings" />
         <Route element={<ProjectCustomerDashboard />} path="/projects" />
-        <Route
-          element={<ProjectCustomerPage />}
-          path="/projects/:CompanyName/:ProjectId/:ProjectName"
-        />
+        <Route element={<ProjectCustomerPage />} path="/projects/:UniqueCode" />
         <Route
           element={<AddTicketPage />}
           path="/projects/:CompanyName/:ProjectId/:ProjectName/open-new-ticket"

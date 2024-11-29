@@ -11,6 +11,7 @@ interface Project {
   ProjectCreationDate: string;
   ProjectEndDate: string;
   StatusId: number;
+  UniqueCode: string;
 }
 
 interface Status {
@@ -79,16 +80,7 @@ export default function TableCard({ project }: { project: Project }) {
 
   return (
     <>
-      <a
-        href={
-          "/projects/" +
-          project.CompanyName +
-          "/" +
-          project.ProjectId +
-          "/" +
-          project.ProjectName
-        }
-      >
+      <a href={"/projects/" + project.UniqueCode}>
         <div
           key={project.ProjectId}
           className="overflow-hidden rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer"
