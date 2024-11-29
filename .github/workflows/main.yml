@@ -47,5 +47,5 @@ jobs:
           password: ${{ secrets.PLESK_SFTP_PASSWORD }}
           port: 22 # Porta SFTP
           source: "./dist/*" # Carica il contenuto della cartella dist
-          target: "/space-design-aurora" # Percorso su Plesk
+          target: "./space-design-aurora" # Percorso su Plesk
           rm: true # Rimuove i file esistenti nella cartella target prima di caricare quelli nuovi
