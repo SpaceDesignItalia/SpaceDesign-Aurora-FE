@@ -32,10 +32,13 @@ jobs:
       - name: Create .htaccess file
         run: |
           echo "<IfModule mod_rewrite.c>
-          RewriteEngine On
-          RewriteCond %{REQUEST_FILENAME} !-f
-          RewriteCond %{REQUEST_FILENAME} !-d
-          RewriteRule ^([^/]+)/?$ \$1.html [L]
+            RewriteEngine On
+            RewriteBase /
+            RewriteRule ^index\.html$ - [L]
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteCond %{REQUEST_FILENAME} !-l
+            RewriteRule . /index.html [L]
           </IfModule>" > ./dist/.htaccess  # Salva .htaccess nella cartella di output (dist)
 
       # Step 6: Upload 'dist' folder via SFTP to Plesk
