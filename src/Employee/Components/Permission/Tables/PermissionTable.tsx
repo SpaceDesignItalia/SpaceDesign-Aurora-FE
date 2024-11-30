@@ -94,6 +94,7 @@ export default function PermissionTable() {
   function fetchData() {
     axios.get("/Permission/GET/GetAllPermissions").then((res) => {
       setPermissions(res.data);
+      console.log(res);
     });
   }
 

@@ -214,7 +214,6 @@ export default function TaskCard({
         isClosed={() => setModalData({ ...modalData, open: false })}
         TaskData={modalData.Task}
         socket={socket}
-        fetchData={fetchData}
         update={update}
         setUpdate={setUpdate}
         hasValidDescription={hasValidDescription}
