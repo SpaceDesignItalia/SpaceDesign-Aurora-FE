@@ -143,7 +143,7 @@ export default function ProjectList() {
   async function SearchProject() {
     try {
       const res = await axios.get("/Project/GET/SearchProjectByNameTable", {
-        params: { ProjectName: searchTerm },
+        params: { ProjectName: searchTerm.trim() },
       });
       const projectsArray: Project[] = res.data;
 
@@ -220,6 +220,8 @@ export default function ProjectList() {
                     </p>
                     <div className="mt-6">
                       <Button
+                        as={Link}
+                        href="/projects/add-project"
                         color="primary"
                         radius="full"
                         startContent={<CreateNewFolderRoundedIcon />}

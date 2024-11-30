@@ -123,7 +123,7 @@ export default function ProjectTable() {
   async function SearchProject() {
     try {
       const res = await axios.get("/Project/GET/SearchProjectByNameTable", {
-        params: { ProjectName: searchTerm },
+        params: { ProjectName: searchTerm.trim() },
       });
       setProjects(res.data);
     } catch (error) {
@@ -355,13 +355,15 @@ export default function ProjectTable() {
               <div className="text-center p-10">
                 <CreateNewFolderRoundedIcon sx={{ fontSize: 50 }} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
-                  Nessun progetto trovato!
+                  Nessun progetto trovato
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Inizia creando una nuovo progetto al database.
                 </p>
                 <div className="mt-6">
                   <Button
+                    as={Link}
+                    href="/projects/add-project"
                     color="primary"
                     radius="full"
                     startContent={<CreateNewFolderRoundedIcon />}
