@@ -24,6 +24,7 @@ interface Notification {
   userfullname: string;
   NotificationCreationDate: Date;
   IsRead: boolean;
+  UniqueCode: string;
 }
 
 const socket: Socket = io(API_WEBSOCKET_URL);
