@@ -197,9 +197,9 @@ export default function OverviewContainer({
         DeleteLink={DeleteLink}
       />
       <StatusAlert AlertData={alertData} />
-      <div className="grid grid-cols-1 sm:grid-cols-6 gap-5 h-screen">
-        <div className="grid grid-cols-1 xl:grid-cols-6 gap-6 col-span-6 md:col-span-4 h-fit">
-          <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6 xl:col-span-6 h-fit">
+      <div className="grid grid-cols-1 sm:grid-cols-6 gap-5 h-fit">
+        <div className="grid grid-cols-1 sm:grid-cols-6 gap-6 col-span-6 md:col-span-4 h-fit">
+          <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6 h-fit">
             <h1 className="text-xl font-bold mb-4">Dettagli progetto</h1>
 
             <p className="text-gray-600 mb-4">
@@ -235,7 +235,7 @@ export default function OverviewContainer({
             </div>
           </div>
 
-          <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-3">
+          <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6 sm:col-span-3">
             <div className="flex flex-col items-start">
               <h1 className="font-bold">Membri del team</h1>
               <span>{totalTeamMembers}</span>
@@ -243,7 +243,7 @@ export default function OverviewContainer({
             <Groups2RoundedIcon className="text-gray-500" />
           </div>
 
-          <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-3">
+          <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6 sm:col-span-3">
             <div className="flex flex-col items-start">
               <h1 className="font-bold">Task totali</h1>
               <span>{totalTasks}</span>

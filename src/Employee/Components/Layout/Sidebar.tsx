@@ -823,9 +823,10 @@ export default function Sidebar() {
                       <Avatar
                         className="h-8 w-8 rounded-full bg-gray-100"
                         src={
+                          userData.StafferImageUrl &&
                           API_URL_IMG +
-                          "/profileIcons/" +
-                          userData.StafferImageUrl
+                            "/profileIcons/" +
+                            userData.StafferImageUrl
                         }
                         alt=""
                       />

@@ -197,7 +197,7 @@ export default function ProjectPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-5 py-6 lg:py-8">
+          <div className="flex flex-col gap-5 py-6 lg:py-8 mb-20">
             <header className="flex flex-col xl:justify-between w-full gap-5">
               <div className="flex flex-row items-center gap-3">
                 <Chip color="primary" radius="full" className="hidden sm:flex">
