@@ -57,7 +57,7 @@ export default function ProjectChat() {
     socket.on("message-update", () => {
       handleOpenChat(parseInt(localStorage.getItem("conversationId")!));
     });
-  }, [messages.length]);
+  }, [messages.length, ProjectId]);
 
   function handleOpenChat(conversationId: number) {
     try {

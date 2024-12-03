@@ -77,7 +77,7 @@ export default function TicketContainer({
     socket.on("message-update", () => {
       handleOpenChat(parseInt(localStorage.getItem("conversationId")!));
     });
-  }, [messages.length]);
+  }, [messages.length, projectData.ProjectId]);
 
   function handleOpenChat(conversationId: number) {
     try {

@@ -141,6 +141,8 @@ export default function ProjectPage() {
     setCookie("activeProjectTab", activeTab, 7); // Salva per 7 giorni
   }, [activeTab]);
 
+  console.log(projectData.ProjectId);
+
   return (
     <>
       <ChangeProjectTheme
