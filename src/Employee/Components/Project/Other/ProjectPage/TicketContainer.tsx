@@ -5,7 +5,8 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
-import ResponseTicket from "../ProjectTicket/ResponseTicket"; // Import ResponseTicket component
+import ResponseTicket from "../ProjectTicket/ResponseTicket";
+import ProjectCalendar from "./ProjectCalendar/ProjectCalendar";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -120,59 +121,64 @@ export default function TicketContainer({
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-      <div className="col-span-1 flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
-        <div className="flex flex-col gap-5">
-          <h1 className="font-bold">Customer chat</h1>
-          <ScrollShadow
-            className="w-full h-[500px]"
-            ref={scrollRef}
-            hideScrollBar
-          >
-            <div className="flex flex-col">
-              {messages.map((message) => {
-                if (message.IsCustomer) {
-                  return (
-                    <ChatMessage
-                      message={message}
-                      type="recive"
-                      key={message.MessageId}
-                    />
-                  );
-                } else {
-                  return (
-                    <ChatMessage
-                      message={message}
-                      type="send"
-                      key={message.MessageId}
-                    />
-                  );
-                }
-              })}
-            </div>
-          </ScrollShadow>
-          <div className="flex flex-row items-center gap-3 w-full">
-            <Input
-              variant="bordered"
-              className="w-full"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Messaggio"
-            />
-            <Button
-              onClick={handleSendMessage}
-              color="primary"
-              isIconOnly
-              isDisabled={newMessage.trim() === ""}
+    <div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 my-5">
+        <div className="col-span-1 flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
+          <div className="flex flex-col gap-5">
+            <h1 className="font-bold">Customer chat</h1>
+            <ScrollShadow
+              className="w-full h-[500px]"
+              ref={scrollRef}
+              hideScrollBar
             >
-              <SendRoundedIcon />
-            </Button>
+              <div className="flex flex-col">
+                {messages.map((message) => {
+                  if (message.IsCustomer) {
+                    return (
+                      <ChatMessage
+                        message={message}
+                        type="recive"
+                        key={message.MessageId}
+                      />
+                    );
+                  } else {
+                    return (
+                      <ChatMessage
+                        message={message}
+                        type="send"
+                        key={message.MessageId}
+                      />
+                    );
+                  }
+                })}
+              </div>
+            </ScrollShadow>
+            <div className="flex flex-row items-center gap-3 w-full">
+              <Input
+                variant="bordered"
+                className="w-full"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Messaggio"
+              />
+              <Button
+                onClick={handleSendMessage}
+                color="primary"
+                isIconOnly
+                isDisabled={newMessage.trim() === ""}
+              >
+                <SendRoundedIcon />
+              </Button>
+            </div>
           </div>
         </div>
+        <div className="col-span-2">
+          <ResponseTicket />
+        </div>
       </div>
-      <div className="col-span-2">
-        <ResponseTicket />
+      <div className="flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center min-h-[700px] overflow-y-auto transition-all duration-300">
+        <ProjectCalendar />
       </div>
     </div>
   );
