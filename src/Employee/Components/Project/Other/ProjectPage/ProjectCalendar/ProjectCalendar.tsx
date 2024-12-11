@@ -13,9 +13,9 @@ import CalendarYear from "./CalendarYear";
 export default function ProjectCalendar() {
   const [view, setView] = useState("week"); // Gestisce la vista
   const [currentDate, setCurrentDate] = useState(new Date());
-  const container = useRef(null);
-  const containerNav = useRef(null);
-  const containerOffset = useRef(null);
+  const container = useRef<HTMLDivElement>(null);
+  const containerNav = useRef<HTMLDivElement>(null);
+  const containerOffset = useRef<HTMLDivElement>(null);
 
   const monthNames = [
     "January",
@@ -35,7 +35,7 @@ export default function ProjectCalendar() {
   const currentMonth = monthNames[currentDate.getMonth()];
   const currentYear = currentDate.getFullYear();
 
-  const changeMonth = (offset) => {
+  const changeMonth = (offset: any) => {
     const newDate = new Date(currentDate);
     newDate.setMonth(newDate.getMonth() + offset);
     setCurrentDate(newDate);

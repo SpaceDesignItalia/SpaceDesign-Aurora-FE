@@ -1,16 +1,25 @@
-import React from "react";
-
 // Funzione per ottenere il numero di giorni del mese
-const getDaysInMonth = (year, month) => {
+const getDaysInMonth = (year: number, month: number): number => {
   return new Date(year, month, 0).getDate();
 };
+
+interface Event {
+  id: string;
+  time: string;
+}
 
 function CalendarMonth() {
   const currentDate = new Date();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
   const daysInMonth = getDaysInMonth(year, month);
-  const days = [];
+
+  const days: {
+    date: string;
+    isCurrentMonth: boolean;
+    isToday: boolean;
+    events: Event[];
+  }[] = [];
 
   for (let i = 1; i <= daysInMonth; i++) {
     days.push({
@@ -77,7 +86,7 @@ function CalendarMonth() {
                     : undefined
                 }
               >
-                {day.date.split("-").pop().replace(/^0/, "")}
+                {day.date.split("-").pop()?.replace(/^0/, "")}
               </time>
               {day.events.length > 0 && (
                 <div className="mt-1 text-xs text-gray-600">
