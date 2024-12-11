@@ -36,7 +36,6 @@ import {
   SaveRounded as SaveRoundedIcon,
 } from "@mui/icons-material";
 import StatusAlert from "../../../Layout/StatusAlert";
-import { generateDescription } from "./openai";
 
 interface Tag {
   ProjectTaskTagId: number;
