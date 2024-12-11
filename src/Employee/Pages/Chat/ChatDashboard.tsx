@@ -4,7 +4,7 @@ export default function ChatDashboard() {
   return (
     <div className="m-0 lg:ml-72">
       <main className="flex flex-row">
-        <div className="w-full">
+        <div className="w-full h-fit">
           <ChatTable />
         </div>
       </main>

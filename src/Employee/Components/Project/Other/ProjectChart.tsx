@@ -43,11 +43,12 @@ export default function ProjectChart() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const projectsResponse = await axios.get("/Project/GET/GetAllProjects");
+        const projectsResponse = await axios.get(
+          "/Project/GET/GetAllProjectsTable"
+        );
         const statusResponse = await axios.get("/Project/GET/GetAllStatus");
         setProjects(projectsResponse.data);
         setStatusList(statusResponse.data);
-        console.log(projectsResponse.data);
       } catch (error) {
         console.error(
           "Errore nel recupero dei progetti o degli status:",

@@ -584,7 +584,7 @@ export default function ChatTable() {
             </div>
           </div>
 
-          <div className="flex flex-col w-full mx-auto py-2 lg:border-l h-[calc(100vh-80px)]">
+          <div className="flex flex-col w-full mx-auto py-2 lg:border-l h-[calc(100svh-150px)]">
             {selectedConversation ? (
               <>
                 <div className="flex justify-between items-center mb-3 px-4 py-2 border-b border-t lg:border-t-0">
@@ -644,11 +644,7 @@ export default function ChatTable() {
                 </div>
 
                 <div className="flex flex-col flex-1 space-y-2 overflow-y-auto mt-3 px-4 py-3">
-                  <ScrollShadow
-                    ref={scrollRef}
-                    className="h-fit py-10"
-                    hideScrollBar
-                  >
+                  <ScrollShadow ref={scrollRef} className="h-fit" hideScrollBar>
                     {Object.keys(groupedMessages).map((date) => (
                       <div key={date}>
                         <div className="relative py-5">

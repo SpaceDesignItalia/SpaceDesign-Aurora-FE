@@ -1,3 +1,4 @@
+import React from "react";
 import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
 import Person2RoundedIcon from "@mui/icons-material/Person2Rounded";
 import CloseIcon from "@mui/icons-material/Close"; // Importa l'icona della X
@@ -21,6 +22,7 @@ interface Notification {
   userfullname: string;
   NotificationCreationDate: Date;
   IsRead: boolean;
+  UniqueCode: string;
 }
 
 function formatNotificationDate(date: Date): string {
@@ -80,13 +82,7 @@ export default function NotificationItem({
 
   const handleReadProjectNotification = () => {
     handleReadNotification();
-    location.href =
-      "/projects/" +
-      NotificationInfo.CompanyName +
-      "/" +
-      NotificationInfo.ProjectId +
-      "/" +
-      NotificationInfo.ProjectName;
+    location.href = "/projects/" + NotificationInfo.UniqueCode;
   };
 
   const handleReadMessageNotification = () => {

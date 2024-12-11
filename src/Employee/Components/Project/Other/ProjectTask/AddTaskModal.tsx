@@ -331,6 +331,27 @@ export default function AddTaskModal({
     isClosed();
   }
 
+  const [loading, setLoading] = useState<boolean>(false);
+  const handleRefine = async () => {
+    if (!newTask.ProjectTaskDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post("/Project/POST/RefineText", {
+        text: `Riscrivi in modo più formale e completo il seguente testo: ${newTask.ProjectTaskDescription}`,
+      });
+      console.log("Testo raffinato:", refinedText.data);
+      setNewTask({
+        ...newTask,
+        ProjectTaskDescription: refinedText.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <StatusAlert AlertData={alertData} />
@@ -585,6 +606,14 @@ export default function AddTaskModal({
                           }
                         />
                       </dd>
+                      <button
+                        onClick={handleRefine}
+                        disabled={loading || !newTask.ProjectTaskDescription}
+                      >
+                        {loading
+                          ? "Riscrittura in corso..."
+                          : "Riscrivi in modo formale"}
+                      </button>
                     </div>
                   </dl>
                 </div>

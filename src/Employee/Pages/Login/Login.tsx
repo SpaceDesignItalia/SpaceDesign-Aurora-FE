@@ -111,7 +111,11 @@ export default function Login() {
           <div className="grid md:grid-cols-2 items-center gap-4 max-w-7xl w-full">
             {/* Form di login */}
             <div className="border border-gray-300 rounded-md p-6 max-w-md shadow-lg mx-auto md:mx-0">
-              <form className="space-y-6" onSubmit={handleLogin}>
+              <form
+                className="space-y-6"
+                onSubmit={handleLogin}
+                autoComplete="on"
+              >
                 <div className="mb-10">
                   <h3 className="text-3xl font-bold">Accedi</h3>
                   <p className="text-sm mt-4">
@@ -125,7 +129,7 @@ export default function Login() {
                   </label>
                   <div className="relative flex items-center">
                     <Input
-                      name="email"
+                      name="username"
                       variant="bordered"
                       placeholder="Inserisci un email"
                       size="lg"
