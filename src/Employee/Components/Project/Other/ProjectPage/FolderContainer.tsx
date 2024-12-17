@@ -125,7 +125,7 @@ export default function FolderContainer({
   useEffect(() => {
     fetchFolders();
     fetchFiles();
-  }, [currentFolder.FolderId, files.length > 0]);
+  }, [currentFolder.FolderId]);
 
   useEffect(() => {
     axios
