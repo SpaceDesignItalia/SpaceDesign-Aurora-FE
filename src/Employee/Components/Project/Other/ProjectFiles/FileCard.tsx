@@ -33,11 +33,10 @@ export default function FileCard({
   // Ottieni nome del file e la sua estensione separatamente
   const initialFileName = file.FileName || file.file.name;
   const extension = initialFileName.substring(initialFileName.lastIndexOf("."));
-  const [newFileName, setNewFileName] = useState(
-    initialFileName.replace(extension, "")
-  );
+  const [newFileName, setNewFileName] = useState("");
 
   useEffect(() => {
+    setNewFileName(initialFileName.replace(extension, ""));
     fetchFileIcon();
   }, [file, variant]);
 
