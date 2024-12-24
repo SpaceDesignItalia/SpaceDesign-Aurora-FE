@@ -93,15 +93,26 @@ export default function FileCard({
     try {
       const res = await axios.get("/Project/GET/DownloadProjectFileByPath", {
         params: { filePath: file.FilePath, fileName: file.FileName },
+        responseType: "blob", // Importante per il download corretto
       });
 
-      const url = window.URL.createObjectURL(new Blob([res.data]));
+      // Verifica se il file è un `.env`, altrimenti usa il nome originale
+      const fileName = initialFileName.startsWith(".")
+        ? ` ${initialFileName}`
+        : initialFileName;
+
+      // Crea un URL Blob per il file
+      const url = window.URL.createObjectURL(res.data);
       const link = document.createElement("a");
+
       link.href = url;
-      link.setAttribute("download", initialFileName);
+      link.setAttribute("download", fileName); // Imposta il nome corretto
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      // Rilascia l'oggetto Blob per liberare memoria
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Errore durante il download del file:", error);
     }
