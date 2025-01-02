@@ -43,7 +43,8 @@ const columns = [
 ];
 
 export default function ResponseTicket() {
-  const { ProjectId } = useParams();
+  const { UniqueCode } = useParams();
+  const [ProjectId, setProjectId] = useState<number>(0);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
@@ -69,6 +70,16 @@ export default function ResponseTicket() {
   });
 
   useEffect(() => {
+    axios
+      .get("/Project/GET/GetProjectByUniqueCode", {
+        params: { UniqueCode: UniqueCode },
+      })
+      .then((res) => {
+        setProjectId(res.data.ProjectId);
+      });
+  }, [UniqueCode]);
+
+  useEffect(() => {
     fetchData();
   }, [ProjectId]);
 
@@ -78,6 +89,7 @@ export default function ResponseTicket() {
         params: { ProjectId: ProjectId },
       })
       .then((res) => {
+        console.log(res.data);
         setTickets(res.data);
       });
   }

@@ -42,7 +42,6 @@ import { io } from "socket.io-client";
 
 const socket = io(API_WEBSOCKET_URL);
 
-import OpenTask from "./Employee/Components/Project/Other/ProjectTicket/OpenTask";
 const App: React.FC = () => {
   axios.defaults.baseURL = API_URL;
   axios.defaults.withCredentials = true;
@@ -206,11 +205,6 @@ const EmployeeProtectedRoutes: React.FC = () => {
           path="/administration/permission/edit-permission/:PermissionId"
         />
         <Route element={<LeadDashboard />} path="/lead" />
-
-        <Route
-          element={<OpenTask />}
-          path="/projects/:CompanyName/:ProjectId/:ProjectName/ticket/:ticketId/open-task"
-        />
       </Route>
     </Routes>
   );
