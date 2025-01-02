@@ -12,6 +12,7 @@ import {
 } from "@nextui-org/react";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import OpenTaskModal from "./OpenTaskModal";
 
 interface Ticket {
   ProjectTicketId: number;
@@ -38,6 +39,16 @@ interface TicketModalProps {
   ticket: Ticket | null;
 }
 
+interface OpenTaskModalProps {
+  isOpen: boolean;
+  isClosed: () => void;
+  Ticket: Ticket;
+}
+
+interface TaskStatus {
+  ProjectTaskStatusName: string;
+}
+
 const TicketModal: React.FC<TicketModalProps> = ({
   isOpen,
   onClose,
@@ -46,6 +57,12 @@ const TicketModal: React.FC<TicketModalProps> = ({
   const [newTicket, setNewTicket] = useState<Ticket | null>(ticket);
   const [ticketStatuses, setTicketStatuses] = useState<TicketStatus[]>([]);
   const [selectedStatusId, setSelectedStatusId] = useState<string | null>(null);
+  const [modalData, setModalData] = useState<OpenTaskModalProps>({
+    isOpen: false,
+    isClosed: () => {},
+    Ticket: newTicket!,
+  });
+  const [taskStatus, setTaskStatus] = useState<TaskStatus | null>(null);
 
   // Aggiorna lo stato del ticket selezionato
   useEffect(() => {
@@ -53,6 +70,18 @@ const TicketModal: React.FC<TicketModalProps> = ({
       setNewTicket(ticket);
       // Imposta lo stato attuale del ticket come stato selezionato
       setSelectedStatusId(ticket.TicketStatusId.toString());
+      axios
+        .get("/Project/GET/GetTaskStatusByTicketId", {
+          params: {
+            ProjectTicketId: ticket.ProjectTicketId,
+          },
+        })
+        .then((response) => {
+          setTaskStatus(response.data);
+        })
+        .catch((error) => {
+          console.error("Errore nel recupero dello stato del task", error);
+        });
     }
   }, [ticket]);
 
@@ -105,8 +134,15 @@ const TicketModal: React.FC<TicketModalProps> = ({
       });
   };
 
+  console.log(taskStatus?.ProjectTaskStatusName);
+
   return (
     <>
+      <OpenTaskModal
+        isOpen={modalData.isOpen}
+        isClosed={modalData.isClosed}
+        Ticket={newTicket!}
+      />
       <Modal
         isOpen={isOpen}
         onOpenChange={onClose}
@@ -205,6 +241,20 @@ const TicketModal: React.FC<TicketModalProps> = ({
                     )}
                   </Autocomplete>
                 </div>
+                {/* Stato Task collegata */}
+                {taskStatus?.ProjectTaskStatusName !== "" && (
+                  <div className="sm:grid sm:grid-cols-3 sm:gap-4">
+                    <dt className="text-sm font-medium leading-6 text-gray-900">
+                      Stato della task collegata
+                    </dt>
+                    <Input
+                      value={taskStatus?.ProjectTaskStatusName}
+                      readOnly
+                      fullWidth
+                      className="sm:col-span-2"
+                    />
+                  </div>
+                )}
               </ModalBody>
               <ModalFooter className="flex justify-end gap-4 px-8 py-6">
                 <Button
@@ -223,6 +273,16 @@ const TicketModal: React.FC<TicketModalProps> = ({
                 >
                   Salva Modifiche
                 </Button>
+                {taskStatus?.ProjectTaskStatusName === "" && (
+                  <Button
+                    color="primary"
+                    variant="light"
+                    radius="sm"
+                    onClick={() => setModalData({ ...modalData, isOpen: true })}
+                  >
+                    Crea Task
+                  </Button>
+                )}
               </ModalFooter>
             </>
           )}
