@@ -14,7 +14,7 @@ import {
   CardFooter,
   Chip,
   Tooltip,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";

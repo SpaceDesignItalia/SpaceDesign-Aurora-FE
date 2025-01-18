@@ -19,7 +19,7 @@ import {
   Link,
   User,
   cn,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";

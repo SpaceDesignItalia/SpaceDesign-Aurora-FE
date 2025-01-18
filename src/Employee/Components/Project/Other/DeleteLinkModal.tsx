@@ -7,7 +7,7 @@ import {
   ModalHeader,
   Radio,
   RadioGroup,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { API_URL_IMG } from "../../../../API/API";
 import { useState } from "react";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";

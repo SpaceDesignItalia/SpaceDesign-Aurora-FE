@@ -1,4 +1,4 @@
-import { Button, Progress, cn, User, Tooltip, Link } from "@nextui-org/react";
+import { Button, Progress, cn, User, Tooltip, Link } from "@heroui/react";
 import TimerRoundedIcon from "@mui/icons-material/TimerRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import ModeEditRoundedIcon from "@mui/icons-material/ModeEditRounded";

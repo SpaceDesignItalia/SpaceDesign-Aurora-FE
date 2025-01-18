@@ -6,7 +6,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import axios from "axios";
 import React, { useRef, useState } from "react";
 import { io } from "socket.io-client";

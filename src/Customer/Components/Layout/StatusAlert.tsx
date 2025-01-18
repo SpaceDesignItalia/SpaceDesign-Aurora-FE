@@ -1,6 +1,6 @@
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/20/solid";
 import Backdrop from "@mui/material/Backdrop";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 
 interface AlertData {
   isOpen: boolean;

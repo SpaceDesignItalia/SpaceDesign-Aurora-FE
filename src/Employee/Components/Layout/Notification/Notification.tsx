@@ -7,7 +7,7 @@ import {
   Tabs,
   Tab,
   ScrollShadow,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import NotificationItem from "./NotificationItem";
 import axios from "axios";
 import { io, Socket } from "socket.io-client";

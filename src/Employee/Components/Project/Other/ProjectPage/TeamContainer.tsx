@@ -1,5 +1,5 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import { Button, Input, ScrollShadow } from "@nextui-org/react";
+import { Button, Input, ScrollShadow } from "@heroui/react";
 import ProjectTeamMemberCard from "../ProjectTeamMemberCard";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";

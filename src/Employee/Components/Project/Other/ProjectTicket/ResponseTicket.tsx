@@ -9,7 +9,7 @@ import {
   Button,
   Pagination,
   SortDescriptor,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import axios from "axios";
 import { useParams } from "react-router-dom";

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Avatar, AvatarGroup, Tooltip } from "@nextui-org/react";
+import { Avatar, AvatarGroup, Tooltip } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { API_URL_IMG } from "../../../../API/API";
 

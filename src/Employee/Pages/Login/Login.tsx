@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Input, Checkbox } from "@nextui-org/react";
+import { Button, Input, Checkbox } from "@heroui/react";
 import EmailIcon from "@mui/icons-material/Email";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";

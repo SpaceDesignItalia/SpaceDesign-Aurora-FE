@@ -9,7 +9,7 @@ import {
   ModalFooter,
   ModalHeader,
   Switch,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
 
 interface FolderSettingsModalProps {

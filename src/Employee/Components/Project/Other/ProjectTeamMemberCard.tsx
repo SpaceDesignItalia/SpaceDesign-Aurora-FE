@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardBody, Badge, User, Button } from "@nextui-org/react";
+import { Card, CardBody, Badge, User, Button } from "@heroui/react";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { API_URL_IMG } from "../../../../API/API";
 import axios from "axios";

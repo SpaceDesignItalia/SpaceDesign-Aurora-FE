@@ -1,7 +1,7 @@
 import axios from "axios";
 import ConfirmDeleteFileModal from "./ConfirmDeleteFileModal";
 import GetAppRoundedIcon from "@mui/icons-material/GetAppRounded";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { API_URL_IMG } from "../../../../../API/API";
 interface File {

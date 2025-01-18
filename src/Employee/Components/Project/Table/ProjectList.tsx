@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from "react";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import axios from "axios";
 import { API_URL_IMG } from "../../../../API/API";
-import { Button, cn, DateValue, Input, Link, User } from "@nextui-org/react";
+import { Button, cn, DateValue, Input, Link, User } from "@heroui/react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
@@ -164,7 +164,7 @@ export default function ProjectList() {
   }
 
   return (
-    <div className="border-2 rounded-xl py-5">
+    (<div className="border-2 rounded-xl py-5">
       <StatusAlert AlertData={alertData} />
       <div className="flex flex-row justify-between gap-3 items-end">
         <div className="flex flex-row gap-3 w-full px-4">
@@ -245,7 +245,7 @@ export default function ProjectList() {
               </>
             ) : (
               // Renderizza la tabella se ci sono progetti
-              <table className="min-w-full">
+              (<table className="min-w-full">
                 <thead className="bg-white border-t-2">
                   <tr>
                     <th
@@ -353,11 +353,11 @@ export default function ProjectList() {
                     </Fragment>
                   ))}
                 </tbody>
-              </table>
+              </table>)
             )}
           </div>
         </div>
       </div>
-    </div>
+    </div>)
   );
 }

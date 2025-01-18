@@ -4,7 +4,7 @@ import {
   AutocompleteItem,
   Button,
   Input,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import axios from "axios";
 import { useEffect, useState, ChangeEvent } from "react";
 import StatusAlert from "../../Layout/StatusAlert";

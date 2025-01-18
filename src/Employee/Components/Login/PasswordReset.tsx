@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Input } from "@nextui-org/react";
+import { Button, Input } from "@heroui/react";
 import axios from "axios";
 
 export default function PasswordReset({ email }: { email: string }) {

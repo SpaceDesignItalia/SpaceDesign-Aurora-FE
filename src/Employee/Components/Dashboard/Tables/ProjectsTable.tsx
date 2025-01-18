@@ -11,7 +11,7 @@ import {
   Pagination,
   SortDescriptor,
   Link,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import axios from "axios";
 

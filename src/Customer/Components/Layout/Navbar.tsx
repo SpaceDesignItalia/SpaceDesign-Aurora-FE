@@ -7,7 +7,7 @@ import {
   DropdownMenu,
   Avatar,
   Skeleton,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import {
   Bars3Icon,
   BellIcon,

@@ -12,7 +12,7 @@ import {
   Radio,
   cn,
   User,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { I18nProvider } from "@react-aria/i18n";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";

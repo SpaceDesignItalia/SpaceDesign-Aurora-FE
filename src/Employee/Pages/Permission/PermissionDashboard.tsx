@@ -3,7 +3,7 @@ import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import RoleTable from "../../Components/Permission/Tables/RoleTable";
 import PermissionTable from "../../Components/Permission/Tables/PermissionTable";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/react";
+import { BreadcrumbItem, Breadcrumbs } from "@heroui/react";
 import RoleTree from "../../Components/Permission/Other/RoleTree";
 
 export default function PermissionDashboard() {

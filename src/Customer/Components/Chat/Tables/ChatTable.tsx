@@ -1,4 +1,4 @@
-import { Avatar, Button, Input, ScrollShadow, cn } from "@nextui-org/react";
+import { Avatar, Button, Input, ScrollShadow, cn } from "@heroui/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
 import { useEffect, useState } from "react";

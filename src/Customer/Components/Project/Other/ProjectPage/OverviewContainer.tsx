@@ -1,5 +1,5 @@
 import TimerRoundedIcon from "@mui/icons-material/TimerRounded";
-import { cn, Progress, User } from "@nextui-org/react";
+import { cn, Progress, User } from "@heroui/react";
 import dayjs from "dayjs";
 import { API_URL_IMG } from "../../../../../API/API";
 

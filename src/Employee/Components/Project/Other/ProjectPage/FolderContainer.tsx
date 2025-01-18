@@ -13,7 +13,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import axios from "axios";
 import { Folder } from "lucide-react";
 import { useEffect, useState } from "react";

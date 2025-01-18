@@ -1,4 +1,4 @@
-import { Button, Input, ScrollShadow } from "@nextui-org/react";
+import { Button, Input, ScrollShadow } from "@heroui/react";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import ChatMessage from "../ProjectTicket/ChatMessage";
 import { useState, useEffect, useRef } from "react";

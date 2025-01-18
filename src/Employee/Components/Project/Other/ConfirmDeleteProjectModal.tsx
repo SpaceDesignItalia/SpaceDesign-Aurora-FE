@@ -6,7 +6,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 

@@ -9,7 +9,7 @@ import {
   Autocomplete,
   AutocompleteItem,
   Input,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import SaveIcon from "@mui/icons-material/Save";

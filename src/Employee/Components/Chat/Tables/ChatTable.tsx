@@ -8,7 +8,7 @@ import {
   ScrollShadow,
   cn,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";

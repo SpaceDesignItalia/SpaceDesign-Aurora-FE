@@ -9,7 +9,7 @@ import {
   AutocompleteItem,
   Input,
   Textarea,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import OpenTaskModal from "./OpenTaskModal";

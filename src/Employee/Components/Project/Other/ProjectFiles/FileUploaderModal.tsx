@@ -9,7 +9,7 @@ import {
   ModalBody,
   ModalContent,
   Button,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import FileCard from "./FileCard";
 

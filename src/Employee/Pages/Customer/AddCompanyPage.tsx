@@ -1,6 +1,6 @@
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import AddCompanyModel from "../../Components/Customer/Other/AddCompanyModel";
-import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
+import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { useEffect } from "react";
 

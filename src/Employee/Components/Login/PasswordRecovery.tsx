@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Input } from "@nextui-org/react";
+import { Button, Input } from "@heroui/react";
 import EmailIcon from "@mui/icons-material/Email";
 import axios from "axios";
 import PasswordReset from "./PasswordReset"; // Import the PasswordReset component

@@ -1,4 +1,4 @@
-import { Tabs, Tab, Chip } from "@nextui-org/react";
+import { Tabs, Tab, Chip } from "@heroui/react";
 import { API_URL_IMG } from "../../../API/API";
 import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
 import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";

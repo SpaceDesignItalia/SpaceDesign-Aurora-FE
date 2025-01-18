@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Avatar, Button, Input } from "@nextui-org/react";
+import { Avatar, Button, Input } from "@heroui/react";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 import axios from "axios";
 import { API_URL_IMG } from "../../../../API/API";

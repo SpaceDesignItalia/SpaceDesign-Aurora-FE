@@ -2,7 +2,7 @@ import React from "react";
 import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
 import Person2RoundedIcon from "@mui/icons-material/Person2Rounded";
 import CloseIcon from "@mui/icons-material/Close"; // Importa l'icona della X
-import { Link } from "@nextui-org/react";
+import { Link } from "@heroui/react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/it";

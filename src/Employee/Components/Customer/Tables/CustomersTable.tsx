@@ -17,7 +17,7 @@ import {
   Pagination,
   SortDescriptor,
   Link,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";

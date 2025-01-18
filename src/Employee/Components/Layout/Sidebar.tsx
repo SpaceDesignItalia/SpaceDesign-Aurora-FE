@@ -25,7 +25,7 @@ import {
   DropdownItem,
   Skeleton,
   DropdownMenu,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import Notification from "./Notification/Notification";
 import { io, Socket } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";

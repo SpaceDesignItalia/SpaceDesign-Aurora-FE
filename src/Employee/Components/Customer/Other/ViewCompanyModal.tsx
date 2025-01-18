@@ -5,8 +5,8 @@ import {
   ModalBody,
   ModalFooter,
   Button,
-} from "@nextui-org/react";
-import { Accordion, AccordionItem } from "@nextui-org/react";
+} from "@heroui/react";
+import { Accordion, AccordionItem } from "@heroui/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 

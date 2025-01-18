@@ -1,4 +1,4 @@
-import { Tabs, Tab, Button, Tooltip, Link, Chip } from "@nextui-org/react";
+import { Tabs, Tab, Button, Tooltip, Link, Chip } from "@heroui/react";
 import { API_URL_IMG } from "../../../API/API";
 import FindInPageRoundedIcon from "@mui/icons-material/FindInPageRounded";
 import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";

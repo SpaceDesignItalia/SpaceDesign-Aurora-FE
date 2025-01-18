@@ -1,7 +1,7 @@
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import CompanyTable from "../../Components/Customer/Tables/CompanyTable";
 import CustomersTable from "../../Components/Customer/Tables/CustomersTable";
-import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
+import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { useState, useEffect } from "react";
 import CustomerStats from "../../Components/Customer/Other/CustomerStats";

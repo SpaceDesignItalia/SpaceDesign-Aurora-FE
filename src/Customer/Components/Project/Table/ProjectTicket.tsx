@@ -10,7 +10,7 @@ import {
   Pagination,
   SortDescriptor,
   Link,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";

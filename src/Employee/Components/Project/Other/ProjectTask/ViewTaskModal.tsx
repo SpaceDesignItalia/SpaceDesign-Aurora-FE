@@ -24,7 +24,7 @@ import {
   ScrollShadow,
   Textarea,
   Tooltip,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { API_URL_IMG } from "../../../../../API/API";
 import { I18nProvider, useDateFormatter } from "@react-aria/i18n";
 import dayjs from "dayjs";
@@ -422,15 +422,13 @@ export default function ViewTaskModal({
     const checked = checklist.Checkboxes.filter(
       (checkbox) => checkbox.IsSelected
     );
-    return (
-      <>
-        {checklist.Checkboxes.length !== 0 && (
-          <div className="text-sm">
-            {checked.length}/{checklist.Checkboxes.length}
-          </div> // Mostra la proporzione di checkbox selezionate
-        )}
-      </>
-    );
+    return (<>
+      {checklist.Checkboxes.length !== 0 && (
+        (<div className="text-sm">
+          {checked.length}/{checklist.Checkboxes.length}
+        </div>) // Mostra la proporzione di checkbox selezionate
+      )}
+    </>);
   };
 
   const calculateChecklistPercentage = (checklist: Checklist) => {

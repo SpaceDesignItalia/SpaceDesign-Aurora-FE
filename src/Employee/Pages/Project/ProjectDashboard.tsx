@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import ProjectGrid from "../../Components/Project/Table/ProjectGrid";
 import ProjectChart from "../../Components/Project/Other/ProjectChart";
-import { Tab, Tabs, Button, Link } from "@nextui-org/react";
+import { Tab, Tabs, Button, Link } from "@heroui/react";
 import GridViewRoundedIcon from "@mui/icons-material/GridViewRounded";
 import VerticalSplitRoundedIcon from "@mui/icons-material/VerticalSplitRounded";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";

@@ -16,7 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
   Progress,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import styles
 import { API_URL_IMG } from "../../../../../API/API";

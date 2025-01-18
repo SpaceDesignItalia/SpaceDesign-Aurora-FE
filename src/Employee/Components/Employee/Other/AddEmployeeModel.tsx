@@ -5,7 +5,7 @@ import {
   Autocomplete,
   AutocompleteItem,
   Button,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
 

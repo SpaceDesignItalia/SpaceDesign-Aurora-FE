@@ -1,4 +1,4 @@
-import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
+import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import EditCompanyModel from "../../Components/Customer/Other/EditCompanyModel";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";

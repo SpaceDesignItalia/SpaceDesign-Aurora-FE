@@ -1,4 +1,4 @@
-import { Button, Input, Link } from "@nextui-org/react";
+import { Button, Input, Link } from "@heroui/react";
 import TableCard from "../Other/TableCard";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";

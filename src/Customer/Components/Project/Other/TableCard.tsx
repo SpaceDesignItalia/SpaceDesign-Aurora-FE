@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Progress } from "@nextui-org/react";
+import { Progress } from "@heroui/react";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 

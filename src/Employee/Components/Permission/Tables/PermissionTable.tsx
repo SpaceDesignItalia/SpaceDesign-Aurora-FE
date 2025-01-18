@@ -18,7 +18,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { usePermissions } from "../../Layout/PermissionProvider";

@@ -10,7 +10,7 @@ import {
   Button,
   Pagination,
   SortDescriptor,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
