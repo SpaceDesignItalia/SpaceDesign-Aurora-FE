@@ -152,7 +152,7 @@ export default function TableCard({
                 isBordered
                 isGrid
                 className={
-                  teamMembers.length > 4
+                  teamMembers.length > 3
                     ? `grid-cols-4`
                     : `grid-cols-${teamMembers.length}`
                 }

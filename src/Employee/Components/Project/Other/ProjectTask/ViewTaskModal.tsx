@@ -57,6 +57,8 @@ import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
 import FileUploaderModal from "./FileUploaderModal";
 import FileCard from "./FileCard";
 import StatusAlert from "../../../Layout/StatusAlert";
+import ConfirmDeleteChecklistModal from "./ConfirmDeleteChecklistModal";
+import ConfirmDeleteCheckboxModal from "./ConfirmDeleteCheckboxModal";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -422,13 +424,15 @@ export default function ViewTaskModal({
     const checked = checklist.Checkboxes.filter(
       (checkbox) => checkbox.IsSelected
     );
-    return (<>
-      {checklist.Checkboxes.length !== 0 && (
-        (<div className="text-sm">
-          {checked.length}/{checklist.Checkboxes.length}
-        </div>) // Mostra la proporzione di checkbox selezionate
-      )}
-    </>);
+    return (
+      <>
+        {checklist.Checkboxes.length !== 0 && (
+          <div className="text-sm">
+            {checked.length}/{checklist.Checkboxes.length}
+          </div> // Mostra la proporzione di checkbox selezionate
+        )}
+      </>
+    );
   };
 
   const calculateChecklistPercentage = (checklist: Checklist) => {
@@ -1240,23 +1244,10 @@ export default function ViewTaskModal({
                                                 />
                                               </>
                                             )}
-                                            <Button
-                                              color="danger"
-                                              variant="light"
-                                              size="sm"
-                                              radius="full"
-                                              isIconOnly
-                                              onClick={() =>
-                                                handleDeleteChecklist(
-                                                  checklist.ChecklistId
-                                                )
-                                              }
-                                              startContent={
-                                                <DeleteRoundedIcon
-                                                  sx={{
-                                                    fontSize: 17,
-                                                  }}
-                                                />
+                                            <ConfirmDeleteChecklistModal
+                                              checklist={checklist}
+                                              DeleteChecklist={
+                                                handleDeleteChecklist
                                               }
                                             />
                                           </div>
@@ -1350,23 +1341,10 @@ export default function ViewTaskModal({
                                                         )
                                                       }
                                                     />
-                                                    <Button
-                                                      color="danger"
-                                                      variant="light"
-                                                      size="sm"
-                                                      radius="full"
-                                                      isIconOnly
-                                                      onClick={() =>
-                                                        handleDeleteCheckbox(
-                                                          checkbox.CheckboxId
-                                                        )
-                                                      }
-                                                      startContent={
-                                                        <DeleteRoundedIcon
-                                                          sx={{
-                                                            fontSize: 17,
-                                                          }}
-                                                        />
+                                                    <ConfirmDeleteCheckboxModal
+                                                      checkbox={checkbox}
+                                                      DeleteCheckbox={
+                                                        handleDeleteCheckbox
                                                       }
                                                     />
                                                   </div>
