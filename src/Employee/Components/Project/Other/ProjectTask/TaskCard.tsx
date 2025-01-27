@@ -335,7 +335,12 @@ export default function TaskCard({
               <AvatarGroup
                 isBordered
                 isGrid
-                className={`grid-cols-${task.ProjectTaskMembers.length}`}
+                className={
+                  task.ProjectTaskMembers.length > 3
+                    ? `grid-cols-4`
+                    : `grid-cols-${task.ProjectTaskMembers.length}`
+                }
+                max={3}
               >
                 {task.ProjectTaskMembers.map((member) => (
                   <Tooltip

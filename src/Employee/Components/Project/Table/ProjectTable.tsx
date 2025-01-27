@@ -349,6 +349,7 @@ export default function ProjectTable() {
             </TableColumn>
           )}
         </TableHeader>
+        {searchTerm}
         <TableBody
           emptyContent={
             searchTerm == "" ? (
