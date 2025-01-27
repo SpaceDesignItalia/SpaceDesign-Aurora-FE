@@ -6,7 +6,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import ResponseTicket from "../ProjectTicket/ResponseTicket";
-import ProjectCalendar from "./ProjectCalendar/ProjectCalendar";
+import ProjectCalendar from "../ProjectCalendar/ProjectCalendar";
 
 const socket = io(API_WEBSOCKET_URL);
 
