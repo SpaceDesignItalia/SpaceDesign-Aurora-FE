@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import CodeShareEditor from "../ProjectCodeShare/CodeShareEditor";
 import { io, Socket } from "socket.io-client";
 import { API_URL_IMG, API_WEBSOCKET_URL } from "../../../../../API/API";
+import ConfirmDeleteCodeShareModal from "../ProjectCodeShare/ConfirmDeleteCodeShareModal";
 
 const socket: Socket = io(API_WEBSOCKET_URL);
 
@@ -72,16 +73,12 @@ export default function CodeShareContainer({
 }) {
   const [tabs, setTabs] = useState<CodeShareTab[]>([]);
   const [selectedTab, setSelectedTab] = useState<CodeShareTab | null>(null);
-  const [modalData, setModalData] = useState({
-    open: false,
-    ProjectId: 0,
-  });
   const [newCodeShareName, setNewCodeShareName] = useState("");
   const [onlineCodeShareUsers, setOnlineCodeShareUsers] = useState<Employee[]>(
     []
   );
 
-  async function fetchSCodeShareTabs() {
+  async function fetchCodeShareTabs() {
     const response = await axios.get("Project/GET/GetCodeShareTabs", {
       params: {
         ProjectId: projectData.ProjectId,
@@ -103,14 +100,13 @@ export default function CodeShareContainer({
         )
         .then(() => {
           setNewCodeShareName(""); // Resetta il nome della checklist dopo l'aggiunta
-          fetchSCodeShareTabs();
+          socket.emit("share-code-update");
         });
     }
   };
 
   async function fetchOnlineUsers(users: OnlineUser[]) {
     setOnlineCodeShareUsers([]);
-    console.log(users.length);
     for (const user of users) {
       const response = await axios.get("Staffer/GET/GetStafferById", {
         params: {
@@ -119,7 +115,6 @@ export default function CodeShareContainer({
       });
       setOnlineCodeShareUsers((prevUsers) => {
         if (!prevUsers.some((u) => u.EmployeeId === response.data.EmployeeId)) {
-          console.log(response.data);
           return [
             ...prevUsers,
             {
@@ -133,16 +128,28 @@ export default function CodeShareContainer({
     }
   }
 
+  async function handleDeleteCodeShare(codeShareId: number) {
+    const res = await axios.delete("Project/DELETE/DeleteCodeShareTab", {
+      params: {
+        ProjectCodeShareId: codeShareId,
+      },
+    });
+
+    if (res.status === 200) {
+      socket.emit("share-code-update");
+    }
+  }
+
   useEffect(() => {
     const fetchData = async () => {
-      await fetchSCodeShareTabs();
+      await fetchCodeShareTabs();
     };
     fetchData();
   }, [projectData.ProjectId, selectedTab]);
 
   useEffect(() => {
     socket.on("share-code-update", () => {
-      fetchSCodeShareTabs();
+      fetchCodeShareTabs();
     });
   }, []);
 
@@ -153,8 +160,6 @@ export default function CodeShareContainer({
       fetchOnlineUsers(users);
     });
   }, []);
-
-  console.log(onlineCodeShareUsers);
 
   return (
     <>
@@ -167,13 +172,6 @@ export default function CodeShareContainer({
                 radius="full"
                 size="sm"
                 className="mb-3"
-                onClick={() =>
-                  setModalData({
-                    ...modalData,
-                    open: true,
-                    ProjectId: projectData.ProjectId,
-                  })
-                }
                 isIconOnly
               >
                 <AddRounded sx={{ fontSize: 20 }} />
@@ -206,7 +204,7 @@ export default function CodeShareContainer({
                       color="primary"
                       size="sm"
                       radius="full"
-                      onClick={handleAddCodeShare}
+                      onPress={handleAddCodeShare}
                       startContent={<AddRounded />}
                       isDisabled={newCodeShareName === ""}
                     >
@@ -219,7 +217,17 @@ export default function CodeShareContainer({
           </Popover>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {tabs.map((tab) => (
-              <Card className="w-full" {...props} key={tab.ProjectCodeShareId}>
+              <Card
+                className="w-full justify-end"
+                {...props}
+                key={tab.ProjectCodeShareId}
+              >
+                <div className="w-full flex justify-end">
+                  <ConfirmDeleteCodeShareModal
+                    codeShareId={tab.ProjectCodeShareId}
+                    DeleteCodeShare={handleDeleteCodeShare}
+                  />
+                </div>
                 <CardBody className="px-3 pb-1">
                   <Image
                     alt="Card image"

@@ -40,10 +40,9 @@ export default function CodeShareContainer({
       });
 
       if (response.status === 200) {
-        socket.emit("share-code-update");
         captureScreenshot(); // Cattura lo screenshot dopo l'update
       }
-    }, 1000);
+    }, 0);
   }
 
   async function captureScreenshot() {
@@ -59,9 +58,17 @@ export default function CodeShareContainer({
           codeShare.ProjectCodeShareId.toString()
         );
 
-        await axios.post("Project/POST/UploadCodeShareScreenshot", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        const res = await axios.post(
+          "Project/POST/UploadCodeShareScreenshot",
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+
+        if (res.status === 200) {
+          socket.emit("share-code-update");
+        }
       } catch (error) {
         console.error("Errore nel catturare lo screenshot:", error);
       }
@@ -129,6 +136,12 @@ export default function CodeShareContainer({
         clearTimeout(timeoutRef.current);
       }
     };
+  }, []);
+
+  useEffect(() => {
+    socket.on("share-code-update", () => {
+      fetchCode();
+    });
   }, []);
 
   return (
