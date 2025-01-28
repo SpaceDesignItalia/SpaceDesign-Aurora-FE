@@ -7,6 +7,7 @@ import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
 import ConfirmationNumberRoundedIcon from "@mui/icons-material/ConfirmationNumberRounded";
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
+import CodeIcon from "@mui/icons-material/Code";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
@@ -17,6 +18,7 @@ import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContai
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import TicketContainer from "../../Components/Project/Other/ProjectPage/TicketContainer";
 import FolderContainer from "../../Components/Project/Other/ProjectPage/FolderContainer";
+import CodeShareContainer from "../../Components/Project/Other/ProjectPage/CodeShareContainer";
 
 interface Project {
   ProjectId: number;
@@ -105,6 +107,7 @@ export default function ProjectPage() {
     { title: "Tasks", icon: AssignmentTurnedInRoundedIcon },
     { title: "Team", icon: GroupsRoundedIcon },
     { title: "Files", icon: FolderCopyRoundedIcon },
+    { title: "Code Share", icon: CodeIcon },
     { title: "Ticket", icon: ConfirmationNumberRoundedIcon },
   ];
 
@@ -140,8 +143,6 @@ export default function ProjectPage() {
   useEffect(() => {
     setCookie("activeProjectTab", activeTab, 7); // Salva per 7 giorni
   }, [activeTab]);
-
-  console.log(projectData.ProjectId);
 
   return (
     <>
@@ -294,6 +295,11 @@ export default function ProjectPage() {
             {activeTab === "Files" && (
               <div>
                 <FolderContainer projectData={projectData} />
+              </div>
+            )}
+            {activeTab === "Code Share" && (
+              <div>
+                <CodeShareContainer projectData={projectData} />
               </div>
             )}
             {activeTab === "Ticket" && (

@@ -103,6 +103,7 @@ export default function Sidebar() {
     axios
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then((res) => {
+        console.log(res.data);
         setUserData(res.data);
         socket.emit("join-notifications", res.data.StafferId);
       });
