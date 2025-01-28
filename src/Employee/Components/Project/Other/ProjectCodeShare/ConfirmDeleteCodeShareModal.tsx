@@ -1,19 +1,49 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Popover, PopoverContent, PopoverTrigger } from "@heroui/react";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 
+interface Employee {
+  EmployeeId: number;
+  EmployeeName: string;
+  EmployeeSurname: string;
+  EmplyeeEmail: string;
+  EmployeePhone: string;
+  EmployeeImageUrl: string;
+  codeShareId: number;
+}
+
 interface ConfirmDeleteCodeShareModalProps {
   codeShareId: number;
   DeleteCodeShare: (codeShareId: number) => void;
+  onlineCodeShareUsers: Employee[];
 }
 
 export default function ConfirmDeleteCodeShareModal({
   codeShareId,
   DeleteCodeShare,
+  onlineCodeShareUsers,
 }: ConfirmDeleteCodeShareModalProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  console.log(codeShareId);
+
+  function checkDisabled() {
+    if (onlineCodeShareUsers.length == 0) {
+      return false;
+    }
+
+    for (const user of onlineCodeShareUsers) {
+      if (user.codeShareId == codeShareId) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  useEffect(() => {
+    checkDisabled();
+  }, [onlineCodeShareUsers]);
+
   return (
     <Popover
       placement="top"
@@ -32,6 +62,7 @@ export default function ConfirmDeleteCodeShareModal({
           aria-label="Remove"
           aria-labelledby="Remove"
           isIconOnly
+          disabled={checkDisabled()}
           onClick={() => {
             setIsOpen(true);
           }}

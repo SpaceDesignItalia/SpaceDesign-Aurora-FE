@@ -226,6 +226,7 @@ export default function CodeShareContainer({
                   <ConfirmDeleteCodeShareModal
                     codeShareId={tab.ProjectCodeShareId}
                     DeleteCodeShare={handleDeleteCodeShare}
+                    onlineCodeShareUsers={onlineCodeShareUsers}
                   />
                 </div>
                 <CardBody className="px-3 pb-1">
