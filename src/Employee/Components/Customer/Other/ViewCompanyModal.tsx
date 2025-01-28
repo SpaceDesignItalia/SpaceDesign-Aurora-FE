@@ -111,9 +111,9 @@ export default function ViewCompanyModal({
                       Modifica
                     </Button>
                     <Button
-                      className="bg-white/20 text-white dark:bg-black/20"
+                      className="bg-white/20 text-white dark:bg-black/20 h-8 w-8"
                       radius="full"
-                      size="sm"
+                      isIconOnly
                       variant="light"
                       onPress={isClosed}
                       startContent={<CloseRoundedIcon className="h-1 w-1" />}

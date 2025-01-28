@@ -66,7 +66,7 @@ export default function ViewCustomerModal({
           <>
             <ModalBody className="flex justify-center items-center">
               <Card className="w-[400px]">
-                <CardHeader className="relative flex h-[100px] flex-col justify-end overflow-visible bg-gradient-to-br from-yellow-300 via-lime-300 to-green-500">
+                <CardHeader className="relative flex h-[100px] flex-col justify-end overflow-visible bg-gradient-to-br from-yellow-300 via-lime-400 to-green-500">
                   <Avatar
                     className="h-20 w-20 translate-y-12"
                     src={
@@ -92,9 +92,9 @@ export default function ViewCustomerModal({
                       Modifica
                     </Button>
                     <Button
-                      className="bg-white/20 text-white dark:bg-black/20"
+                      className="bg-white/20 text-white dark:bg-black/20 h-8 w-8"
                       radius="full"
-                      size="sm"
+                      isIconOnly
                       variant="light"
                       onPress={isClosed}
                       startContent={<CloseRoundedIcon className="h-1 w-1" />}
