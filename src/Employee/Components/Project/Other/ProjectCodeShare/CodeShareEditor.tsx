@@ -35,10 +35,17 @@ export default function CodeShareContainer({
       clearTimeout(timeoutRef.current);
     }
     timeoutRef.current = setTimeout(async () => {
-      const response = await axios.post("Project/POST/UpdateProjectCode", {
-        ProjectCodeShareId: codeShare.ProjectCodeShareId,
-        ProjectCode: value,
-      });
+      const response = await axios.post(
+        "Project/POST/UpdateProjectCode",
+        {
+          ProjectCodeShareId: codeShare.ProjectCodeShareId,
+          ProjectCode: value,
+        },
+        {
+          maxContentLength: 100000000,
+          maxBodyLength: 1000000000,
+        }
+      );
 
       if (response.status === 200) {
         captureScreenshot(); // Cattura lo screenshot dopo l'update

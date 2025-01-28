@@ -243,7 +243,7 @@ export default function CodeShareContainer({
                       src={
                         tab.ImageURL
                           ? API_URL_IMG + "/codeShare" + tab.ImageURL
-                          : "https://i.pravatar.cc/150?u=a042581f4e29026024d"
+                          : "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/sites/default/files/images/2015/09/blogs/economist-explains/code2.png"
                       }
                     />
                   </div>
