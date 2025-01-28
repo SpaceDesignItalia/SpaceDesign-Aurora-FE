@@ -37,6 +37,7 @@
       "dayjs": "^1.11.11",
       "dnd-kit": "^0.0.2",
       "framer-motion": "^11.0.24",
+      "html-to-image": "^1.11.11",
       "lucide-react": "^0.447.0",
       "prismjs": "^1.29.0",
       "quill": "^2.0.2",
