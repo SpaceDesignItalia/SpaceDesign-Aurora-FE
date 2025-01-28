@@ -29,6 +29,7 @@ import {
 import Notification from "./Notification/Notification";
 import { io, Socket } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 interface Notification {
   NotificationId: number;
@@ -268,6 +269,15 @@ export default function Sidebar() {
     },
   ];
 
+  const calendar = [
+    {
+      name: "Calendario",
+      href: "/calendar",
+      icon: CalendarMonthIcon,
+      current: currentUrl === "/calendar",
+    },
+  ];
+
   function logout() {
     axios
       .get("/Authentication/GET/Logout", { withCredentials: true })
@@ -442,6 +452,38 @@ export default function Sidebar() {
                                     {item.notificationCount}
                                   </span>
                                 )}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+
+                      <li>
+                        <div className="text-xs font-semibold leading-6 text-gray-400">
+                          Calendario
+                        </div>
+                        <ul role="list" className="-mx-2 mt-2 space-y-1">
+                          {calendar.map((item) => (
+                            <li key={item.name}>
+                              <a
+                                href={item.href}
+                                className={classNames(
+                                  item.current
+                                    ? "bg-primary text-white"
+                                    : "text-gray-700 hover:text-white hover:bg-gray-500",
+                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                                )}
+                              >
+                                <item.icon
+                                  className={classNames(
+                                    item.current
+                                      ? "text-white-700"
+                                      : "text-white-700 group-hover:text-white",
+                                    "h-6 w-6 shrink-0"
+                                  )}
+                                  aria-hidden="true"
+                                />
+                                {item.name}
                               </a>
                             </li>
                           ))}
@@ -674,6 +716,39 @@ export default function Sidebar() {
                   ))}
                 </ul>
               </li>
+
+              <li>
+                <div className="text-xs font-semibold leading-6 text-gray-400">
+                  Calendario
+                </div>
+                <ul role="list" className="-mx-2 mt-2 space-y-1">
+                  {calendar.map((item) => (
+                    <li key={item.name}>
+                      <a
+                        href={item.href}
+                        className={classNames(
+                          item.current
+                            ? "bg-primary text-white"
+                            : "text-gray-700 hover:text-white hover:bg-gray-500",
+                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                        )}
+                      >
+                        <item.icon
+                          className={classNames(
+                            item.current
+                              ? "text-white-700"
+                              : "text-white-700 group-hover:text-white",
+                            "h-6 w-6 shrink-0"
+                          )}
+                          aria-hidden="true"
+                        />
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+
               {administration &&
                 administration.some((admin) => admin.requiredCondition) && (
                   <li>
