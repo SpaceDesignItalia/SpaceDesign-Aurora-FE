@@ -94,37 +94,30 @@ export default function ProjectGrid() {
             );
           })}
       </div>
-      {projects.length == 0 && searchTerm == "" ? (
+      {projects.length === 0 && (
         <div className="text-center p-10">
           <CreateNewFolderRoundedIcon sx={{ fontSize: 50 }} />
           <h3 className="mt-2 text-sm font-semibold text-gray-900">
             Nessun progetto trovato
           </h3>
           <p className="mt-1 text-sm text-gray-500">
-            Inizia creando una nuovo progetto al database.
+            {searchTerm === ""
+              ? "Inizia creando un nuovo progetto al database."
+              : `Nessun risultato corrisponde alla tua ricerca: "${searchTerm}".`}
           </p>
-          <div className="mt-6">
-            <Button
-              as={Link}
-              href="/projects/add-project"
-              color="primary"
-              radius="full"
-              startContent={<CreateNewFolderRoundedIcon />}
-            >
-              Crea progetto
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <div className="text-center p-10">
-          <CreateNewFolderRoundedIcon sx={{ fontSize: 50 }} />
-          <h3 className="mt-2 text-sm font-semibold text-gray-900">
-            Nessun progetto trovato!
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Nessun risultato corrisponde alla tua ricerca:{" "}
-            <span className="font-semibold italic">{searchTerm}</span>
-          </p>
+          {searchTerm === "" && (
+            <div className="mt-6">
+              <Button
+                as={Link}
+                href="/projects/add-project"
+                color="primary"
+                radius="full"
+                startContent={<CreateNewFolderRoundedIcon />}
+              >
+                Crea progetto
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

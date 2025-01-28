@@ -296,7 +296,7 @@ export default function FolderContainer({
         handleAddFolder={handleAddFolder}
       />
       <ContextMenu>
-        <Breadcrumbs>
+        <Breadcrumbs variant="bordered">
           {FolderTree.map((folder, index) =>
             folder.FolderName === "Default" ? (
               <BreadcrumbItem
@@ -320,9 +320,11 @@ export default function FolderContainer({
           {folders.length > 0 || files.length > 0 ? (
             <>
               <div>
-                <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
-                  Cartelle
-                </h2>
+                {folders.length > 0 && (
+                  <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
+                    Cartelle
+                  </h2>
+                )}
 
                 <div className="flex flex-row flex-wrap gap-3 mt-5 items-start justify-start">
                   {folders.map((folder, index) => (

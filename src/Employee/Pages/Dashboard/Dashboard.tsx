@@ -1,4 +1,4 @@
-import ProjectsTable from "../../Components/Dashboard/Tables/ProjectsTable";
+import UpcomingEventsCard from "../../Components/Dashboard/Other/UpcomingEventsCard";
 
 export default function Dashboard() {
   return (
@@ -10,11 +10,13 @@ export default function Dashboard() {
           </h1>
         </div>
       </header>
-      <main className="px-4 sm:px-6 lg:px-8">
-        <div className="py-6 lg:py-8 grid grid-cols-2">
-          <ProjectsTable />
+      <main className="mt-5 px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-6 gap-5">
+          <div className="col-span-4 border-2 rounded-xl w-full"></div>
+          <div className="col-span-2">
+            <UpcomingEventsCard />
+          </div>
         </div>
-        <div className="py-6 lg:py-8"></div>
       </main>
     </div>
   );
