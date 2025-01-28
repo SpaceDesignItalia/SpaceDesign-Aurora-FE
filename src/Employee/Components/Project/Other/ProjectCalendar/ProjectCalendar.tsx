@@ -155,13 +155,7 @@ export default function ProjectCalendar() {
           {/* Intestazioni come prima */}
         </div>
 
-        <div className="flex flex-auto h-full">
-          {/* Rendering della vista specifica in base allo stato di `view` */}
-          {view === "day" && <CalendarDay />}
-          {view === "week" && <CalendarWeek />}
-          {view === "month" && <CalendarMonth />}
-          {view === "year" && <CalendarYear />}
-        </div>
+    
       </div>
     </div>
   );

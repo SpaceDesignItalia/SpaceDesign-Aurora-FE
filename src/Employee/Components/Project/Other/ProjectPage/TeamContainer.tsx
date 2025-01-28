@@ -10,6 +10,7 @@ import { io } from "socket.io-client"
 import AddProjectTeamMember from "../AddProjectTeamMember"
 import { API_WEBSOCKET_URL } from "../../../../../API/API"
 import { usePermissions } from "../../../Layout/PermissionProvider"
+import ChatMessage from "../ProjectTeamChat/ChatMessage"
 
 const socket = io(API_WEBSOCKET_URL)
 
