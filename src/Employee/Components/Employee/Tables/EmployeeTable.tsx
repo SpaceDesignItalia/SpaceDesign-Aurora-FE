@@ -16,7 +16,6 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import axios from "axios";
 import ViewEmployeeModal from "../Other/ViewEmployeeModal";
 import ConfirmDeleteModal from "../Other/ConfirmDeleteModal";
@@ -30,6 +29,7 @@ interface Employee {
   EmployeeEmail: string;
   EmployeePhone: string;
   RoleName: string;
+  EmployeeImageUrl?: string;
 }
 
 interface AlertData {
@@ -256,23 +256,6 @@ export default function EmployeeTable() {
                   })
                 }
               />
-
-              {adminEmployeePermission.editEmployeePermission && (
-                <Button
-                  as={Link}
-                  variant="light"
-                  size="sm"
-                  color="warning"
-                  startContent={<ModeOutlinedIcon />}
-                  aria-label="Edit"
-                  aria-labelledby="Edit"
-                  isIconOnly
-                  href={
-                    "/administration/employee/edit-employee/" +
-                    employee.EmployeeId
-                  }
-                />
-              )}
 
               {adminEmployeePermission.deleteEmployeePermission && (
                 <ConfirmDeleteModal

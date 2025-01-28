@@ -6,7 +6,6 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import ResponseTicket from "../ProjectTicket/ResponseTicket";
-import ProjectCalendar from "../ProjectCalendar/ProjectCalendar";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -176,9 +175,6 @@ export default function TicketContainer({
         <div className="col-span-2">
           <ResponseTicket />
         </div>
-      </div>
-      <div className="flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center min-h-[700px] overflow-y-auto transition-all duration-300">
-        <ProjectCalendar />
       </div>
     </div>
   );

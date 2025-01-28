@@ -25,6 +25,7 @@ import EditPermissionPage from "./Employee/Pages/Permission/EditPermissionPage";
 import AddPermissionPage from "./Employee/Pages/Permission/AddPermissionPage";
 import EditProjectPage from "./Employee/Pages/Project/EditProjectPage";
 import LeadDashboard from "./Employee/Pages/Lead/LeadDashboard";
+import CalendarPage from "./Employee/Components/Project/Other/ProjectCalendar/CalendarPage";
 
 import DashboardCustomer from "./Customer/Pages/Dashboard/DashboardCustomer";
 import Navbar from "./Customer/Components/Layout/Navbar";
@@ -193,6 +194,8 @@ const EmployeeProtectedRoutes: React.FC = () => {
           path="/administration/permission/edit-role/:RoleId"
         />
         <Route element={<ChatDashboard />} path="/comunications/chat" />
+        <Route element={<CalendarPage />} path="/calendar" />
+
         <Route element={<ProjectDashboard />} path="/projects" />
         <Route element={<AddProjectPage />} path="/projects/add-project" />
         <Route element={<ProjectPage />} path="/projects/:UniqueCode" />
