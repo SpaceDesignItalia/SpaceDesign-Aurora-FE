@@ -3,8 +3,7 @@ import { Button, Input, ScrollShadow } from "@heroui/react"
 import ProjectTeamMemberCard from "../ProjectTeamMemberCard"
 import SendRoundedIcon from "@mui/icons-material/SendRounded"
 import EditRoundedIcon from "@mui/icons-material/EditRounded"
-import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded"
-import ChatMessage from "../ProjectTeamChat/ChatMessage"
+import VideocamRoundedIcon from '@mui/icons-material/VideocamRounded';
 import { useState, useEffect, useRef, useCallback } from "react"
 import axios from "axios"
 import { io } from "socket.io-client"
@@ -386,7 +385,7 @@ export default function TeamContainer({
                         {videoParticipantsCount}
                       </span>
                     )}
-                    <OpenInNewRoundedIcon sx={{ fontSize: 20 }} />
+                    <VideocamRoundedIcon sx={{ fontSize: 20 }} />
                   </div>
                 }
               >
