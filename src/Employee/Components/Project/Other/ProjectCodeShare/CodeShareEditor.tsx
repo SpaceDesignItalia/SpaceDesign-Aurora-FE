@@ -6,6 +6,7 @@ import Editor from "@monaco-editor/react";
 import { io, Socket } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import { toPng } from "html-to-image"; // Importa la libreria per gli screenshot
+import "monaco-editor/min/vs/editor/editor.main.css"; // Importa lo stile di Monaco localmente
 
 const socket: Socket = io(API_WEBSOCKET_URL);
 
@@ -48,7 +49,27 @@ export default function CodeShareContainer({
   async function captureScreenshot() {
     if (editorRef.current) {
       try {
-        const dataUrl = await toPng(editorRef.current);
+        // Sovrascrivi console.error per silenziare gli errori
+        const originalConsoleError = console.error;
+        console.error = () => {}; // No-op (nessuna operazione)
+
+        const dataUrl = await toPng(editorRef.current, {
+          cacheBust: true,
+          filter: (node) => {
+            // Ignora nodi <style> e <link> per evitare errori
+            if (
+              node instanceof HTMLStyleElement ||
+              node instanceof HTMLLinkElement
+            ) {
+              return false;
+            }
+            return true;
+          },
+        });
+
+        // Ripristina console.error dopo aver catturato lo screenshot
+        console.error = originalConsoleError;
+
         // Salva lo screenshot come immagine
         const blob = dataURLToBlob(dataUrl);
         const formData = new FormData();

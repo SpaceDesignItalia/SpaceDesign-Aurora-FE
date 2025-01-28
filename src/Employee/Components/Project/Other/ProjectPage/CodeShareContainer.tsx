@@ -218,27 +218,35 @@ export default function CodeShareContainer({
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {tabs.map((tab) => (
               <Card
-                className="w-full justify-end"
+                className="w-full relative" // Aggiungi "relative" per il posizionamento assoluto
                 {...props}
                 key={tab.ProjectCodeShareId}
               >
-                <div className="w-full flex justify-end">
+                {/* Pulsante Delete posizionato sopra l'immagine */}
+                <div className="absolute top-2 right-2 z-20">
+                  {" "}
+                  {/* Posizionamento in alto a destra */}
                   <ConfirmDeleteCodeShareModal
                     codeShareId={tab.ProjectCodeShareId}
                     DeleteCodeShare={handleDeleteCodeShare}
                     onlineCodeShareUsers={onlineCodeShareUsers}
                   />
                 </div>
+
                 <CardBody className="px-3 pb-1">
-                  <Image
-                    alt="Card image"
-                    className="aspect-video w-full object-cover object-top"
-                    src={
-                      tab.ImageURL
-                        ? API_URL_IMG + "/codeShare" + tab.ImageURL
-                        : "https://i.pravatar.cc/150?u=a042581f4e29026024d"
-                    }
-                  />
+                  <div className="relative">
+                    {" "}
+                    {/* Aggiungi relative per assicurarti che l'immagine non copra il pulsante */}
+                    <Image
+                      alt="Card image"
+                      className="aspect-video w-full object-cover object-top"
+                      src={
+                        tab.ImageURL
+                          ? API_URL_IMG + "/codeShare" + tab.ImageURL
+                          : "https://i.pravatar.cc/150?u=a042581f4e29026024d"
+                      }
+                    />
+                  </div>
                   <Spacer y={2} />
                   <div className="flex flex-col gap-2 px-2">
                     <p className="text-large font-medium">
@@ -246,6 +254,7 @@ export default function CodeShareContainer({
                     </p>
                   </div>
                 </CardBody>
+
                 <CardFooter className="justify-between">
                   <AvatarGroup
                     max={3}
