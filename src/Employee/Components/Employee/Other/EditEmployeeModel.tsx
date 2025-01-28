@@ -1,10 +1,5 @@
 import SaveIcon from "@mui/icons-material/Save";
-import {
-  Autocomplete,
-  AutocompleteItem,
-  Button,
-  Input,
-} from "@heroui/react";
+import { Autocomplete, AutocompleteItem, Button, Input } from "@heroui/react";
 import axios from "axios";
 import { useEffect, useState, ChangeEvent } from "react";
 import StatusAlert from "../../Layout/StatusAlert";
@@ -66,7 +61,7 @@ export default function EditEmployeeModel() {
     axios
       .get("/Staffer/GET/GetStafferById", { params: { EmployeeId } })
       .then((res) => {
-        const employee = res.data[0];
+        const employee = res.data;
         setInitialEmployeeData(employee);
         setNewEmployeeData(employee);
       });

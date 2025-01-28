@@ -37,6 +37,7 @@ interface Customer {
   CustomerFullName: string;
   CustomerEmail: string;
   CustomerPhone: string;
+  CustomerImageUrl: string;
 }
 
 interface ModalData {
@@ -282,23 +283,6 @@ export default function CustomersTable() {
                 }
                 isIconOnly
               />
-
-              {adminCustomerPermission.editCustomerPermission ? (
-                <Button
-                  as={Link}
-                  color="warning"
-                  variant="light"
-                  size="sm"
-                  startContent={<ModeOutlinedIcon />}
-                  aria-label="Edit"
-                  aria-labelledby="Edit"
-                  href={
-                    "/administration/customer/edit-customer/" +
-                    customer.CustomerId
-                  }
-                  isIconOnly
-                />
-              ) : null}
 
               {adminCustomerPermission.deleteCustomerPermission ? (
                 <ConfirmDeleteCustomerModal
