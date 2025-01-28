@@ -5,10 +5,6 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@heroicons/react/20/solid";
-import CalendarDay from "./CalendarDay";
-import CalendarWeek from "./CalendarWeek";
-import CalendarMonth from "./CalendarMonth";
-import CalendarYear from "./CalendarYear";
 
 export default function ProjectCalendar() {
   const [view, setView] = useState("week"); // Gestisce la vista
