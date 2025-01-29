@@ -94,7 +94,10 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === "k") {
+      if (
+        (event.ctrlKey && event.key === "k") ||
+        (event.altKey && event.code === "Space")
+      ) {
         setOpenSearchBar(true);
         event.preventDefault(); // Evita comportamenti predefiniti, se necessario
       }
@@ -165,6 +168,10 @@ const EmployeeProtectedRoutes: React.FC = () => {
         <Route element={<Dashboard />} path="/" />
         <Route
           element={<CustomerDashboard />}
+          path="/administration/customer/:CustomerId"
+        />
+        <Route
+          element={<CustomerDashboard />}
           path="/administration/customer"
         />
         <Route
@@ -182,6 +189,10 @@ const EmployeeProtectedRoutes: React.FC = () => {
         <Route
           element={<EditCompanyPage />}
           path="/administration/customer/edit-company/:CompanyId/:CompanyName"
+        />
+        <Route
+          element={<EmployeeDashboard />}
+          path="/administration/employee/:EmployeeId"
         />
         <Route
           element={<EmployeeDashboard />}
@@ -217,6 +228,7 @@ const EmployeeProtectedRoutes: React.FC = () => {
         <Route element={<ProjectDashboard />} path="/projects" />
         <Route element={<AddProjectPage />} path="/projects/add-project" />
         <Route element={<ProjectPage />} path="/projects/:UniqueCode" />
+        <Route element={<ProjectPage />} path="/projects/:UniqueCode/:Action" />
         <Route
           element={<EditProjectPage />}
           path="/projects/:UniqueCode/edit-project"

@@ -18,6 +18,7 @@ import {
 } from "@heroui/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import ConfirmDeleteCompanyModal from "../Other/ConfirmDeleteCompanyModal";
 import ViewCompanyModal from "../Other/ViewCompanyModal";
@@ -62,6 +63,10 @@ const columns = [
 ];
 
 export default function CompanyTable() {
+  const companyId =
+    parseInt(useParams().CustomerId!) < 0
+      ? useParams().CustomerId?.slice(1)
+      : null;
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [companies, setCompanies] = useState<Company[]>([]);
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
@@ -89,12 +94,6 @@ export default function CompanyTable() {
     fetchData();
   }, []);
 
-  function fetchData() {
-    axios.get("/Company/GET/GetAllCompany").then((res) => {
-      setCompanies(res.data);
-    });
-  }
-
   const [page, setPage] = useState(1);
   const [modalData, setModalData] = useState<ModalData>({
     Company: {
@@ -107,6 +106,21 @@ export default function CompanyTable() {
     },
     open: false,
   });
+
+  function fetchData() {
+    axios.get("/Company/GET/GetAllCompany").then((res) => {
+      setCompanies(res.data);
+      if (companyId) {
+        setModalData({
+          ...modalData,
+          open: true,
+          Company: res.data.find(
+            (company: Company) => company.CompanyId == parseInt(companyId)
+          ),
+        });
+      }
+    });
+  }
 
   async function SearchCompany() {
     try {

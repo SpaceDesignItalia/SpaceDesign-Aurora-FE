@@ -89,6 +89,7 @@ export default function TaskContainer({
     ProjectId: projectId,
     open: false,
   });
+
   const [permissions, setPermissions] = useState({
     assignActivity: false,
   });

@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import {
   Table,
@@ -74,6 +75,8 @@ const columns = [
 ];
 
 export default function CustomersTable() {
+  const customerId =
+    parseInt(useParams().CustomerId!) > 0 ? useParams().CustomerId : null;
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -103,12 +106,6 @@ export default function CustomersTable() {
     fetchData();
   }, []);
 
-  function fetchData() {
-    axios.get("/Customer/GET/GetAllCustomers").then((res) => {
-      setCustomers(res.data);
-    });
-  }
-
   const [page, setPage] = useState(1);
   const [modalData, setModalData] = useState<ModalData>({
     Customer: {
@@ -119,6 +116,22 @@ export default function CustomersTable() {
     },
     open: false,
   });
+
+  function fetchData() {
+    axios.get("/Customer/GET/GetAllCustomers").then((res) => {
+      setCustomers(res.data);
+      if (customerId) {
+        setModalData({
+          ...modalData,
+          open: true,
+          Customer: res.data.find(
+            (customer: Customer) => customer.CustomerId == parseInt(customerId)
+          ),
+        });
+      }
+    });
+  }
+
   const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
     Customer: {
       CustomerId: 0,
