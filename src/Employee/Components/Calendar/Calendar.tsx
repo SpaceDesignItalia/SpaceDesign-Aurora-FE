@@ -86,7 +86,7 @@ const CalendarDay = ({ currentDate }: { currentDate: Date }) => {
               <div
                 className="border-t-2 border-red-500 relative"
                 style={{
-                  width: "calc(90% - 1rem)",
+                  width: "100%",
                   marginLeft: "10%",
                 }}
               >
@@ -202,16 +202,13 @@ const CalendarWeek = ({ currentDate }: { currentDate: Date }) => {
               <div
                 className="border-t-2 border-red-500 relative"
                 style={{
-                  width: `calc(${currentDayIndex * 12.5}% + ${
-                    dayCompletion * 0.125
-                  }%)`,
+                  width: `calc(${(currentDayIndex + 1) * 12.5}%)`,
                   marginLeft: "12.5%",
                 }}
               >
                 <div
                   className="absolute left-0 -top-3 -translate-x-full bg-red-500 text-white rounded-full px-2 py-1 text-xs"
                   style={{
-                    marginLeft: "0",
                     top: "-0.75rem",
                   }}
                 >
