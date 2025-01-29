@@ -1,161 +1,410 @@
-import { useState, useEffect, useRef } from "react";
-import { Menu } from "@headlessui/react";
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@heroicons/react/20/solid";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Button,
+} from "@heroui/react";
+
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const DAYS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+const MONTHS = [
+  "Gennaio",
+  "Febbraio",
+  "Marzo",
+  "Aprile",
+  "Maggio",
+  "Giugno",
+  "Luglio",
+  "Agosto",
+  "Settembre",
+  "Ottobre",
+  "Novembre",
+  "Dicembre",
+];
+
+const ROW_HEIGHT = 60;
+const HEADER_HEIGHT = 78;
+
+const CalendarDay = ({ currentDate }: { currentDate: Date }) => {
+  const now = new Date();
+  const currentTime = new Date(
+    now.toLocaleString("en-US", { timeZone: "Europe/Rome" })
+  );
+  const currentHour = currentTime.getHours() + currentTime.getMinutes() / 60;
+  const isToday = currentDate.toDateString() === now.toDateString();
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden relative">
+      <div className="flex-1 overflow-y-auto">
+        <div className="grid grid-cols-5 divide-x divide-gray-100">
+          <div className="col-span-1 divide-y divide-gray-100">
+            {HOURS.map((hour) => (
+              <div
+                key={hour}
+                className="sticky left-0 bg-white text-right pr-4 py-3 text-sm leading-5 text-gray-500"
+                style={{ height: `${ROW_HEIGHT}px` }}
+              >
+                {`${hour.toString().padStart(2, "0")}:00`}
+              </div>
+            ))}
+          </div>
+          <div className="col-span-4 divide-y divide-gray-100">
+            {HOURS.map((hour) => (
+              <div
+                key={hour}
+                className="py-3 group hover:bg-gray-50"
+                style={{ height: `${ROW_HEIGHT}px` }}
+              ></div>
+            ))}
+          </div>
+        </div>
+      </div>
+      {isToday && (
+        <div
+          className="absolute border-t-2 border-red-500"
+          style={{
+            top: `${currentHour * ROW_HEIGHT}px`,
+            left: "20%",
+            right: "0",
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+const CalendarWeek = ({ currentDate }: { currentDate: Date }) => {
+  const startOfWeek = new Date(currentDate);
+  startOfWeek.setDate(currentDate.getDate() - ((currentDate.getDay() + 6) % 7));
+
+  const now = new Date();
+  const italianTime = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Rome",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: false,
+  }).format(now);
+
+  const [hours, minutes] = italianTime.split(":").map(Number);
+  const currentHour = hours + minutes / 60;
+  const currentDayIndex =
+    (new Date(
+      new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Rome" }).format(now)
+    ).getDay() +
+      6) %
+    7;
+
+  const isCurrentWeek =
+    startOfWeek.getTime() <= now.getTime() &&
+    now.getTime() < startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000;
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden relative">
+      <div className="flex-none bg-white sticky top-0 z-10 border-b border-gray-200">
+        <div className="grid grid-cols-8 text-sm leading-6 text-gray-500">
+          <div className="py-3"></div>
+          {DAYS.map((day, i) => {
+            const date = new Date(startOfWeek);
+            date.setDate(startOfWeek.getDate() + i);
+            return (
+              <div key={day} className="py-3 text-center font-semibold">
+                <span className="block text-lg">{day}</span>
+                <span
+                  className={`block text-base font-bold ${
+                    date.toDateString() === now.toDateString()
+                      ? "text-blue-600"
+                      : "text-gray-900"
+                  }`}
+                >
+                  {date.getDate()}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="grid grid-cols-8 divide-x divide-gray-100">
+          <div className="col-span-1 divide-y divide-gray-100">
+            {HOURS.map((hour) => (
+              <div
+                key={hour}
+                className="sticky left-0 bg-white text-right pr-4 py-3 text-sm leading-5 text-gray-500"
+                style={{ height: `${ROW_HEIGHT}px` }}
+              >
+                {hour === 0
+                  ? "00:00"
+                  : `${hour.toString().padStart(2, "0")}:00`}
+              </div>
+            ))}
+          </div>
+          {Array.from({ length: 7 }).map((_, dayIndex) => (
+            <div key={dayIndex} className="col-span-1 divide-y divide-gray-100">
+              {HOURS.map((hour) => (
+                <div
+                  key={`${dayIndex}-${hour}`}
+                  className="py-3 group hover:bg-gray-50"
+                  style={{ height: `${ROW_HEIGHT}px` }}
+                ></div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+      {isCurrentWeek && (
+        <div
+          className="absolute border-t-2 border-red-500"
+          style={{
+            top: `${currentHour * ROW_HEIGHT + HEADER_HEIGHT}px`,
+            left: "12.5%",
+            right: `calc(${(7 - currentDayIndex) * 12.5}%)`,
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+const CalendarMonth = ({ currentDate }: { currentDate: Date }) => {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const firstDayIndex = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+
+  const days = Array.from(
+    { length: daysInMonth },
+    (_, i) => new Date(year, month, i + 1)
+  );
+
+  return (
+    <div className="flex-1 overflow-y-auto relative">
+      <div className="grid grid-cols-7 gap-px bg-gray-200">
+        {DAYS.map((day) => (
+          <div
+            key={day}
+            className="bg-white py-2 text-center text-xs font-semibold text-gray-700 uppercase"
+          >
+            {day}
+          </div>
+        ))}
+        {Array(firstDayIndex)
+          .fill(null)
+          .map((_, index) => (
+            <div key={`empty-${index}`} className="bg-white"></div>
+          ))}
+        {days.map((day) => (
+          <div
+            key={day.toISOString()}
+            className="relative bg-white px-3 py-2 hover:bg-gray-50"
+            style={{ height: `${ROW_HEIGHT}px` }}
+          >
+            <time
+              dateTime={day.toISOString()}
+              className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                day.toDateString() === new Date().toDateString()
+                  ? "bg-blue-600 font-semibold text-white"
+                  : "text-gray-900"
+              }`}
+            >
+              {day.getDate()}
+            </time>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const CalendarYear = ({ currentDate }: { currentDate: Date }) => {
+  const year = currentDate.getFullYear();
+
+  return (
+    <div className="flex-1 overflow-y-auto">
+      <div className="grid grid-cols-3 gap-6 p-6">
+        {MONTHS.map((month, monthIndex) => {
+          const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+          const firstDayOfMonth = new Date(year, monthIndex, 1).getDay();
+          const firstDayIndex = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+
+          const days = Array.from(
+            { length: daysInMonth },
+            (_, i) => new Date(year, monthIndex, i + 1)
+          );
+
+          return (
+            <div key={month} className="bg-white p-4 rounded-lg shadow">
+              <h3 className="text-lg font-semibold text-center mb-4">
+                {month}
+              </h3>
+              <div className="grid grid-cols-7 gap-1">
+                {DAYS.map((day) => (
+                  <div
+                    key={`${month}-${day}`}
+                    className="text-center text-xs font-medium text-gray-500"
+                  >
+                    {day[0]}
+                  </div>
+                ))}
+                {Array(firstDayIndex)
+                  .fill(null)
+                  .map((_, index) => (
+                    <div
+                      key={`empty-${month}-${index}`}
+                      className="bg-white"
+                    ></div>
+                  ))}
+                {days.map((day) => (
+                  <div
+                    key={day.toISOString()}
+                    className="relative bg-white px-2 py-2 hover:bg-gray-50"
+                    style={{ height: `${ROW_HEIGHT / 2}px` }}
+                  >
+                    <time
+                      dateTime={day.toISOString()}
+                      className={`flex h-6 w-6 items-center justify-center rounded-full ${
+                        day.toDateString() === new Date().toDateString()
+                          ? "bg-blue-600 font-semibold text-white"
+                          : "text-gray-900"
+                      }`}
+                    >
+                      {day.getDate()}
+                    </time>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const formatDate = (date: Date, view: string): string => {
+  const options: Intl.DateTimeFormatOptions = {
+    month: "long",
+    year: "numeric",
+  };
+  if (view === "year") return date.getFullYear().toString();
+  if (view === "month") {
+    const formatted = date.toLocaleDateString("it-IT", options);
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  }
+  if (view === "week") {
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - date.getDay() + 1);
+    return `Settimana del ${weekStart.toLocaleDateString("it-IT", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })}`.replace(/^\w/, (c) => c.toUpperCase());
+  }
+  return date
+    .toLocaleDateString("it-IT", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
+    .replace(/^\w/, (c) => c.toUpperCase());
+};
 
 export default function ProjectCalendar() {
-  const [view, setView] = useState("week"); // Gestisce la vista
+  const [view, setView] = useState("week");
   const [currentDate, setCurrentDate] = useState(new Date());
   const container = useRef<HTMLDivElement>(null);
-  const containerNav = useRef<HTMLDivElement>(null);
-  const containerOffset = useRef<HTMLDivElement>(null);
 
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  const currentMonth = monthNames[currentDate.getMonth()];
-  const currentYear = currentDate.getFullYear();
-
-  const changeMonth = (offset: any) => {
+  const changeDate = (offset: number) => {
     const newDate = new Date(currentDate);
-    newDate.setMonth(newDate.getMonth() + offset);
+    if (view === "year") {
+      newDate.setFullYear(newDate.getFullYear() + offset);
+    } else if (view === "month") {
+      newDate.setMonth(newDate.getMonth() + offset);
+    } else if (view === "week") {
+      newDate.setDate(newDate.getDate() + offset * 7);
+    } else {
+      newDate.setDate(newDate.getDate() + offset);
+    }
     setCurrentDate(newDate);
   };
 
-  const scrollToCurrentTime = () => {
-    if (container.current && containerNav.current && containerOffset.current) {
-      const currentMinute =
-        new Date().getHours() * 60 + new Date().getMinutes();
-      container.current.scrollTop =
-        ((container.current.scrollHeight -
-          containerNav.current.offsetHeight -
-          containerOffset.current.offsetHeight) *
-          currentMinute) /
-        1440;
-    }
-  };
-
   useEffect(() => {
-    setTimeout(scrollToCurrentTime, 100);
-  }, [currentDate]);
+    if (container.current) {
+      container.current.scrollTop = 0;
+    }
+  }, [currentDate, view]); // Updated dependency array
 
   return (
-    <div className="flex flex-col w-full h-full">
-      <header className="flex flex-none items-center justify-between border-b border-gray-200 px-6 py-4">
-        <h1 className="text-base font-semibold text-gray-900">
-          <time dateTime={`${currentYear}-${currentDate.getMonth() + 1}`}>
-            {`${currentMonth} ${currentYear}`}
-          </time>
+    <div className="flex flex-col w-full h-full rounded-lg border-2 p-2">
+      <header className="flex flex-none items-center justify-between border-b  border-gray-300 px-6 py-4 bg-white">
+        <h1 className="text-xl font-bold text-gray-900">
+          {formatDate(currentDate, view)}
         </h1>
 
-        <div className="flex items-center">
-          <div className="relative flex items-center rounded-md bg-white shadow-sm md:items-stretch">
+        <div className="flex items-center gap-4">
+          <div className="relative flex items-center rounded-lg bg-gray-100 border-2">
             <button
-              onClick={() => changeMonth(-1)}
+              onClick={() => changeDate(-1)}
               type="button"
-              className="flex h-9 w-12 items-center justify-center rounded-l-md border-y border-l border-gray-300 pr-1 text-gray-400 hover:text-gray-500 focus:relative md:w-9 md:pr-0 md:hover:bg-gray-50"
+              className="flex h-10 w-12 items-center justify-center rounded-l-lg border-r bg-white text-gray-600 hover:bg-gray-100 focus:relative"
             >
-              <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+              <ChevronLeftIcon className="h-6 w-6" aria-hidden="true" />
             </button>
-
             <button
-              onClick={() => setCurrentDate(new Date())}
+              onClick={() => changeDate(1)}
               type="button"
-              className="hidden border-y border-gray-300 px-3.5 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:relative md:block"
+              className="flex h-10 w-12 items-center justify-center rounded-r-lg border-l bg-white text-gray-600 hover:bg-gray-100 focus:relative"
             >
-              Today
-            </button>
-
-            <button
-              onClick={() => changeMonth(1)}
-              type="button"
-              className="flex h-9 w-12 items-center justify-center rounded-r-md border-y border-r border-gray-300 pl-1 text-gray-400 hover:text-gray-500 focus:relative md:w-9 md:pl-0 md:hover:bg-gray-50"
-            >
-              <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+              <ChevronRightIcon className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
 
-          <div className="hidden md:ml-4 md:flex md:items-center">
-            <Menu as="div" className="relative">
-              <Menu.Button
-                type="button"
-                className="flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-              >
-                {view.charAt(0).toUpperCase() + view.slice(1)} view
-                <ChevronDownIcon
-                  className="-mr-1 h-5 w-5 text-gray-400"
-                  aria-hidden="true"
-                />
-              </Menu.Button>
-
-              <Menu.Items className="absolute right-0 z-10 mt-3 w-36 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                <div className="py-1">
-                  <Menu.Item>
-                    <button
-                      onClick={() => setView("day")}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Day view
-                    </button>
-                  </Menu.Item>
-                  <Menu.Item>
-                    <button
-                      onClick={() => setView("week")}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Week view
-                    </button>
-                  </Menu.Item>
-                  <Menu.Item>
-                    <button
-                      onClick={() => setView("month")}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Month view
-                    </button>
-                  </Menu.Item>
-                  <Menu.Item>
-                    <button
-                      onClick={() => setView("year")}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Year view
-                    </button>
-                  </Menu.Item>
-                </div>
-              </Menu.Items>
-            </Menu>
-          </div>
+          <Dropdown>
+            <DropdownTrigger variant="bordered">
+              <Button className="flex items-center px-4 text-sm font-semibold text-gray-600">
+                {view === "day"
+                  ? "Giorno"
+                  : view === "week"
+                  ? "Settimana"
+                  : view === "month"
+                  ? "Mese"
+                  : "Anno"}
+                <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu>
+              <DropdownItem key="day" onClick={() => setView("day")}>
+                Giorno
+              </DropdownItem>
+              <DropdownItem key="week" onClick={() => setView("week")}>
+                Settimana
+              </DropdownItem>
+              <DropdownItem key="month" onClick={() => setView("month")}>
+                Mese
+              </DropdownItem>
+              <DropdownItem key="year" onClick={() => setView("year")}>
+                Anno
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
         </div>
       </header>
 
-      <div
-        ref={container}
-        className="isolate flex flex-auto flex-col overflow-auto bg-white h-full"
-      >
-        <div
-          ref={containerNav}
-          className="sticky top-0 z-30 flex-none bg-white shadow ring-1 ring-black ring-opacity-5 sm:pr-8"
-        >
-          {/* Intestazioni come prima */}
-        </div>
-
-    
+      <div className="flex-1 overflow-y-auto p-2" ref={container}>
+        {view === "day" && <CalendarDay currentDate={currentDate} />}
+        {view === "week" && <CalendarWeek currentDate={currentDate} />}
+        {view === "month" && <CalendarMonth currentDate={currentDate} />}
+        {view === "year" && <CalendarYear currentDate={currentDate} />}
       </div>
     </div>
   );
