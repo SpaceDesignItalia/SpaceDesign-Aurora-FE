@@ -65,7 +65,7 @@ interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
-  ProjectTaskExpiration: DateValue;
+  ProjectTaskExpiration?: DateValue | null;
   ProjectTaskCreation: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
@@ -186,6 +186,7 @@ export default function TaskCard({
   }, [update]);
 
   function formatDate(date: DateValue) {
+    if (!date) return "Nessuna scadenza";
     let formatter = useDateFormatter({ dateStyle: "full" });
     return dayjs(formatter.format(new Date(date.toString()))).format(
       "DD MMM YYYY"

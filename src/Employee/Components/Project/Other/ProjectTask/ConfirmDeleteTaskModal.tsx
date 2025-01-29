@@ -34,7 +34,7 @@ interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
-  ProjectTaskExpiration: DateValue;
+  ProjectTaskExpiration?: DateValue | null | undefined;
   ProjectTaskCreation: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];

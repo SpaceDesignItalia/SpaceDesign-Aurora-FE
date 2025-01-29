@@ -98,8 +98,8 @@ interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
-  ProjectTaskExpiration: DateValue;
-  ProjectTaskCreation: DateValue;
+  ProjectTaskExpiration?: any;
+  ProjectTaskCreation: any;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
@@ -195,6 +195,7 @@ export default function ViewTaskModal({
   //Formatter data
   const formatter = useDateFormatter({ dateStyle: "full" });
   function formatDate(date: DateValue) {
+    if (!date) return "Nessuna scadenza";
     return dayjs(formatter.format(new Date(date.toString()))).format(
       "DD MMM YYYY"
     );
@@ -212,24 +213,26 @@ export default function ViewTaskModal({
       return dayjs(isoString).format("YYYY-MM-DD");
     };
 
-    setNewTask({
-      ...newTask,
-      ProjectTaskCreation: parseDate(
-        formatDate(TaskData.ProjectTaskCreation.toString())
-      ),
-      ProjectTaskExpiration: parseDate(
-        formatDate(TaskData.ProjectTaskExpiration.toString())
-      ),
-      ProjectTaskDescription: TaskData.ProjectTaskDescription,
-      ProjectTaskId: TaskData.ProjectTaskId,
-      ProjectId: TaskData.ProjectId,
-      ProjectTaskName: TaskData.ProjectTaskName,
-      ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
-      ProjectTaskMembers: TaskData.ProjectTaskMembers,
-      ProjectTaskTags: TaskData.ProjectTaskTags,
-      ProjectTaskComments: TaskData.ProjectTaskComments || [],
-      ProjectTaskChecklists: TaskData.ProjectTaskChecklists || [],
-    });
+    if (TaskData) {
+      setNewTask({
+        ...newTask,
+        ProjectTaskCreation: parseDate(
+          formatDate(TaskData.ProjectTaskCreation.toString())
+        ),
+        ProjectTaskExpiration: TaskData.ProjectTaskExpiration
+          ? parseDate(formatDate(TaskData.ProjectTaskExpiration.toString()))
+          : null,
+        ProjectTaskDescription: TaskData.ProjectTaskDescription,
+        ProjectTaskId: TaskData.ProjectTaskId,
+        ProjectId: TaskData.ProjectId,
+        ProjectTaskName: TaskData.ProjectTaskName,
+        ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
+        ProjectTaskMembers: TaskData.ProjectTaskMembers,
+        ProjectTaskTags: TaskData.ProjectTaskTags,
+        ProjectTaskComments: TaskData.ProjectTaskComments || [],
+        ProjectTaskChecklists: TaskData.ProjectTaskChecklists || [],
+      });
+    }
   }
 
   useEffect(() => {
@@ -411,6 +414,7 @@ export default function ViewTaskModal({
     startDate: DateValue,
     endDate: DateValue
   ): number => {
+    if (!startDate || !endDate) return 0;
     const totalDuration = dayjs(endDate.toString()).diff(
       dayjs(startDate.toString()),
       "day"
@@ -551,7 +555,12 @@ export default function ViewTaskModal({
   }, [newTask, update]);
 
   function handleUpdate() {
-    const formattedDate = new Date(newTask!.ProjectTaskExpiration.toString());
+    let formattedDate;
+    if (newTask?.ProjectTaskExpiration) {
+      formattedDate = new Date(newTask?.ProjectTaskExpiration.toString());
+    } else {
+      formattedDate = new Date();
+    }
     const formattedCreationDate = new Date(
       newTask!.ProjectTaskCreation.toString()
     );
@@ -985,7 +994,9 @@ export default function ViewTaskModal({
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
                         <CalendarMonthRoundedIcon />
-                        Durata task
+                        {newTask?.ProjectTaskExpiration
+                          ? "Durata task"
+                          : "Data inizio"}
                       </dt>
                       <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
                         <div className="flex flex-row justify-between w-full">
@@ -1004,7 +1015,7 @@ export default function ViewTaskModal({
                                     onChange={(date) =>
                                       setNewTask((prevTask) => ({
                                         ...prevTask!,
-                                        ProjectTaskCreation: date,
+                                        ProjectTaskCreation: date!,
                                       }))
                                     }
                                   />
@@ -1037,18 +1048,22 @@ export default function ViewTaskModal({
                           ) : (
                             <>
                               <p>{formatDate(newTask!.ProjectTaskCreation)}</p>
-                              <p>
-                                {formatDate(newTask!.ProjectTaskExpiration)}
-                              </p>
+                              {newTask?.ProjectTaskExpiration && (
+                                <p>
+                                  {formatDate(newTask.ProjectTaskExpiration)}
+                                </p>
+                              )}
                             </>
                           )}
                         </div>
-                        <Progress
-                          value={calculateProgress(
-                            newTask!.ProjectTaskCreation,
-                            newTask!.ProjectTaskExpiration
-                          )}
-                        />
+                        {newTask?.ProjectTaskExpiration && (
+                          <Progress
+                            value={calculateProgress(
+                              newTask!.ProjectTaskCreation,
+                              newTask!.ProjectTaskExpiration
+                            )}
+                          />
+                        )}
                       </dd>
                     </div>
 
