@@ -164,7 +164,7 @@ export default function ProjectList() {
   }
 
   return (
-    (<div className="border-2 rounded-xl py-5">
+    <div className="border-2 rounded-xl py-5">
       <StatusAlert AlertData={alertData} />
       <div className="flex flex-row justify-between gap-3 items-end">
         <div className="flex flex-row gap-3 w-full px-4">
@@ -245,7 +245,7 @@ export default function ProjectList() {
               </>
             ) : (
               // Renderizza la tabella se ci sono progetti
-              (<table className="min-w-full">
+              <table className="min-w-full">
                 <thead className="bg-white border-t-2">
                   <tr>
                     <th
@@ -322,9 +322,11 @@ export default function ProjectList() {
                               "DD MMM YYYY"
                             )}{" "}
                             -{" "}
-                            {dayjs(String(project.ProjectEndDate)).format(
-                              "DD MMM YYYY"
-                            )}
+                            {project.ProjectEndDate
+                              ? dayjs(String(project.ProjectEndDate)).format(
+                                  "DD MMM YYYY"
+                                )
+                              : "Nessuna data di fine"}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                             {displayStatus(project)}
@@ -353,11 +355,11 @@ export default function ProjectList() {
                     </Fragment>
                   ))}
                 </tbody>
-              </table>)
+              </table>
             )}
           </div>
         </div>
       </div>
-    </div>)
+    </div>
   );
 }

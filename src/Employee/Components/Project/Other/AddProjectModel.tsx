@@ -17,18 +17,14 @@ import { I18nProvider } from "@react-aria/i18n";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
 import { API_URL_IMG } from "../../../../API/API";
-import {
-  DateValue,
-  parseDate,
-  getLocalTimeZone,
-} from "@internationalized/date";
+import { parseDate, getLocalTimeZone } from "@internationalized/date";
 import dayjs from "dayjs";
 import { useDateFormatter } from "@react-aria/i18n";
 
 interface Project {
   ProjectName: string;
   ProjectDescription: string;
-  ProjectEndDate: DateValue;
+  ProjectEndDate: any;
   ProjectManagerId: number;
   CompanyId: number;
   ProjectBannerId: number;
@@ -99,7 +95,7 @@ export default function AddProjectModel() {
   const [newProjectData, setNewProjectData] = useState<Project>({
     ProjectName: "",
     ProjectDescription: "",
-    ProjectEndDate: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+    ProjectEndDate: null,
     ProjectManagerId: 0,
     CompanyId: 0,
     ProjectBannerId: 0,
@@ -146,7 +142,7 @@ export default function AddProjectModel() {
     }
   }
 
-  function handleProjectEndDateChange(date: DateValue) {
+  function handleProjectEndDateChange(date: any) {
     setNewProjectData({
       ...newProjectData,
       ProjectEndDate: date,
@@ -165,7 +161,6 @@ export default function AddProjectModel() {
     if (
       newProjectData.ProjectName !== "" &&
       newProjectData.ProjectDescription !== "" &&
-      newProjectData.ProjectEndDate !== null &&
       newProjectData.ProjectManagerId !== 0 &&
       newProjectData.ProjectBannerId !== 0
     ) {
@@ -175,15 +170,19 @@ export default function AddProjectModel() {
   }
 
   async function handleCreateNewCompany() {
+    console.log(newProjectData);
     try {
       setIsAddingData(true);
 
       // Formatta la data di fine progetto
-      const formattedDate = dayjs(
-        formatter.format(
-          newProjectData.ProjectEndDate.toDate(getLocalTimeZone())
-        )
-      ).format("YYYY-MM-DD");
+      let formattedDate = null;
+      if (newProjectData.ProjectEndDate) {
+        formattedDate = dayjs(
+          formatter.format(
+            newProjectData.ProjectEndDate.toDate(getLocalTimeZone())
+          )
+        ).format("YYYY-MM-DD");
+      }
 
       // Crea una copia dei dati del progetto con la data formattata
       const formattedProjectData = {
@@ -433,7 +432,7 @@ export default function AddProjectModel() {
             startContent={!isAddingData && <SaveIcon />}
             isDisabled={checkAllDataCompiled()}
             isLoading={isAddingData}
-            onClick={handleCreateNewCompany}
+            onPress={handleCreateNewCompany}
           >
             {isAddingData ? "Salvando il progetto..." : "Salva progetto"}
           </Button>
