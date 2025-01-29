@@ -18,6 +18,8 @@ import NotificationItem from "./NotificationItem";
 import axios from "axios";
 import { io, Socket } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../API/API";
+import NotificationsPausedRoundedIcon from "@mui/icons-material/NotificationsPausedRounded";
+import DoneAllRoundedIcon from "@mui/icons-material/DoneAllRounded";
 
 interface Notification {
   NotificationId: number;
@@ -87,7 +89,7 @@ export default function Notification() {
       });
   }, [update, deleteNotification]);
 
-  const tabs = [{ title: "Non lette" }, { title: "Tutte" }];
+  const tabs = [{ title: "Tutte" }, { title: "Non lette" }];
   const [activeTab, setActiveTab] = useState("Non lette");
 
   return (
@@ -128,14 +130,6 @@ export default function Notification() {
                   {notifications.length}
                 </Chip>
               </div>
-              <Button
-                className="h-8 px-3"
-                color="primary"
-                radius="full"
-                variant="light"
-              >
-                Segna tutte come lette
-              </Button>
             </div>
             <Tabs
               aria-label="Notifications"
@@ -167,40 +161,56 @@ export default function Notification() {
             </Tabs>
           </CardHeader>
           <CardBody className="w-full gap-0 p-0">
-            <ScrollShadow className="h-[500px] w-full">
-              {notifications?.length > 0 ? (
-                notifications.map((notification) => (
-                  <NotificationItem
-                    key={notification.NotificationId}
-                    NotificationInfo={notification}
-                    NotificationUpdate={notificationUpdate}
-                  />
-                ))
-              ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-2">
-                  {/*  <Icon
-                    className="text-default-400"
-                    icon="solar:bell-off-linear"
-                    width={40}
-                  /> */}
-                  <p className="text-small text-default-400">
-                    Nessuna notifica da mostrare
-                  </p>
-                </div>
-              )}
-            </ScrollShadow>
+            {activeTab === "Tutte" && (
+              <ScrollShadow className="h-[500px] w-full">
+                {notifications?.length > 0 ? (
+                  notifications.map((notification) => (
+                    <NotificationItem
+                      key={notification.NotificationId}
+                      NotificationInfo={notification}
+                      NotificationUpdate={notificationUpdate}
+                    />
+                  ))
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-2">
+                    <NotificationsPausedRoundedIcon className="text-default-400" />
+                    <p className="text-small text-default-400">
+                      Nessuna notifica da mostrare
+                    </p>
+                  </div>
+                )}
+              </ScrollShadow>
+            )}
+            {activeTab === "Non lette" && (
+              <ScrollShadow className="h-[500px] w-full">
+                {notifications?.length > 0 ? (
+                  notifications.map((notification) => (
+                    <NotificationItem
+                      key={notification.NotificationId}
+                      NotificationInfo={notification}
+                      NotificationUpdate={notificationUpdate}
+                    />
+                  ))
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-2">
+                    <NotificationsPausedRoundedIcon className="text-default-400" />
+                    <p className="text-small text-default-400">
+                      Nessuna notifica da mostrare
+                    </p>
+                  </div>
+                )}
+              </ScrollShadow>
+            )}
           </CardBody>
           <CardFooter className="justify-end gap-2 px-4">
-            {/* <Button
-              variant={
-                activeTab === NotificationTabs.Archive ? "flat" : "light"
-              }
+            <Button
+              className="h-8 px-3"
+              color="primary"
+              radius="full"
+              variant="light"
             >
-              Settings
+              <DoneAllRoundedIcon /> Segna tutte come lette
             </Button>
-            {activeTab !== NotificationTabs.Archive && (
-              <Button variant="flat">Archive All</Button>
-            )} */}
           </CardFooter>
         </Card>
       </PopoverContent>
