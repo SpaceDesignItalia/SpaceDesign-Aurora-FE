@@ -5,7 +5,6 @@ import {
   Button,
   Chip,
   DatePicker,
-  DateValue,
   Input,
   Modal,
   ModalBody,
@@ -21,7 +20,6 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import styles
 import { API_URL_IMG } from "../../../../../API/API";
 import { useState, useEffect } from "react";
-import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 import axios from "axios";
 import { I18nProvider } from "@react-aria/i18n";
@@ -36,6 +34,8 @@ import {
   SaveRounded as SaveRoundedIcon,
 } from "@mui/icons-material";
 import StatusAlert from "../../../Layout/StatusAlert";
+import { DateValue } from "@heroui/react";
+import { parseDate } from "@internationalized/date";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -53,8 +53,8 @@ interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
-  ProjectTaskExpiration: DateValue;
-  ProjectTaskCreation: DateValue;
+  ProjectTaskExpiration?: any;
+  ProjectTaskCreation: any;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
@@ -80,8 +80,8 @@ const INITIAL_TASK_DATA: Task = {
   ProjectTaskId: 0,
   ProjectTaskName: "",
   ProjectTaskDescription: "",
-  ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
-  ProjectTaskCreation: parseDate(dayjs().format("YYYY-MM-DD")),
+  ProjectTaskExpiration: null,
+  ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
   ProjectTaskStatusId: 0,
   ProjectTaskTags: [],
   ProjectTaskMembers: [],
@@ -211,9 +211,13 @@ export default function AddTaskModal({
   async function handleAddTask() {
     try {
       setIsAddingData(true);
-      const formattedDate = new Date(newTask.ProjectTaskExpiration.toString());
+      const formattedDate = newTask.ProjectTaskExpiration
+        ? new Date(newTask.ProjectTaskExpiration.toString())
+        : null;
       const formattedCreationDate = new Date(
-        newTask.ProjectTaskCreation.toString()
+        newTask.ProjectTaskCreation
+          ? newTask.ProjectTaskCreation.toString()
+          : ""
       );
       const res = await axios.post("/Project/POST/AddTask", {
         FormattedDate: formattedDate,
@@ -295,10 +299,13 @@ export default function AddTaskModal({
 
   const [isValidTask, setIsValidTask] = useState(false);
   useEffect(() => {
+    if (!newTask.ProjectTaskCreation || !newTask.ProjectTaskExpiration) {
+      setIsValidTask(true);
+      return;
+    }
     setIsValidTask(
       newTask.ProjectTaskName.length > 0 &&
         newTask.ProjectTaskCreation.toString().length > 0 &&
-        newTask.ProjectTaskExpiration.toString().length > 0 &&
         dateError === false
     );
   }, [newTask]);
@@ -307,6 +314,7 @@ export default function AddTaskModal({
     startDate: DateValue,
     endDate: DateValue
   ): number => {
+    if (!startDate || !endDate) return 0;
     const totalDuration = dayjs(endDate.toString()).diff(
       dayjs(startDate.toString()),
       "day"
@@ -321,8 +329,8 @@ export default function AddTaskModal({
       ProjectTaskId: 0,
       ProjectTaskName: "",
       ProjectTaskDescription: "",
-      ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
-      ProjectTaskCreation: parseDate(dayjs().format("YYYY-MM-DD")),
+      ProjectTaskExpiration: null,
+      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
@@ -548,7 +556,7 @@ export default function AddTaskModal({
                                   onChange={(date) =>
                                     setNewTask((prevTask) => ({
                                       ...prevTask!,
-                                      ProjectTaskCreation: date,
+                                      ProjectTaskCreation: date!,
                                     }))
                                   }
                                 />
@@ -561,7 +569,8 @@ export default function AddTaskModal({
                                   radius="full"
                                   color={dateError ? "danger" : "default"}
                                   variant="bordered"
-                                  value={newTask!.ProjectTaskExpiration}
+                                  defaultValue={null}
+                                  value={newTask?.ProjectTaskExpiration}
                                   onChange={(date) =>
                                     setNewTask((prevTask) => ({
                                       ...prevTask!,
@@ -579,12 +588,15 @@ export default function AddTaskModal({
                             )}
                           </div>
                         </div>
-                        <Progress
-                          value={calculateProgress(
-                            newTask!.ProjectTaskCreation,
-                            newTask!.ProjectTaskExpiration
+                        {newTask.ProjectTaskExpiration &&
+                          newTask.ProjectTaskCreation && (
+                            <Progress
+                              value={calculateProgress(
+                                newTask!.ProjectTaskCreation,
+                                newTask!.ProjectTaskExpiration
+                              )}
+                            />
                           )}
-                        />
                       </dd>
                     </div>
 

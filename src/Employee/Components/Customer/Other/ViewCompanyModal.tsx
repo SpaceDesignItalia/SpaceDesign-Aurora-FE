@@ -6,9 +6,10 @@ import {
   Card,
   CardHeader,
   CardBody,
+  Avatar,
+  cn,
   Tabs,
   Tab,
-  Avatar,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -21,13 +22,16 @@ interface Company {
   CompanyAddress: string;
   CompanyEmail: string;
   CompanyPhone: string;
+  CompanyImageUrl: string;
 }
+
 interface Member {
   customerfullname: string;
   CustomerEmail: string;
   CustomerPhone: string | null;
   CustomerImageUrl: string;
 }
+
 interface ViewCompanyModalProps {
   isOpen: boolean;
   isClosed: () => void;
@@ -94,6 +98,16 @@ export default function ViewCompanyModal({
             <ModalBody className="flex justify-center items-center">
               <Card className="w-[400px]">
                 <CardHeader className="relative flex h-[100px] flex-col justify-end overflow-visible bg-gradient-to-br from-pink-300 via-purple-300 to-indigo-400">
+                  {CompanyData.CompanyImageUrl && (
+                    <Avatar
+                      className="h-20 w-20 translate-y-12"
+                      src={
+                        API_URL_IMG +
+                        "/profileIcons/" +
+                        CompanyData.CompanyImageUrl
+                      }
+                    />
+                  )}
                   <div className="absolute right-3 top-3 flex flex-row gap-2">
                     <Button
                       className="bg-white/20 text-white dark:bg-black/20"
@@ -121,7 +135,12 @@ export default function ViewCompanyModal({
                   </div>
                 </CardHeader>
                 <CardBody>
-                  <div className="pb-4">
+                  <div
+                    className={cn(
+                      CompanyData.CompanyImageUrl && "pt-6",
+                      "pb-4"
+                    )}
+                  >
                     <p className="text-large font-medium">
                       {CompanyData.CompanyName}
                     </p>
@@ -140,26 +159,39 @@ export default function ViewCompanyModal({
                         {CompanyData.CompanyAddress}
                       </span>
                     </div>
-                    <p className="py-2 text-small text-foreground">
-                      +39 {CompanyData.CompanyPhone}
-                    </p>
+                    {CompanyData.CompanyPhone && (
+                      <p className="py-2 text-small text-foreground">
+                        +39 {CompanyData.CompanyPhone}
+                      </p>
+                    )}
                   </div>
-                  {companyMembers.length > 0 &&
-                    companyMembers.map((member: Member) => (
-                      <UserPost
-                        key={member.CustomerEmail}
-                        avatar={
-                          member.CustomerImageUrl
-                            ? API_URL_IMG +
-                              "/profileIcons/" +
-                              member.CustomerImageUrl
-                            : ""
-                        }
-                        name={member.customerfullname}
-                        text={member.CustomerPhone || ""}
-                        username={member.CustomerEmail}
-                      />
-                    ))}
+                  {companyMembers.length > 0 && (
+                    <Tabs
+                      fullWidth
+                      classNames={{
+                        panel: "mt-2",
+                      }}
+                    >
+                      <Tab key="projects" title="Progetti">
+                        {companyMembers.length > 0 &&
+                          companyMembers.map((member: Member) => (
+                            <UserPost
+                              key={member.CustomerEmail}
+                              avatar={
+                                member.CustomerImageUrl
+                                  ? API_URL_IMG +
+                                    "/profileIcons/" +
+                                    member.CustomerImageUrl
+                                  : ""
+                              }
+                              name={member.customerfullname}
+                              text={member.CustomerPhone || ""}
+                              username={member.CustomerEmail}
+                            />
+                          ))}
+                      </Tab>
+                    </Tabs>
+                  )}
                 </CardBody>
               </Card>
             </ModalBody>

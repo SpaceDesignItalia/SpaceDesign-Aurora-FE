@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardBody,
   Avatar,
+  cn,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -67,16 +68,16 @@ export default function ViewCustomerModal({
             <ModalBody className="flex justify-center items-center">
               <Card className="w-[400px]">
                 <CardHeader className="relative flex h-[100px] flex-col justify-end overflow-visible bg-gradient-to-br from-yellow-300 via-lime-400 to-green-500">
-                  <Avatar
-                    className="h-20 w-20 translate-y-12"
-                    src={
-                      CustomerData.CustomerImageUrl
-                        ? API_URL_IMG +
-                          "/profileIcons/" +
-                          CustomerData.CustomerImageUrl
-                        : ""
-                    }
-                  />
+                  {CustomerData.CustomerImageUrl && (
+                    <Avatar
+                      className="h-20 w-20 translate-y-12"
+                      src={
+                        API_URL_IMG +
+                        "/profileIcons/" +
+                        CustomerData.CustomerImageUrl
+                      }
+                    />
+                  )}
                   <div className="absolute right-3 top-3 flex flex-row gap-2">
                     <Button
                       className="bg-white/20 text-white dark:bg-black/20"
@@ -102,7 +103,12 @@ export default function ViewCustomerModal({
                   </div>
                 </CardHeader>
                 <CardBody>
-                  <div className="pb-4 pt-6">
+                  <div
+                    className={cn(
+                      CustomerData.CustomerImageUrl && "pt-6",
+                      "pb-4"
+                    )}
+                  >
                     <p className="text-large font-medium">
                       {CustomerData.CustomerFullName}
                     </p>
@@ -124,9 +130,11 @@ export default function ViewCustomerModal({
                           </span>
                         ))}
                     </div>
-                    <p className="py-2 text-small text-foreground">
-                      +39 {CustomerData.CustomerPhone}
-                    </p>
+                    {CustomerData.CustomerPhone && (
+                      <p className="py-2 text-small text-foreground">
+                        +39 {CustomerData.CustomerPhone}
+                      </p>
+                    )}
                   </div>
                 </CardBody>
               </Card>

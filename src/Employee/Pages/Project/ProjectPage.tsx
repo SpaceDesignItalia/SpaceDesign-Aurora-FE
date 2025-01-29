@@ -299,7 +299,13 @@ export default function ProjectPage() {
             )}
             {activeTab === "Code Share" && (
               <div>
-                <CodeShareContainer projectData={projectData} />
+                <CodeShareContainer
+                  props={{
+                    radius: "lg",
+                    shadow: "sm",
+                  }}
+                  projectData={projectData}
+                />
               </div>
             )}
             {activeTab === "Ticket" && (

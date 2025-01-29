@@ -32,7 +32,7 @@ import { useDateFormatter } from "@react-aria/i18n";
 import { useState } from "react";
 import { parseDate } from "@internationalized/date";
 import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
-import ViewTaskModal from "./ViewTaskModal";
+import ViewArchivedTaskModal from "./ViewArchivedTaskModal";
 import axios from "axios";
 import { useEffect } from "react";
 import { usePermissions } from "../../../Layout/PermissionProvider";
@@ -90,22 +90,18 @@ interface ModalEditData {
 }
 
 export default function TaskCard({
-  provided,
   task,
   setUpdate,
   update,
   socket,
   projectId,
-  updateTaskStatus,
   columnCount,
 }: {
-  provided: any;
   task: Task;
   setUpdate: any;
   update: any;
   socket: any;
   projectId: number;
-  updateTaskStatus: any;
   columnCount: number;
 }) {
   const [modalData, setModalData] = useState<ModalData>({
@@ -210,7 +206,7 @@ export default function TaskCard({
 
   return (
     <>
-      <ViewTaskModal
+      <ViewArchivedTaskModal
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
         TaskData={modalData.Task}
@@ -221,6 +217,7 @@ export default function TaskCard({
       />
 
       <div
+        className="h-44"
         onClick={(e) =>
           setModalData({
             ...modalData,
@@ -228,9 +225,6 @@ export default function TaskCard({
             Task: task,
           })
         }
-        ref={provided.innerRef}
-        {...provided.draggableProps}
-        {...provided.dragHandleProps}
       >
         <Card className="h-full p-2" radius="sm">
           <CardHeader className="justify-between items-start">
@@ -240,39 +234,39 @@ export default function TaskCard({
 
             <div className="flex flex-row">
               {/*  {Number(task.ProjectTaskStatusId) > 1 && (
-                <Button
-                  variant="light"
-                  isIconOnly
-                  size="sm"
-                  onClick={() =>
-                    updateTaskStatus(
-                      task.ProjectTaskId,
-                      Number(task.ProjectTaskStatusId) - 1
-                    )
-                  }
-                >
-                  <ArrowBackIosNewRoundedIcon />
-                </Button>
-              )}
-
-              {task.ProjectTaskStatusId < columnCount && (
-                <Button
-                  variant="light"
-                  isIconOnly
-                  size="sm"
-                  onClick={() =>
-                    updateTaskStatus(
-                      task.ProjectTaskId,
-                      Number(task.ProjectTaskStatusId) + 1
-                    )
-                  }
-                >
-                  <ArrowForwardIosRoundedIcon />
-                </Button>
-              )} */}
+                  <Button
+                    variant="light"
+                    isIconOnly
+                    size="sm"
+                    onClick={() =>
+                      updateTaskStatus(
+                        task.ProjectTaskId,
+                        Number(task.ProjectTaskStatusId) - 1
+                      )
+                    }
+                  >
+                    <ArrowBackIosNewRoundedIcon />
+                  </Button>
+                )}
+  
+                {task.ProjectTaskStatusId < columnCount && (
+                  <Button
+                    variant="light"
+                    isIconOnly
+                    size="sm"
+                    onClick={() =>
+                      updateTaskStatus(
+                        task.ProjectTaskId,
+                        Number(task.ProjectTaskStatusId) + 1
+                      )
+                    }
+                  >
+                    <ArrowForwardIosRoundedIcon />
+                  </Button>
+                )} */}
             </div>
           </CardHeader>
-          <CardBody className="flex flex-row gap-3 px-3 py-0 text-small">
+          <CardBody className="flex flex-row gap-3 px-3 py-0 text-small items-start">
             {hasValidDescription(task.ProjectTaskDescription) && (
               <Tooltip
                 content="Questa task ha una descrizione"

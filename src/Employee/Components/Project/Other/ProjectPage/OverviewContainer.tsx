@@ -89,16 +89,18 @@ export default function OverviewContainer({
   });
   const { hasPermission } = usePermissions();
 
-  const daysUntilDeadline =
-    dayjs(projectData.ProjectEndDate).diff(dayjs(), "day") + 1;
+  const daysUntilDeadline = projectData.ProjectEndDate
+    ? dayjs(projectData.ProjectEndDate).diff(dayjs(), "day") + 1
+    : null;
+
   const totalDays =
     dayjs(projectData.ProjectEndDate).diff(
       dayjs(projectData.ProjectCreationDate),
       "day"
     ) + 1;
-  const progressPercent = Math.floor(
-    ((totalDays - daysUntilDeadline) / totalDays) * 100
-  );
+  const progressPercent = daysUntilDeadline
+    ? Math.floor(((totalDays - daysUntilDeadline) / totalDays) * 100)
+    : null;
 
   const [links, setLinks] = useState<Link[]>([]);
 
@@ -139,6 +141,9 @@ export default function OverviewContainer({
   }
 
   function calculateDeadline() {
+    if (!daysUntilDeadline) {
+      return <p className="text-gray-500">N/A</p>;
+    }
     if (daysUntilDeadline < 0) {
       return <p className="text-red-500">Scaduto</p>;
     }
@@ -332,38 +337,43 @@ export default function OverviewContainer({
             </div>
           </div>
 
-          <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
-            <div className="flex justify-between items-center">
-              <h1 className="text-xl font-bold mb-4">Completato</h1>
-              <span className="font-bold">
-                {progressPercent >= 100 ? 100 : progressPercent}%
-              </span>
-            </div>
-            <Progress
-              value={progressPercent >= 100 ? 100 : progressPercent}
-              color="primary"
-              size="sm"
-            />
-          </div>
-          <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
-            <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
-              <div className="flex flex-col items-start">
-                <h1 className="font-bold">Tempo rimanente</h1>
-                <span
-                  className={cn(
-                    "font-semibold text-gray-500",
-                    progressPercent >= 70 &&
-                      progressPercent < 85 &&
-                      "text-orange-500",
-                    progressPercent >= 85 && "text-red-500"
-                  )}
-                >
-                  {calculateDeadline()}
-                </span>
+          {progressPercent && (
+            <>
+              <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
+                <div className="flex justify-between items-center">
+                  <h1 className="text-xl font-bold mb-4">Completato</h1>
+                  <span className="font-bold">
+                    {progressPercent >= 100 ? 100 : progressPercent}%
+                  </span>
+                </div>
+                <Progress
+                  value={progressPercent >= 100 ? 100 : progressPercent}
+                  color="primary"
+                  size="sm"
+                />
               </div>
-              <TimerRoundedIcon className="text-gray-500" />
-            </div>
-          </div>
+
+              <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
+                <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
+                  <div className="flex flex-col items-start">
+                    <h1 className="font-bold">Tempo rimanente</h1>
+                    <span
+                      className={cn(
+                        "font-semibold text-gray-500",
+                        progressPercent >= 70 &&
+                          progressPercent < 85 &&
+                          "text-orange-500",
+                        progressPercent >= 85 && "text-red-500"
+                      )}
+                    >
+                      {calculateDeadline()}
+                    </span>
+                  </div>
+                  <TimerRoundedIcon className="text-gray-500" />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>
