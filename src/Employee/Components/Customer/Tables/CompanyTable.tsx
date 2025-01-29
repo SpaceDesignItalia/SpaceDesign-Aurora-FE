@@ -1,7 +1,6 @@
 import AddBusinessRoundedIcon from "@mui/icons-material/AddBusinessRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import {
@@ -30,6 +29,7 @@ interface Company {
   CompanyAddress: string;
   CompanyEmail: string;
   CompanyPhone: string;
+  CompanyImageUrl: string;
 }
 
 interface AlertData {
@@ -103,6 +103,7 @@ export default function CompanyTable() {
       CompanyAddress: "",
       CompanyEmail: "",
       CompanyPhone: "",
+      CompanyImageUrl: "",
     },
     open: false,
   });
@@ -228,25 +229,6 @@ export default function CompanyTable() {
                   })
                 }
               />
-
-              {adminCompanyPermission.editCompanyermission && (
-                <Button
-                  as={Link}
-                  variant="light"
-                  size="sm"
-                  color="warning"
-                  startContent={<ModeOutlinedIcon />}
-                  aria-label="Edit"
-                  aria-labelledby="Edit"
-                  href={
-                    "/administration/customer/edit-company/" +
-                    company.CompanyId +
-                    "/" +
-                    company.CompanyName
-                  }
-                  isIconOnly
-                />
-              )}
 
               {adminCompanyPermission.deleteCompanyPermission && (
                 <ConfirmDeleteCompanyModal

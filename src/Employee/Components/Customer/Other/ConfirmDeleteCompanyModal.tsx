@@ -1,11 +1,6 @@
 // ConfirmDeleteModal.tsx
 import { useState } from "react";
-import {
-  Button,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@heroui/react";
+import { Button, Popover, PopoverContent, PopoverTrigger } from "@heroui/react";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 
@@ -15,6 +10,7 @@ interface Company {
   CompanyAddress: string;
   CompanyEmail: string;
   CompanyPhone: string;
+  CompanyImageUrl: string;
 }
 
 interface ConfirmDeleteCompanyModalProps {
