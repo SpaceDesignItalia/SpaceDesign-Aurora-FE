@@ -41,23 +41,35 @@ const CalendarDay = ({ currentDate }: { currentDate: Date }) => {
   );
   const currentHour = currentTime.getHours() + currentTime.getMinutes() / 60;
   const isToday = currentDate.toDateString() === now.toDateString();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isToday && scrollRef.current) {
+      const scrollPosition =
+        currentHour * ROW_HEIGHT - window.innerHeight / 2 + HEADER_HEIGHT;
+      scrollRef.current.scrollTop = Math.max(0, scrollPosition);
+    }
+  }, [isToday, currentHour]);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden relative">
-      <div className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-5 divide-x divide-gray-100">
+    <div
+      className="flex flex-col h-full overflow-hidden relative"
+      style={{ minHeight: "100%" }}
+    >
+      <div className="flex-1 overflow-y-auto" ref={scrollRef}>
+        <div className="grid grid-cols-10 divide-x divide-gray-100 relative">
           <div className="col-span-1 divide-y divide-gray-100">
             {HOURS.map((hour) => (
               <div
                 key={hour}
-                className="sticky left-0 bg-white text-right pr-4 py-3 text-sm leading-5 text-gray-500"
+                className="sticky left-0 bg-white text-center pr-4 py-3 text-sm leading-5 text-gray-500"
                 style={{ height: `${ROW_HEIGHT}px` }}
               >
                 {`${hour.toString().padStart(2, "0")}:00`}
               </div>
             ))}
           </div>
-          <div className="col-span-4 divide-y divide-gray-100">
+          <div className="col-span-9 divide-y divide-gray-100">
             {HOURS.map((hour) => (
               <div
                 key={hour}
@@ -66,18 +78,30 @@ const CalendarDay = ({ currentDate }: { currentDate: Date }) => {
               ></div>
             ))}
           </div>
+          {isToday && (
+            <div
+              className="absolute left-0 right-0 z-10 pointer-events-none"
+              style={{ top: `${currentHour * ROW_HEIGHT}px` }}
+            >
+              <div
+                className="border-t-2 border-red-500 relative"
+                style={{
+                  width: "calc(90% - 1rem)",
+                  marginLeft: "10%",
+                }}
+              >
+                <div className="absolute left-0 -top-3 -translate-x-full bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                  {currentTime.toLocaleTimeString("it-IT", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-      {isToday && (
-        <div
-          className="absolute border-t-2 border-red-500"
-          style={{
-            top: `${currentHour * ROW_HEIGHT}px`,
-            left: "20%",
-            right: "0",
-          }}
-        />
-      )}
     </div>
   );
 };
@@ -87,15 +111,10 @@ const CalendarWeek = ({ currentDate }: { currentDate: Date }) => {
   startOfWeek.setDate(currentDate.getDate() - ((currentDate.getDay() + 6) % 7));
 
   const now = new Date();
-  const italianTime = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Europe/Rome",
-    hour: "numeric",
-    minute: "numeric",
-    hour12: false,
-  }).format(now);
-
-  const [hours, minutes] = italianTime.split(":").map(Number);
-  const currentHour = hours + minutes / 60;
+  const currentTime = new Date(
+    now.toLocaleString("en-US", { timeZone: "Europe/Rome" })
+  );
+  const currentHour = currentTime.getHours() + currentTime.getMinutes() / 60;
   const currentDayIndex =
     (new Date(
       new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Rome" }).format(now)
@@ -107,9 +126,24 @@ const CalendarWeek = ({ currentDate }: { currentDate: Date }) => {
     startOfWeek.getTime() <= now.getTime() &&
     now.getTime() < startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000;
 
+  const dayCompletion = (currentHour / 24) * 100;
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isCurrentWeek && scrollRef.current) {
+      const scrollPosition =
+        currentHour * ROW_HEIGHT - window.innerHeight / 2 + HEADER_HEIGHT;
+      scrollRef.current.scrollTop = Math.max(0, scrollPosition);
+    }
+  }, [isCurrentWeek, currentHour]);
+
   return (
-    <div className="flex flex-col h-full overflow-hidden relative">
-      <div className="flex-none bg-white sticky top-0 z-10 border-b border-gray-200">
+    <div
+      className="flex flex-col h-full overflow-hidden relative"
+      style={{ minHeight: "100%" }}
+    >
+      <div className="flex-none bg-white sticky top-0 z-20 border-b border-gray-200">
         <div className="grid grid-cols-8 text-sm leading-6 text-gray-500">
           <div className="py-3"></div>
           {DAYS.map((day, i) => {
@@ -132,13 +166,13 @@ const CalendarWeek = ({ currentDate }: { currentDate: Date }) => {
           })}
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-8 divide-x divide-gray-100">
+      <div className="flex-1 overflow-y-auto relative" ref={scrollRef}>
+        <div className="grid grid-cols-8 divide-x divide-gray-100 relative">
           <div className="col-span-1 divide-y divide-gray-100">
             {HOURS.map((hour) => (
               <div
                 key={hour}
-                className="sticky left-0 bg-white text-right pr-4 py-3 text-sm leading-5 text-gray-500"
+                className="sticky left-0 bg-white text-center pr-4 py-3 text-sm leading-5 text-gray-500"
                 style={{ height: `${ROW_HEIGHT}px` }}
               >
                 {hour === 0
@@ -158,18 +192,40 @@ const CalendarWeek = ({ currentDate }: { currentDate: Date }) => {
               ))}
             </div>
           ))}
+          {isCurrentWeek && (
+            <div
+              className="absolute left-0 right-0 z-10 pointer-events-none"
+              style={{
+                top: `${currentHour * ROW_HEIGHT}px`,
+              }}
+            >
+              <div
+                className="border-t-2 border-red-500 relative"
+                style={{
+                  width: `calc(${currentDayIndex * 12.5}% + ${
+                    dayCompletion * 0.125
+                  }%)`,
+                  marginLeft: "12.5%",
+                }}
+              >
+                <div
+                  className="absolute left-0 -top-3 -translate-x-full bg-red-500 text-white rounded-full px-2 py-1 text-xs"
+                  style={{
+                    marginLeft: "0",
+                    top: "-0.75rem",
+                  }}
+                >
+                  {currentTime.toLocaleTimeString("it-IT", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-      {isCurrentWeek && (
-        <div
-          className="absolute border-t-2 border-red-500"
-          style={{
-            top: `${currentHour * ROW_HEIGHT + HEADER_HEIGHT}px`,
-            left: "12.5%",
-            right: `calc(${(7 - currentDayIndex) * 12.5}%)`,
-          }}
-        />
-      )}
     </div>
   );
 };
@@ -187,7 +243,10 @@ const CalendarMonth = ({ currentDate }: { currentDate: Date }) => {
   );
 
   return (
-    <div className="flex-1 overflow-y-auto relative">
+    <div
+      className="flex-1 overflow-y-auto relative"
+      style={{ minHeight: "100%" }}
+    >
       <div className="grid grid-cols-7 gap-px bg-gray-200">
         {DAYS.map((day) => (
           <div
@@ -205,19 +264,21 @@ const CalendarMonth = ({ currentDate }: { currentDate: Date }) => {
         {days.map((day) => (
           <div
             key={day.toISOString()}
-            className="relative bg-white px-3 py-2 hover:bg-gray-50"
-            style={{ height: `${ROW_HEIGHT}px` }}
+            className="relative bg-white hover:bg-gray-50"
+            style={{ height: "18vh" }}
           >
-            <time
-              dateTime={day.toISOString()}
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                day.toDateString() === new Date().toDateString()
-                  ? "bg-blue-600 font-semibold text-white"
-                  : "text-gray-900"
-              }`}
-            >
-              {day.getDate()}
-            </time>
+            <div className="absolute top-2 right-2">
+              <time
+                dateTime={day.toISOString()}
+                className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
+                  day.toDateString() === new Date().toDateString()
+                    ? "bg-blue-600 font-semibold text-white"
+                    : "text-gray-900"
+                }`}
+              >
+                {day.getDate()}
+              </time>
+            </div>
           </div>
         ))}
       </div>
@@ -229,8 +290,8 @@ const CalendarYear = ({ currentDate }: { currentDate: Date }) => {
   const year = currentDate.getFullYear();
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="grid grid-cols-3 gap-6 p-6">
+    <div className="flex-1 overflow-y-auto" style={{ minHeight: "100%" }}>
+      <div className="grid xl:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6 p-6">
         {MONTHS.map((month, monthIndex) => {
           const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
           const firstDayOfMonth = new Date(year, monthIndex, 1).getDay();
@@ -266,12 +327,12 @@ const CalendarYear = ({ currentDate }: { currentDate: Date }) => {
                 {days.map((day) => (
                   <div
                     key={day.toISOString()}
-                    className="relative bg-white px-2 py-2 hover:bg-gray-50"
-                    style={{ height: `${ROW_HEIGHT / 2}px` }}
+                    className="relative bg-white hover:bg-gray-50 flex items-center justify-center"
+                    style={{ height: `${ROW_HEIGHT * 0.75}px` }}
                   >
                     <time
                       dateTime={day.toISOString()}
-                      className={`flex h-6 w-6 items-center justify-center rounded-full ${
+                      className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
                         day.toDateString() === new Date().toDateString()
                           ? "bg-blue-600 font-semibold text-white"
                           : "text-gray-900"
@@ -319,7 +380,7 @@ const formatDate = (date: Date, view: string): string => {
     .replace(/^\w/, (c) => c.toUpperCase());
 };
 
-export default function ProjectCalendar() {
+export default function Calendar() {
   const [view, setView] = useState("week");
   const [currentDate, setCurrentDate] = useState(new Date());
   const container = useRef<HTMLDivElement>(null);
@@ -342,11 +403,11 @@ export default function ProjectCalendar() {
     if (container.current) {
       container.current.scrollTop = 0;
     }
-  }, [currentDate, view]); // Updated dependency array
+  }, [container]);
 
   return (
-    <div className="flex flex-col w-full h-full rounded-lg border-2 p-2">
-      <header className="flex flex-none items-center justify-between border-b  border-gray-300 px-6 py-4 bg-white">
+    <div className="flex flex-col w-full h-screen rounded-lg border-2">
+      <header className="flex flex-none items-center justify-between border-b border-gray-300 px-6 py-4 bg-white my-2">
         <h1 className="text-xl font-bold text-gray-900">
           {formatDate(currentDate, view)}
         </h1>
@@ -400,7 +461,7 @@ export default function ProjectCalendar() {
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-2" ref={container}>
+      <div className="flex-1 overflow-y-auto rounded-lg" ref={container}>
         {view === "day" && <CalendarDay currentDate={currentDate} />}
         {view === "week" && <CalendarWeek currentDate={currentDate} />}
         {view === "month" && <CalendarMonth currentDate={currentDate} />}

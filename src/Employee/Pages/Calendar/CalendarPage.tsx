@@ -1,5 +1,5 @@
 import React from "react";
-import ProjectCalendar from "./ProjectCalendar";
+import Calendar from "../../Components/Calendar/Calendar";
 import { BreadcrumbItem, Breadcrumbs } from "@heroui/react";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 
@@ -21,7 +21,7 @@ export default function CalendarPage() {
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
         <div className="py-6 lg:py-8">
-          <ProjectCalendar />
+          <Calendar />
         </div>
       </main>
     </div>
