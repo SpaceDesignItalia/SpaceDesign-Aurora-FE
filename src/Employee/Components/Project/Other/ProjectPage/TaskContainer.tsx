@@ -421,7 +421,7 @@ export default function TaskContainer({
           </div>
         </DragDropContext>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 justify-between py-5 gap-5 mb-14">
+        <div className="grid grid-cols-1 justify-between py-5 gap-5 mb-14">
           <div
             key={"Archiviate"}
             className={`flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center h-fit transition-height duration-300 ${
@@ -436,7 +436,7 @@ export default function TaskContainer({
             </h2>
             <div
               className={cn(
-                "w-full p-2 flex flex-col gap-5 h-auto bg-lightgrey"
+                "w-full p-2 grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-5 h-auto bg-lightgrey"
               )}
             >
               {archivedTasks.map((task) => (

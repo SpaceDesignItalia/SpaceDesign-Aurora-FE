@@ -217,6 +217,7 @@ export default function TaskCard({
       />
 
       <div
+        className="h-44"
         onClick={(e) =>
           setModalData({
             ...modalData,
@@ -265,7 +266,7 @@ export default function TaskCard({
                 )} */}
             </div>
           </CardHeader>
-          <CardBody className="flex flex-row gap-3 px-3 py-0 text-small">
+          <CardBody className="flex flex-row gap-3 px-3 py-0 text-small items-start">
             {hasValidDescription(task.ProjectTaskDescription) && (
               <Tooltip
                 content="Questa task ha una descrizione"
