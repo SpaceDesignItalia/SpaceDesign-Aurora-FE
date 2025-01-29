@@ -33,12 +33,10 @@ import "react-quill/dist/quill.snow.css"; // Import styles
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { parseDate } from "@internationalized/date";
-import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
 
 import {
   Comment,
   EditRounded,
-  SendRounded as SendRoundedIcon,
   CreditCardRounded as CreditCardRoundedIcon,
   NotesRounded as NotesRoundedIcon,
   LocalOfferRounded as LocalOfferRoundedIcon,
@@ -48,18 +46,15 @@ import {
   CheckBoxOutlined as CheckBoxOutlinedIcon,
   AddRounded as AddRoundedIcon,
   DeleteRounded as DeleteRoundedIcon,
-  ModeEditRounded as ModeEditRoundedIcon,
   CloseRounded as CloseRoundedIcon,
   SaveRounded as SaveRoundedIcon,
   AttachFileRounded as AttachFileRoundedIcon,
-  Inventory2Rounded as Inventory2RoundedIcon,
+  InboxRounded as InboxRoundedIcon,
 } from "@mui/icons-material";
 import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
 import FileUploaderModal from "./FileUploaderModal";
 import FileCard from "./FileCard";
 import StatusAlert from "../../../Layout/StatusAlert";
-import ConfirmDeleteChecklistModal from "./ConfirmDeleteChecklistModal";
-import ConfirmDeleteCheckboxModal from "./ConfirmDeleteCheckboxModal";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -107,10 +102,6 @@ interface Task {
   ProjectTaskComments: Comment[];
   ProjectId: number;
   ProjectTaskChecklists: Checklist[];
-}
-
-interface PopoverStates {
-  [key: number]: boolean; // chiavi di tipo number, valori di tipo boolean
 }
 
 interface ModalData {
@@ -161,13 +152,8 @@ export default function ViewTaskModal({
   // Variabili di stato
   const [newTask, setNewTask] = useState<Task>();
   const [loggedStafferId, setLoggedStafferId] = useState<number>(0);
-  const [loggedStafferImageUrl, setLoggedStafferImageUrl] =
-    useState<string>("");
-  const [popoverStates, setPopoverStates] = useState<PopoverStates>({});
-  const [comment, setComment] = useState("");
+
   const [updateComment, setUpdateComment] = useState("");
-  const [newChecklistName, setNewChecklistName] = useState(""); // Nome della nuova checklist
-  const [checklistText, setChecklistText] = useState(""); // Testo della nuova checklist
   const [deleteUpdate, setDeleteUpdate] = useState(false);
   const [editing, setEditing] = useState(false);
   const [commentEditingId, setCommentEditingId] = useState(0);
@@ -300,7 +286,6 @@ export default function ViewTaskModal({
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then((res) => {
         setLoggedStafferId(res.data.StafferId);
-        setLoggedStafferImageUrl(res.data.StafferImageUrl);
       });
   }, []);
 
@@ -315,20 +300,6 @@ export default function ViewTaskModal({
     );
   }, [newTask]);
 
-  // Funzioni
-  const handleAddTaskComment = () => {
-    axios
-      .post(
-        "/Project/POST/AddTaskComment",
-        { Comment: comment, TaskId: TaskData.ProjectTaskId },
-        { withCredentials: true }
-      )
-      .then(() => {
-        setComment(""); // Resetta il commento dopo l'aggiunta
-        setUpdate(!update); // Aggiorna lo stato
-      });
-  };
-
   const handleDeleteComment = (commentId: number) => {
     axios
       .delete("/Project/DELETE/DeleteTaskComment", {
@@ -338,43 +309,6 @@ export default function ViewTaskModal({
       .then(() => {
         setUpdate(!update); // Aggiorna lo stato
       });
-  };
-
-  const handleAddChecklist = () => {
-    if (newChecklistName.trim() !== "") {
-      axios
-        .post(
-          "/Project/POST/AddTaskChecklist",
-          {
-            TaskId: TaskData.ProjectTaskId,
-            ChecklistText: newChecklistName,
-          },
-          { withCredentials: true }
-        )
-        .then(() => {
-          setNewChecklistName(""); // Resetta il nome della checklist dopo l'aggiunta
-          setUpdate(!update); // Aggiorna lo stato
-        });
-    }
-  };
-
-  const handleAddCheckboxToChecklist = (checklistId: number) => {
-    if (checklistText.trim() !== "") {
-      axios
-        .post(
-          "/Project/POST/AddTaskCheckbox",
-          {
-            ChecklistId: checklistId,
-            CheckboxText: checklistText,
-          },
-          { withCredentials: true }
-        )
-        .then(() => {
-          togglePopover(checklistId); // Chiudi il popover
-          setChecklistText(""); // Resetta il testo della checkbox dopo l'aggiunta
-          setUpdate(!update); // Aggiorna lo stato
-        });
-    }
   };
 
   const handleCheckboxChange = (id: number, isSelected: boolean) => {
@@ -447,42 +381,8 @@ export default function ViewTaskModal({
     return (checked.length / checklist.Checkboxes.length) * 100; // Calcola la percentuale di completamento della checklist
   };
 
-  const togglePopover = (checklistId: number) => {
-    setPopoverStates((prevStates) => ({
-      ...prevStates,
-      [checklistId]: !prevStates[checklistId], // Questo ora è valido
-    }));
-  };
-
-  function handleDeleteChecklist(checklistId: number) {
-    axios
-      .delete("/Project/DELETE/DeleteTaskChecklist", {
-        data: { ChecklistId: checklistId },
-        withCredentials: true,
-      })
-      .then(() => {
-        setUpdate(!update); // Aggiorna lo stato
-      });
-  }
-
-  function handleDeleteCheckbox(checkboxId: number) {
-    axios
-      .delete("/Project/DELETE/DeleteTaskCheckbox", {
-        data: { CheckboxId: checkboxId },
-        withCredentials: true,
-      })
-      .then(() => {
-        setUpdate(!update); // Aggiorna lo stato
-      });
-  }
-
   const [editingCheckbox, setEditingCheckbox] = useState(0);
   const [checkboxText, setCheckboxText] = useState("");
-
-  const handleEditClick = (checkbox: Checkbox) => {
-    setEditingCheckbox(checkbox.CheckboxId);
-    setCheckboxText(checkbox.Text);
-  };
 
   const handleSaveEdit = (checkboxId: number) => {
     // Qui invia la richiesta per aggiornare il testo della checkbox
@@ -505,9 +405,6 @@ export default function ViewTaskModal({
 
   function handleColsesModal() {
     setCheckboxText("");
-    setNewChecklistName("");
-    setChecklistText("");
-    setComment("");
     setEditingCheckbox(0);
     isClosed();
     setEditing(false);
@@ -628,13 +525,11 @@ export default function ViewTaskModal({
       })
       .then(() => {
         setUpdate(!update);
-        setComment("");
         setCommentEditingId(0);
       });
   }
 
   function deleteUpdateComment() {
-    setComment("");
     setCommentEditingId(0);
   }
 
@@ -688,7 +583,7 @@ export default function ViewTaskModal({
 
   function handleArchiveTask() {
     try {
-      axios.put("/Project/UPDATE/ArchiveTask", {
+      axios.put("/Project/UPDATE/NotArchiveTask", {
         ProjectTaskId: TaskData.ProjectTaskId,
       });
       setUpdate(!update);
@@ -814,15 +709,6 @@ export default function ViewTaskModal({
                         <CreditCardRoundedIcon /> {newTask!.ProjectTaskName}
                       </div>
                       <Button
-                        isIconOnly
-                        color="warning"
-                        variant="light"
-                        radius="full"
-                        startContent={<EditRounded sx={{ fontSize: 17 }} />}
-                        onClick={() => setEditing(true)}
-                        size="sm"
-                      />
-                      <Button
                         color="primary"
                         variant="light"
                         onClick={handleArchiveTask}
@@ -830,7 +716,7 @@ export default function ViewTaskModal({
                         size="sm"
                         isIconOnly
                         startContent={
-                          <Inventory2RoundedIcon
+                          <InboxRoundedIcon
                             sx={{ fontSize: 17 }}
                             className="text-primary"
                           />
@@ -1143,117 +1029,44 @@ export default function ViewTaskModal({
                           }
                           setFileUpdate={setUpdate}
                         />
-                        <Accordion variant="light" className="px-[-2px]">
-                          <AccordionItem
-                            key="1"
-                            aria-label="Accordion 1"
-                            title={
-                              <div className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                                <AttachFileRoundedIcon />
-                                Allegati
-                                <Chip
-                                  color="primary"
-                                  variant="faded"
-                                  size="sm"
-                                  radius="full"
-                                >
-                                  {files && files.length}
-                                </Chip>
-                              </div>
-                            }
-                          >
-                            <ScrollShadow className="flex flex-col gap-3 max-h-96">
-                              <div className="flex flex-col gap-4 w-full">
-                                {files.length > 0 &&
-                                  files.map((file, index) => (
-                                    <FileCard
-                                      file={file}
-                                      DeleteFile={DeleteFile}
-                                      key={index}
-                                    />
-                                  ))}
-                              </div>
-                              <Button
-                                radius="full"
-                                color="primary"
-                                startContent={<NoteAddRoundedIcon />}
-                                className="w-1/3 sm:w-1/4"
-                                variant="solid"
-                                onClick={() =>
-                                  setModalUploadFile({
-                                    ...modalUploadFile,
-                                    open: true,
-                                  })
-                                }
-                                fullWidth
-                              >
-                                Carica file
-                              </Button>
-                            </ScrollShadow>
-                          </AccordionItem>
-                        </Accordion>
+                        {files.length > 0 && (
+                          <Accordion variant="light" className="px-[-2px]">
+                            <AccordionItem
+                              key="1"
+                              aria-label="Accordion 1"
+                              title={
+                                <div className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                                  <AttachFileRoundedIcon />
+                                  Allegati
+                                  <Chip
+                                    color="primary"
+                                    variant="faded"
+                                    size="sm"
+                                    radius="full"
+                                  >
+                                    {files && files.length}
+                                  </Chip>
+                                </div>
+                              }
+                            >
+                              <ScrollShadow className="flex flex-col gap-3 max-h-96">
+                                <div className="flex flex-col gap-4 w-full">
+                                  {files.length > 0 &&
+                                    files.map((file, index) => (
+                                      <FileCard
+                                        file={file}
+                                        DeleteFile={DeleteFile}
+                                        key={index}
+                                      />
+                                    ))}
+                                </div>
+                              </ScrollShadow>
+                            </AccordionItem>
+                          </Accordion>
+                        )}
 
                         <div className="px-4 py-6 flex flex-row justify-between items-start sm:gap-4 sm:px-0">
                           <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0 w-full mr-5">
-                            <div className="flex flex-row items-center justify-end w-full">
-                              <Popover
-                                radius="lg"
-                                placement="bottom"
-                                showArrow
-                                shouldBlockScroll
-                              >
-                                <PopoverTrigger>
-                                  <Button
-                                    color="primary"
-                                    radius="full"
-                                    variant="ghost"
-                                    startContent={<AddRoundedIcon />}
-                                  >
-                                    Crea checklist
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="p-5 w-80">
-                                  {(titleProps) => (
-                                    <div className="px-1 py-2 w-full">
-                                      <p
-                                        className="text-small font-bold text-foreground"
-                                        {...titleProps}
-                                      >
-                                        Crea checklist
-                                      </p>
-                                      <div className="mt-2 flex flex-col gap-2 w-full">
-                                        <Input
-                                          autoFocus
-                                          variant="underlined"
-                                          color="primary"
-                                          placeholder="Titolo della checklist"
-                                          value={newChecklistName}
-                                          onChange={(e) =>
-                                            setNewChecklistName(e.target.value)
-                                          }
-                                          onKeyDown={(e) => {
-                                            if (e.key === "Enter") {
-                                              handleAddChecklist(); // Chiama la funzione quando premi "Enter"
-                                            }
-                                          }}
-                                        />
-                                        <Button
-                                          color="primary"
-                                          size="sm"
-                                          radius="full"
-                                          onClick={handleAddChecklist}
-                                          startContent={<AddRoundedIcon />}
-                                          isDisabled={newChecklistName === ""}
-                                        >
-                                          Aggiungi Checklist
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </PopoverContent>
-                              </Popover>
-                            </div>
-
                             <div className="flex flex-col gap-5 w-full mt-5">
                               {newTask?.ProjectTaskChecklists?.map(
                                 (checklist) => (
@@ -1286,12 +1099,6 @@ export default function ViewTaskModal({
                                                 />
                                               </>
                                             )}
-                                            <ConfirmDeleteChecklistModal
-                                              checklist={checklist}
-                                              DeleteChecklist={
-                                                handleDeleteChecklist
-                                              }
-                                            />
                                           </div>
                                         </div>
                                       }
@@ -1345,142 +1152,9 @@ export default function ViewTaskModal({
                                                 >
                                                   {checkbox.Text}
                                                 </Checkbox>
-                                              )}
-                                              {editingCheckbox ===
-                                              checkbox.CheckboxId ? (
-                                                <Button
-                                                  size="sm"
-                                                  radius="full"
-                                                  onClick={() =>
-                                                    handleSaveEdit(
-                                                      checkbox.CheckboxId
-                                                    )
-                                                  }
-                                                  disabled={checkboxText === ""}
-                                                  color="primary"
-                                                >
-                                                  Salva
-                                                </Button>
-                                              ) : (
-                                                !checkbox.IsSelected && (
-                                                  <div className="flex flex-row justify-end">
-                                                    <Button
-                                                      color="warning"
-                                                      variant="light"
-                                                      size="sm"
-                                                      radius="full"
-                                                      isIconOnly
-                                                      startContent={
-                                                        <ModeEditRoundedIcon
-                                                          sx={{
-                                                            fontSize: 17,
-                                                          }}
-                                                        />
-                                                      }
-                                                      onClick={() =>
-                                                        handleEditClick(
-                                                          checkbox
-                                                        )
-                                                      }
-                                                    />
-                                                    <ConfirmDeleteCheckboxModal
-                                                      checkbox={checkbox}
-                                                      DeleteCheckbox={
-                                                        handleDeleteCheckbox
-                                                      }
-                                                    />
-                                                  </div>
-                                                )
-                                              )}
+                                              )}{" "}
                                             </div>
                                           ))}
-
-                                        <div className="flex items-center gap-2 mt-5">
-                                          <Popover
-                                            radius="lg"
-                                            placement="bottom"
-                                            showArrow
-                                            shouldBlockScroll
-                                            isOpen={
-                                              popoverStates[
-                                                checklist.ChecklistId
-                                              ]
-                                            }
-                                            onClose={() =>
-                                              togglePopover(
-                                                checklist.ChecklistId
-                                              )
-                                            }
-                                          >
-                                            <PopoverTrigger>
-                                              <Button
-                                                color="primary"
-                                                size="sm"
-                                                radius="full"
-                                                startContent={
-                                                  <AddRoundedIcon />
-                                                }
-                                                onClick={() =>
-                                                  togglePopover(
-                                                    checklist.ChecklistId
-                                                  )
-                                                }
-                                              >
-                                                Aggiungi elemento
-                                              </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="p-5 w-80">
-                                              {(titleProps) => (
-                                                <div className="px-1 py-2 w-full">
-                                                  <p
-                                                    className="text-small font-bold text-foreground"
-                                                    {...titleProps}
-                                                  >
-                                                    Aggiungi elemento
-                                                  </p>
-                                                  <div className="mt-2 flex flex-col gap-2 w-full">
-                                                    <Input
-                                                      variant="underlined"
-                                                      autoFocus
-                                                      placeholder="Aggiungi un nuovo elemento"
-                                                      value={checklistText}
-                                                      onChange={(e) =>
-                                                        setChecklistText(
-                                                          e.target.value
-                                                        )
-                                                      }
-                                                      onKeyDown={(e) => {
-                                                        if (e.key === "Enter") {
-                                                          handleAddCheckboxToChecklist(
-                                                            checklist.ChecklistId
-                                                          ); // Chiama la funzione quando premi "Enter"
-                                                        }
-                                                      }}
-                                                    />
-                                                    <Button
-                                                      color="primary"
-                                                      size="sm"
-                                                      radius="full"
-                                                      onClick={() =>
-                                                        handleAddCheckboxToChecklist(
-                                                          checklist.ChecklistId
-                                                        )
-                                                      }
-                                                      isDisabled={
-                                                        checklistText === ""
-                                                      }
-                                                      startContent={
-                                                        <AddRoundedIcon />
-                                                      }
-                                                    >
-                                                      Aggiungi elemento
-                                                    </Button>
-                                                  </div>
-                                                </div>
-                                              )}
-                                            </PopoverContent>
-                                          </Popover>
-                                        </div>
                                       </div>
                                     </AccordionItem>
                                   </Accordion>
@@ -1490,89 +1164,13 @@ export default function ViewTaskModal({
                           </dd>
                         </div>
 
-                        <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                          <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                            <ChatRoundedIcon />
-                            Commenti
-                          </dt>
-                          <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
-                            <div className="flex items-start space-x-4">
-                              <div className="flex flex-row items-center gap-3 w-full ">
-                                <label htmlFor="comment" className="sr-only">
-                                  Scrivi il tuo commento
-                                </label>
-                                <div className="flex items-start space-x-4 w-full">
-                                  <div className="flex-shrink-0">
-                                    <Avatar
-                                      src={
-                                        loggedStafferImageUrl &&
-                                        API_URL_IMG +
-                                          "/profileIcons/" +
-                                          loggedStafferImageUrl
-                                      }
-                                      alt="Logged Staffer"
-                                    />
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <form action="#" className="relative">
-                                      <div className="overflow-hidden rounded-lg">
-                                        <label
-                                          htmlFor="comment"
-                                          className="sr-only"
-                                        >
-                                          Add your comment
-                                        </label>
-                                        <Textarea
-                                          variant="underlined"
-                                          color="primary"
-                                          minRows={1}
-                                          id="comment"
-                                          name="comment"
-                                          placeholder="Scrivi il tuo commento..."
-                                          value={comment}
-                                          onChange={(e) =>
-                                            setComment(e.target.value)
-                                          }
-                                          onKeyDown={(e) => {
-                                            if (
-                                              e.key === "Enter" &&
-                                              !e.shiftKey
-                                            ) {
-                                              e.preventDefault();
-                                              handleAddTaskComment();
-                                            }
-                                          }}
-                                        />
-
-                                        {/* Spacer element to match the height of the toolbar */}
-
-                                        <div className="mt-3 flex flex-row justify-end w-full">
-                                          <Button
-                                            radius="full"
-                                            isDisabled={comment == ""}
-                                            color="primary"
-                                            size="sm"
-                                            onClick={handleAddTaskComment}
-                                            endContent={
-                                              <SendRoundedIcon
-                                                sx={{ fontSize: 15 }}
-                                              />
-                                            }
-                                          >
-                                            Invia
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    </form>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {newTask &&
-                            newTask.ProjectTaskComments.length === 0 ? (
-                              <p>Nessun commento trovato</p>
-                            ) : (
+                        {newTask && newTask.ProjectTaskComments.length > 0 && (
+                          <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
+                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                              <ChatRoundedIcon />
+                              Commenti
+                            </dt>
+                            <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
                               <Accordion variant="light" className="px-[-2px]">
                                 <AccordionItem
                                   key="1"
@@ -1745,9 +1343,9 @@ export default function ViewTaskModal({
                                   </ScrollShadow>
                                 </AccordionItem>
                               </Accordion>
-                            )}
-                          </dd>
-                        </div>
+                            </dd>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="flex flex-row justify-end gap-2">
