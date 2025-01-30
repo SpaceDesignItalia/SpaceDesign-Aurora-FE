@@ -31,7 +31,7 @@ export default {
       },
       colors: {
         primary: {
-          DEFAULT: "#000000",
+          DEFAULT: "#27272A",
           foreground: "#FFFFFF",
         },
         warning: {

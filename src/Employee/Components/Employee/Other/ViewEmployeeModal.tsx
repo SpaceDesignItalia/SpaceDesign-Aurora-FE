@@ -16,6 +16,7 @@ import { API_URL_IMG } from "../../../../API/API";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 interface Employee {
   EmployeeId: number;
@@ -55,7 +56,7 @@ export default function ViewEmployeeModal({
   EmployeeData,
 }: ViewEmployeeModalProps) {
   const [employeeProjects, setEmployeeProjects] = useState<Project[]>([]);
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchProjects = async () => {
       const res = await axios.get("/Staffer/GET/GetStafferProjectsForModal", {
@@ -107,7 +108,10 @@ export default function ViewEmployeeModal({
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={isClosed}
+      onOpenChange={() => {
+        isClosed();
+        navigate("/administration/employee");
+      }}
       scrollBehavior="outside"
       backdrop="blur"
       className="w-0 h-0 absolute top-[25%]"
@@ -148,7 +152,10 @@ export default function ViewEmployeeModal({
                       radius="full"
                       isIconOnly
                       variant="light"
-                      onPress={isClosed}
+                      onPress={() => {
+                        isClosed();
+                        navigate("/administration/employee");
+                      }}
                       startContent={<CloseRoundedIcon className="h-1 w-1" />}
                     />
                   </div>

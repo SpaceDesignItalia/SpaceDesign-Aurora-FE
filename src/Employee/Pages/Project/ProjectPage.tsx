@@ -68,8 +68,9 @@ function getCookie(name: string): string | undefined {
 }
 
 export default function ProjectPage() {
-  const { UniqueCode } = useParams<{
+  const { UniqueCode, Action } = useParams<{
     UniqueCode: string;
+    Action: string;
   }>();
   const [ProjectId, setProjectId] = useState("");
   const [ProjectName, setProjectName] = useState("");
@@ -110,6 +111,14 @@ export default function ProjectPage() {
     { title: "Code Share", icon: CodeIcon },
     { title: "Ticket", icon: ConfirmationNumberRoundedIcon },
   ];
+
+  useEffect(() => {
+    if (Action === "add-task") {
+      setActiveTab("Tasks");
+    } else if (Action === "upload-file") {
+      setActiveTab("Files");
+    }
+  }, [Action]);
 
   useEffect(() => {
     axios

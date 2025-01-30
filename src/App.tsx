@@ -39,6 +39,7 @@ import SettingsCustomerDashboard from "./Customer/Pages/Settings/SettingsCustome
 import PasswordRecovery from "./Employee/Components/Login/PasswordRecovery";
 import PasswordReset from "./Employee/Components/Login/PasswordReset";
 import Loader from "./Employee/Components/Layout/Loader";
+import SearchBar from "./Employee/Components/Layout/SearchBar";
 import { io } from "socket.io-client";
 
 const socket = io(API_WEBSOCKET_URL);
@@ -50,6 +51,7 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isStaffer, setIsStaffer] = useState<boolean>(false);
   const { loadPermissions, setStafferId, permissionsLoaded } = usePermissions();
+  const [openSearchBar, setOpenSearchBar] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,12 +92,31 @@ const App: React.FC = () => {
     fetchData();
   }, [loadPermissions, permissionsLoaded, setStafferId]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        (event.ctrlKey && event.key === "k") ||
+        (event.altKey && event.code === "Space")
+      ) {
+        setOpenSearchBar(true);
+        event.preventDefault(); // Evita comportamenti predefiniti, se necessario
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   if (isLoading) {
     return <Loader />;
   }
 
   return (
     <>
+      {" "}
+      <SearchBar open={openSearchBar} setOpen={setOpenSearchBar} />
       {isAuth && isStaffer && <Sidebar />}
       {isAuth && !isStaffer && <Navbar />}
       <Routes>
@@ -147,6 +168,10 @@ const EmployeeProtectedRoutes: React.FC = () => {
         <Route element={<Dashboard />} path="/" />
         <Route
           element={<CustomerDashboard />}
+          path="/administration/customer/:CustomerId"
+        />
+        <Route
+          element={<CustomerDashboard />}
           path="/administration/customer"
         />
         <Route
@@ -164,6 +189,10 @@ const EmployeeProtectedRoutes: React.FC = () => {
         <Route
           element={<EditCompanyPage />}
           path="/administration/customer/edit-company/:CompanyId/:CompanyName"
+        />
+        <Route
+          element={<EmployeeDashboard />}
+          path="/administration/employee/:EmployeeId"
         />
         <Route
           element={<EmployeeDashboard />}
@@ -194,11 +223,13 @@ const EmployeeProtectedRoutes: React.FC = () => {
           path="/administration/permission/edit-role/:RoleId"
         />
         <Route element={<ChatDashboard />} path="/comunications/chat" />
+        <Route element={<ChatDashboard />} path="/comunications/chat/:Action" />
         <Route element={<CalendarPage />} path="/calendar" />
 
         <Route element={<ProjectDashboard />} path="/projects" />
         <Route element={<AddProjectPage />} path="/projects/add-project" />
         <Route element={<ProjectPage />} path="/projects/:UniqueCode" />
+        <Route element={<ProjectPage />} path="/projects/:UniqueCode/:Action" />
         <Route
           element={<EditProjectPage />}
           path="/projects/:UniqueCode/edit-project"
