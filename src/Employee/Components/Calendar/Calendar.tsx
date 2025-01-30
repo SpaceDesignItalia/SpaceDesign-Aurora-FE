@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
@@ -39,9 +39,25 @@ const CalendarDay = ({ currentDate }: { currentDate: Date }) => {
   const currentTime = new Date(
     now.toLocaleString("en-US", { timeZone: "Europe/Rome" })
   );
-  const currentHour = currentTime.getHours() + currentTime.getMinutes() / 60;
+  const [currentHour, setCurrentHour] = useState(
+    currentTime.getHours() + currentTime.getMinutes() / 60
+  );
   const isToday = currentDate.toDateString() === now.toDateString();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const newNow = new Date();
+      const newCurrentTime = new Date(
+        newNow.toLocaleString("en-US", { timeZone: "Europe/Rome" })
+      );
+      setCurrentHour(
+        newCurrentTime.getHours() + newCurrentTime.getMinutes() / 60
+      );
+    }, 1000); // Update every second
+
+    return () => clearInterval(timer);
+  }, []); // Empty dependency array to run only once on mount
 
   useEffect(() => {
     if (isToday && scrollRef.current) {
@@ -91,7 +107,7 @@ const CalendarDay = ({ currentDate }: { currentDate: Date }) => {
                 }}
               >
                 <div className="absolute left-0 -top-3 -translate-x-full bg-red-500 text-white rounded-full px-2 py-1 text-xs">
-                  {currentTime.toLocaleTimeString("it-IT", {
+                  {new Date().toLocaleTimeString("it-IT", {
                     hour: "2-digit",
                     minute: "2-digit",
                     hour12: false,
@@ -110,25 +126,50 @@ const CalendarWeek = ({ currentDate }: { currentDate: Date }) => {
   const startOfWeek = new Date(currentDate);
   startOfWeek.setDate(currentDate.getDate() - ((currentDate.getDay() + 6) % 7));
 
-  const now = new Date();
+  const [now, setNow] = useState(new Date());
   const currentTime = new Date(
     now.toLocaleString("en-US", { timeZone: "Europe/Rome" })
   );
-  const currentHour = currentTime.getHours() + currentTime.getMinutes() / 60;
-  const currentDayIndex =
+  const [currentHour, setCurrentHour] = useState(
+    currentTime.getHours() + currentTime.getMinutes() / 60
+  );
+  const [currentDayIndex, setCurrentDayIndex] = useState(
     (new Date(
       new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Rome" }).format(now)
     ).getDay() +
       6) %
-    7;
+      7
+  );
 
   const isCurrentWeek =
     startOfWeek.getTime() <= now.getTime() &&
     now.getTime() < startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000;
 
-  const dayCompletion = (currentHour / 24) * 100;
-
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const newNow = new Date();
+      setNow(newNow);
+      const newCurrentTime = new Date(
+        newNow.toLocaleString("en-US", { timeZone: "Europe/Rome" })
+      );
+      setCurrentHour(
+        newCurrentTime.getHours() + newCurrentTime.getMinutes() / 60
+      );
+      setCurrentDayIndex(
+        (new Date(
+          new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Rome" }).format(
+            newNow
+          )
+        ).getDay() +
+          6) %
+          7
+      );
+    }, 1000); // Update every second
+
+    return () => clearInterval(timer);
+  }, []); // Empty dependency array to run only once on mount
 
   useEffect(() => {
     if (isCurrentWeek && scrollRef.current) {
