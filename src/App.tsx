@@ -224,7 +224,7 @@ const EmployeeProtectedRoutes: React.FC = () => {
         />
         <Route element={<ChatDashboard />} path="/comunications/chat" />
         <Route element={<ChatDashboard />} path="/comunications/chat/:Action" />
-        <Route element={<CalendarPage />} path="/calendar" />
+        <Route element={<CalendarPage />} path="/comunications/calendar" />
 
         <Route element={<ProjectDashboard />} path="/projects" />
         <Route element={<AddProjectPage />} path="/projects/add-project" />

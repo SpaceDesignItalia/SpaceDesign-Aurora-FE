@@ -25,6 +25,12 @@ import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
 import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
+import AddBusinessRoundedIcon from "@mui/icons-material/AddBusinessRounded";
+import AddModeratorRoundedIcon from "@mui/icons-material/AddModeratorRounded";
+import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
+import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
+
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { API_URL_IMG } from "../../../API/API";
@@ -81,6 +87,13 @@ interface Conversation {
   notificationCount: number;
 }
 
+interface Add {
+  id: string;
+  name: string;
+  url: string;
+  icon: React.ComponentType<any>;
+}
+
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
@@ -95,7 +108,7 @@ export default function SearchBar({
   const [rawQuery, setRawQuery] = useState("");
   const query = rawQuery
     .toLowerCase()
-    .replace(/^[#>:]/, "")
+    .replace(/^[#>:+]/, "")
     .split("/")[0];
   const actionQuery = rawQuery.toLowerCase().split("/")[1];
   const [projects, setProjects] = useState<Project[]>([]);
@@ -107,10 +120,16 @@ export default function SearchBar({
   const [pages, setPages] = useState<Page[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activePage, setActivePage] = useState<Page | null>(null);
+  const [activeAdd, setActiveAdd] = useState<Add | null>(null);
+  const [add, setAdd] = useState<Add[]>([]);
+
   const filteredProjects =
     rawQuery === "#"
       ? projects
-      : query === "" || rawQuery.startsWith(">") || rawQuery.startsWith(":")
+      : query === "" ||
+        rawQuery.startsWith(">") ||
+        rawQuery.startsWith(":") ||
+        rawQuery.startsWith("+")
       ? []
       : projects.filter((project) =>
           project.name.toLowerCase().includes(query)
@@ -125,7 +144,10 @@ export default function SearchBar({
   const filteredUsers =
     rawQuery === ">"
       ? users
-      : query === "" || rawQuery.startsWith("#") || rawQuery.startsWith(":")
+      : query === "" ||
+        rawQuery.startsWith("#") ||
+        rawQuery.startsWith(":") ||
+        rawQuery.startsWith("+")
       ? []
       : users.filter((user) => user.name.toLowerCase().includes(query));
 
@@ -138,9 +160,29 @@ export default function SearchBar({
   const filteredPages =
     rawQuery === ":"
       ? pages
-      : query === "" || rawQuery.startsWith("#") || rawQuery.startsWith(">")
+      : query === "" ||
+        rawQuery.startsWith("#") ||
+        rawQuery.startsWith(">") ||
+        rawQuery.startsWith("+")
       ? []
       : pages.filter((page) => page.name.toLowerCase().includes(query));
+
+  const filteredAdd =
+    rawQuery === "+"
+      ? add
+      : query === "" ||
+        rawQuery.startsWith("#") ||
+        rawQuery.startsWith(">") ||
+        rawQuery.startsWith(":")
+      ? []
+      : add.filter((add) => {
+          const nameAfterSpace = add.name
+            .split(" ")
+            .slice(1)
+            .join(" ")
+            .toLowerCase();
+          return nameAfterSpace.includes(query);
+        });
 
   const [loggedStafferId, setLoggedStafferId] = useState<string | null>(null);
 
@@ -413,10 +455,52 @@ export default function SearchBar({
     ]);
   }
 
+  function fetchAdd() {
+    setAdd([
+      {
+        id: "add-project",
+        name: "Aggiungi Progetto",
+        url: "/projects/add-project",
+        icon: CreateNewFolderRoundedIcon,
+      },
+      {
+        id: "add-employee",
+        name: "Aggiungi Dipendente",
+        url: "/administration/employee/add-employee",
+        icon: GroupAddIcon,
+      },
+      {
+        id: "add-customer",
+        name: "Aggiungi Cliente",
+        url: "/administration/customer/add-customer",
+        icon: PersonAddAlt1RoundedIcon,
+      },
+      {
+        id: "add-company",
+        name: "Aggiungi Azienda",
+        url: "/administration/customer/-add-company",
+        icon: AddBusinessRoundedIcon,
+      },
+      {
+        id: "add-permission",
+        name: "Aggiungi Permesso",
+        url: "/administration/permission/add-permission",
+        icon: VpnKeyOutlinedIcon,
+      },
+      {
+        id: "add-role",
+        name: "Aggiungi Ruolo",
+        url: "/administration/permission/add-role",
+        icon: AddModeratorRoundedIcon,
+      },
+    ]);
+  }
+
   useEffect(() => {
     fetchProjects();
     fetchUsers();
     fetchPages();
+    fetchAdd();
   }, []);
 
   useEffect(() => {
@@ -436,8 +520,8 @@ export default function SearchBar({
         setRawQuery(">" + activeUser.name + "/");
       } else if (activePage) {
         setRawQuery(":" + activePage.name + "/");
-      } else if (filteredPages.length > 0) {
-        setRawQuery(":" + filteredPages[0].name + "/");
+      } else if (activeAdd) {
+        setRawQuery("+" + activeAdd.name + "/");
       }
     }
   };
@@ -486,7 +570,8 @@ export default function SearchBar({
 
             {(filteredProjects.length > 0 ||
               filteredUsers.length > 0 ||
-              filteredPages.length > 0) && (
+              filteredPages.length > 0 ||
+              filteredAdd.length > 0) && (
               <ComboboxOptions
                 static
                 as="ul"
@@ -511,6 +596,7 @@ export default function SearchBar({
                                   setActiveProject(project);
                                   setActiveUser(null);
                                   setActivePage(null);
+                                  setActiveAdd(null);
                                   fetchProjectAction();
                                 }
                               }, [focus]),
@@ -585,6 +671,7 @@ export default function SearchBar({
                                   setActiveUser(user);
                                   setActiveProject(null);
                                   setActivePage(null);
+                                  setActiveAdd(null);
                                   fetchUserActions();
                                 }
                               }, [focus]),
@@ -653,6 +740,7 @@ export default function SearchBar({
                                   setActiveProject(null);
                                   setActiveUser(null);
                                   setActivePage(page);
+                                  setActiveAdd(null);
                                 }
                               }, [focus]),
                               (
@@ -663,6 +751,55 @@ export default function SearchBar({
                                   />
                                   <span className="ml-3 flex-auto truncate">
                                     {page.name}
+                                  </span>
+                                  <Kbd
+                                    keys={["tab"]}
+                                    className={classNames(
+                                      "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                                      rawQuery.endsWith("/")
+                                        ? "border-primary text-primary"
+                                        : "border-gray-400 text-gray-900"
+                                    )}
+                                  />
+                                </>
+                              )
+                            )}
+                          </ComboboxOption>
+                        </div>
+                      ))}
+                    </ul>
+                  </li>
+                )}
+                {filteredAdd.length > 0 && (
+                  <li>
+                    <h2 className="text-xs font-semibold text-gray-900">
+                      Pagine
+                    </h2>
+                    <ul className="-mx-4 mt-2 text-sm text-gray-700">
+                      {filteredAdd.map((add) => (
+                        <div key={add.id}>
+                          <ComboboxOption
+                            as="li"
+                            value={add}
+                            className="group flex cursor-default select-none items-center px-4 py-2 data-[focus]:bg-primary data-[focus]:text-white data-[focus]:outline-none"
+                          >
+                            {({ focus }) => (
+                              useEffect(() => {
+                                if (focus) {
+                                  setActiveProject(null);
+                                  setActiveUser(null);
+                                  setActivePage(null);
+                                  setActiveAdd(add);
+                                }
+                              }, [focus]),
+                              (
+                                <>
+                                  <add.icon
+                                    className="size-6 flex-none text-gray-400 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
+                                    aria-hidden="true"
+                                  />
+                                  <span className="ml-3 flex-auto truncate">
+                                    {add.name}
                                   </span>
                                   <Kbd
                                     keys={["tab"]}
@@ -706,7 +843,8 @@ export default function SearchBar({
               rawQuery !== "?" &&
               filteredProjects.length === 0 &&
               filteredUsers.length === 0 &&
-              filteredPages.length === 0 && (
+              filteredPages.length === 0 &&
+              filteredAdd.length === 0 && (
                 <div className="px-6 py-14 text-center text-sm sm:px-14">
                   <ExclamationTriangleIcon
                     className="mx-auto size-6 text-gray-400"
@@ -756,7 +894,18 @@ export default function SearchBar({
               >
                 :
               </Kbd>{" "}
-              per pagine e
+              per pagine,
+              <Kbd
+                className={classNames(
+                  "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                  rawQuery === "+"
+                    ? "border-primary text-primary"
+                    : "border-gray-400 text-gray-900"
+                )}
+              >
+                +
+              </Kbd>{" "}
+              per aggiungere e{" "}
               <Kbd
                 className={classNames(
                   "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
