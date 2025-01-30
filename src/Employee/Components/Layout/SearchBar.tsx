@@ -15,6 +15,14 @@ import {
   MagnifyingGlassIcon,
   ArrowTurnDownRightIcon,
 } from "@heroicons/react/24/outline";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import EngineeringOutlinedIcon from "@mui/icons-material/EngineeringOutlined";
+import FolderCopyOutlinedIcon from "@mui/icons-material/FolderCopyOutlined";
+import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
+import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import axios from "axios";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { API_URL_IMG } from "../../../API/API";
@@ -42,6 +50,19 @@ interface ProjectAction {
   url: string;
 }
 
+interface UserAction {
+  id: string;
+  name: string;
+  url: string;
+}
+
+interface Page {
+  id: string;
+  name: string;
+  url: string;
+  icon: React.ComponentType<any>;
+}
+
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
@@ -58,14 +79,15 @@ export default function SearchBar({
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [projectActions, setProjectActions] = useState<ProjectAction[]>([]);
-  const [userActions, setUserActions] = useState<ProjectAction[]>([]);
+  const [userActions, setUserActions] = useState<UserAction[]>([]);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [activeUser, setActiveUser] = useState<User | null>(null);
+  const [pages, setPages] = useState<Page[]>([]);
 
   const filteredProjects =
     rawQuery === "#"
       ? projects
-      : query === "" || rawQuery.startsWith(">")
+      : query === "" || rawQuery.startsWith(">") || rawQuery.startsWith(":")
       ? []
       : projects.filter((project) =>
           project.name.toLowerCase().includes(query)
@@ -74,9 +96,16 @@ export default function SearchBar({
   const filteredUsers =
     rawQuery === ">"
       ? users
-      : query === "" || rawQuery.startsWith("#")
+      : query === "" || rawQuery.startsWith("#") || rawQuery.startsWith(":")
       ? []
       : users.filter((user) => user.name.toLowerCase().includes(query));
+
+  const filteredPages =
+    rawQuery === ":"
+      ? pages
+      : query === "" || rawQuery.startsWith("#") || rawQuery.startsWith(">")
+      ? []
+      : pages.filter((page) => page.name.toLowerCase().includes(query));
 
   const optionsRefs = useRef<(HTMLLIElement | null)[]>([]);
   const userOptionsRefs = useRef<(HTMLLIElement | null)[]>([]);
@@ -302,9 +331,63 @@ export default function SearchBar({
     ]);
   }
 
+  function fetchPages() {
+    setPages([
+      {
+        id: "dashboard",
+        name: "Dashboard",
+        url: "/",
+        icon: DashboardOutlinedIcon,
+      },
+      {
+        id: "leads",
+        name: "Leads",
+        url: "/lead",
+        icon: MailOutlineRoundedIcon,
+      },
+      {
+        id: "chat",
+        name: "Chat",
+        url: "/comunications/chat",
+        icon: ChatBubbleOutlineRoundedIcon,
+      },
+      {
+        id: "calendar",
+        name: "Calendario",
+        url: "/comunications/calendar",
+        icon: CalendarMonthIcon,
+      },
+      {
+        id: "customers",
+        name: "Clienti",
+        url: "/administration/customer",
+        icon: PeopleAltOutlinedIcon,
+      },
+      {
+        id: "employees",
+        name: "Dipendenti",
+        url: "/administration/employee",
+        icon: EngineeringOutlinedIcon,
+      },
+      {
+        id: "permissions",
+        name: "Permessi",
+        url: "/administration/permission",
+        icon: VpnKeyOutlinedIcon,
+      },
+      {
+        id: "projects",
+        name: "Progetti",
+        url: "/projects",
+        icon: FolderCopyOutlinedIcon,
+      },
+    ]);
+  }
+
   useEffect(() => {
     fetchProjects();
     fetchUsers();
+    fetchPages();
   }, []);
 
   return (
@@ -347,7 +430,9 @@ export default function SearchBar({
               />
             </div>
 
-            {(filteredProjects.length > 0 || filteredUsers.length > 0) && (
+            {(filteredProjects.length > 0 ||
+              filteredUsers.length > 0 ||
+              filteredPages.length > 0) && (
               <ComboboxOptions
                 static
                 as="ul"
@@ -443,6 +528,35 @@ export default function SearchBar({
                     </ul>
                   </li>
                 )}
+                {filteredPages.length > 0 && (
+                  <li>
+                    <h2 className="text-xs font-semibold text-gray-900">
+                      Pagine
+                    </h2>
+                    <ul className="-mx-4 mt-2 text-sm text-gray-700">
+                      {filteredPages.map((page, index) => (
+                        <div key={page.id}>
+                          <ComboboxOption
+                            as="li"
+                            ref={(el: HTMLLIElement | null) =>
+                              setOptionRef(el, index, false)
+                            }
+                            value={page}
+                            className="group flex cursor-default select-none items-center px-4 py-2 data-[focus]:bg-zinc-800 data-[focus]:text-white data-[focus]:outline-none"
+                          >
+                            <page.icon
+                              className="size-6 flex-none text-gray-400 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
+                              aria-hidden="true"
+                            />
+                            <span className="ml-3 flex-auto truncate">
+                              {page.name}
+                            </span>
+                          </ComboboxOption>
+                        </div>
+                      ))}
+                    </ul>
+                  </li>
+                )}
               </ComboboxOptions>
             )}
             {rawQuery === "?" && (
@@ -466,17 +580,19 @@ export default function SearchBar({
             {query !== "" &&
               rawQuery !== "?" &&
               filteredProjects.length === 0 &&
-              filteredUsers.length === 0 && (
+              filteredUsers.length === 0 &&
+              filteredPages.length === 0 && (
                 <div className="px-6 py-14 text-center text-sm sm:px-14">
                   <ExclamationTriangleIcon
                     className="mx-auto size-6 text-gray-400"
                     aria-hidden="true"
                   />
                   <p className="mt-4 font-semibold text-gray-900">
-                    No results found
+                    Nessun risultato trovato
                   </p>
                   <p className="mt-2 text-gray-500">
-                    We couldn't find anything with that term. Please try again.
+                    Non abbiamo trovato nulla con questo termine. Per favore,
+                    riprova.
                   </p>
                 </div>
               )}
@@ -504,7 +620,18 @@ export default function SearchBar({
               >
                 &gt;
               </kbd>{" "}
-              per utenti e
+              per utenti,
+              <kbd
+                className={classNames(
+                  "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                  rawQuery.startsWith(":")
+                    ? "border-zinc-800 text-zinc-800"
+                    : "border-gray-400 text-gray-900"
+                )}
+              >
+                :
+              </kbd>{" "}
+              per pagine e
               <kbd
                 className={classNames(
                   "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
