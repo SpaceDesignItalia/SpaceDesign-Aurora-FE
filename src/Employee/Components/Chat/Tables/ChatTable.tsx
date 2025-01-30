@@ -144,14 +144,11 @@ export default function ChatTable() {
         const convData = response.data;
         if (convData.length > 0) {
           if (Action?.includes("send")) {
-            console.log(Action?.split("-")[1]);
-            console.log(response.data);
             response.data.forEach((conv: Conversation) => {
               if (
                 conv.Staffer1Id == parseInt(Action?.split("-")[1] || "0") ||
                 conv.Staffer2Id == parseInt(Action?.split("-")[1] || "0")
               ) {
-                console.log(conv.ConversationId);
                 setSelectedConversationId(conv.ConversationId);
                 handleOpenChat(conv.ConversationId);
                 setSelectedConversation(conv);

@@ -8,6 +8,8 @@ import {
   DialogBackdrop,
 } from "@headlessui/react";
 
+import { Kbd } from "@heroui/kbd";
+
 import {
   ExclamationTriangleIcon,
   FolderIcon,
@@ -24,7 +26,7 @@ import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
 import axios from "axios";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { API_URL_IMG } from "../../../API/API";
 import { Avatar } from "@heroui/react";
 import React from "react";
@@ -49,12 +51,14 @@ interface ProjectAction {
   id: string;
   name: string;
   url: string;
+  projectId: number;
 }
 
 interface UserAction {
   id: string;
   name: string;
   url: string;
+  userId: string;
 }
 
 interface Page {
@@ -102,6 +106,7 @@ export default function SearchBar({
   const [activeUser, setActiveUser] = useState<User | null>(null);
   const [pages, setPages] = useState<Page[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activePage, setActivePage] = useState<Page | null>(null);
   const filteredProjects =
     rawQuery === "#"
       ? projects
@@ -137,20 +142,6 @@ export default function SearchBar({
       ? []
       : pages.filter((page) => page.name.toLowerCase().includes(query));
 
-  const optionsRefs = useRef<(HTMLLIElement | null)[]>([]);
-  const userOptionsRefs = useRef<(HTMLLIElement | null)[]>([]);
-
-  const setOptionRef = useCallback(
-    (el: HTMLLIElement | null, index: number, isUser: boolean) => {
-      if (isUser) {
-        userOptionsRefs.current[index] = el;
-      } else {
-        optionsRefs.current[index] = el;
-      }
-    },
-    []
-  );
-
   const [loggedStafferId, setLoggedStafferId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -165,68 +156,6 @@ export default function SearchBar({
     };
     fetchSession();
   }, []);
-
-  useEffect(() => {
-    if (filteredProjects.length === 1 && filteredUsers.length === 0) {
-      setActiveProject(filteredProjects[0]);
-      setActiveUser(null);
-      setUserActions([]);
-      return;
-    }
-
-    if (filteredUsers.length === 1 && filteredProjects.length === 0) {
-      setActiveUser(filteredUsers[0]);
-      setActiveProject(null);
-      setProjectActions([]);
-      return;
-    }
-
-    const handleFocus = async (element: HTMLElement, isUser: boolean) => {
-      const focusedIndex = (
-        isUser ? userOptionsRefs : optionsRefs
-      ).current.findIndex((ref) => ref === element);
-      if (focusedIndex !== -1) {
-        const item = (isUser ? filteredUsers : filteredProjects)[focusedIndex];
-        if (item) {
-          if (isUser) {
-            setActiveUser(item as User);
-            setActiveProject(null);
-            setUserActions(await fetchUserActions(item as User));
-          } else {
-            setActiveProject(item as Project);
-            setActiveUser(null);
-            fetchProjectAction((item as Project).UniqueCode);
-          }
-        }
-      }
-    };
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (
-          mutation.type === "attributes" &&
-          mutation.attributeName === "data-focus"
-        ) {
-          const element = mutation.target as HTMLElement;
-          if (element.hasAttribute("data-focus")) {
-            handleFocus(element, element.classList.contains("user-option"));
-          }
-        }
-      });
-    });
-
-    const allRefs = [...optionsRefs.current, ...userOptionsRefs.current];
-    allRefs.forEach((ref) => {
-      if (ref) {
-        observer.observe(ref, {
-          attributes: true,
-          attributeFilter: ["data-focus"],
-        });
-      }
-    });
-
-    return () => observer.disconnect();
-  }, [filteredProjects.length, filteredUsers.length, rawQuery, conversations]);
 
   async function fetchProjects() {
     await axios
@@ -334,79 +263,101 @@ export default function SearchBar({
   }
 
   async function fetchUserConversations(stafferId: number) {
-    console.log(loggedStafferId);
     const response = await axios.get("/Chat/GET/getConversationByStafferId", {
       params: { StafferId: stafferId },
       withCredentials: true,
     });
-    console.log(response.data);
     setConversations(response.data);
   }
 
-  async function fetchUserActions(user: User) {
-    console.log(user);
-    return [
-      {
-        id: `edit_${user.id}`,
-        name: "Modifica",
-        url: `/administration/${user.type.toLowerCase()}/${
-          user.id.includes("_c_")
-            ? "edit-customer"
-            : user.id.includes("_b_")
-            ? "edit-company"
-            : "edit-employee"
-        }/${user.id.split("_").pop()}${
-          user.id.includes("_b_") ? `/${user.name}` : ""
-        }`,
-      },
-      loggedStafferId !== user.id.split("_").pop()
-        ? {
-            id: `chat_${user.id}`,
-            name: conversations.find(
-              (conversation) =>
-                (conversation.Staffer2Id == user.id.split("_").pop() &&
-                  conversation.Staffer1Id == loggedStafferId) ||
-                (conversation.Staffer1Id == user.id.split("_").pop() &&
-                  conversation.Staffer2Id == loggedStafferId)
-            )
-              ? "Chatta"
-              : "Crea conversazione",
-            url: conversations.find(
-              (conversation) =>
-                (conversation.Staffer2Id == user.id.split("_").pop() &&
-                  conversation.Staffer1Id == loggedStafferId) ||
-                (conversation.Staffer1Id == user.id.split("_").pop() &&
-                  conversation.Staffer2Id == loggedStafferId)
-            )
-              ? `/comunications/chat/send-${user.id.split("_").pop()}`
-              : `/comunications/chat/create-${user.id.split("_").pop()}`,
-          }
-        : {
-            id: `chat_${user.id}`,
-            name: "Non puoi chattare con te stesso",
-            url: ``,
+  async function fetchUserActions() {
+    for (const user of users) {
+      setUserActions((prevUserActions) => {
+        // Skip if this user's actions already exist
+        if (prevUserActions.some((action) => action.userId === user.id)) {
+          return prevUserActions;
+        }
+
+        const newActions = [
+          {
+            id: `edit_${user.id}`,
+            name: "Modifica",
+            url: `/administration/${
+              user.type.toLowerCase() === "company"
+                ? "customer"
+                : user.type.toLowerCase()
+            }/${
+              user.id.includes("_c_")
+                ? "edit-customer"
+                : user.id.includes("_b_")
+                ? "edit-company"
+                : "edit-employee"
+            }/${user.id.split("_").pop()}${
+              user.id.includes("_b_") ? `/${user.name}` : ""
+            }`,
+            userId: user.id,
           },
-    ];
+        ];
+
+        // Add chat action only if it's not the logged-in user
+        if (
+          loggedStafferId !== user.id.split("_").pop() &&
+          user.type === "Employee" &&
+          user.id !== loggedStafferId
+        ) {
+          const conversation = conversations.find(
+            (conversation) =>
+              (conversation.Staffer2Id === user.id.split("_").pop() &&
+                conversation.Staffer1Id === loggedStafferId) ||
+              (conversation.Staffer1Id === user.id.split("_").pop() &&
+                conversation.Staffer2Id === loggedStafferId)
+          );
+
+          newActions.push({
+            id: `chat_${user.id}`,
+            name: conversation ? "chatta" : "crea conversazione",
+            url: `/chat/${user.id}`,
+            userId: user.id,
+          });
+        }
+
+        return [...prevUserActions, ...newActions];
+      });
+    }
   }
 
-  function fetchProjectAction(UniqueCode: string) {
-    setProjectActions([
-      {
-        id: "action_p_1",
-        name: "Aggiungi Task",
-        url: `/projects/${UniqueCode}/add-task`,
-      },
-      {
-        id: "action_p_2",
-        name: "Modifica Progetto",
-        url: `/projects/${UniqueCode}/edit-project`,
-      },
-      {
-        id: "action_p_3",
-        name: "Carica File",
-        url: `/projects/${UniqueCode}/upload-file`,
-      },
-    ]);
+  function fetchProjectAction() {
+    for (const project of projects) {
+      setProjectActions((prevProjectActions) => {
+        const newActions = [
+          {
+            id: `action_p_1_${project.id}`,
+            name: "Aggiungi Task",
+            url: `/projects/${project.UniqueCode}/add-task`,
+            projectId: project.id,
+          },
+          {
+            id: `action_p_2_${project.id}`,
+            name: "Modifica Progetto",
+            url: `/projects/${project.UniqueCode}/edit-project`,
+            projectId: project.id,
+          },
+          {
+            id: `action_p_3_${project.id}`,
+            name: "Carica File",
+            url: `/projects/${project.UniqueCode}/upload-file`,
+            projectId: project.id,
+          },
+        ];
+
+        // Filter out any existing actions for this project
+        const filteredPrevActions = prevProjectActions.filter(
+          (action) => action.projectId !== project.id
+        );
+
+        return [...filteredPrevActions, ...newActions];
+      });
+    }
   }
 
   function fetchPages() {
@@ -468,6 +419,14 @@ export default function SearchBar({
     fetchPages();
   }, []);
 
+  useEffect(() => {
+    fetchProjectAction();
+  }, [projects]);
+
+  useEffect(() => {
+    fetchUserActions();
+  }, [users]);
+
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Tab") {
       event.preventDefault();
@@ -475,6 +434,8 @@ export default function SearchBar({
         setRawQuery("#" + activeProject.name + "/");
       } else if (activeUser) {
         setRawQuery(">" + activeUser.name + "/");
+      } else if (activePage) {
+        setRawQuery(":" + activePage.name + "/");
       } else if (filteredPages.length > 0) {
         setRawQuery(":" + filteredPages[0].name + "/");
       }
@@ -537,42 +498,69 @@ export default function SearchBar({
                       Progetti
                     </h2>
                     <ul className="-mx-4 mt-2 text-sm text-gray-700">
-                      {filteredProjects.map((project, index) => (
+                      {filteredProjects.map((project) => (
                         <div key={project.id}>
                           <ComboboxOption
                             as="li"
-                            ref={(el: HTMLLIElement | null) =>
-                              setOptionRef(el, index, false)
-                            }
                             value={project}
-                            className="group flex cursor-default select-none items-center px-4 py-2 data-[focus]:bg-zinc-800 data-[focus]:text-white data-[focus]:outline-none"
+                            className="group flex cursor-default select-none items-center px-4 py-2 data-[focus]:bg-primary data-[focus]:text-white data-[focus]:outline-none"
                           >
-                            <FolderIcon
-                              className="size-6 flex-none text-gray-400 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
-                              aria-hidden="true"
-                            />
-                            <span className="ml-3 flex-auto truncate">
-                              {project.name}
-                            </span>
+                            {({ focus }) => (
+                              useEffect(() => {
+                                if (focus) {
+                                  setActiveProject(project);
+                                  setActiveUser(null);
+                                  setActivePage(null);
+                                  fetchProjectAction();
+                                }
+                              }, [focus]),
+                              (
+                                <>
+                                  <FolderIcon
+                                    className={classNames(
+                                      "size-6 flex-none text-gray-400 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]",
+                                      focus ? "text-white" : ""
+                                    )}
+                                    aria-hidden="true"
+                                  />
+                                  <span className="ml-3 flex-auto truncate">
+                                    {project.name}
+                                  </span>
+                                  <Kbd
+                                    keys={["tab"]}
+                                    className={classNames(
+                                      "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                                      rawQuery.endsWith("/")
+                                        ? "border-primary text-primary"
+                                        : "border-gray-400 text-gray-900"
+                                    )}
+                                  />
+                                </>
+                              )
+                            )}
                           </ComboboxOption>
                           {activeProject?.id === project.id &&
                             (actionQuery
                               ? filteredProjectActions
                               : projectActions
-                            ).map((action) => (
-                              <ComboboxOption
-                                as="li"
-                                key={action.id}
-                                value={action}
-                                className="flex cursor-default select-none items-center py-2 pl-16 data-[focus]:bg-zinc-800 data-[focus]:text-white"
-                              >
-                                <ArrowTurnDownRightIcon
-                                  className="mb-1.5 pr-1 size-5 flex-none text-gray-300 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
-                                  aria-hidden="true"
-                                />
-                                {action.name}
-                              </ComboboxOption>
-                            ))}
+                            )
+                              .filter(
+                                (action) => action.projectId === project.id
+                              )
+                              .map((action) => (
+                                <ComboboxOption
+                                  as="li"
+                                  key={action.id}
+                                  value={action}
+                                  className="flex cursor-default select-none items-center py-2 pl-16 data-[focus]:bg-primary data-[focus]:text-white"
+                                >
+                                  <ArrowTurnDownRightIcon
+                                    className="mb-1.5 pr-1 size-5 flex-none text-gray-300 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
+                                    aria-hidden="true"
+                                  />
+                                  {action.name}
+                                </ComboboxOption>
+                              ))}
                         </div>
                       ))}
                     </ul>
@@ -584,44 +572,63 @@ export default function SearchBar({
                       Utenti
                     </h2>
                     <ul className="-mx-4 mt-2 text-sm text-gray-700">
-                      {filteredUsers.map((user, index) => (
+                      {filteredUsers.map((user) => (
                         <div key={user.id}>
                           <ComboboxOption
                             as="li"
-                            ref={(el: HTMLLIElement | null) =>
-                              setOptionRef(el, index, true)
-                            }
                             value={user}
-                            className="user-option flex cursor-default select-none items-center px-4 py-2 data-[focus]:bg-zinc-800 data-[focus]:text-white"
+                            className="user-option flex cursor-default select-none items-center px-4 py-2 data-[focus]:bg-primary data-[focus]:text-white"
                           >
-                            <Avatar
-                              src={user.imageUrl ? user.imageUrl : ""}
-                              size="sm"
-                              alt=""
-                              className="size-6 flex-none rounded-full"
-                            />
-                            <span className="ml-3 flex-auto truncate">
-                              {user.name}
-                            </span>
+                            {({ focus }) => (
+                              useEffect(() => {
+                                if (focus) {
+                                  setActiveUser(user);
+                                  setActiveProject(null);
+                                  setActivePage(null);
+                                  fetchUserActions();
+                                }
+                              }, [focus]),
+                              (
+                                <>
+                                  <Avatar
+                                    src={user.imageUrl ? user.imageUrl : ""}
+                                    size="sm"
+                                    alt=""
+                                    className="size-6 flex-none rounded-full"
+                                  />
+                                  <span className="ml-3 flex-auto truncate">
+                                    {user.name}
+                                  </span>
+                                  <Kbd
+                                    keys={["tab"]}
+                                    className={classNames(
+                                      "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                                      rawQuery.endsWith("/")
+                                        ? "border-primary text-primary"
+                                        : "border-gray-400 text-gray-900"
+                                    )}
+                                  />
+                                </>
+                              )
+                            )}
                           </ComboboxOption>
                           {activeUser?.id === user.id &&
-                            (actionQuery
-                              ? filteredUserActions
-                              : userActions
-                            ).map((action) => (
-                              <ComboboxOption
-                                as="li"
-                                key={action.id}
-                                value={action}
-                                className="flex cursor-default select-none items-center py-2 pl-16 data-[focus]:bg-zinc-800 data-[focus]:text-white"
-                              >
-                                <ArrowTurnDownRightIcon
-                                  className="mb-1.5 pr-1 size-5 flex-none text-gray-300 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
-                                  aria-hidden="true"
-                                />
-                                {action.name}
-                              </ComboboxOption>
-                            ))}
+                            (actionQuery ? filteredUserActions : userActions)
+                              .filter((action) => action.userId === user.id)
+                              .map((action) => (
+                                <ComboboxOption
+                                  as="li"
+                                  key={action.id}
+                                  value={action}
+                                  className="flex cursor-default select-none items-center py-2 pl-16 data-[focus]:bg-primary data-[focus]:text-white"
+                                >
+                                  <ArrowTurnDownRightIcon
+                                    className="mb-1.5 pr-1 size-5 flex-none text-gray-300 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
+                                    aria-hidden="true"
+                                  />
+                                  {action.name}
+                                </ComboboxOption>
+                              ))}
                         </div>
                       ))}
                     </ul>
@@ -633,23 +640,42 @@ export default function SearchBar({
                       Pagine
                     </h2>
                     <ul className="-mx-4 mt-2 text-sm text-gray-700">
-                      {filteredPages.map((page, index) => (
+                      {filteredPages.map((page) => (
                         <div key={page.id}>
                           <ComboboxOption
                             as="li"
-                            ref={(el: HTMLLIElement | null) =>
-                              setOptionRef(el, index, false)
-                            }
                             value={page}
-                            className="group flex cursor-default select-none items-center px-4 py-2 data-[focus]:bg-zinc-800 data-[focus]:text-white data-[focus]:outline-none"
+                            className="group flex cursor-default select-none items-center px-4 py-2 data-[focus]:bg-primary data-[focus]:text-white data-[focus]:outline-none"
                           >
-                            <page.icon
-                              className="size-6 flex-none text-gray-400 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
-                              aria-hidden="true"
-                            />
-                            <span className="ml-3 flex-auto truncate">
-                              {page.name}
-                            </span>
+                            {({ focus }) => (
+                              useEffect(() => {
+                                if (focus) {
+                                  setActiveProject(null);
+                                  setActiveUser(null);
+                                  setActivePage(page);
+                                }
+                              }, [focus]),
+                              (
+                                <>
+                                  <page.icon
+                                    className="size-6 flex-none text-gray-400 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
+                                    aria-hidden="true"
+                                  />
+                                  <span className="ml-3 flex-auto truncate">
+                                    {page.name}
+                                  </span>
+                                  <Kbd
+                                    keys={["tab"]}
+                                    className={classNames(
+                                      "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                                      rawQuery.endsWith("/")
+                                        ? "border-primary text-primary"
+                                        : "border-gray-400 text-gray-900"
+                                    )}
+                                  />
+                                </>
+                              )
+                            )}
                           </ComboboxOption>
                         </div>
                       ))}
@@ -697,50 +723,50 @@ export default function SearchBar({
               )}
 
             <div className="flex flex-wrap items-center bg-gray-50 px-4 py-2.5 text-xs text-gray-700">
-              Type{" "}
-              <kbd
+              Scrivi{" "}
+              <Kbd
                 className={classNames(
                   "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
                   rawQuery.startsWith("#")
-                    ? "border-zinc-800 text-zinc-800"
+                    ? "border-primary text-primary"
                     : "border-gray-400 text-gray-900"
                 )}
               >
                 #
-              </kbd>{" "}
+              </Kbd>{" "}
               per progetti,
-              <kbd
+              <Kbd
                 className={classNames(
                   "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
                   rawQuery.startsWith(">")
-                    ? "border-zinc-800 text-zinc-800"
+                    ? "border-primary text-primary"
                     : "border-gray-400 text-gray-900"
                 )}
               >
                 &gt;
-              </kbd>{" "}
+              </Kbd>{" "}
               per utenti,
-              <kbd
+              <Kbd
                 className={classNames(
                   "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
                   rawQuery.startsWith(":")
-                    ? "border-zinc-800 text-zinc-800"
+                    ? "border-primary text-primary"
                     : "border-gray-400 text-gray-900"
                 )}
               >
                 :
-              </kbd>{" "}
+              </Kbd>{" "}
               per pagine e
-              <kbd
+              <Kbd
                 className={classNames(
                   "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
                   rawQuery === "?"
-                    ? "border-zinc-800 text-zinc-800"
+                    ? "border-primary text-primary"
                     : "border-gray-400 text-gray-900"
                 )}
               >
                 ?
-              </kbd>{" "}
+              </Kbd>{" "}
               per aiuto.
             </div>
           </Combobox>

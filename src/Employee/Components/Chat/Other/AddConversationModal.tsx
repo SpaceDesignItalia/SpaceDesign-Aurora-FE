@@ -32,7 +32,6 @@ export default function AddConversationModal({
   handleOpenChat: (conversationId: number) => void;
 }) {
   const { Action } = useParams();
-  console.log("isOpen", isOpen);
   const [member, setMember] = useState<Member>({
     StafferId: 0,
     StafferFullName: "",
@@ -51,12 +50,6 @@ export default function AddConversationModal({
   }, [loggedStafferId]);
 
   function createConversation() {
-    console.log(
-      loggedStafferId,
-      member.StafferId === 0
-        ? parseInt(Action?.split("-")[1] || "0")
-        : member.StafferId
-    );
     axios
       .post("/Chat/POST/CreateConversation", {
         Staffer1Id: loggedStafferId,
