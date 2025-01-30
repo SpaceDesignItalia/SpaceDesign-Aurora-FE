@@ -25,7 +25,7 @@ import EditPermissionPage from "./Employee/Pages/Permission/EditPermissionPage";
 import AddPermissionPage from "./Employee/Pages/Permission/AddPermissionPage";
 import EditProjectPage from "./Employee/Pages/Project/EditProjectPage";
 import LeadDashboard from "./Employee/Pages/Lead/LeadDashboard";
-import CalendarPage from "./Employee/Components/Project/Other/ProjectCalendar/CalendarPage";
+import CalendarPage from "./Employee/Pages/Calendar/CalendarPage";
 
 import DashboardCustomer from "./Customer/Pages/Dashboard/DashboardCustomer";
 import Navbar from "./Customer/Components/Layout/Navbar";

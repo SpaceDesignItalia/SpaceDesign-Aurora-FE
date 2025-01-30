@@ -1,70 +1,70 @@
-import { Tabs, Tab, Button, Tooltip, Link, Chip } from "@heroui/react";
-import { API_URL_IMG } from "../../../API/API";
-import FindInPageRoundedIcon from "@mui/icons-material/FindInPageRounded";
-import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
-import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
-import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
-import ConfirmationNumberRoundedIcon from "@mui/icons-material/ConfirmationNumberRounded";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
-import CodeIcon from "@mui/icons-material/Code";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { useParams } from "react-router-dom";
-import ChangeProjectTheme from "../../Components/Project/Other/ChangeProjectTheme";
-import OverviewContainer from "../../Components/Project/Other/ProjectPage/OverviewContainer";
-import TeamContainer from "../../Components/Project/Other/ProjectPage/TeamContainer";
-import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContainer";
-import { usePermissions } from "../../Components/Layout/PermissionProvider";
-import TicketContainer from "../../Components/Project/Other/ProjectPage/TicketContainer";
-import FolderContainer from "../../Components/Project/Other/ProjectPage/FolderContainer";
-import CodeShareContainer from "../../Components/Project/Other/ProjectPage/CodeShareContainer";
+import { Tabs, Tab, Button, Tooltip, Link, Chip } from "@heroui/react"
+import { API_URL_IMG } from "../../../API/API"
+import FindInPageRoundedIcon from "@mui/icons-material/FindInPageRounded"
+import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded"
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded"
+import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded"
+import ConfirmationNumberRoundedIcon from "@mui/icons-material/ConfirmationNumberRounded"
+import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined"
+import TuneRoundedIcon from "@mui/icons-material/TuneRounded"
+import CodeIcon from "@mui/icons-material/Code"
+import { useEffect, useState, useCallback } from "react"
+import axios from "axios"
+import { useParams } from "react-router-dom"
+import ChangeProjectTheme from "../../Components/Project/Other/ChangeProjectTheme"
+import OverviewContainer from "../../Components/Project/Other/ProjectPage/OverviewContainer"
+import TeamContainer from "../../Components/Project/Other/ProjectPage/TeamContainer"
+import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContainer"
+import { usePermissions } from "../../Components/Layout/PermissionProvider"
+import TicketContainer from "../../Components/Project/Other/ProjectPage/TicketContainer"
+import FolderContainer from "../../Components/Project/Other/ProjectPage/FolderContainer"
+import CodeShareContainer from "../../Components/Project/Other/ProjectPage/CodeShareContainer"
 
 interface Project {
-  ProjectId: number;
-  ProjectName: string;
-  ProjectDescription: string;
-  ProjectCreationDate: Date;
-  ProjectEndDate: Date;
-  CompanyId: number;
-  ProjectBannerId: number;
-  ProjectBannerPath: string;
-  StatusName: string;
-  ProjectManagerId: number;
-  ProjectManagerFullName: string;
-  ProjectManagerEmail: string;
-  RoleName: string;
-  StafferImageUrl: string;
+  ProjectId: number
+  ProjectName: string
+  ProjectDescription: string
+  ProjectCreationDate: Date
+  ProjectEndDate: Date
+  CompanyId: number
+  ProjectBannerId: number
+  ProjectBannerPath: string
+  StatusName: string
+  ProjectManagerId: number
+  ProjectManagerFullName: string
+  ProjectManagerEmail: string
+  RoleName: string
+  StafferImageUrl: string
 }
 
 interface ModalData {
-  ProjectId: number;
-  ProjectBannerId: number;
-  open: boolean;
+  ProjectId: number
+  ProjectBannerId: number
+  open: boolean
 }
 
 // Funzione per impostare un cookie
 function setCookie(name: string, value: string, days: number): void {
-  const expires = new Date();
-  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  const expires = new Date()
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000)
 
   // Construct the cookie string
-  const cookieString = `${name}=${value}; expires=${expires.toUTCString()}; path=/; Secure; SameSite=Strict`;
+  const cookieString = `${name}=${value}; expires=${expires.toUTCString()}; path=/; Secure; SameSite=Strict`
 
-  document.cookie = cookieString;
+  document.cookie = cookieString
 }
 
 // Funzione per ottenere un cookie
 function getCookie(name: string): string | undefined {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
   if (parts.length === 2) {
-    const cookieValue = parts.pop(); // Questo può essere undefined
+    const cookieValue = parts.pop() // Questo può essere undefined
     if (cookieValue) {
-      return cookieValue.split(";").shift(); // Restituisce il valore del cookie
+      return cookieValue.split(";").shift() // Restituisce il valore del cookie
     }
   }
-  return undefined; // Restituisce undefined se il cookie non esiste
+  return undefined // Restituisce undefined se il cookie non esiste
 }
 
 export default function ProjectPage() {
@@ -89,19 +89,20 @@ export default function ProjectPage() {
     ProjectManagerFullName: "",
     ProjectManagerEmail: "",
     RoleName: "",
-  });
+  })
   const [modalData, setModalData] = useState<ModalData>({
     ProjectId: 0,
     ProjectBannerId: 0,
     open: false,
-  });
-  const [activeTab, setActiveTab] = useState(
-    getCookie("activeProjectTab") || "Panoramica"
-  );
+  })
+  const [activeTab, setActiveTab] = useState(getCookie("activeProjectTab") || "Panoramica")
   const [adminPermission, setAdminPermission] = useState({
     editProject: false,
-  });
-  const { hasPermission } = usePermissions();
+  })
+  const { hasPermission } = usePermissions()
+  const [escPressCount, setEscPressCount] = useState(0)
+  const ESC_PRESS_REQUIRED = 1 // Numero di pressioni ESC richieste
+  const ESC_RESET_TIMEOUT = 2000 // Reset del contatore dopo 2 secondi
 
   const tabs = [
     { title: "Panoramica", icon: FindInPageRoundedIcon },
@@ -110,8 +111,49 @@ export default function ProjectPage() {
     { title: "Files", icon: FolderCopyRoundedIcon },
     { title: "Code Share", icon: CodeIcon },
     { title: "Ticket", icon: ConfirmationNumberRoundedIcon },
-  ];
+  ]
 
+  // Add keyboard navigation handler
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input field
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        return
+      }
+
+      // Handle ESC key for project settings
+      if (event.key === "Escape" && adminPermission.editProject) {
+        setEscPressCount((prev) => {
+          const newCount = prev + 1
+          if (newCount >= ESC_PRESS_REQUIRED) {
+            window.location.href = `/projects/${UniqueCode}/edit-project`
+            return 0
+          }
+          // Reset counter after timeout
+          setTimeout(() => setEscPressCount(0), ESC_RESET_TIMEOUT)
+          return newCount
+        })
+        return
+      }
+
+      // Map number keys to tabs
+      const keyToTab: { [key: string]: string } = {
+        "1": "Panoramica",
+        "2": "Tasks",
+        "3": "Team",
+        "4": "Files",
+        "5": "Code Share",
+        "6": "Ticket",
+      }
+
+      if (keyToTab[event.key]) {
+        setActiveTab(keyToTab[event.key])
+      }
+    },
+    [UniqueCode, adminPermission.editProject],
+  )
+
+  // Add keyboard event listener
   useEffect(() => {
     if (Action === "add-task") {
       setActiveTab("Tasks");
@@ -124,8 +166,8 @@ export default function ProjectPage() {
     axios
       .get("/Project/GET/GetProjectByUniqueCode", { params: { UniqueCode } })
       .then((res) => {
-        setProjectId(res.data.ProjectId);
-        setProjectName(res.data.ProjectName);
+        setProjectId(res.data.ProjectId)
+        setProjectName(res.data.ProjectName)
 
         return axios
           .get("/Project/GET/GetProjectByIdAndName", {
@@ -135,30 +177,38 @@ export default function ProjectPage() {
             },
           })
           .then((res) => {
-            setProjectData(res.data);
-          });
+            setProjectData(res.data)
+          })
       })
       .then(() => {
         async function checkPermissions() {
           setAdminPermission({
             editProject: await hasPermission("EDIT_PROJECT"),
-          });
+          })
         }
-        checkPermissions();
-      });
-  }, [UniqueCode, ProjectId, ProjectName]);
+        checkPermissions()
+      })
+  }, [UniqueCode, hasPermission]) // Added hasPermission to dependencies
 
   // Aggiorna il cookie ogni volta che cambia la scheda
   useEffect(() => {
-    setCookie("activeProjectTab", activeTab, 7); // Salva per 7 giorni
-  }, [activeTab]);
+    setCookie("activeProjectTab", activeTab, 7) // Salva per 7 giorni
+  }, [activeTab])
+
+  // Customize tooltips for each tab
+  const getTooltipContent = (tabTitle: string, shortcut: number) => {
+    const baseContent = `Premi ${shortcut} per aprire ${tabTitle}`
+
+  
+    return baseContent
+  }
 
   return (
     <>
       <ChangeProjectTheme
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
-        ProjectId={ProjectId ? parseInt(ProjectId) : 0}
+        ProjectId={ProjectId ? Number.parseInt(ProjectId) : 0}
         ProjectBannerId={projectData.ProjectBannerId}
       />
       <div className="py-10 m-0 lg:ml-72 h-screen flex flex-col items-start px-4 sm:px-6 lg:px-8">
@@ -166,19 +216,15 @@ export default function ProjectPage() {
           <div className="flex flex-row justify-between items-center sm:hidden">
             {adminPermission.editProject && (
               <Tooltip
-                content="Impostazioni progetto"
+                content={`Premi ESC per aprire le impostazioni${
+                  escPressCount > 0 ? ` (ancora ${ESC_PRESS_REQUIRED - escPressCount})` : ""
+                }`}
                 color="primary"
                 placement="bottom"
                 radius="full"
                 closeDelay={0}
               >
-                <Button
-                  as={Link}
-                  color="primary"
-                  radius="full"
-                  href={"/projects/" + UniqueCode}
-                  isIconOnly
-                >
+                <Button as={Link} color="primary" radius="full" href={"/projects/" + UniqueCode} isIconOnly>
                   <TuneRoundedIcon />
                 </Button>
               </Tooltip>
@@ -189,7 +235,7 @@ export default function ProjectPage() {
           </div>
           <div className="w-full sm:h-60 overflow-hidden rounded-xl relative">
             <img
-              src={API_URL_IMG + "/banners/" + projectData.ProjectBannerPath}
+              src={API_URL_IMG + "/banners/" + projectData.ProjectBannerPath || "/placeholder.svg"}
               className="w-full h-auto object-cover rotate-180"
               alt="Banner del progetto"
             />
@@ -229,14 +275,16 @@ export default function ProjectPage() {
                     className="hidden sm:flex"
                     onSelectionChange={(key) => setActiveTab(key as string)}
                   >
-                    {tabs.map((tab) => (
+                    {tabsWithShortcuts.map((tab) => (
                       <Tab
                         key={tab.title}
                         title={
-                          <div className="flex items-center space-x-2">
-                            <tab.icon />
-                            <span>{tab.title}</span>
-                          </div>
+                          <Tooltip content={getTooltipContent(tab.title, tab.shortcut)} placement="bottom">
+                            <div className="flex items-center space-x-2">
+                              <tab.icon />
+                              <span>{tab.title}</span>
+                            </div>
+                          </Tooltip>
                         }
                       />
                     ))}
@@ -252,13 +300,15 @@ export default function ProjectPage() {
                       fullWidth
                       onSelectionChange={(key) => setActiveTab(key as string)}
                     >
-                      {tabs.map((tab) => (
+                      {tabsWithShortcuts.map((tab) => (
                         <Tab
                           key={tab.title}
                           title={
-                            <div className="flex items-center space-x-2">
-                              <tab.icon />
-                            </div>
+                            <Tooltip content={getTooltipContent(tab.title, tab.shortcut)} placement="top">
+                              <div className="flex items-center space-x-2">
+                                <tab.icon />
+                              </div>
+                            </Tooltip>
                           }
                         />
                       ))}
@@ -268,7 +318,9 @@ export default function ProjectPage() {
 
                 {adminPermission.editProject && (
                   <Tooltip
-                    content="Impostazioni progetto"
+                    content={`Premi ESC per aprire le impostazioni${
+                      escPressCount > 0 ? ` (ancora ${ESC_PRESS_REQUIRED - escPressCount})` : ""
+                    }`}
                     color="primary"
                     placement="bottom"
                     radius="full"
@@ -288,9 +340,7 @@ export default function ProjectPage() {
                 )}
               </div>
             </header>
-            {activeTab === "Panoramica" && (
-              <OverviewContainer projectData={projectData} />
-            )}
+            {activeTab === "Panoramica" && <OverviewContainer projectData={projectData} />}
             {activeTab === "Tasks" && (
               <div>
                 <TaskContainer projectData={projectData} />
@@ -326,5 +376,6 @@ export default function ProjectPage() {
         </main>
       </div>
     </>
-  );
+  )
 }
+
