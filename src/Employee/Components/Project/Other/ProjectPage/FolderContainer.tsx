@@ -84,7 +84,7 @@ export default function FolderContainer({
 }: {
   projectData: Project;
 }) {
-  const { UniqueCode } = useParams();
+  const { UniqueCode, Action } = useParams();
   const [ProjectId, setProjectId] = useState<number>(0);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [modalAddFolder, setModalAddFolder] = useState<ModalAddFolderData>({
@@ -116,9 +116,14 @@ export default function FolderContainer({
   });
 
   useEffect(() => {
+    if (Action === "upload-file") {
+      setModalUploadFile({ ...modalUploadFile, open: true });
+    }
+  }, [Action]);
+
+  useEffect(() => {
     socket.on("file-update", () => {
-      fetchFolders(); // Aggiorna i file quando ci sono aggiornamenti
-      fetchFiles();
+      window.location.reload();
     });
   }, []);
 

@@ -12,6 +12,7 @@ import {
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
@@ -62,6 +63,7 @@ interface onlineUser {
 }
 
 export default function ChatTable() {
+  const { Action } = useParams();
   const { isOpen, onOpenChange } = useDisclosure();
   const [modalAddData, setModalAddData] = useState<ModalAddData>({
     loggedStafferId: 0,
@@ -87,6 +89,8 @@ export default function ChatTable() {
       ).scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {}, [Action]);
 
   // Connect to socket and handle message updates
   useEffect(() => {
@@ -122,6 +126,13 @@ export default function ChatTable() {
         setLoggedStafferId(stafferId);
         setModalAddData({ ...modalAddData, loggedStafferId: stafferId });
 
+        if (Action?.includes("create")) {
+          setModalAddData({
+            ...modalAddData,
+            loggedStafferId: res.data.StafferId,
+            open: true,
+          });
+        }
         const response = await axios.get(
           "/Chat/GET/getConversationByStafferId",
           {
@@ -132,6 +143,21 @@ export default function ChatTable() {
 
         const convData = response.data;
         if (convData.length > 0) {
+          if (Action?.includes("send")) {
+            console.log(Action?.split("-")[1]);
+            console.log(response.data);
+            response.data.forEach((conv: Conversation) => {
+              if (
+                conv.Staffer1Id == parseInt(Action?.split("-")[1] || "0") ||
+                conv.Staffer2Id == parseInt(Action?.split("-")[1] || "0")
+              ) {
+                console.log(conv.ConversationId);
+                setSelectedConversationId(conv.ConversationId);
+                handleOpenChat(conv.ConversationId);
+                setSelectedConversation(conv);
+              }
+            });
+          }
           setConversations(convData);
         }
       })

@@ -115,6 +115,8 @@ export default function ProjectPage() {
   useEffect(() => {
     if (Action === "add-task") {
       setActiveTab("Tasks");
+    } else if (Action === "upload-file") {
+      setActiveTab("Files");
     }
   }, [Action]);
 

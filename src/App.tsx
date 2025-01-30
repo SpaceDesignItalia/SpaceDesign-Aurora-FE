@@ -223,6 +223,7 @@ const EmployeeProtectedRoutes: React.FC = () => {
           path="/administration/permission/edit-role/:RoleId"
         />
         <Route element={<ChatDashboard />} path="/comunications/chat" />
+        <Route element={<ChatDashboard />} path="/comunications/chat/:Action" />
         <Route element={<CalendarPage />} path="/calendar" />
 
         <Route element={<ProjectDashboard />} path="/projects" />

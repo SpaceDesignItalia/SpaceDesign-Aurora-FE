@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import axios from "axios";
 import { API_URL_IMG } from "../../../../API/API";
+import { useNavigate } from "react-router-dom";
 
 interface Customer {
   CustomerId: number;
@@ -42,7 +43,7 @@ export default function ViewCustomerModal({
   CustomerData,
 }: ViewCustomerModalProps) {
   const [customerCompanies, setCustomerCompanies] = useState([]);
-
+  const navigate = useNavigate();
   useEffect(() => {
     axios
       .get("/Customer/GET/GetCompanyAssociatedByCustomerId", {
@@ -56,7 +57,10 @@ export default function ViewCustomerModal({
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={isClosed}
+      onOpenChange={() => {
+        isClosed();
+        navigate("/administration/customer");
+      }}
       scrollBehavior="outside"
       backdrop="blur"
       className="w-0 h-0 absolute top-[25%]"
@@ -97,7 +101,10 @@ export default function ViewCustomerModal({
                       radius="full"
                       isIconOnly
                       variant="light"
-                      onPress={isClosed}
+                      onPress={() => {
+                        isClosed();
+                        navigate("/administration/customer");
+                      }}
                       startContent={<CloseRoundedIcon className="h-1 w-1" />}
                     />
                   </div>

@@ -27,6 +27,7 @@ import axios from "axios";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { API_URL_IMG } from "../../../API/API";
 import { Avatar } from "@heroui/react";
+import React from "react";
 
 interface Project {
   id: number;
@@ -63,6 +64,19 @@ interface Page {
   icon: React.ComponentType<any>;
 }
 
+interface Conversation {
+  ConversationId: number;
+  Staffer1Id: string;
+  Staffer2Id: string;
+  Staffer1FullName: string;
+  Staffer2FullName: string;
+  Staffer1ImageUrl: string;
+  Staffer2ImageUrl: string;
+  lastMessage: string;
+  lastMessageDate?: Date;
+  notificationCount: number;
+}
+
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
@@ -75,7 +89,11 @@ export default function SearchBar({
   setOpen: (open: boolean) => void;
 }) {
   const [rawQuery, setRawQuery] = useState("");
-  const query = rawQuery.toLowerCase().replace(/^[#>:]/, "");
+  const query = rawQuery
+    .toLowerCase()
+    .replace(/^[#>:]/, "")
+    .split("/")[0];
+  const actionQuery = rawQuery.toLowerCase().split("/")[1];
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [projectActions, setProjectActions] = useState<ProjectAction[]>([]);
@@ -83,7 +101,7 @@ export default function SearchBar({
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [activeUser, setActiveUser] = useState<User | null>(null);
   const [pages, setPages] = useState<Page[]>([]);
-
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const filteredProjects =
     rawQuery === "#"
       ? projects
@@ -93,12 +111,24 @@ export default function SearchBar({
           project.name.toLowerCase().includes(query)
         );
 
+  const filteredProjectActions = actionQuery
+    ? projectActions.filter((action) =>
+        action.name.toLowerCase().includes(actionQuery)
+      )
+    : [];
+
   const filteredUsers =
     rawQuery === ">"
       ? users
       : query === "" || rawQuery.startsWith("#") || rawQuery.startsWith(":")
       ? []
       : users.filter((user) => user.name.toLowerCase().includes(query));
+
+  const filteredUserActions = actionQuery
+    ? userActions.filter((action) =>
+        action.name.toLowerCase().includes(actionQuery)
+      )
+    : [];
 
   const filteredPages =
     rawQuery === ":"
@@ -121,6 +151,21 @@ export default function SearchBar({
     []
   );
 
+  const [loggedStafferId, setLoggedStafferId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      await axios
+        .get("/Authentication/GET/GetSessionData", { withCredentials: true })
+        .then(async (res) => {
+          const stafferId = res.data.StafferId;
+          setLoggedStafferId(stafferId);
+          fetchUserConversations(res.data.StafferId);
+        });
+    };
+    fetchSession();
+  }, []);
+
   useEffect(() => {
     if (filteredProjects.length === 1 && filteredUsers.length === 0) {
       setActiveProject(filteredProjects[0]);
@@ -136,7 +181,7 @@ export default function SearchBar({
       return;
     }
 
-    const handleFocus = (element: HTMLElement, isUser: boolean) => {
+    const handleFocus = async (element: HTMLElement, isUser: boolean) => {
       const focusedIndex = (
         isUser ? userOptionsRefs : optionsRefs
       ).current.findIndex((ref) => ref === element);
@@ -146,16 +191,12 @@ export default function SearchBar({
           if (isUser) {
             setActiveUser(item as User);
             setActiveProject(null);
-            setUserActions(fetchUserActions(item as User));
+            setUserActions(await fetchUserActions(item as User));
           } else {
             setActiveProject(item as Project);
             setActiveUser(null);
             fetchProjectAction((item as Project).UniqueCode);
           }
-          console.log(
-            `${isUser ? "User" : "Project"} at index ${focusedIndex} focused:`,
-            item
-          );
         }
       }
     };
@@ -185,7 +226,7 @@ export default function SearchBar({
     });
 
     return () => observer.disconnect();
-  }, [filteredProjects.length, filteredUsers.length]);
+  }, [filteredProjects.length, filteredUsers.length, rawQuery, conversations]);
 
   async function fetchProjects() {
     await axios
@@ -292,18 +333,23 @@ export default function SearchBar({
       });
   }
 
-  function fetchUserActions(user: User) {
+  async function fetchUserConversations(stafferId: number) {
+    console.log(loggedStafferId);
+    const response = await axios.get("/Chat/GET/getConversationByStafferId", {
+      params: { StafferId: stafferId },
+      withCredentials: true,
+    });
+    console.log(response.data);
+    setConversations(response.data);
+  }
+
+  async function fetchUserActions(user: User) {
+    console.log(user);
     return [
       {
         id: `edit_${user.id}`,
-        name: `Modifica ${user.type}`,
-        url: `/administration/${
-          user.type.toLowerCase() === "customer"
-            ? "customer"
-            : user.type.toLowerCase() === "company"
-            ? "customer"
-            : "employee"
-        }/${
+        name: "Modifica",
+        url: `/administration/${user.type.toLowerCase()}/${
           user.id.includes("_c_")
             ? "edit-customer"
             : user.id.includes("_b_")
@@ -313,6 +359,33 @@ export default function SearchBar({
           user.id.includes("_b_") ? `/${user.name}` : ""
         }`,
       },
+      loggedStafferId !== user.id.split("_").pop()
+        ? {
+            id: `chat_${user.id}`,
+            name: conversations.find(
+              (conversation) =>
+                (conversation.Staffer2Id == user.id.split("_").pop() &&
+                  conversation.Staffer1Id == loggedStafferId) ||
+                (conversation.Staffer1Id == user.id.split("_").pop() &&
+                  conversation.Staffer2Id == loggedStafferId)
+            )
+              ? "Chatta"
+              : "Crea conversazione",
+            url: conversations.find(
+              (conversation) =>
+                (conversation.Staffer2Id == user.id.split("_").pop() &&
+                  conversation.Staffer1Id == loggedStafferId) ||
+                (conversation.Staffer1Id == user.id.split("_").pop() &&
+                  conversation.Staffer2Id == loggedStafferId)
+            )
+              ? `/comunications/chat/send-${user.id.split("_").pop()}`
+              : `/comunications/chat/create-${user.id.split("_").pop()}`,
+          }
+        : {
+            id: `chat_${user.id}`,
+            name: "Non puoi chattare con te stesso",
+            url: ``,
+          },
     ];
   }
 
@@ -327,6 +400,11 @@ export default function SearchBar({
         id: "action_p_2",
         name: "Modifica Progetto",
         url: `/projects/${UniqueCode}/edit-project`,
+      },
+      {
+        id: "action_p_3",
+        name: "Carica File",
+        url: `/projects/${UniqueCode}/upload-file`,
       },
     ]);
   }
@@ -390,6 +468,19 @@ export default function SearchBar({
     fetchPages();
   }, []);
 
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "Tab") {
+      event.preventDefault();
+      if (activeProject) {
+        setRawQuery("#" + activeProject.name + "/");
+      } else if (activeUser) {
+        setRawQuery(">" + activeUser.name + "/");
+      } else if (filteredPages.length > 0) {
+        setRawQuery(":" + filteredPages[0].name + "/");
+      }
+    }
+  };
+
   return (
     <Dialog
       className="relative z-50"
@@ -419,8 +510,10 @@ export default function SearchBar({
             <div className="grid grid-cols-1">
               <ComboboxInput
                 autoFocus
+                onKeyDown={handleKeyDown}
                 className="col-start-1 row-start-1 h-12 w-full pl-11 pr-4 text-base text-gray-900 outline-none placeholder:text-gray-400 sm:text-sm"
-                placeholder="Search..."
+                placeholder="Cerca..."
+                value={rawQuery}
                 onChange={(event) => setRawQuery(event.target.value)}
                 onBlur={() => setRawQuery("")}
               />
@@ -463,7 +556,10 @@ export default function SearchBar({
                             </span>
                           </ComboboxOption>
                           {activeProject?.id === project.id &&
-                            projectActions.map((action) => (
+                            (actionQuery
+                              ? filteredProjectActions
+                              : projectActions
+                            ).map((action) => (
                               <ComboboxOption
                                 as="li"
                                 key={action.id}
@@ -509,7 +605,10 @@ export default function SearchBar({
                             </span>
                           </ComboboxOption>
                           {activeUser?.id === user.id &&
-                            userActions.map((action) => (
+                            (actionQuery
+                              ? filteredUserActions
+                              : userActions
+                            ).map((action) => (
                               <ComboboxOption
                                 as="li"
                                 key={action.id}
@@ -566,13 +665,13 @@ export default function SearchBar({
                   aria-hidden="true"
                 />
                 <p className="mt-4 font-semibold text-gray-900">
-                  Help with searching
+                  Aiuto con la ricerca
                 </p>
                 <p className="mt-2 text-gray-500">
-                  Use this tool to quickly search for users and projects across
-                  our entire platform. You can also use the search modifiers
-                  found in the footer below to limit the results to just users
-                  or projects.
+                  Usa questo strumento per cercare utenti, progetti e pagine in
+                  tutta la nostra piattaforma. Puoi anche usare i modificatori
+                  di ricerca trovati nel piè di pagina per limitare i risultati
+                  solo agli utenti, ai progetti o alle pagine.
                 </p>
               </div>
             )}
@@ -642,7 +741,7 @@ export default function SearchBar({
               >
                 ?
               </kbd>{" "}
-              for help.
+              per aiuto.
             </div>
           </Combobox>
         </DialogPanel>

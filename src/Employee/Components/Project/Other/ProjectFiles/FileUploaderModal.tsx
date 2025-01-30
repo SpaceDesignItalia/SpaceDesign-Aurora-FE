@@ -12,6 +12,7 @@ import {
 } from "@heroui/react";
 import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import FileCard from "./FileCard";
+import { useParams, useNavigate } from "react-router-dom";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -26,6 +27,8 @@ export default function FileUploaderModal({
   isClosed: () => void;
   FolderId: number;
 }) {
+  const { UniqueCode, Action } = useParams();
+  const navigate = useNavigate();
   const [files, setFiles] = useState<{ file: File; forClient: boolean }[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const dropRef = useRef<HTMLDivElement | null>(null);
@@ -79,9 +82,12 @@ export default function FileUploaderModal({
         }
         setFiles([]);
         socket.emit("file-update", ProjectId);
-        window.location.reload();
       } catch (error) {
         console.error(error);
+      } finally {
+        if (Action) {
+          navigate(`/projects/${UniqueCode}`);
+        }
       }
     }
   };
