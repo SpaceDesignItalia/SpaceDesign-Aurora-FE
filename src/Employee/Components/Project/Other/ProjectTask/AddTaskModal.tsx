@@ -36,6 +36,7 @@ import {
 import StatusAlert from "../../../Layout/StatusAlert";
 import { DateValue } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
+import { useParams, useNavigate } from "react-router-dom";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -102,6 +103,11 @@ export default function AddTaskModal({
   fetchData,
   ProjectId,
 }: AddTaskModalProps) {
+  const { UniqueCode, Action } = useParams<{
+    UniqueCode: string;
+    Action: string;
+  }>();
+  const navigate = useNavigate();
   const [newTask, setNewTask] = useState<Task>(INITIAL_TASK_DATA);
   const [members, setMembers] = useState<Member[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -251,6 +257,10 @@ export default function AddTaskModal({
       setIsAddingData(false);
       setUpdate(!update);
       handleCloseModal();
+      // Remove action from URL
+      if (Action) {
+        navigate(`/projects/${UniqueCode}`);
+      }
     }
   }
 
@@ -337,6 +347,10 @@ export default function AddTaskModal({
       ProjectId: ProjectId,
     });
     isClosed();
+    // Remove action from URL
+    if (Action) {
+      navigate(`/projects/${ProjectId}`);
+    }
   }
 
   const [loading, setLoading] = useState<boolean>(false);

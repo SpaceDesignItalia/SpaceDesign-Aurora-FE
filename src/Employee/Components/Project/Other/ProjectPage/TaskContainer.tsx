@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import LibraryAddRoundedIcon from "@mui/icons-material/LibraryAddRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
@@ -80,6 +81,8 @@ export default function TaskContainer({
 }: {
   projectData: Project;
 }) {
+  const { Action } = useParams<{ Action: string }>();
+  console.log(Action);
   const [columns, setColumns] = useState<Status[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [update, setUpdate] = useState(false);
@@ -89,6 +92,12 @@ export default function TaskContainer({
     ProjectId: projectId,
     open: false,
   });
+
+  useEffect(() => {
+    if (Action === "add-task") {
+      setModalAddData({ ...modalAddData, open: true });
+    }
+  }, [Action]);
 
   const [permissions, setPermissions] = useState({
     assignActivity: false,

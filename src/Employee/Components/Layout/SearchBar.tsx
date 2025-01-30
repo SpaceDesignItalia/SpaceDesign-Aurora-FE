@@ -117,7 +117,7 @@ export default function SearchBar({
           if (isUser) {
             setActiveUser(item as User);
             setActiveProject(null);
-            setUserActions(getUserActions(item as User));
+            setUserActions(fetchUserActions(item as User));
           } else {
             setActiveProject(item as Project);
             setActiveUser(null);
@@ -263,7 +263,7 @@ export default function SearchBar({
       });
   }
 
-  function getUserActions(user: User) {
+  function fetchUserActions(user: User) {
     return [
       {
         id: `edit_${user.id}`,
