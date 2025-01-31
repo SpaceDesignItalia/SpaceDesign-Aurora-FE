@@ -15,6 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
   Progress,
+  Spinner,
 } from "@heroui/react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import styles
@@ -37,6 +38,7 @@ import StatusAlert from "../../../Layout/StatusAlert";
 import { DateValue } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
 import { useParams, useNavigate } from "react-router-dom";
+import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -632,14 +634,27 @@ export default function AddTaskModal({
                           }
                         />
                       </dd>
-                      <button
+                      <Button
+                        variant="bordered"
+                        className="w-max-1/2 mx-auto cursor-pointer gap-3 my-5 sm:my-0 py-2"
+                        radius="full"
                         onClick={handleRefine}
                         disabled={loading || !newTask.ProjectTaskDescription}
                       >
-                        {loading
-                          ? "Riscrittura in corso..."
-                          : "Riscrivi in modo formale"}
-                      </button>
+                        {loading ? (
+                          <>
+                            {" "}
+                            <Spinner className="text-black" /> Riscrittura in
+                            corso...{" "}
+                          </>
+                        ) : (
+                          <>
+                            {" "}
+                            <AutoFixHighRoundedIcon className="w-5 h-5" />{" "}
+                            Riscrivi in modo formale{" "}
+                          </>
+                        )}
+                      </Button>
                     </div>
                   </dl>
                 </div>
