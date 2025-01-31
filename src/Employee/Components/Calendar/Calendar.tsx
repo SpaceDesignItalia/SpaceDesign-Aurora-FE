@@ -146,14 +146,14 @@ export default function Calendar() {
                 >
                   Sempre visibile
                 </DropdownItem>
-                {view === "week" && (
+                {view === "week" ? (
                   <DropdownItem
                     key="full-week"
                     onClick={() => setRedLineBehavior("full-week")}
                   >
                     Intera settimana
                   </DropdownItem>
-                )}
+                ) : null}
               </DropdownMenu>
             </Dropdown>
           )}
