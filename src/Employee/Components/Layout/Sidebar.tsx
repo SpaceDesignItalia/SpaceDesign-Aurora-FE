@@ -269,9 +269,9 @@ export default function Sidebar() {
     },
     {
       name: "Calendario",
-      href: "/calendar",
+      href: "/comunications/calendar",
       icon: CalendarMonthIcon,
-      current: currentUrl === "/calendar",
+      current: currentUrl === "/comunications/calendar",
     },
   ];
 
@@ -294,7 +294,7 @@ export default function Sidebar() {
       <Transition.Root show={sidebarOpen} as={Fragment}>
         <Dialog
           as="div"
-          className="relative z-50 lg:hidden"
+          className="relative z-40 lg:hidden"
           onClose={setSidebarOpen}
         >
           <Transition.Child
@@ -444,10 +444,13 @@ export default function Sidebar() {
                                   aria-hidden="true"
                                 />
                                 {item.name}
-                                {item.notificationCount > 0 && (
+                                {item.notificationCount &&
+                                item.notificationCount > 0 ? (
                                   <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
                                     {item.notificationCount}
                                   </span>
+                                ) : (
+                                  <></>
                                 )}
                               </a>
                             </li>
@@ -671,10 +674,13 @@ export default function Sidebar() {
                           aria-hidden="true"
                         />
                         {item.name}
-                        {item.notificationCount > 0 && (
+                        {item.notificationCount &&
+                        item.notificationCount > 0 ? (
                           <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
                             {item.notificationCount}
                           </span>
+                        ) : (
+                          <></>
                         )}
                       </a>
                     </li>

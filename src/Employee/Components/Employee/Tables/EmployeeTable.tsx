@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   Table,
   TableHeader,
@@ -62,6 +63,7 @@ const columns = [
 ];
 
 export default function EmployeeTable() {
+  const employeeId = useParams().EmployeeId;
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -89,12 +91,6 @@ export default function EmployeeTable() {
     fetchData();
   }, []);
 
-  function fetchData() {
-    axios.get("/Staffer/GET/GetAllStaffers").then((res) => {
-      setEmployees(res.data);
-    });
-  }
-
   const [page, setPage] = useState(1);
   const [modalData, setModalData] = useState<ModalData>({
     Employee: {
@@ -106,6 +102,21 @@ export default function EmployeeTable() {
     },
     open: false,
   });
+
+  function fetchData() {
+    axios.get("/Staffer/GET/GetAllStaffers").then((res) => {
+      setEmployees(res.data);
+      if (employeeId) {
+        setModalData({
+          ...modalData,
+          open: true,
+          Employee: res.data.find(
+            (employee: Employee) => employee.EmployeeId == parseInt(employeeId)
+          ),
+        });
+      }
+    });
+  }
 
   async function SearchEmployee() {
     try {

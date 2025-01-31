@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import axios from "axios";
 import { API_URL_IMG } from "../../../../API/API";
-
+import { useNavigate } from "react-router-dom";
 interface Company {
   CompanyId: number;
   CompanyName: string;
@@ -51,6 +51,7 @@ export default function ViewCompanyModal({
   CompanyData,
 }: ViewCompanyModalProps) {
   const [companyMembers, setCompanyMembers] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -81,12 +82,13 @@ export default function ViewCompanyModal({
     </div>
   );
 
-  console.log(companyMembers);
-
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={isClosed}
+      onOpenChange={() => {
+        isClosed();
+        navigate("/administration/customer");
+      }}
       scrollBehavior="outside"
       backdrop="blur"
       className="w-0 h-0 absolute top-[25%]"
@@ -129,7 +131,10 @@ export default function ViewCompanyModal({
                       radius="full"
                       isIconOnly
                       variant="light"
-                      onPress={isClosed}
+                      onPress={() => {
+                        isClosed();
+                        navigate("/administration/customer");
+                      }}
                       startContent={<CloseRoundedIcon className="h-1 w-1" />}
                     />
                   </div>

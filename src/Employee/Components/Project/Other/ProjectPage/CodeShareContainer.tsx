@@ -113,13 +113,15 @@ export default function CodeShareContainer({
           EmployeeId: user.userId,
         },
       });
+
       setOnlineCodeShareUsers((prevUsers) => {
-        if (!prevUsers.some((u) => u.EmployeeId === response.data.EmployeeId)) {
+        // Check if user already exists by EmployeeId
+        if (!prevUsers.find((u) => u.EmployeeId === response.data.EmployeeId)) {
           return [
             ...prevUsers,
             {
-              ...response.data, // Copia tutte le proprietà dell'oggetto `response.data`
-              codeShareId: user.codeShareId, // Aggiungi codeShareId direttamente
+              ...response.data,
+              codeShareId: user.codeShareId,
             },
           ];
         }
