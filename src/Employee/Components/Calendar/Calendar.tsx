@@ -17,22 +17,37 @@ import CalendarDay from "./CalendarDay";
 import CalendarWeek from "./CalendarWeek";
 import CalendarMonth from "./CalendarMonth";
 import CalendarYear from "./CalendarYear";
+import AddEventModal from "./AddEventModal";
+import { AddRounded } from "@mui/icons-material";
+import axios from "axios";
 
-const DAYS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
-const MONTHS = [
-  "Gennaio",
-  "Febbraio",
-  "Marzo",
-  "Aprile",
-  "Maggio",
-  "Giugno",
-  "Luglio",
-  "Agosto",
-  "Settembre",
-  "Ottobre",
-  "Novembre",
-  "Dicembre",
-];
+interface EventPartecipant {
+  EventPartecipantId: number;
+  EventPartecipantEmail: string;
+  EventPartecipantRole: string;
+  EventPartecipantStatus: string;
+}
+
+interface EventAttachment {
+  EventAttachmentId: number;
+  EventAttachmentUrl: string;
+  EventAttachmentName: string;
+}
+
+interface CalendarEvent {
+  EventId: number;
+  EventTitle: string;
+  EventStartDate: Date;
+  EventEndDate: Date;
+  EventStartTime: string;
+  EventEndTime: string;
+  EventColor: string;
+  EventDescription: string;
+  EventLocation: string;
+  EventTagName: string;
+  EventAttachments: EventAttachment[];
+  EventPartecipants: EventPartecipant[];
+}
 
 const formatDate = (date: Date, view: string): string => {
   const options: Intl.DateTimeFormatOptions = {
@@ -64,12 +79,23 @@ const formatDate = (date: Date, view: string): string => {
 };
 
 export default function Calendar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [view, setView] = useState("week");
   const [currentDate, setCurrentDate] = useState(new Date());
   const container = useRef<HTMLDivElement>(null);
   const [redLineBehavior, setRedLineBehavior] = useState<
     "current" | "always" | "full-week"
   >("current");
+
+  async function fetchEvents() {
+    const res = await axios.get(`Calendar/GET/GetEventsByEmail`);
+    setEvents(res.data);
+  }
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   const changeDate = (offset: number) => {
     const newDate = new Date(currentDate);
@@ -102,121 +128,137 @@ export default function Calendar() {
   }, [container]); //Corrected useEffect dependency
 
   return (
-    <div className="flex flex-col w-full h-screen rounded-lg border-2">
-      <header className="flex flex-none items-center justify-between border-b border-gray-300 px-6 py-4 bg-white mt-1">
-        <h1 className="text-xl font-bold text-gray-900">
-          {formatDate(currentDate, view)}
-        </h1>
+    <>
+      <AddEventModal isOpen={isOpen} isClosed={() => setIsOpen(false)} />
+      <div className="flex flex-col w-full h-screen rounded-lg border-2">
+        <header className="flex flex-none items-center justify-between border-b border-gray-300 px-6 py-4 bg-white mt-1">
+          <h1 className="text-xl font-bold text-gray-900">
+            {formatDate(currentDate, view)}
+          </h1>
 
-        <div className="flex items-center gap-4">
-          <div className="relative flex items-center rounded-full bg-gray-100 border-2 border-gray-300">
-            <button
-              onClick={() => changeDate(-1)}
-              type="button"
-              className="flex h-10 w-12 items-center justify-center rounded-l-full border-r bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+          <div className="flex items-center gap-4">
+            <Button
+              className="flex h-10 items-center justify-center rounded-full bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+              variant="bordered"
+              onClick={() => setIsOpen(true)}
             >
-              <ChevronLeftIcon className="h-6 w-6" aria-hidden="true" />
-            </button>
-            <button
-              onClick={() => changeDate(1)}
-              type="button"
-              className="flex h-10 w-12 items-center justify-center rounded-r-full border-l bg-white text-gray-600 hover:bg-gray-100 focus:relative"
-            >
-              <ChevronRightIcon className="h-6 w-6" aria-hidden="true" />
-            </button>
-          </div>
-          {(view === "day" || view === "week") && (
+              <AddRounded className="h-6 w-6" aria-hidden="true" />
+              Aggiungi evento
+            </Button>
+            <div className="relative flex items-center rounded-full bg-gray-100 border-2 border-gray-300">
+              <Button
+                onClick={() => changeDate(-1)}
+                className="flex h-10 w-12 items-center justify-center rounded-l-full border-r bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+              >
+                <ChevronLeftIcon className="h-6 w-6" aria-hidden="true" />
+              </Button>
+              <Button
+                onClick={() => changeDate(1)}
+                className="flex h-10 w-12 items-center justify-center rounded-r-full border-l bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+              >
+                <ChevronRightIcon className="h-6 w-6" aria-hidden="true" />
+              </Button>
+            </div>
+            {(view === "day" || view === "week") && (
+              <Dropdown>
+                <DropdownTrigger
+                  variant="bordered"
+                  className="rounded-full h-11"
+                >
+                  <Button className="flex items-center px-4 text-sm font-semibold text-gray-600">
+                    Orario
+                    <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu>
+                  <DropdownItem
+                    key="current"
+                    onClick={() => setRedLineBehavior("current")}
+                  >
+                    {view === "day" ? "Giorno corrente" : "Settimana corrente"}
+                  </DropdownItem>
+                  <DropdownItem
+                    key="always"
+                    onClick={() => setRedLineBehavior("always")}
+                  >
+                    Sempre visibile
+                  </DropdownItem>
+                  {view === "week" ? (
+                    <DropdownItem
+                      key="full-week"
+                      onClick={() => setRedLineBehavior("full-week")}
+                    >
+                      Intera settimana
+                    </DropdownItem>
+                  ) : null}
+                </DropdownMenu>
+              </Dropdown>
+            )}
+
             <Dropdown>
               <DropdownTrigger variant="bordered" className="rounded-full h-11">
                 <Button className="flex items-center px-4 text-sm font-semibold text-gray-600">
-                  Orario
+                  {view === "day"
+                    ? "Giorno"
+                    : view === "week"
+                    ? "Settimana"
+                    : view === "month"
+                    ? "Mese"
+                    : "Anno"}
                   <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
                 </Button>
               </DropdownTrigger>
               <DropdownMenu>
-                <DropdownItem
-                  key="current"
-                  onClick={() => setRedLineBehavior("current")}
-                >
-                  {view === "day" ? "Giorno corrente" : "Settimana corrente"}
+                <DropdownItem key="day" onClick={() => setView("day")}>
+                  Giorno
                 </DropdownItem>
-                <DropdownItem
-                  key="always"
-                  onClick={() => setRedLineBehavior("always")}
-                >
-                  Sempre visibile
+                <DropdownItem key="week" onClick={() => setView("week")}>
+                  Settimana
                 </DropdownItem>
-                {view === "week" ? (
-                  <DropdownItem
-                    key="full-week"
-                    onClick={() => setRedLineBehavior("full-week")}
-                  >
-                    Intera settimana
-                  </DropdownItem>
-                ) : null}
+                <DropdownItem key="month" onClick={() => setView("month")}>
+                  Mese
+                </DropdownItem>
+                <DropdownItem key="year" onClick={() => setView("year")}>
+                  Anno
+                </DropdownItem>
               </DropdownMenu>
             </Dropdown>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto rounded-lg" ref={container}>
+          {view === "day" && (
+            <CalendarDay
+              currentDate={currentDate}
+              redLineBehavior={redLineBehavior}
+              events={events}
+            />
           )}
-
-          <Dropdown>
-            <DropdownTrigger variant="bordered" className="rounded-full h-11">
-              <Button className="flex items-center px-4 text-sm font-semibold text-gray-600">
-                {view === "day"
-                  ? "Giorno"
-                  : view === "week"
-                  ? "Settimana"
-                  : view === "month"
-                  ? "Mese"
-                  : "Anno"}
-                <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu>
-              <DropdownItem key="day" onClick={() => setView("day")}>
-                Giorno
-              </DropdownItem>
-              <DropdownItem key="week" onClick={() => setView("week")}>
-                Settimana
-              </DropdownItem>
-              <DropdownItem key="month" onClick={() => setView("month")}>
-                Mese
-              </DropdownItem>
-              <DropdownItem key="year" onClick={() => setView("year")}>
-                Anno
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
+          {view === "week" && (
+            <CalendarWeek
+              currentDate={currentDate}
+              onDateClick={handleDateClick}
+              redLineBehavior={redLineBehavior}
+              events={events}
+            />
+          )}
+          {view === "month" && (
+            <CalendarMonth
+              currentDate={currentDate}
+              onDateClick={handleDateClick}
+              events={events}
+            />
+          )}
+          {view === "year" && (
+            <CalendarYear
+              currentDate={currentDate}
+              onDateClick={handleDateClick}
+              onMonthClick={handleMonthClick}
+              events={events}
+            />
+          )}
         </div>
-      </header>
-
-      <div className="flex-1 overflow-y-auto rounded-lg" ref={container}>
-        {view === "day" && (
-          <CalendarDay
-            currentDate={currentDate}
-            redLineBehavior={redLineBehavior}
-          />
-        )}
-        {view === "week" && (
-          <CalendarWeek
-            currentDate={currentDate}
-            onDateClick={handleDateClick}
-            redLineBehavior={redLineBehavior}
-          />
-        )}
-        {view === "month" && (
-          <CalendarMonth
-            currentDate={currentDate}
-            onDateClick={handleDateClick}
-          />
-        )}
-        {view === "year" && (
-          <CalendarYear
-            currentDate={currentDate}
-            onDateClick={handleDateClick}
-            onMonthClick={handleMonthClick}
-          />
-        )}
       </div>
-    </div>
+    </>
   );
 }

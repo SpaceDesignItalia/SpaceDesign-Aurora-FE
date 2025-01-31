@@ -5,62 +5,39 @@ const DAYS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 const ROW_HEIGHT = 60;
 const HEADER_HEIGHT = 78;
 
-interface CalendarEvent {
-  id: number;
-  title: string;
-  startDate: Date;
-  endDate: Date;
-  startTime: string;
-  endTime: string;
-  url: string;
-  color?: string;
-  description?: string;
-  location?: string;
+interface EventPartecipant {
+  EventPartecipantId: number;
+  EventPartecipantEmail: string;
+  EventPartecipantRole: string;
+  EventPartecipantStatus: string;
 }
 
-const placeholderEvents: CalendarEvent[] = [
-  {
-    id: 1,
-    title: "Meeting Progetto A",
-    startDate: new Date(2025, 0, 30),
-    endDate: new Date(2025, 0, 31),
-    startTime: "07:00",
-    endTime: "10:30",
-    url: "/meetings/1",
-    color: "#4F46E5",
-    description: "Discussione avanzamento sprint",
-    location: "Sala Riunioni A",
-  },
-  {
-    id: 2,
-    title: "Review Sprint",
-    startDate: new Date(2025, 0, 31),
-    endDate: new Date(2025, 0, 31),
-    startTime: "14:00",
-    endTime: "17:59",
-    url: "/meetings/2",
-    color: "#059669",
-    description: "Review finale sprint gennaio",
-    location: "Meeting Room Virtual",
-  },
-  {
-    id: 3,
-    title: "Workshop Team",
-    startDate: new Date(2025, 0, 31),
-    endDate: new Date(2025, 1, 2),
-    startTime: "11:00",
-    endTime: "17:00",
-    url: "/meetings/3",
-    color: "#DC2626",
-    description: "Workshop formativo nuovo framework",
-    location: "Sala Conferenze",
-  },
-];
+interface EventAttachment {
+  EventAttachmentId: number;
+  EventAttachmentUrl: string;
+  EventAttachmentName: string;
+}
+
+interface CalendarEvent {
+  EventId: number;
+  EventTitle: string;
+  EventStartDate: Date;
+  EventEndDate: Date;
+  EventStartTime: string;
+  EventEndTime: string;
+  EventColor: string;
+  EventDescription: string;
+  EventLocation: string;
+  EventTagName: string;
+  EventAttachments: EventAttachment[];
+  EventPartecipants: EventPartecipant[];
+}
 
 interface CalendarWeekProps {
   currentDate: Date;
   onDateClick: (date: Date) => void;
   redLineBehavior: string;
+  events: CalendarEvent[];
 }
 
 const isPastDate = (date: Date) => {
@@ -69,10 +46,17 @@ const isPastDate = (date: Date) => {
   return date < today;
 };
 
+const stripHtml = (html: string) => {
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
+
 const CalendarWeek: React.FC<CalendarWeekProps> = ({
   currentDate,
   onDateClick,
   redLineBehavior,
+  events,
 }) => {
   const startOfWeek = new Date(currentDate);
   startOfWeek.setDate(currentDate.getDate() - ((currentDate.getDay() + 6) % 7));
@@ -128,7 +112,7 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
         currentHour * ROW_HEIGHT - window.innerHeight / 2 + HEADER_HEIGHT;
       scrollRef.current.scrollTop = Math.max(0, scrollPosition);
     }
-  }, [isCurrentWeek, currentHour]);
+  }, [isCurrentWeek]);
 
   return (
     <div
@@ -195,60 +179,57 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                     style={{ height: `${ROW_HEIGHT}px` }}
                   >
                     {(() => {
-                      const eventsAtThisHour = placeholderEvents.filter(
-                        (event) => {
-                          const eventStartDate = new Date(event.startDate);
-                          const eventEndDate = new Date(event.endDate);
-                          const eventHour = parseInt(
-                            event.startTime.split(":")[0]
-                          );
+                      const eventsAtThisHour = events.filter((event) => {
+                        const eventStartDate = new Date(event.EventStartDate);
+                        const eventEndDate = new Date(event.EventEndDate);
+                        const eventHour = parseInt(
+                          event.EventStartTime.split(":")[0]
+                        );
 
-                          const isMiddleDay =
-                            dayDate.toDateString() !==
-                              eventStartDate.toDateString() &&
-                            dayDate.toDateString() !==
-                              eventEndDate.toDateString() &&
-                            dayDate >= eventStartDate &&
-                            dayDate <= eventEndDate;
+                        const isMiddleDay =
+                          dayDate.toDateString() !==
+                            eventStartDate.toDateString() &&
+                          dayDate.toDateString() !==
+                            eventEndDate.toDateString() &&
+                          dayDate >= eventStartDate &&
+                          dayDate <= eventEndDate;
 
-                          if (isMiddleDay) {
-                            return hour === 0;
-                          }
-
-                          if (
-                            dayDate.toDateString() ===
-                            eventStartDate.toDateString()
-                          ) {
-                            return eventHour === hour;
-                          }
-
-                          if (
-                            dayDate.toDateString() ===
-                            eventEndDate.toDateString()
-                          ) {
-                            return hour === 0;
-                          }
-
-                          return false;
+                        if (isMiddleDay) {
+                          return hour === 0;
                         }
-                      );
+
+                        if (
+                          dayDate.toDateString() ===
+                          eventStartDate.toDateString()
+                        ) {
+                          return eventHour === hour;
+                        }
+
+                        if (
+                          dayDate.toDateString() === eventEndDate.toDateString()
+                        ) {
+                          return hour === 0;
+                        }
+
+                        return false;
+                      });
 
                       const width = eventsAtThisHour.length > 1 ? 50 : 100;
 
                       return eventsAtThisHour.map((event, index) => {
-                        const eventStartDate = new Date(event.startDate);
-                        const eventEndDate = new Date(event.endDate);
+                        const eventStartDate = new Date(event.EventStartDate);
+                        const eventEndDate = new Date(event.EventEndDate);
                         const eventHour = parseInt(
-                          event.startTime.split(":")[0]
+                          event.EventStartTime.split(":")[0]
                         );
                         const eventEndHour = parseInt(
-                          event.endTime.split(":")[0]
+                          event.EventEndTime.split(":")[0]
                         );
                         const eventStartMinutes = parseInt(
-                          event.startTime.split(":")[1]
+                          event.EventStartTime.split(":")[1]
                         );
                         const eventEndMinutes = parseInt(
-                          event.endTime.split(":")[1]
+                          event.EventEndTime.split(":")[1]
                         );
 
                         let duration = 0;
@@ -276,12 +257,11 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                         }
 
                         return (
-                          <a
-                            key={event.id}
-                            href={event.url}
+                          <div
+                            key={event.EventId}
                             className="absolute mx-1 rounded-lg p-2 text-xs opacity-70 hover:opacity-90 transition-opacity"
                             style={{
-                              backgroundColor: event.color,
+                              backgroundColor: event.EventColor,
                               color: "white",
                               zIndex: 10,
                               height: `${duration * ROW_HEIGHT}px`,
@@ -289,9 +269,13 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                               width: `${width}%`,
                               left: index * (width + 2) + "%",
                             }}
-                            title={`${event.description}\nDove: ${event.location}`}
+                            title={`${stripHtml(
+                              event.EventDescription
+                            )}\nDove: ${event.EventLocation}`}
                           >
-                            <div className="font-semibold">{event.title}</div>
+                            <div className="font-semibold">
+                              {event.EventTitle}
+                            </div>
                             <div className="text-xs opacity-90">
                               {(() => {
                                 if (
@@ -302,14 +286,14 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                                     eventStartDate.toDateString() ===
                                     eventEndDate.toDateString()
                                   ) {
-                                    return `${event.startTime} - ${event.endTime}`;
+                                    return `${event.EventStartTime} - ${event.EventEndTime}`;
                                   }
-                                  return `dalle ${event.startTime}`;
+                                  return `dalle ${event.EventStartTime}`;
                                 } else if (
                                   dayDate.toDateString() ===
                                   eventEndDate.toDateString()
                                 ) {
-                                  return `fino alle ${event.endTime}`;
+                                  return `fino alle ${event.EventEndTime}`;
                                 }
                                 return "Tutto il giorno";
                               })()}
@@ -317,14 +301,14 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                             {width > 50 && (
                               <>
                                 <div className="text-xs mt-1">
-                                  {event.description}
+                                  {stripHtml(event.EventDescription)}
                                 </div>
                                 <div className="text-xs opacity-75">
-                                  {event.location}
+                                  {event.EventLocation}
                                 </div>
                               </>
                             )}
-                          </a>
+                          </div>
                         );
                       });
                     })()}

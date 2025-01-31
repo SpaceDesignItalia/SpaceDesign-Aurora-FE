@@ -2,66 +2,44 @@ import React from "react";
 
 const DAYS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 
-interface CalendarEvent {
-  id: number;
-  title: string;
-  startDate: Date;
-  endDate: Date;
-  startTime: string;
-  endTime: string;
-  url: string;
-  color?: string;
-  description?: string;
-  location?: string;
+interface EventPartecipant {
+  EventPartecipantId: number;
+  EventPartecipantEmail: string;
+  EventPartecipantRole: string;
+  EventPartecipantStatus: string;
 }
 
-const placeholderEvents: CalendarEvent[] = [
-  {
-    id: 1,
-    title: "Meeting Progetto A",
-    startDate: new Date(2025, 0, 30),
-    endDate: new Date(2025, 0, 31),
-    startTime: "07:00",
-    endTime: "10:30",
-    url: "/meetings/1",
-    color: "#4F46E5",
-    description: "Discussione avanzamento sprint",
-    location: "Sala Riunioni A",
-  },
-  {
-    id: 2,
-    title: "Review Sprint",
-    startDate: new Date(2025, 0, 31),
-    endDate: new Date(2025, 0, 31),
-    startTime: "14:00",
-    endTime: "17:59",
-    url: "/meetings/2",
-    color: "#059669",
-    description: "Review finale sprint gennaio",
-    location: "Meeting Room Virtual",
-  },
-  {
-    id: 3,
-    title: "Workshop Team",
-    startDate: new Date(2025, 0, 31),
-    endDate: new Date(2025, 1, 2),
-    startTime: "11:00",
-    endTime: "17:00",
-    url: "/meetings/3",
-    color: "#DC2626",
-    description: "Workshop formativo nuovo framework",
-    location: "Sala Conferenze",
-  },
-];
+interface EventAttachment {
+  EventAttachmentId: number;
+  EventAttachmentUrl: string;
+  EventAttachmentName: string;
+}
+
+interface CalendarEvent {
+  EventId: number;
+  EventTitle: string;
+  EventStartDate: Date;
+  EventEndDate: Date;
+  EventStartTime: string;
+  EventEndTime: string;
+  EventColor: string;
+  EventDescription: string;
+  EventLocation: string;
+  EventTagName: string;
+  EventAttachments: EventAttachment[];
+  EventPartecipants: EventPartecipant[];
+}
 
 interface CalendarMonthProps {
   currentDate: Date;
   onDateClick: (date: Date) => void;
+  events: CalendarEvent[];
 }
 
 const CalendarMonth: React.FC<CalendarMonthProps> = ({
   currentDate,
   onDateClick,
+  events,
 }) => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -139,25 +117,24 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
               </time>
             </div>
             <div className="absolute top-10 left-1 right-1 flex flex-col gap-1 overflow-y-auto max-h-[calc(18vh-40px)]">
-              {placeholderEvents
+              {events
                 .filter(
                   (event) =>
-                    day >= new Date(event.startDate) &&
-                    day <= new Date(event.endDate)
+                    day >= new Date(event.EventStartDate) &&
+                    day <= new Date(event.EventEndDate)
                 )
                 .map((event) => (
-                  <a
-                    key={event.id}
-                    href={event.url}
+                  <div
+                    key={event.EventId}
                     className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-gray-100"
-                    title={`${event.title}\n${event.description}\nDove: ${event.location}`}
+                    title={`${event.EventTitle}\n${event.EventDescription}\nDove: ${event.EventLocation}`}
                   >
                     <div
                       className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: event.color }}
+                      style={{ backgroundColor: event.EventColor }}
                     />
-                    <div className="truncate">{event.title}</div>
-                  </a>
+                    <div className="truncate">{event.EventTitle}</div>
+                  </div>
                 ))}
             </div>
           </div>

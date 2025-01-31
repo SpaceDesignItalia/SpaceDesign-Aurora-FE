@@ -116,7 +116,9 @@ const App: React.FC = () => {
   return (
     <>
       {" "}
-      <SearchBar open={openSearchBar} setOpen={setOpenSearchBar} />
+      {isAuth && isStaffer && (
+        <SearchBar open={openSearchBar} setOpen={setOpenSearchBar} />
+      )}
       {isAuth && isStaffer && <Sidebar />}
       {isAuth && !isStaffer && <Navbar />}
       <Routes>
