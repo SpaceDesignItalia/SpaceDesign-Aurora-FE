@@ -34,6 +34,58 @@ const MONTHS = [
 const ROW_HEIGHT = 60;
 const HEADER_HEIGHT = 78;
 
+interface CalendarEvent {
+  id: number;
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  startTime: string;
+  endTime: string;
+  url: string;
+  color?: string;
+  description?: string;
+  location?: string;
+}
+
+const placeholderEvents: CalendarEvent[] = [
+  {
+    id: 1,
+    title: "Meeting Progetto A",
+    startDate: new Date(2025, 0, 30),
+    endDate: new Date(2025, 0, 31),
+    startTime: "07:00",
+    endTime: "10:30",
+    url: "/meetings/1",
+    color: "#4F46E5",
+    description: "Discussione avanzamento sprint",
+    location: "Sala Riunioni A",
+  },
+  {
+    id: 2,
+    title: "Review Sprint",
+    startDate: new Date(2025, 0, 31),
+    endDate: new Date(2025, 0, 31),
+    startTime: "14:00",
+    endTime: "17:59",
+    url: "/meetings/2",
+    color: "#059669",
+    description: "Review finale sprint gennaio",
+    location: "Meeting Room Virtual",
+  },
+  {
+    id: 3,
+    title: "Workshop Team",
+    startDate: new Date(2025, 0, 31),
+    endDate: new Date(2025, 1, 2),
+    startTime: "11:00",
+    endTime: "17:00",
+    url: "/meetings/3",
+    color: "#DC2626",
+    description: "Workshop formativo nuovo framework",
+    location: "Sala Conferenze",
+  },
+];
+
 const CalendarDay = ({
   currentDate,
   redLineBehavior,
@@ -71,7 +123,7 @@ const CalendarDay = ({
         currentHour * ROW_HEIGHT - window.innerHeight / 2 + HEADER_HEIGHT;
       scrollRef.current.scrollTop = Math.max(0, scrollPosition);
     }
-  }, [isToday, currentHour]);
+  }, [isToday]);
 
   return (
     <div
@@ -95,9 +147,145 @@ const CalendarDay = ({
             {HOURS.map((hour) => (
               <div
                 key={hour}
-                className={`py-3 group hover:bg-gray-50`}
+                className="group hover:bg-gray-50 relative"
                 style={{ height: `${ROW_HEIGHT}px` }}
-              ></div>
+              >
+                {(() => {
+                  const eventsAtThisHour = placeholderEvents.filter((event) => {
+                    const eventStartDate = new Date(event.startDate);
+                    const eventEndDate = new Date(event.endDate);
+                    const eventHour = parseInt(event.startTime.split(":")[0]);
+
+                    // Verifica se è un giorno intermedio
+                    const isMiddleDay =
+                      currentDate.toDateString() !==
+                        eventStartDate.toDateString() &&
+                      currentDate.toDateString() !==
+                        eventEndDate.toDateString() &&
+                      currentDate >= eventStartDate &&
+                      currentDate <= eventEndDate;
+
+                    if (isMiddleDay) {
+                      return hour === 0;
+                    }
+
+                    if (
+                      currentDate.toDateString() ===
+                      eventStartDate.toDateString()
+                    ) {
+                      return eventHour === hour;
+                    }
+
+                    if (
+                      currentDate.toDateString() === eventEndDate.toDateString()
+                    ) {
+                      return hour === 0;
+                    }
+
+                    return false;
+                  });
+
+                  const width = eventsAtThisHour.length > 1 ? 50 : 100;
+
+                  return eventsAtThisHour.map((event, index) => {
+                    const eventStartDate = new Date(event.startDate);
+                    const eventEndDate = new Date(event.endDate);
+                    const eventHour = parseInt(event.startTime.split(":")[0]);
+                    const eventEndHour = parseInt(event.endTime.split(":")[0]);
+                    const eventStartMinutes = parseInt(
+                      event.startTime.split(":")[1]
+                    );
+                    const eventEndMinutes = parseInt(
+                      event.endTime.split(":")[1]
+                    );
+
+                    // Calcola la durata considerando più giorni
+                    let duration = 0;
+                    if (
+                      currentDate.toDateString() ===
+                      eventStartDate.toDateString()
+                    ) {
+                      if (
+                        eventStartDate.toDateString() ===
+                        eventEndDate.toDateString()
+                      ) {
+                        // Evento di un solo giorno: dall'ora di inizio all'ora di fine
+                        duration =
+                          eventEndHour +
+                          eventEndMinutes / 60 -
+                          (eventHour + eventStartMinutes / 60);
+                      } else {
+                        // Primo giorno di un evento multi-giorno: dalla ora di inizio fino a mezzanotte
+                        duration = 24 - eventHour;
+                      }
+                    } else if (
+                      currentDate.toDateString() === eventEndDate.toDateString()
+                    ) {
+                      // Ultimo giorno: da mezzanotte fino all'ora di fine
+                      duration = eventEndHour + eventEndMinutes / 60;
+                    } else {
+                      // Giorni intermedi: giorno intero (24 ore)
+                      duration = 24;
+                    }
+
+                    return (
+                      <a
+                        key={event.id}
+                        href={event.url}
+                        className="absolute mx-1 rounded-lg p-2 text-xs opacity-70 hover:opacity-90 transition-opacity"
+                        style={{
+                          backgroundColor: event.color,
+                          color: "white",
+                          zIndex: 10,
+                          height: `${duration * ROW_HEIGHT}px`,
+                          overflow: "hidden",
+                          width: `${width}%`,
+                          left: index * (width + 2) + "%",
+                        }}
+                        title={`${event.description}\nDove: ${event.location}`}
+                      >
+                        <div className="font-semibold">{event.title}</div>
+                        <div className="text-xs opacity-90">
+                          {(() => {
+                            if (
+                              currentDate.toDateString() ===
+                              eventStartDate.toDateString()
+                            ) {
+                              if (
+                                eventStartDate.toDateString() ===
+                                eventEndDate.toDateString()
+                              ) {
+                                // Evento singolo giorno: mostra inizio e fine
+                                return `${event.startTime} - ${event.endTime}`;
+                              }
+                              // Primo giorno: mostra solo inizio
+                              return `dalle ${event.startTime}`;
+                            } else if (
+                              currentDate.toDateString() ===
+                              eventEndDate.toDateString()
+                            ) {
+                              // Ultimo giorno: mostra solo fine
+                              return `fino alle ${event.endTime}`;
+                            }
+                            // Giorni intermedi: mostra tutto il giorno
+                            return "Tutto il giorno";
+                          })()}
+                        </div>
+                        {width > 50 && (
+                          <>
+                            <div className="text-xs mt-1">
+                              {event.description}
+                            </div>
+                            <div className="text-xs opacity-75">
+                              {event.location}
+                            </div>
+                          </>
+                        )}
+                      </a>
+                    );
+                  });
+                })()}
+              </div>
             ))}
           </div>
           {(redLineBehavior === "always" || isToday) && (
@@ -196,7 +384,7 @@ const CalendarWeek = ({
         currentHour * ROW_HEIGHT - window.innerHeight / 2 + HEADER_HEIGHT;
       scrollRef.current.scrollTop = Math.max(0, scrollPosition);
     }
-  }, [isCurrentWeek, currentHour]);
+  }, [isCurrentWeek]);
 
   return (
     <div
@@ -257,11 +445,161 @@ const CalendarWeek = ({
                 {HOURS.map((hour) => (
                   <div
                     key={`${dayIndex}-${hour}`}
-                    className={`py-3 group hover:bg-gray-50 ${
+                    className={`group hover:bg-gray-50 relative ${
                       isPastDay ? "bg-gray-100" : ""
                     }`}
                     style={{ height: `${ROW_HEIGHT}px` }}
-                  ></div>
+                  >
+                    {/* Raggruppa gli eventi per ora */}
+                    {(() => {
+                      const eventsAtThisHour = placeholderEvents.filter(
+                        (event) => {
+                          const eventStartDate = new Date(event.startDate);
+                          const eventEndDate = new Date(event.endDate);
+                          const eventHour = parseInt(
+                            event.startTime.split(":")[0]
+                          );
+
+                          // Verifica se è un giorno intermedio
+                          const isMiddleDay =
+                            dayDate.toDateString() !==
+                              eventStartDate.toDateString() &&
+                            dayDate.toDateString() !==
+                              eventEndDate.toDateString() &&
+                            dayDate >= eventStartDate &&
+                            dayDate <= eventEndDate;
+
+                          // Per i giorni intermedi, mostra solo gli eventi che iniziano alle 00:00
+                          if (isMiddleDay) {
+                            return hour === 0;
+                          }
+
+                          // Per il primo giorno
+                          if (
+                            dayDate.toDateString() ===
+                            eventStartDate.toDateString()
+                          ) {
+                            return eventHour === hour;
+                          }
+
+                          // Per l'ultimo giorno
+                          if (
+                            dayDate.toDateString() ===
+                            eventEndDate.toDateString()
+                          ) {
+                            return hour === 0;
+                          }
+
+                          return false;
+                        }
+                      );
+
+                      // Calcola la larghezza per eventi sovrapposti
+                      const width = eventsAtThisHour.length > 1 ? 50 : 100;
+
+                      return eventsAtThisHour.map((event, index) => {
+                        const eventStartDate = new Date(event.startDate);
+                        const eventEndDate = new Date(event.endDate);
+                        const eventHour = parseInt(
+                          event.startTime.split(":")[0]
+                        );
+                        const eventEndHour = parseInt(
+                          event.endTime.split(":")[0]
+                        );
+                        const eventStartMinutes = parseInt(
+                          event.startTime.split(":")[1]
+                        );
+                        const eventEndMinutes = parseInt(
+                          event.endTime.split(":")[1]
+                        );
+
+                        // Calcola la durata considerando più giorni
+                        let duration = 0;
+                        if (
+                          dayDate.toDateString() ===
+                          eventStartDate.toDateString()
+                        ) {
+                          if (
+                            eventStartDate.toDateString() ===
+                            eventEndDate.toDateString()
+                          ) {
+                            // Evento di un solo giorno: dall'ora di inizio all'ora di fine
+                            duration =
+                              eventEndHour +
+                              eventEndMinutes / 60 -
+                              (eventHour + eventStartMinutes / 60);
+                          } else {
+                            // Primo giorno di un evento multi-giorno: dalla ora di inizio fino a mezzanotte
+                            duration = 24 - eventHour;
+                          }
+                        } else if (
+                          dayDate.toDateString() === eventEndDate.toDateString()
+                        ) {
+                          // Ultimo giorno: da mezzanotte fino all'ora di fine
+                          duration = eventEndHour + eventEndMinutes / 60;
+                        } else {
+                          // Giorni intermedi: giorno intero (24 ore)
+                          duration = 24;
+                        }
+
+                        return (
+                          <a
+                            key={event.id}
+                            href={event.url}
+                            className="absolute mx-1 rounded-lg p-2 text-xs opacity-70 hover:opacity-90 transition-opacity"
+                            style={{
+                              backgroundColor: event.color,
+                              color: "white",
+                              zIndex: 10,
+                              height: `${duration * ROW_HEIGHT}px`,
+                              overflow: "hidden",
+                              width: `${width}%`,
+                              left: index * (width + 2) + "%",
+                            }}
+                            title={`${event.description}\nDove: ${event.location}`}
+                          >
+                            <div className="font-semibold">{event.title}</div>
+                            <div className="text-xs opacity-90">
+                              {(() => {
+                                if (
+                                  dayDate.toDateString() ===
+                                  eventStartDate.toDateString()
+                                ) {
+                                  if (
+                                    eventStartDate.toDateString() ===
+                                    eventEndDate.toDateString()
+                                  ) {
+                                    // Evento singolo giorno: mostra inizio e fine
+                                    return `${event.startTime} - ${event.endTime}`;
+                                  }
+                                  // Primo giorno: mostra solo inizio
+                                  return `dalle ${event.startTime}`;
+                                } else if (
+                                  dayDate.toDateString() ===
+                                  eventEndDate.toDateString()
+                                ) {
+                                  // Ultimo giorno: mostra solo fine
+                                  return `fino alle ${event.endTime}`;
+                                }
+                                // Giorni intermedi: mostra tutto il giorno
+                                return "Tutto il giorno";
+                              })()}
+                            </div>
+                            {width > 50 && (
+                              <>
+                                <div className="text-xs mt-1">
+                                  {event.description}
+                                </div>
+                                <div className="text-xs opacity-75">
+                                  {event.location}
+                                </div>
+                              </>
+                            )}
+                          </a>
+                        );
+                      });
+                    })()}
+                  </div>
                 ))}
               </div>
             );
@@ -305,7 +643,8 @@ const CalendarWeek = ({
       </div>
     </div>
   );
-};const CalendarMonth = ({
+};
+const CalendarMonth = ({
   currentDate,
   onDateClick,
 }: {
@@ -388,6 +727,28 @@ const CalendarWeek = ({
               >
                 {day.getDate()}
               </time>
+            </div>
+            <div className="absolute top-10 left-1 right-1 flex flex-col gap-1 overflow-y-auto max-h-[calc(18vh-40px)]">
+              {placeholderEvents
+                .filter(
+                  (event) =>
+                    day >= new Date(event.startDate) &&
+                    day <= new Date(event.endDate)
+                )
+                .map((event) => (
+                  <a
+                    key={event.id}
+                    href={event.url}
+                    className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-gray-100"
+                    title={`${event.title}\n${event.description}\nDove: ${event.location}`}
+                  >
+                    <div
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: event.color }}
+                    />
+                    <div className="truncate">{event.title}</div>
+                  </a>
+                ))}
             </div>
           </div>
         ))}
