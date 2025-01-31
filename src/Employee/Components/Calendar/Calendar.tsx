@@ -34,7 +34,13 @@ const MONTHS = [
 const ROW_HEIGHT = 60;
 const HEADER_HEIGHT = 78;
 
-const CalendarDay = ({ currentDate }: { currentDate: Date }) => {
+const CalendarDay = ({
+  currentDate,
+  redLineBehavior,
+}: {
+  currentDate: Date;
+  redLineBehavior: string;
+}) => {
   const now = new Date();
   const currentTime = new Date(
     now.toLocaleString("en-US", { timeZone: "Europe/Rome" })
@@ -73,8 +79,8 @@ const CalendarDay = ({ currentDate }: { currentDate: Date }) => {
       style={{ minHeight: "100%" }}
     >
       <div className="flex-1 overflow-y-auto" ref={scrollRef}>
-        <div className="grid grid-cols-10 divide-x divide-gray-100 relative">
-          <div className="col-span-1 divide-y divide-gray-100">
+        <div className="grid grid-cols-8 divide-x divide-gray-100 relative">
+          <div className="col-span-2 divide-y divide-gray-100">
             {HOURS.map((hour) => (
               <div
                 key={hour}
@@ -85,16 +91,16 @@ const CalendarDay = ({ currentDate }: { currentDate: Date }) => {
               </div>
             ))}
           </div>
-          <div className="col-span-9 divide-y divide-gray-100">
+          <div className="col-span-6 divide-y divide-gray-100">
             {HOURS.map((hour) => (
               <div
                 key={hour}
-                className="py-3 group hover:bg-gray-50"
+                className={`py-3 group hover:bg-gray-50`}
                 style={{ height: `${ROW_HEIGHT}px` }}
               ></div>
             ))}
           </div>
-          {isToday && (
+          {(redLineBehavior === "always" || isToday) && (
             <div
               className="absolute left-0 right-0 z-10 pointer-events-none"
               style={{ top: `${currentHour * ROW_HEIGHT}px` }}
@@ -103,7 +109,7 @@ const CalendarDay = ({ currentDate }: { currentDate: Date }) => {
                 className="border-t-2 border-red-500 relative"
                 style={{
                   width: "100%",
-                  marginLeft: "10%",
+                  marginLeft: "25%",
                 }}
               >
                 <div className="absolute left-0 -top-3 -translate-x-full bg-red-500 text-white rounded-full px-2 py-1 text-xs">
@@ -122,7 +128,20 @@ const CalendarDay = ({ currentDate }: { currentDate: Date }) => {
   );
 };
 
-const CalendarWeek = ({ currentDate }: { currentDate: Date }) => {
+const isPastDate = (date: Date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date < today;
+};
+const CalendarWeek = ({
+  currentDate,
+  onDateClick,
+  redLineBehavior,
+}: {
+  currentDate: Date;
+  onDateClick: (date: Date) => void;
+  redLineBehavior: string;
+}) => {
   const startOfWeek = new Date(currentDate);
   startOfWeek.setDate(currentDate.getDate() - ((currentDate.getDay() + 6) % 7));
 
@@ -191,7 +210,11 @@ const CalendarWeek = ({ currentDate }: { currentDate: Date }) => {
             const date = new Date(startOfWeek);
             date.setDate(startOfWeek.getDate() + i);
             return (
-              <div key={day} className="py-3 text-center font-semibold">
+              <div
+                key={day}
+                className="py-3 text-center font-semibold cursor-pointer hover:bg-gray-100 rounded-lg"
+                onClick={() => onDateClick(date)} // Clic sul giorno nell'header
+              >
                 <span className="block text-lg">{day}</span>
                 <span
                   className={`block text-base font-bold ${
@@ -222,18 +245,30 @@ const CalendarWeek = ({ currentDate }: { currentDate: Date }) => {
               </div>
             ))}
           </div>
-          {Array.from({ length: 7 }).map((_, dayIndex) => (
-            <div key={dayIndex} className="col-span-1 divide-y divide-gray-100">
-              {HOURS.map((hour) => (
-                <div
-                  key={`${dayIndex}-${hour}`}
-                  className="py-3 group hover:bg-gray-50"
-                  style={{ height: `${ROW_HEIGHT}px` }}
-                ></div>
-              ))}
-            </div>
-          ))}
-          {isCurrentWeek && (
+          {Array.from({ length: 7 }).map((_, dayIndex) => {
+            const dayDate = new Date(startOfWeek);
+            dayDate.setDate(startOfWeek.getDate() + dayIndex);
+            const isPastDay = isPastDate(dayDate);
+            return (
+              <div
+                key={dayIndex}
+                className="col-span-1 divide-y divide-gray-100"
+              >
+                {HOURS.map((hour) => (
+                  <div
+                    key={`${dayIndex}-${hour}`}
+                    className={`py-3 group hover:bg-gray-50 ${
+                      isPastDay ? "bg-gray-100" : ""
+                    }`}
+                    style={{ height: `${ROW_HEIGHT}px` }}
+                  ></div>
+                ))}
+              </div>
+            );
+          })}
+          {(redLineBehavior === "always" ||
+            redLineBehavior === "full-week" ||
+            isCurrentWeek) && (
             <div
               className="absolute left-0 right-0 z-10 pointer-events-none"
               style={{
@@ -243,8 +278,12 @@ const CalendarWeek = ({ currentDate }: { currentDate: Date }) => {
               <div
                 className="border-t-2 border-red-500 relative"
                 style={{
-                  width: `calc(${(currentDayIndex + 1) * 12.5}%)`,
-                  marginLeft: "12.5%",
+                  width:
+                    redLineBehavior === "full-week"
+                      ? "100%"
+                      : `calc(${(currentDayIndex + 1) * 12.5}%)`,
+                  marginLeft:
+                    redLineBehavior === "full-week" ? "12.5%" : "12.5%",
                 }}
               >
                 <div
@@ -266,14 +305,32 @@ const CalendarWeek = ({ currentDate }: { currentDate: Date }) => {
       </div>
     </div>
   );
-};
-
-const CalendarMonth = ({ currentDate }: { currentDate: Date }) => {
+};const CalendarMonth = ({
+  currentDate,
+  onDateClick,
+}: {
+  currentDate: Date;
+  onDateClick: (date: Date) => void;
+}) => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   const firstDayIndex = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Calcola i giorni del mese precedente
+  const prevMonthLastDay = new Date(year, month, 0).getDate();
+  const prevMonthDays = Array.from({ length: firstDayIndex }, (_, i) => {
+    return new Date(year, month - 1, prevMonthLastDay - firstDayIndex + i + 1);
+  });
+
+  // Calcola i giorni del mese successivo
+  const totalDays = prevMonthDays.length + daysInMonth;
+  const nextMonthDays = Array.from({ length: 42 - totalDays }, (_, i) => {
+    return new Date(year, month + 1, i + 1);
+  });
 
   const days = Array.from(
     { length: daysInMonth },
@@ -285,34 +342,66 @@ const CalendarMonth = ({ currentDate }: { currentDate: Date }) => {
       className="flex-1 overflow-y-auto relative"
       style={{ minHeight: "100%" }}
     >
-      <div className="grid grid-cols-7 gap-px bg-gray-200">
+      <div className="grid grid-cols-7 gap-px bg-gray-200 ">
         {DAYS.map((day) => (
           <div
             key={day}
-            className="bg-white py-2 text-center text-xs font-semibold text-gray-700 uppercase"
+            className="bg-white py-2 text-center text-xs font-semibold text-gray-700 uppercase "
           >
             {day}
           </div>
         ))}
-        {Array(firstDayIndex)
-          .fill(null)
-          .map((_, index) => (
-            <div key={`empty-${index}`} className="bg-white"></div>
-          ))}
+        {prevMonthDays.map((day) => (
+          <div
+            key={day.toISOString()}
+            className="relative hover:bg-gray-50 cursor-pointer bg-gray-100 opacity-50"
+            style={{ height: "18vh" }}
+            onClick={() => onDateClick(day)}
+          >
+            <div className="absolute top-2 right-2">
+              <time
+                dateTime={day.toISOString()}
+                className="flex h-6 w-6 items-center justify-center rounded-full text-sm text-gray-500"
+              >
+                {day.getDate()}
+              </time>
+            </div>
+          </div>
+        ))}
         {days.map((day) => (
           <div
             key={day.toISOString()}
-            className="relative bg-white hover:bg-gray-50"
+            className={`relative hover:bg-gray-50 cursor-pointer ${
+              day < today ? "bg-gray-200" : "bg-white"
+            }`}
             style={{ height: "18vh" }}
+            onClick={() => onDateClick(day)}
           >
             <div className="absolute top-2 right-2">
               <time
                 dateTime={day.toISOString()}
                 className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
-                  day.toDateString() === new Date().toDateString()
+                  day.toDateString() === today.toDateString()
                     ? "bg-blue-600 font-semibold text-white"
                     : "text-gray-900"
                 }`}
+              >
+                {day.getDate()}
+              </time>
+            </div>
+          </div>
+        ))}
+        {nextMonthDays.map((day) => (
+          <div
+            key={day.toISOString()}
+            className="relative hover:bg-gray-50 cursor-pointer bg-gray-100 opacity-50"
+            style={{ height: "18vh" }}
+            onClick={() => onDateClick(day)}
+          >
+            <div className="absolute top-2 right-2">
+              <time
+                dateTime={day.toISOString()}
+                className="flex h-6 w-6 items-center justify-center rounded-full text-sm text-gray-500"
               >
                 {day.getDate()}
               </time>
@@ -323,67 +412,75 @@ const CalendarMonth = ({ currentDate }: { currentDate: Date }) => {
     </div>
   );
 };
-
-const CalendarYear = ({ currentDate }: { currentDate: Date }) => {
+const CalendarYear = ({
+  currentDate,
+  onDateClick,
+  onMonthClick,
+}: {
+  currentDate: Date;
+  onDateClick: (date: Date) => void;
+  onMonthClick: (date: Date) => void;
+}) => {
   const year = currentDate.getFullYear();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   return (
     <div className="flex-1 overflow-y-auto" style={{ minHeight: "100%" }}>
       <div className="grid xl:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6 p-6">
-        {MONTHS.map((month, monthIndex) => {
-          const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-          const firstDayOfMonth = new Date(year, monthIndex, 1).getDay();
-          const firstDayIndex = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-
-          const days = Array.from(
-            { length: daysInMonth },
-            (_, i) => new Date(year, monthIndex, i + 1)
-          );
-
-          return (
-            <div key={month} className="bg-white p-4 rounded-lg shadow">
-              <h3 className="text-lg font-semibold text-center mb-4">
-                {month}
-              </h3>
-              <div className="grid grid-cols-7 gap-1">
-                {DAYS.map((day) => (
-                  <div
-                    key={`${month}-${day}`}
-                    className="text-center text-xs font-medium text-gray-500"
-                  >
-                    {day[0]}
-                  </div>
+        {MONTHS.map((month, monthIndex) => (
+          <div
+            key={month}
+            className={`p-4 rounded-lg shadow cursor-pointer hover:bg-gray-100`}
+            onClick={() => onMonthClick(new Date(year, monthIndex, 1))} // Clic sul mese
+          >
+            <h3 className="text-lg font-semibold text-center mb-4  rounded-full">
+              {month}
+            </h3>
+            <div className="grid grid-cols-7 gap-1 text-xs">
+              {DAYS.map((day) => (
+                <div
+                  key={day}
+                  className="text-center font-semibold text-gray-600 flex items-center justify-center h-8"
+                >
+                  {day}
+                </div>
+              ))}
+              {Array(new Date(year, monthIndex, 1).getDay() || 7 - 1)
+                .fill(null)
+                .map((_, i) => (
+                  <div key={`empty-${i}`} className="h-8"></div>
                 ))}
-                {Array(firstDayIndex)
-                  .fill(null)
-                  .map((_, index) => (
-                    <div
-                      key={`empty-${month}-${index}`}
-                      className="bg-white"
-                    ></div>
-                  ))}
-                {days.map((day) => (
+              {Array.from(
+                { length: new Date(year, monthIndex + 1, 0).getDate() },
+                (_, i) => i + 1
+              ).map((day) => {
+                const currentDay = new Date(year, monthIndex, day);
+                const isToday =
+                  currentDay.toDateString() === today.toDateString();
+                return (
                   <div
-                    key={day.toISOString()}
-                    className="relative bg-white hover:bg-gray-50 flex items-center justify-center"
-                    style={{ height: `${ROW_HEIGHT * 0.75}px` }}
+                    key={day}
+                    className={`h-8 text-center rounded-full text-gray-900 relative cursor-pointer hover:bg-gray-300 ${
+                      isToday ? "bg-blue-600 text-white" : ""
+                    } flex items-center justify-center`}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Evita la propagazione del clic al mese
+                      onDateClick(currentDay); // Clic sul giorno
+                    }}
                   >
-                    <time
-                      dateTime={day.toISOString()}
-                      className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
-                        day.toDateString() === new Date().toDateString()
-                          ? "bg-blue-600 font-semibold text-white"
-                          : "text-gray-900"
-                      }`}
-                    >
-                      {day.getDate()}
-                    </time>
+                    {isToday && (
+                      <div className="absolute left-0 w-full h-full flex items-center justify-center rounded-full bg-blue-600 text-white text-xs font-semibold">
+                        {day}
+                      </div>
+                    )}
+                    {!isToday && <span>{day}</span>}
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -417,11 +514,13 @@ const formatDate = (date: Date, view: string): string => {
     })
     .replace(/^\w/, (c) => c.toUpperCase());
 };
-
 export default function Calendar() {
   const [view, setView] = useState("week");
   const [currentDate, setCurrentDate] = useState(new Date());
   const container = useRef<HTMLDivElement>(null);
+  const [redLineBehavior, setRedLineBehavior] = useState<
+    "current" | "always" | "full-week"
+  >("current");
 
   const changeDate = (offset: number) => {
     const newDate = new Date(currentDate);
@@ -437,39 +536,73 @@ export default function Calendar() {
     setCurrentDate(newDate);
   };
 
+  const handleDateClick = (date: Date) => {
+    setCurrentDate(date);
+    setView("day");
+  };
+
+  const handleMonthClick = (date: Date) => {
+    setCurrentDate(date);
+    setView("month");
+  };
+
   useEffect(() => {
     if (container.current) {
       container.current.scrollTop = 0;
     }
-  }, [container]);
+  }, [view, currentDate]);
 
   return (
     <div className="flex flex-col w-full h-screen rounded-lg border-2">
-      <header className="flex flex-none items-center justify-between border-b border-gray-300 px-6 py-4 bg-white my-2">
+      <header className="flex flex-none items-center justify-between border-b border-gray-300 px-6 py-4 bg-white mt-1">
         <h1 className="text-xl font-bold text-gray-900">
           {formatDate(currentDate, view)}
         </h1>
 
         <div className="flex items-center gap-4">
-          <div className="relative flex items-center rounded-lg bg-gray-100 border-2">
+          <div className="relative flex items-center rounded-full bg-gray-100 border-2 border-gray-300">
             <button
               onClick={() => changeDate(-1)}
               type="button"
-              className="flex h-10 w-12 items-center justify-center rounded-l-lg border-r bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+              className="flex h-10 w-12 items-center justify-center rounded-l-full border-r bg-white text-gray-600 hover:bg-gray-100 focus:relative"
             >
               <ChevronLeftIcon className="h-6 w-6" aria-hidden="true" />
             </button>
             <button
               onClick={() => changeDate(1)}
               type="button"
-              className="flex h-10 w-12 items-center justify-center rounded-r-lg border-l bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+              className="flex h-10 w-12 items-center justify-center rounded-r-full border-l bg-white text-gray-600 hover:bg-gray-100 focus:relative"
             >
               <ChevronRightIcon className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
+          {(view === "day" || view === "week") && (
+            <Dropdown>
+              <DropdownTrigger variant="bordered" className="rounded-full h-11">
+                <Button className="flex items-center px-4 text-sm font-semibold text-gray-600">
+                  Orario
+                  <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu>
+                <DropdownItem
+                  key="current"
+                  onClick={() => setRedLineBehavior("current")}
+                >
+                  {view === "day" ? "Giorno corrente" : "Settimana corrente"}
+                </DropdownItem>
+                <DropdownItem
+                  key="always"
+                  onClick={() => setRedLineBehavior("always")}
+                >
+                  Sempre visibile
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          )}
 
           <Dropdown>
-            <DropdownTrigger variant="bordered">
+            <DropdownTrigger variant="bordered" className="rounded-full h-11">
               <Button className="flex items-center px-4 text-sm font-semibold text-gray-600">
                 {view === "day"
                   ? "Giorno"
@@ -500,10 +633,32 @@ export default function Calendar() {
       </header>
 
       <div className="flex-1 overflow-y-auto rounded-lg" ref={container}>
-        {view === "day" && <CalendarDay currentDate={currentDate} />}
-        {view === "week" && <CalendarWeek currentDate={currentDate} />}
-        {view === "month" && <CalendarMonth currentDate={currentDate} />}
-        {view === "year" && <CalendarYear currentDate={currentDate} />}
+        {view === "day" && (
+          <CalendarDay
+            currentDate={currentDate}
+            redLineBehavior={redLineBehavior}
+          />
+        )}
+        {view === "week" && (
+          <CalendarWeek
+            currentDate={currentDate}
+            onDateClick={handleDateClick}
+            redLineBehavior={redLineBehavior}
+          />
+        )}
+        {view === "month" && (
+          <CalendarMonth
+            currentDate={currentDate}
+            onDateClick={handleDateClick}
+          />
+        )}
+        {view === "year" && (
+          <CalendarYear
+            currentDate={currentDate}
+            onDateClick={handleDateClick}
+            onMonthClick={handleMonthClick}
+          />
+        )}
       </div>
     </div>
   );
