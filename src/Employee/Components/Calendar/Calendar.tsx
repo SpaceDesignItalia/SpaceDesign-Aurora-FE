@@ -279,11 +279,15 @@ const CalendarWeek = ({
                 className="border-t-2 border-red-500 relative"
                 style={{
                   width:
+                    redLineBehavior === "always" ||
                     redLineBehavior === "full-week"
-                      ? "100%"
-                      : `calc(${(currentDayIndex + 1) * 12.5}%)`,
+                      ? "100%" // Estendi la barra fino alla fine della griglia
+                      : `calc(${(currentDayIndex + 1) * 12.5}%)`, // Larghezza normale per "current"
                   marginLeft:
-                    redLineBehavior === "full-week" ? "12.5%" : "12.5%",
+                    redLineBehavior === "always" ||
+                    redLineBehavior === "full-week"
+                      ? "12.5%" // Allinea a sinistra senza margine
+                      : "12.5%", // Margine normale per "current"
                 }}
               >
                 <div
@@ -305,7 +309,8 @@ const CalendarWeek = ({
       </div>
     </div>
   );
-};const CalendarMonth = ({
+};
+const CalendarMonth = ({
   currentDate,
   onDateClick,
 }: {
