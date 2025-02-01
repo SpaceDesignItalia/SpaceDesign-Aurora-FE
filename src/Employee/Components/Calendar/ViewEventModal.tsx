@@ -45,6 +45,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import styles
 import EventAttachmentUploaderModal from "./EventAttachmentUploaderModal";
 import FileCard from "../Project/Other/ProjectFiles/FileCard";
+import ConfirmDeleteEventModal from "./ConfirmDeleteEventModal";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -197,6 +198,7 @@ export default function ViewEventModal({
   }, []);
 
   async function fetchEvent() {
+    console.log(eventId);
     if (eventId === 0) return;
     const res = await axios.get(`/Calendar/GET/GetEventByEventId`, {
       params: {
@@ -230,7 +232,7 @@ export default function ViewEventModal({
 
   useEffect(() => {
     fetchEvent();
-  }, [eventId]);
+  }, [eventId, isOpen]);
 
   function deletePartecipant(email: string) {
     setPartecipants(
@@ -266,12 +268,24 @@ export default function ViewEventModal({
 
     if (res.status === 200) {
       setIsAddingData(false);
-      setIsEditing(false);
+      handleCloseModal();
+    }
+  }
+
+  async function DeleteEvent() {
+    const res = await axios.delete(`/Calendar/DELETE/DeleteEvent`, {
+      params: {
+        EventId: eventId,
+      },
+    });
+
+    if (res.status === 200) {
       handleCloseModal();
     }
   }
 
   function handleCloseModal() {
+    setIsEditing(false);
     setNewEvent(INITIAL_EVENT_DATA);
     isClosed();
   }
@@ -391,6 +405,10 @@ END:VCALENDAR`;
                       startContent={<EditRounded sx={{ fontSize: 17 }} />}
                       onPress={() => setIsEditing(true)}
                       size="sm"
+                    />
+                    <ConfirmDeleteEventModal
+                      EventData={newEvent}
+                      DeleteEvent={DeleteEvent}
                     />
                     <Button
                       color="primary"
