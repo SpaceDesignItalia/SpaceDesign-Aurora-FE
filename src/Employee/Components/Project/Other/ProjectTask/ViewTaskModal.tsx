@@ -158,8 +158,6 @@ export default function ViewTaskModal({
   setUpdate: (update: boolean) => void;
   hasValidDescription: (content: string) => boolean;
 }) {
-  console.log(TaskData.ProjectTaskCreation);
-
   // Variabili di stato
   const [newTask, setNewTask] = useState<Task>();
   const [loggedStafferId, setLoggedStafferId] = useState<number>(0);

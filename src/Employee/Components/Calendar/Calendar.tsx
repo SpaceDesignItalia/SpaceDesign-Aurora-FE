@@ -18,8 +18,14 @@ import CalendarWeek from "./CalendarWeek";
 import CalendarMonth from "./CalendarMonth";
 import CalendarYear from "./CalendarYear";
 import AddEventModal from "./AddEventModal";
-import { AddRounded, FileUploadOutlined } from "@mui/icons-material";
+import {
+  AddRounded,
+  FileDownloadOutlined,
+  FileUploadOutlined,
+} from "@mui/icons-material";
 import axios from "axios";
+import { parseDate } from "@internationalized/date";
+import dayjs from "dayjs";
 
 interface EventPartecipant {
   EventPartecipantId: number;
@@ -161,10 +167,96 @@ export default function Calendar() {
     reader.readAsText(file);
   };
 
+  function handleExportEvent() {
+    // Format date and time for ICS file
+    const formatICSDateTime = (date: any, time: string) => {
+      const dateStr = dayjs(date).format("YYYYMMDD");
+      const timeStr = time.replace(":", "") + "00";
+      return `${dateStr}T${timeStr}`;
+    };
+
+    const getCurrentTimestamp = () => {
+      return dayjs().format("YYYYMMDDTHHmmss");
+    };
+
+    let icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Calendar App//IT
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VTIMEZONE
+TZID:Europe/Rome
+LAST-MODIFIED:20240422T053451Z
+TZURL:https://www.tzurl.org/zoneinfo-outlook/Europe/Rome
+X-LIC-LOCATION:Europe/Rome
+BEGIN:DAYLIGHT
+TZNAME:CEST
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+DTSTART:19700329T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZNAME:CET
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+DTSTART:19701025T030000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+END:STANDARD
+END:VTIMEZONE`;
+
+    for (let event of events) {
+      const startDateTime = formatICSDateTime(
+        event.EventStartDate,
+        event.EventStartTime
+      );
+      const endDateTime = formatICSDateTime(
+        event.EventEndDate,
+        event.EventEndTime
+      );
+
+      // Escape special characters and handle line folding
+      const description = event.EventDescription.replace(/\n/g, "\\n")
+        .replace(/,/g, "\\,")
+        .replace(/;/g, "\\;");
+      const location = event.EventLocation.replace(/,/g, "\\,").replace(
+        /;/g,
+        "\\;"
+      );
+      const summary = event.EventTitle.replace(/,/g, "\\,").replace(
+        /;/g,
+        "\\;"
+      );
+
+      icsContent += `
+BEGIN:VEVENT
+DTSTAMP:${getCurrentTimestamp()}Z
+UID:${event.EventId}@calendar-app
+DTSTART;TZID=Europe/Rome:${startDateTime}
+DTEND;TZID=Europe/Rome:${endDateTime}
+SUMMARY:${summary}
+DESCRIPTION:${description}
+LOCATION:${location}
+END:VEVENT`;
+    }
+
+    icsContent += `\nEND:VCALENDAR`;
+
+    // Create and download the file
+    const blob = new Blob([icsContent], {
+      type: "text/calendar;charset=utf-8",
+    });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute("download", "Calendario.ics");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   async function fetchEvents() {
     const res = await axios.get(`Calendar/GET/GetEventsByEmail`);
     setEvents(res.data);
-    console.log(res.data);
   }
 
   useEffect(() => {
@@ -227,6 +319,17 @@ export default function Calendar() {
           </h1>
 
           <div className="flex items-center gap-4">
+            <Button
+              className="flex h-10 items-center justify-center rounded-full bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+              variant="bordered"
+              onClick={handleExportEvent}
+            >
+              <FileDownloadOutlined
+                className="h-6 w-6 mr-2"
+                aria-hidden="true"
+              />
+              Esporta calendario
+            </Button>
             <Dropdown>
               <DropdownTrigger>
                 <Button

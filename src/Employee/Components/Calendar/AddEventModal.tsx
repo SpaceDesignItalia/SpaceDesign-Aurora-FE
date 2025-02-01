@@ -175,9 +175,6 @@ export default function AddEventModal({
     fetchTags();
   }, [prefilledData]);
 
-  console.log(newEvent);
-  console.log(prefilledData);
-
   async function handleAddEvent() {
     try {
       setIsAddingData(true);

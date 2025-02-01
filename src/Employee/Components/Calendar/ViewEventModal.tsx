@@ -198,14 +198,12 @@ export default function ViewEventModal({
   }, []);
 
   async function fetchEvent() {
-    console.log(eventId);
     if (eventId === 0) return;
     const res = await axios.get(`/Calendar/GET/GetEventByEventId`, {
       params: {
         eventId: eventId,
       },
     });
-    console.log(res.data);
     setNewTag({
       EventTagId: res.data.EventTagId,
       EventTagName:
@@ -254,9 +252,6 @@ export default function ViewEventModal({
 
   async function handleUpdateEvent() {
     setIsAddingData(true);
-    console.log(newEvent);
-    console.log(Partecipants);
-    console.log(newTag);
     const res = await axios.put("/Calendar/UPDATE/UpdateEvent", {
       Partecipants: Partecipants,
       Tag: newTag.EventTagId,
