@@ -91,6 +91,7 @@ export default function Calendar() {
   async function fetchEvents() {
     const res = await axios.get(`Calendar/GET/GetEventsByEmail`);
     setEvents(res.data);
+    console.log(res.data);
   }
 
   useEffect(() => {

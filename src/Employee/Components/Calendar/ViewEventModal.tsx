@@ -10,6 +10,14 @@ import {
   ScrollShadow,
   Accordion,
   AccordionItem,
+  DropdownTrigger,
+  Dropdown,
+  Input,
+  DropdownMenu,
+  DropdownItem,
+  DatePicker,
+  Autocomplete,
+  AutocompleteItem,
 } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
 import {
@@ -23,6 +31,9 @@ import {
   HighlightOff as HighlightOffIcon,
   AttachFileRounded as AttachFileRoundedIcon,
   NoteAddRounded as NoteAddRoundedIcon,
+  EditRounded,
+  CloseRounded as CloseRoundedIcon,
+  SaveRounded as SaveRoundedIcon,
 } from "@mui/icons-material";
 import { I18nProvider, useDateFormatter } from "@react-aria/i18n";
 import axios from "axios";
@@ -70,6 +81,11 @@ interface ViewEventModalProps {
   isClosed: () => void;
 }
 
+interface EventTag {
+  EventTagId: number;
+  EventTagName: string;
+}
+
 const INITIAL_EVENT_DATA: CalendarEvent = {
   EventId: 0,
   EventTitle: "",
@@ -85,15 +101,100 @@ const INITIAL_EVENT_DATA: CalendarEvent = {
   EventPartecipants: [],
 };
 
+const colors = ["#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#6366F1"];
+
+function convertToDateValue(dateString: string) {
+  const date = dayjs(dateString);
+  return parseDate(
+    `${date.year()}-${(date.month() + 1).toString().padStart(2, "0")}-${date
+      .date()
+      .toString()
+      .padStart(2, "0")}`
+  );
+}
+
 export default function ViewEventModal({
   isOpen,
   eventId,
   isClosed,
 }: ViewEventModalProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isAddingData, setIsAddingData] = useState(false);
   const [newEvent, setNewEvent] = useState<CalendarEvent>(INITIAL_EVENT_DATA);
   const [modalUploadFile, setModalUploadFile] = useState({
     open: false,
   });
+  const [users, setUsers] = useState<EventPartecipant[]>([]);
+  const [tags, setTags] = useState<EventTag[]>([]);
+  const [Partecipants, setPartecipants] = useState<EventPartecipant[]>([]);
+  const [newTag, setNewTag] = useState<EventTag>({
+    EventTagId: 0,
+    EventTagName: "",
+  });
+
+  async function fetchTags() {
+    const res = await axios.get("/Calendar/GET/GetEventTags");
+    setTags(res.data);
+  }
+
+  async function fetchUsers() {
+    await axios
+      .get("/Staffer/GET/GetAllStaffers", {
+        withCredentials: true,
+      })
+      .then((res) => {
+        for (const user of res.data) {
+          setUsers((prevUsers) => {
+            if (
+              prevUsers.some(
+                (u) => u.EventPartecipantEmail === user.EmployeeEmail
+              )
+            ) {
+              return prevUsers;
+            }
+            return [
+              ...prevUsers,
+              {
+                EventPartecipantEmail: user.EmployeeEmail,
+                EventPartecipantRole: "dipendente",
+                EventPartecipantStatus: "In Attesa",
+              },
+            ];
+          });
+        }
+      });
+
+    await axios
+      .get("/Customer/GET/GetAllCustomers", {
+        withCredentials: true,
+      })
+      .then((res) => {
+        for (const customer of res.data) {
+          setUsers((prevUsers) => {
+            if (
+              prevUsers.some(
+                (u) => u.EventPartecipantEmail === customer.CustomerEmail
+              )
+            ) {
+              return prevUsers;
+            }
+            return [
+              ...prevUsers,
+              {
+                EventPartecipantEmail: customer.CustomerEmail,
+                EventPartecipantRole: "cliente",
+                EventPartecipantStatus: "In Attesa",
+              },
+            ];
+          });
+        }
+      });
+  }
+
+  useEffect(() => {
+    fetchUsers();
+    fetchTags();
+  }, []);
 
   async function fetchEvent() {
     if (eventId === 0) return;
@@ -102,7 +203,21 @@ export default function ViewEventModal({
         eventId: eventId,
       },
     });
-    setNewEvent(res.data);
+    setNewTag({
+      EventTagId: res.data.EventTagId,
+      EventTagName:
+        tags.find((t) => t.EventTagId === res.data.EventTagId)?.EventTagName ||
+        "",
+    });
+    setPartecipants(res.data.EventPartecipants);
+
+    // Convert the dates to DateValue format when setting event data
+    const eventData = {
+      ...res.data,
+      EventStartDate: convertToDateValue(res.data.EventStartDate),
+      EventEndDate: convertToDateValue(res.data.EventEndDate),
+    };
+    setNewEvent(eventData);
   }
 
   const formatter = useDateFormatter({ dateStyle: "full" });
@@ -116,6 +231,45 @@ export default function ViewEventModal({
   useEffect(() => {
     fetchEvent();
   }, [eventId]);
+
+  function deletePartecipant(email: string) {
+    setPartecipants(
+      Partecipants.filter((p) => p.EventPartecipantEmail !== email)
+    );
+  }
+
+  function addPartecipant(email: string, role: string) {
+    setPartecipants([
+      ...Partecipants,
+      {
+        EventPartecipantEmail: email,
+        EventPartecipantRole: role,
+        EventPartecipantStatus: "In Attesa",
+      },
+    ]);
+  }
+
+  async function handleUpdateEvent() {
+    setIsAddingData(true);
+    console.log(newEvent);
+    console.log(Partecipants);
+    console.log(newTag);
+    const res = await axios.put("/Calendar/UPDATE/UpdateEvent", {
+      Partecipants: Partecipants,
+      Tag: newTag.EventTagId,
+      EventData: {
+        ...newEvent,
+        EventStartDate: new Date(newEvent.EventStartDate.toString()),
+        EventEndDate: new Date(newEvent.EventEndDate.toString()),
+      },
+    });
+
+    if (res.status === 200) {
+      setIsAddingData(false);
+      setIsEditing(false);
+      handleCloseModal();
+    }
+  }
 
   function handleCloseModal() {
     setNewEvent(INITIAL_EVENT_DATA);
@@ -214,198 +368,579 @@ END:VCALENDAR`;
         <ModalContent>
           {() => (
             <>
-              <ModalHeader className="flex flex-row justify-between items-center gap-2">
-                <div className="flex flex-row justify-between items-center gap-2 w-full">
-                  <CalendarMonthRoundedIcon />
-                  <div className="flex flex-row justify-between items-center gap-2 w-full">
-                    <p>{newEvent.EventTitle}</p>
-                    <div
-                      className="h-5 w-5 rounded-full"
-                      style={{
-                        backgroundColor: newEvent.EventColor,
-                      }}
-                    />
-                  </div>
-                </div>
-                <Button
-                  color="primary"
-                  variant="light"
-                  radius="full"
-                  onClick={handleExportEvent}
-                >
-                  Esporta evento
-                </Button>
-              </ModalHeader>
-              <ModalBody>
-                <div className="mt-4">
-                  <dl>
-                    <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <CalendarMonthRoundedIcon />
-                        Data e ora
-                      </dt>
-                      <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
-                        <div className="flex flex-row justify-between w-full gap-4">
-                          <I18nProvider locale="it">
-                            <p>{formatDate(newEvent.EventStartDate)}</p>
-                            <p>{newEvent.EventStartTime}</p>
-                          </I18nProvider>
-                        </div>
-                        <div className="flex flex-row justify-between w-full gap-4">
-                          <I18nProvider locale="it">
-                            <p>{formatDate(newEvent.EventEndDate)}</p>
-                            <p>{newEvent.EventEndTime}</p>
-                          </I18nProvider>
-                        </div>
-                      </dd>
-                    </div>
-
-                    <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <NotesRoundedIcon />
-                        Descrizione
-                      </dt>
-                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        <ReactQuill
-                          readOnly
-                          className="sm:col-span-2 sm:mt-0 h-fit"
-                          theme="bubble"
-                          value={newEvent.EventDescription}
+              {!isEditing ? (
+                <>
+                  <ModalHeader className="flex flex-row justify-between items-center gap-2">
+                    <div className="flex flex-row justify-between items-center gap-2 w-full">
+                      <CalendarMonthRoundedIcon />
+                      <div className="flex flex-row justify-between items-center gap-2 w-full">
+                        <p>{newEvent.EventTitle}</p>
+                        <div
+                          className="h-5 w-5 rounded-full"
+                          style={{
+                            backgroundColor: newEvent.EventColor,
+                          }}
                         />
-                      </dd>
+                      </div>
                     </div>
+                    <Button
+                      isIconOnly
+                      color="warning"
+                      variant="light"
+                      radius="full"
+                      startContent={<EditRounded sx={{ fontSize: 17 }} />}
+                      onPress={() => setIsEditing(true)}
+                      size="sm"
+                    />
+                    <Button
+                      color="primary"
+                      variant="light"
+                      radius="full"
+                      onClick={handleExportEvent}
+                    >
+                      Esporta evento
+                    </Button>
+                  </ModalHeader>
+                  <ModalBody>
+                    <div className="mt-4">
+                      <dl>
+                        <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
+                          <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                            <CalendarMonthRoundedIcon />
+                            Data e ora
+                          </dt>
+                          <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
+                            <div className="flex flex-row justify-between w-full gap-4">
+                              <I18nProvider locale="it">
+                                <p>{formatDate(newEvent.EventStartDate)}</p>
+                                <p>{newEvent.EventStartTime}</p>
+                              </I18nProvider>
+                            </div>
+                            <div className="flex flex-row justify-between w-full gap-4">
+                              <I18nProvider locale="it">
+                                <p>{formatDate(newEvent.EventEndDate)}</p>
+                                <p>{newEvent.EventEndTime}</p>
+                              </I18nProvider>
+                            </div>
+                          </dd>
+                        </div>
 
-                    <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                      <EventAttachmentUploaderModal
-                        EventId={newEvent!.EventId}
-                        isOpen={modalUploadFile.open}
-                        isClosed={() =>
-                          setModalUploadFile({
-                            ...modalUploadFile,
-                            open: false,
-                          })
-                        }
-                      />
-                      <Accordion variant="light" className="px-[-2px]">
-                        <AccordionItem
-                          key="1"
-                          aria-label="Accordion 1"
-                          title={
-                            <div className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                              <AttachFileRoundedIcon />
-                              Allegati
-                              <Chip
-                                color="primary"
-                                variant="faded"
-                                size="sm"
-                                radius="full"
-                              >
-                                {newEvent.EventAttachments &&
-                                  newEvent.EventAttachments.length}
-                              </Chip>
+                        <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
+                          <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                            <NotesRoundedIcon />
+                            Descrizione
+                          </dt>
+                          <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                            <ReactQuill
+                              readOnly
+                              className="sm:col-span-2 sm:mt-0 h-fit"
+                              theme="bubble"
+                              value={newEvent.EventDescription}
+                            />
+                          </dd>
+                        </div>
+
+                        <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
+                          <EventAttachmentUploaderModal
+                            EventId={newEvent!.EventId}
+                            isOpen={modalUploadFile.open}
+                            isClosed={() =>
+                              setModalUploadFile({
+                                ...modalUploadFile,
+                                open: false,
+                              })
+                            }
+                          />
+                          <Accordion variant="light" className="px-[-2px]">
+                            <AccordionItem
+                              key="1"
+                              aria-label="Accordion 1"
+                              title={
+                                <div className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                                  <AttachFileRoundedIcon />
+                                  Allegati
+                                  <Chip
+                                    color="primary"
+                                    variant="faded"
+                                    size="sm"
+                                    radius="full"
+                                  >
+                                    {newEvent.EventAttachments &&
+                                      newEvent.EventAttachments.length}
+                                  </Chip>
+                                </div>
+                              }
+                            >
+                              <ScrollShadow className="flex flex-col gap-3 max-h-96">
+                                <div className="flex flex-col gap-4 w-full">
+                                  {newEvent.EventAttachments.length > 0 &&
+                                    newEvent.EventAttachments.map(
+                                      (file, index) => (
+                                        <FileCard
+                                          file={file}
+                                          index={index}
+                                          DeleteFile={DeleteFile}
+                                          key={index}
+                                          variant="delete"
+                                        />
+                                      )
+                                    )}
+                                </div>
+                                <Button
+                                  radius="full"
+                                  color="primary"
+                                  startContent={<NoteAddRoundedIcon />}
+                                  className="w-1/3 sm:w-1/4"
+                                  variant="solid"
+                                  onClick={() =>
+                                    setModalUploadFile({
+                                      ...modalUploadFile,
+                                      open: true,
+                                    })
+                                  }
+                                  fullWidth
+                                >
+                                  Carica file
+                                </Button>
+                              </ScrollShadow>
+                            </AccordionItem>
+                          </Accordion>
+                        </div>
+
+                        <div className="flex flex-row w-full gap-4">
+                          <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
+                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                              <PeopleRoundedIcon />
+                              Partecipanti
+                            </dt>
+                            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {newEvent.EventPartecipants.map(
+                                  (Partecipant) => (
+                                    <Chip
+                                      key={Partecipant.EventPartecipantEmail}
+                                      size="lg"
+                                      variant="flat"
+                                      startContent={
+                                        Partecipant.EventPartecipantStatus ===
+                                        "In Attesa" ? (
+                                          <HelpOutlineRoundedIcon />
+                                        ) : Partecipant.EventPartecipantStatus ===
+                                          "Accettato" ? (
+                                          <CheckCircleOutlineIcon className="text-green-500" />
+                                        ) : (
+                                          <HighlightOffIcon className="text-red-500" />
+                                        )
+                                      }
+                                    >
+                                      {Partecipant.EventPartecipantEmail}
+                                    </Chip>
+                                  )
+                                )}
+                              </div>
+                            </dd>
+                          </div>
+
+                          <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
+                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                              <LocalOfferRoundedIcon />
+                              Tag
+                            </dt>
+                            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                              <div className="flex flex-row gap-2">
+                                <label>{newEvent.EventTagName}</label>
+                              </div>
+                            </dd>
+                          </div>
+                        </div>
+                        <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
+                          <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                            <LocationOnRoundedIcon />
+                            Location
+                          </dt>
+                          <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                            <label>{newEvent.EventLocation}</label>
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button
+                      color="primary"
+                      variant="light"
+                      onClick={handleCloseModal}
+                      radius="full"
+                    >
+                      Chiudi
+                    </Button>
+                  </ModalFooter>
+                </>
+              ) : (
+                <>
+                  <>
+                    <ModalHeader className="flex flex-row justify-between items-center gap-2">
+                      <div className="flex flex-row justify-between items-center gap-2 w-full">
+                        <CalendarMonthRoundedIcon />
+                        <Input
+                          className="w-full"
+                          variant="underlined"
+                          color="primary"
+                          placeholder="Titolo dell'evento"
+                          value={newEvent.EventTitle}
+                          maxLength={50}
+                          onChange={(e) => {
+                            setNewEvent({
+                              ...newEvent,
+                              EventTitle: e.target.value,
+                            });
+                          }}
+                          endContent={
+                            <div className="text-sm">
+                              {newEvent.EventTitle.length}/50
                             </div>
                           }
-                        >
-                          <ScrollShadow className="flex flex-col gap-3 max-h-96">
-                            <div className="flex flex-col gap-4 w-full">
-                              {newEvent.EventAttachments.length > 0 &&
-                                newEvent.EventAttachments.map((file, index) => (
-                                  <FileCard
-                                    file={file}
-                                    index={index}
-                                    DeleteFile={DeleteFile}
-                                    key={index}
-                                    variant="delete"
-                                  />
-                                ))}
-                            </div>
+                        />
+                        <Dropdown className="w-2">
+                          <DropdownTrigger className="w-2 h-2">
                             <Button
+                              className="h-5 w-2"
+                              size="sm"
                               radius="full"
-                              color="primary"
-                              startContent={<NoteAddRoundedIcon />}
-                              className="w-1/3 sm:w-1/4"
-                              variant="solid"
-                              onClick={() =>
-                                setModalUploadFile({
-                                  ...modalUploadFile,
-                                  open: true,
-                                })
-                              }
-                              fullWidth
-                            >
-                              Carica file
-                            </Button>
-                          </ScrollShadow>
-                        </AccordionItem>
-                      </Accordion>
-                    </div>
-
-                    <div className="flex flex-row w-full gap-4">
-                      <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
-                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                          <PeopleRoundedIcon />
-                          Partecipanti
-                        </dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {newEvent.EventPartecipants.map((Partecipant) => (
-                              <Chip
-                                key={Partecipant.EventPartecipantEmail}
-                                size="lg"
-                                variant="flat"
-                                startContent={
-                                  Partecipant.EventPartecipantStatus ===
-                                  "In Attesa" ? (
-                                    <HelpOutlineRoundedIcon />
-                                  ) : Partecipant.EventPartecipantStatus ===
-                                    "Accettato" ? (
-                                    <CheckCircleOutlineIcon className="text-green-500" />
-                                  ) : (
-                                    <HighlightOffIcon className="text-red-500" />
-                                  )
-                                }
+                              style={{
+                                backgroundColor: newEvent.EventColor,
+                              }}
+                            />
+                          </DropdownTrigger>
+                          <DropdownMenu>
+                            {colors.map((color) => (
+                              <DropdownItem
+                                startContent
+                                key={color}
+                                onPress={() => {
+                                  setNewEvent((prev) => ({
+                                    ...prev,
+                                    EventColor: color,
+                                  }));
+                                }}
                               >
-                                {Partecipant.EventPartecipantEmail}
-                              </Chip>
+                                <div
+                                  className="w-4 h-4 rounded-full"
+                                  style={{ backgroundColor: color }}
+                                ></div>
+                              </DropdownItem>
                             ))}
-                          </div>
-                        </dd>
+                          </DropdownMenu>
+                        </Dropdown>
+                        <Button
+                          color="primary"
+                          variant="light"
+                          onClick={handleCloseModal}
+                          radius="full"
+                          size="sm"
+                          isIconOnly
+                          startContent={
+                            <CloseRoundedIcon
+                              sx={{ fontSize: 17 }}
+                              className="text-gray-700"
+                            />
+                          }
+                        />
                       </div>
+                    </ModalHeader>
+                    <ModalBody>
+                      <div className="mt-4">
+                        <dl>
+                          <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
+                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                              <CalendarMonthRoundedIcon />
+                              Data e ora
+                            </dt>
+                            <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
+                              <div className="flex flex-row justify-between w-full gap-4">
+                                <I18nProvider locale="it">
+                                  <DatePicker
+                                    labelPlacement="outside"
+                                    label="Data inizio"
+                                    className="w-1/2"
+                                    radius="full"
+                                    variant="bordered"
+                                    value={newEvent.EventStartDate}
+                                    onChange={(date) =>
+                                      setNewEvent((prev) => ({
+                                        ...prev,
+                                        EventStartDate: date,
+                                      }))
+                                    }
+                                  />
+                                  <Input
+                                    type="time"
+                                    label="Ora inizio"
+                                    className="w-1/2"
+                                    value={newEvent.EventStartTime}
+                                    onChange={(e) =>
+                                      setNewEvent((prev) => ({
+                                        ...prev,
+                                        EventStartTime: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                </I18nProvider>
+                              </div>
+                              <div className="flex flex-row justify-between w-full gap-4">
+                                <I18nProvider locale="it">
+                                  <DatePicker
+                                    labelPlacement="outside"
+                                    label="Data fine"
+                                    className="w-1/2"
+                                    radius="full"
+                                    variant="bordered"
+                                    value={newEvent.EventEndDate}
+                                    onChange={(date) =>
+                                      setNewEvent((prev) => ({
+                                        ...prev,
+                                        EventEndDate: date,
+                                      }))
+                                    }
+                                  />
+                                  <Input
+                                    type="time"
+                                    label="Ora fine"
+                                    className="w-1/2"
+                                    value={newEvent.EventEndTime}
+                                    onChange={(e) =>
+                                      setNewEvent((prev) => ({
+                                        ...prev,
+                                        EventEndTime: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                </I18nProvider>
+                              </div>
+                            </dd>
+                          </div>
 
-                      <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
-                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                          <LocalOfferRoundedIcon />
-                          Tag
-                        </dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          <div className="flex flex-row gap-2">
-                            <label>{newEvent.EventTagName}</label>
+                          <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
+                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                              <NotesRoundedIcon />
+                              Descrizione
+                            </dt>
+                            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                              <ReactQuill
+                                className="sm:col-span-2 sm:mt-0 h-fit"
+                                theme="snow"
+                                value={newEvent.EventDescription}
+                                onChange={(content) =>
+                                  setNewEvent((prev) => ({
+                                    ...prev,
+                                    EventDescription: content,
+                                  }))
+                                }
+                              />
+                            </dd>
                           </div>
-                        </dd>
+
+                          <div className="flex flex-row w-full gap-4">
+                            <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
+                              <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                                <PeopleRoundedIcon />
+                                Partecipanti
+                              </dt>
+                              <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                <div className="flex flex-row gap-2">
+                                  <Autocomplete
+                                    defaultItems={users}
+                                    onSelectionChange={(e) => {
+                                      e &&
+                                        e.toString() &&
+                                        addPartecipant(
+                                          e?.toString() || "",
+                                          Partecipants.find(
+                                            (p) => p.EventPartecipantEmail === e
+                                          )?.EventPartecipantRole || "cliente"
+                                        );
+                                    }}
+                                    placeholder="Email"
+                                  >
+                                    {users.map((user) => (
+                                      <AutocompleteItem
+                                        startContent={
+                                          <div
+                                            className="w-2 h-2 rounded-full"
+                                            style={{
+                                              backgroundColor:
+                                                user.EventPartecipantRole ===
+                                                "dipendente"
+                                                  ? "#EF4444" // red
+                                                  : "#3B82F6", // blue
+                                            }}
+                                          />
+                                        }
+                                        key={user.EventPartecipantEmail}
+                                        value={user.EventPartecipantEmail}
+                                      >
+                                        {user.EventPartecipantEmail}
+                                      </AutocompleteItem>
+                                    ))}
+                                  </Autocomplete>
+                                </div>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {Partecipants.map((Partecipant) => (
+                                    <Chip
+                                      key={Partecipant.EventPartecipantEmail}
+                                      size="lg"
+                                      variant="flat"
+                                      onClose={() =>
+                                        deletePartecipant(
+                                          Partecipant.EventPartecipantEmail
+                                        )
+                                      }
+                                      startContent={
+                                        <div
+                                          className="w-2 h-2 rounded-full"
+                                          style={{
+                                            backgroundColor:
+                                              Partecipant.EventPartecipantRole ===
+                                              "dipendente"
+                                                ? "#EF4444" // red
+                                                : "#3B82F6", // blue
+                                          }}
+                                        />
+                                      }
+                                    >
+                                      {Partecipant.EventPartecipantEmail}
+                                    </Chip>
+                                  ))}
+                                </div>
+                              </dd>
+                            </div>
+
+                            <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
+                              <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                                <LocalOfferRoundedIcon />
+                                Tag
+                              </dt>
+                              <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                <div className="flex flex-row gap-2">
+                                  <Autocomplete
+                                    defaultItems={tags}
+                                    defaultSelectedKey={newEvent.EventTagName}
+                                    onSelectionChange={(e) => {
+                                      e &&
+                                        e.toString() &&
+                                        setNewTag({
+                                          EventTagId:
+                                            tags.find(
+                                              (t) => t.EventTagName === e
+                                            )?.EventTagId || 0,
+                                          EventTagName: e?.toString() || "",
+                                        });
+                                    }}
+                                    placeholder="Tag"
+                                  >
+                                    {tags.map((tag) => (
+                                      <AutocompleteItem
+                                        startContent={
+                                          <div
+                                            className="w-2 h-2 rounded-full"
+                                            style={{
+                                              backgroundColor:
+                                                newEvent.EventColor,
+                                            }}
+                                          />
+                                        }
+                                        key={tag.EventTagName}
+                                        value={tag.EventTagName}
+                                      >
+                                        {tag.EventTagName}
+                                      </AutocompleteItem>
+                                    ))}
+                                  </Autocomplete>
+                                </div>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {newTag.EventTagName && (
+                                    <Chip
+                                      key={newTag.EventTagName}
+                                      size="lg"
+                                      variant="flat"
+                                      onClose={() =>
+                                        setNewTag({
+                                          EventTagId: 0,
+                                          EventTagName: "",
+                                        })
+                                      }
+                                      startContent={
+                                        <div
+                                          className="w-2 h-2 rounded-full"
+                                          style={{
+                                            backgroundColor:
+                                              newEvent.EventColor,
+                                          }}
+                                        />
+                                      }
+                                    >
+                                      {newTag.EventTagName}
+                                    </Chip>
+                                  )}
+                                </div>
+                              </dd>
+                            </div>
+                          </div>
+                          <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
+                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                              <LocationOnRoundedIcon />
+                              Location
+                            </dt>
+                            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                              <Input
+                                type="text"
+                                placeholder="Location"
+                                className="w-full"
+                                value={newEvent.EventLocation}
+                                onChange={(e) =>
+                                  setNewEvent((prev) => ({
+                                    ...prev,
+                                    EventLocation: e.target.value,
+                                  }))
+                                }
+                              />
+                            </dd>
+                          </div>
+                        </dl>
                       </div>
-                    </div>
-                    <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <LocationOnRoundedIcon />
-                        Location
-                      </dt>
-                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        <label>{newEvent.EventLocation}</label>
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-              </ModalBody>
-              <ModalFooter>
-                <Button
-                  color="primary"
-                  variant="light"
-                  onClick={handleCloseModal}
-                  radius="full"
-                >
-                  Chiudi
-                </Button>
-              </ModalFooter>
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button
+                        color="primary"
+                        variant="light"
+                        onClick={handleCloseModal}
+                        radius="full"
+                      >
+                        Chiudi
+                      </Button>
+                      <Button
+                        disabled={
+                          !newEvent.EventTitle ||
+                          !newEvent.EventStartDate ||
+                          !newEvent.EventStartTime ||
+                          !newEvent.EventEndDate ||
+                          !newEvent.EventEndTime ||
+                          !newEvent.EventColor ||
+                          !newTag.EventTagName
+                        }
+                        color="primary"
+                        onClick={handleUpdateEvent}
+                        radius="full"
+                        startContent={!isAddingData && <SaveRoundedIcon />}
+                        isLoading={isAddingData}
+                        variant="solid"
+                      >
+                        Salva
+                      </Button>
+                    </ModalFooter>
+                  </>
+                </>
+              )}
             </>
           )}
         </ModalContent>

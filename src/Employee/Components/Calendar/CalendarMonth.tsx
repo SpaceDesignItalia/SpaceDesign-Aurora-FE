@@ -93,6 +93,27 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                 {day.getDate()}
               </time>
             </div>
+            <div className="absolute top-10 left-1 right-1 flex flex-col gap-1 overflow-y-auto max-h-[calc(18vh-40px)]">
+              {events
+                .filter(
+                  (event) =>
+                    day >= new Date(event.EventStartDate) &&
+                    day <= new Date(event.EventEndDate)
+                )
+                .map((event) => (
+                  <div
+                    key={event.EventId}
+                    className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-gray-100"
+                    title={`${event.EventTitle}\n${event.EventDescription}\nDove: ${event.EventLocation}`}
+                  >
+                    <div
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: event.EventColor }}
+                    />
+                    <div className="truncate">{event.EventTitle}</div>
+                  </div>
+                ))}
+            </div>
           </div>
         ))}
         {days.map((day) => (
@@ -153,6 +174,27 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
               >
                 {day.getDate()}
               </time>
+            </div>
+            <div className="absolute top-10 left-1 right-1 flex flex-col gap-1 overflow-y-auto max-h-[calc(18vh-40px)]">
+              {events
+                .filter(
+                  (event) =>
+                    day >= new Date(event.EventStartDate) &&
+                    day <= new Date(event.EventEndDate)
+                )
+                .map((event) => (
+                  <div
+                    key={event.EventId}
+                    className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-gray-100"
+                    title={`${event.EventTitle}\n${event.EventDescription}\nDove: ${event.EventLocation}`}
+                  >
+                    <div
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: event.EventColor }}
+                    />
+                    <div className="truncate">{event.EventTitle}</div>
+                  </div>
+                ))}
             </div>
           </div>
         ))}

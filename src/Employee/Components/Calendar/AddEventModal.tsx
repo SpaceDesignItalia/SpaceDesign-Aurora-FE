@@ -85,12 +85,6 @@ const INITIAL_EVENT_DATA: CalendarEvent = {
 
 const colors = ["#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#6366F1"];
 
-function stripHtml(html: string) {
-  const tmp = document.createElement("div");
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || "";
-}
-
 export default function AddEventModal({
   isOpen,
   isClosed,
@@ -174,14 +168,11 @@ export default function AddEventModal({
       newEvent.EventTagId = newTag.EventTagId;
       newEvent.EventPartecipants = Partecipants;
 
-      const cleanDescription = stripHtml(newEvent.EventDescription);
-
       const res = await axios.post("/Calendar/POST/AddEvent", {
         EventData: {
           ...newEvent,
           EventStartDate: new Date(newEvent.EventStartDate.toString()),
           EventEndDate: new Date(newEvent.EventEndDate.toString()),
-          EventDescription: cleanDescription,
         },
       });
       if (res.status === 200) {

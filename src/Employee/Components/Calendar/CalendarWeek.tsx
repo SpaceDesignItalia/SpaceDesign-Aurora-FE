@@ -182,7 +182,7 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                       const eventsAtThisHour = events.filter((event) => {
                         const eventStartDate = new Date(event.EventStartDate);
                         const eventEndDate = new Date(event.EventEndDate);
-                        const eventHour = parseInt(
+                        const eventStartHour = parseInt(
                           event.EventStartTime.split(":")[0]
                         );
 
@@ -202,7 +202,7 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                           dayDate.toDateString() ===
                           eventStartDate.toDateString()
                         ) {
-                          return eventHour === hour;
+                          return Math.floor(eventStartHour) === hour;
                         }
 
                         if (
@@ -219,7 +219,7 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                       return eventsAtThisHour.map((event, index) => {
                         const eventStartDate = new Date(event.EventStartDate);
                         const eventEndDate = new Date(event.EventEndDate);
-                        const eventHour = parseInt(
+                        const eventStartHour = parseInt(
                           event.EventStartTime.split(":")[0]
                         );
                         const eventEndHour = parseInt(
@@ -244,9 +244,9 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                             duration =
                               eventEndHour +
                               eventEndMinutes / 60 -
-                              (eventHour + eventStartMinutes / 60);
+                              (eventStartHour + eventStartMinutes / 60);
                           } else {
-                            duration = 24 - eventHour;
+                            duration = 24 - eventStartHour;
                           }
                         } else if (
                           dayDate.toDateString() === eventEndDate.toDateString()
@@ -265,6 +265,7 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                               color: "white",
                               zIndex: 10,
                               height: `${duration * ROW_HEIGHT}px`,
+                              top: `${(eventStartMinutes / 60) * ROW_HEIGHT}px`,
                               overflow: "hidden",
                               width: `${width}%`,
                               left: index * (width + 2) + "%",
