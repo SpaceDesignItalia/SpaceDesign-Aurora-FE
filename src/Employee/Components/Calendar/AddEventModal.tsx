@@ -185,7 +185,6 @@ export default function AddEventModal({
         },
       });
       if (res.status === 200) {
-        console.log(res.data);
         //fetchData();
       }
     } catch (error) {

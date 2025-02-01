@@ -361,7 +361,6 @@ export default function AddTaskModal({
       const refinedText = await axios.post("/Project/POST/RefineText", {
         text: `Riscrivi in modo più formale e completo il seguente testo: ${newTask.ProjectTaskDescription}`,
       });
-      console.log("Testo raffinato:", refinedText.data);
       setNewTask({
         ...newTask,
         ProjectTaskDescription: refinedText.data,

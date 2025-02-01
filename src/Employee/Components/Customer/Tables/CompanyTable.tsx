@@ -184,7 +184,6 @@ export default function CompanyTable() {
       wrapInQuotes(company.CompanyEmail),
       wrapInQuotes(company.CompanyPhone),
     ]);
-    console.log(rows);
 
     let csvContent =
       "data:text/csv;charset=utf-8," +

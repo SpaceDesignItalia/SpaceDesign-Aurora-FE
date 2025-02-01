@@ -110,7 +110,6 @@ const EditCompanyModel: React.FC = () => {
         setTimeout(() => {
           window.location.href = "/administration/customer";
         }, 2000);
-        console.log("Successo:", res.data);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {

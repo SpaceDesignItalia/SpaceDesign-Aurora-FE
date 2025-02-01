@@ -82,7 +82,6 @@ export default function ProjectList() {
       }, {} as { [company: string]: Project[] });
 
       setProjects(groupedProjects);
-      console.log("Progetto iniziale: ", res.data);
     } catch (error) {
       console.error("Errore nel caricamento dei progetti:", error);
     }
@@ -156,7 +155,6 @@ export default function ProjectList() {
         return acc;
       }, {} as { [company: string]: Project[] });
 
-      console.log("Progetti raggruppati SearchProject:", groupedProjects); // Verifica che i progetti siano raggruppati correttamente
       setProjects(groupedProjects);
     } catch (error) {
       console.error("Errore durante la ricerca delle aziende:", error);

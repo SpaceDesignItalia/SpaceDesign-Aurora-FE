@@ -62,7 +62,6 @@ export default function ViewEmployeeModal({
       const res = await axios.get("/Staffer/GET/GetStafferProjectsForModal", {
         params: { EmployeeId: EmployeeData.EmployeeId },
       });
-      console.log(res.data);
       setEmployeeProjects(res.data);
     };
 

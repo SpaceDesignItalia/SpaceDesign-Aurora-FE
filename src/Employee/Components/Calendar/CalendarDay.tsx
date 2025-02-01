@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import ViewEventModal from "./ViewEventModal";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const ROW_HEIGHT = 60;
@@ -58,6 +59,8 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   );
   const isToday = currentDate.toDateString() === now.toDateString();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -82,187 +85,202 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
   }, [isToday]);
 
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden relative"
-      style={{ minHeight: "100%" }}
-    >
-      <div className="flex-1 overflow-y-auto" ref={scrollRef}>
-        <div className="grid grid-cols-8 divide-x divide-gray-100 relative">
-          <div className="col-span-2 divide-y divide-gray-100">
-            {HOURS.map((hour) => (
-              <div
-                key={hour}
-                className="sticky left-0 bg-white text-center pr-4 py-3 text-sm leading-5 text-gray-500"
-                style={{ height: `${ROW_HEIGHT}px` }}
-              >
-                {`${hour.toString().padStart(2, "0")}:00`}
-              </div>
-            ))}
-          </div>
-          <div className="col-span-6 divide-y divide-gray-100">
-            {HOURS.map((hour) => (
-              <div
-                key={hour}
-                className="group hover:bg-gray-50 relative"
-                style={{ height: `${ROW_HEIGHT}px` }}
-              >
-                {(() => {
-                  const eventsAtThisHour = events.filter((event) => {
-                    const eventStartDate = new Date(event.EventStartDate);
-                    const eventEndDate = new Date(event.EventEndDate);
-                    const eventHour = parseInt(
-                      event.EventStartTime.split(":")[0]
-                    );
+    <>
+      <ViewEventModal
+        isOpen={isOpen}
+        eventId={selectedEventId}
+        isClosed={() => setIsOpen(false)}
+      />
+      <div
+        className="flex flex-col h-full overflow-hidden relative"
+        style={{ minHeight: "100%" }}
+      >
+        <div className="flex-1 overflow-y-auto" ref={scrollRef}>
+          <div className="grid grid-cols-8 divide-x divide-gray-100 relative">
+            <div className="col-span-2 divide-y divide-gray-100">
+              {HOURS.map((hour) => (
+                <div
+                  key={hour}
+                  className="sticky left-0 bg-white text-center pr-4 py-3 text-sm leading-5 text-gray-500"
+                  style={{ height: `${ROW_HEIGHT}px` }}
+                >
+                  {`${hour.toString().padStart(2, "0")}:00`}
+                </div>
+              ))}
+            </div>
+            <div className="col-span-6 divide-y divide-gray-100">
+              {HOURS.map((hour) => (
+                <div
+                  key={hour}
+                  className="group hover:bg-gray-50 relative"
+                  style={{ height: `${ROW_HEIGHT}px` }}
+                >
+                  {(() => {
+                    const eventsAtThisHour = events.filter((event) => {
+                      const eventStartDate = new Date(event.EventStartDate);
+                      const eventEndDate = new Date(event.EventEndDate);
+                      const eventHour = parseInt(
+                        event.EventStartTime.split(":")[0]
+                      );
 
-                    const isMiddleDay =
-                      currentDate.toDateString() !==
-                        eventStartDate.toDateString() &&
-                      currentDate.toDateString() !==
-                        eventEndDate.toDateString() &&
-                      currentDate >= eventStartDate &&
-                      currentDate <= eventEndDate;
+                      const isMiddleDay =
+                        currentDate.toDateString() !==
+                          eventStartDate.toDateString() &&
+                        currentDate.toDateString() !==
+                          eventEndDate.toDateString() &&
+                        currentDate >= eventStartDate &&
+                        currentDate <= eventEndDate;
 
-                    if (isMiddleDay) {
-                      return hour === 0;
-                    }
+                      if (isMiddleDay) {
+                        return hour === 0;
+                      }
 
-                    if (
-                      currentDate.toDateString() ===
-                      eventStartDate.toDateString()
-                    ) {
-                      return eventHour === hour;
-                    }
-
-                    if (
-                      currentDate.toDateString() === eventEndDate.toDateString()
-                    ) {
-                      return hour === 0;
-                    }
-
-                    return false;
-                  });
-
-                  const width = eventsAtThisHour.length > 1 ? 50 : 100;
-
-                  return eventsAtThisHour.map((event, index) => {
-                    const eventStartDate = new Date(event.EventStartDate);
-                    const eventEndDate = new Date(event.EventEndDate);
-                    const eventHour = parseInt(
-                      event.EventStartTime.split(":")[0]
-                    );
-                    const eventEndHour = parseInt(
-                      event.EventEndTime.split(":")[0]
-                    );
-                    const eventStartMinutes = parseInt(
-                      event.EventStartTime.split(":")[1]
-                    );
-                    const eventEndMinutes = parseInt(
-                      event.EventEndTime.split(":")[1]
-                    );
-
-                    let duration = 0;
-                    if (
-                      currentDate.toDateString() ===
-                      eventStartDate.toDateString()
-                    ) {
                       if (
-                        eventStartDate.toDateString() ===
+                        currentDate.toDateString() ===
+                        eventStartDate.toDateString()
+                      ) {
+                        return eventHour === hour;
+                      }
+
+                      if (
+                        currentDate.toDateString() ===
                         eventEndDate.toDateString()
                       ) {
-                        duration =
-                          eventEndHour +
-                          eventEndMinutes / 60 -
-                          (eventHour + eventStartMinutes / 60);
-                      } else {
-                        duration = 24 - eventHour;
+                        return hour === 0;
                       }
-                    } else if (
-                      currentDate.toDateString() === eventEndDate.toDateString()
-                    ) {
-                      duration = eventEndHour + eventEndMinutes / 60;
-                    } else {
-                      duration = 24;
-                    }
 
-                    return (
-                      <div
-                        key={event.EventId}
-                        className="absolute mx-1 rounded-lg p-2 text-xs opacity-70 hover:opacity-90 transition-opacity"
-                        style={{
-                          backgroundColor: event.EventColor,
-                          color: "white",
-                          zIndex: 10,
-                          height: `${duration * ROW_HEIGHT}px`,
-                          overflow: "hidden",
-                          width: `${width}%`,
-                          left: index * (width + 2) + "%",
-                        }}
-                      >
-                        <div className="font-semibold">{event.EventTitle}</div>
-                        <div className="text-xs opacity-90">
-                          {(() => {
-                            if (
-                              currentDate.toDateString() ===
-                              eventStartDate.toDateString()
-                            ) {
+                      return false;
+                    });
+
+                    const width = eventsAtThisHour.length > 1 ? 50 : 100;
+
+                    return eventsAtThisHour.map((event, index) => {
+                      const eventStartDate = new Date(event.EventStartDate);
+                      const eventEndDate = new Date(event.EventEndDate);
+                      const eventHour = parseInt(
+                        event.EventStartTime.split(":")[0]
+                      );
+                      const eventEndHour = parseInt(
+                        event.EventEndTime.split(":")[0]
+                      );
+                      const eventStartMinutes = parseInt(
+                        event.EventStartTime.split(":")[1]
+                      );
+                      const eventEndMinutes = parseInt(
+                        event.EventEndTime.split(":")[1]
+                      );
+
+                      let duration = 0;
+                      if (
+                        currentDate.toDateString() ===
+                        eventStartDate.toDateString()
+                      ) {
+                        if (
+                          eventStartDate.toDateString() ===
+                          eventEndDate.toDateString()
+                        ) {
+                          duration =
+                            eventEndHour +
+                            eventEndMinutes / 60 -
+                            (eventHour + eventStartMinutes / 60);
+                        } else {
+                          duration = 24 - eventHour;
+                        }
+                      } else if (
+                        currentDate.toDateString() ===
+                        eventEndDate.toDateString()
+                      ) {
+                        duration = eventEndHour + eventEndMinutes / 60;
+                      } else {
+                        duration = 24;
+                      }
+
+                      return (
+                        <div
+                          onClick={() => {
+                            setIsOpen(true);
+                            setSelectedEventId(event.EventId);
+                          }}
+                          key={event.EventId}
+                          className="absolute mx-1 rounded-lg p-2 text-xs opacity-70 hover:opacity-90 transition-opacity"
+                          style={{
+                            backgroundColor: event.EventColor,
+                            color: "white",
+                            zIndex: 10,
+                            height: `${duration * ROW_HEIGHT}px`,
+                            overflow: "hidden",
+                            width: `${width}%`,
+                            left: index * (width + 2) + "%",
+                          }}
+                        >
+                          <div className="font-semibold">
+                            {event.EventTitle}
+                          </div>
+                          <div className="text-xs opacity-90">
+                            {(() => {
                               if (
-                                eventStartDate.toDateString() ===
+                                currentDate.toDateString() ===
+                                eventStartDate.toDateString()
+                              ) {
+                                if (
+                                  eventStartDate.toDateString() ===
+                                  eventEndDate.toDateString()
+                                ) {
+                                  return `${event.EventStartTime} - ${event.EventEndTime}`;
+                                }
+                                return `dalle ${event.EventStartTime}`;
+                              } else if (
+                                currentDate.toDateString() ===
                                 eventEndDate.toDateString()
                               ) {
-                                return `${event.EventStartTime} - ${event.EventEndTime}`;
+                                return `fino alle ${event.EventEndTime}`;
                               }
-                              return `dalle ${event.EventStartTime}`;
-                            } else if (
-                              currentDate.toDateString() ===
-                              eventEndDate.toDateString()
-                            ) {
-                              return `fino alle ${event.EventEndTime}`;
-                            }
-                            return "Tutto il giorno";
-                          })()}
+                              return "Tutto il giorno";
+                            })()}
+                          </div>
+                          {width > 50 && (
+                            <>
+                              <div className="text-xs mt-1">
+                                {stripHtml(event.EventDescription)}
+                              </div>
+                              <div className="text-xs opacity-75">
+                                {event.EventLocation}
+                              </div>
+                            </>
+                          )}
                         </div>
-                        {width > 50 && (
-                          <>
-                            <div className="text-xs mt-1">
-                              {stripHtml(event.EventDescription)}
-                            </div>
-                            <div className="text-xs opacity-75">
-                              {event.EventLocation}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-            ))}
-          </div>
-          {(redLineBehavior === "always" || isToday) && (
-            <div
-              className="absolute left-0 right-0 z-10 pointer-events-none"
-              style={{ top: `${currentHour * ROW_HEIGHT}px` }}
-            >
+                      );
+                    });
+                  })()}
+                </div>
+              ))}
+            </div>
+            {(redLineBehavior === "always" || isToday) && (
               <div
-                className="border-t-2 border-red-500 relative"
-                style={{
-                  width: "100%",
-                  marginLeft: "25%",
-                }}
+                className="absolute left-0 right-0 z-10 pointer-events-none"
+                style={{ top: `${currentHour * ROW_HEIGHT}px` }}
               >
-                <div className="absolute left-0 -top-3 -translate-x-full bg-red-500 text-white rounded-full px-2 py-1 text-xs">
-                  {new Date().toLocaleTimeString("it-IT", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  })}
+                <div
+                  className="border-t-2 border-red-500 relative"
+                  style={{
+                    width: "100%",
+                    marginLeft: "25%",
+                  }}
+                >
+                  <div className="absolute left-0 -top-3 -translate-x-full bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                    {new Date().toLocaleTimeString("it-IT", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -81,7 +81,7 @@ const formatDate = (date: Date, view: string): string => {
 export default function Calendar() {
   const [isOpen, setIsOpen] = useState(false);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [view, setView] = useState("week");
+  const [view, setView] = useState("day");
   const [currentDate, setCurrentDate] = useState(new Date());
   const container = useRef<HTMLDivElement>(null);
   const [redLineBehavior, setRedLineBehavior] = useState<

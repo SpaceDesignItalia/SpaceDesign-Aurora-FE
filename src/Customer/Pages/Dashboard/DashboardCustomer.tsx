@@ -18,7 +18,6 @@ export default function DashboardCustomer() {
     axios
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then((res) => {
-        console.log(res.data);
         setUserData(res.data);
       });
   }, []);

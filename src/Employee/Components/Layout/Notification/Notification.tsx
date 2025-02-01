@@ -83,7 +83,6 @@ export default function Notification() {
       .get("/Notification/GET/GetAllNotifications", { withCredentials: true })
       .then((response) => {
         setNotifications(response.data);
-        console.log(response.data);
       });
   }, [update, deleteNotification]);
 
