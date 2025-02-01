@@ -205,6 +205,7 @@ export default function ViewEventModal({
         eventId: eventId,
       },
     });
+    console.log(res.data);
     setNewTag({
       EventTagId: res.data.EventTagId,
       EventTagName:
