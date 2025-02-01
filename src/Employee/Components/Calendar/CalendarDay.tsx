@@ -171,6 +171,8 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
                       );
 
                       let duration = 0;
+                      let topOffset = 0;
+
                       if (
                         currentDate.toDateString() ===
                         eventStartDate.toDateString()
@@ -183,16 +185,21 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
                             eventEndHour +
                             eventEndMinutes / 60 -
                             (eventStartHour + eventStartMinutes / 60);
+                          topOffset = (eventStartMinutes / 60) * ROW_HEIGHT;
                         } else {
-                          duration = 24 - eventStartHour;
+                          duration =
+                            24 - (eventStartHour + eventStartMinutes / 60);
+                          topOffset = (eventStartMinutes / 60) * ROW_HEIGHT;
                         }
                       } else if (
                         currentDate.toDateString() ===
                         eventEndDate.toDateString()
                       ) {
                         duration = eventEndHour + eventEndMinutes / 60;
+                        topOffset = 0; // Inizia a mezzanotte
                       } else {
                         duration = 24;
+                        topOffset = 0; // Inizia a mezzanotte
                       }
 
                       return (
@@ -208,7 +215,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
                             color: "white",
                             zIndex: 10,
                             height: `${duration * ROW_HEIGHT}px`,
-                            top: `${(eventStartMinutes / 60) * ROW_HEIGHT}px`,
+                            top: `${topOffset}px`,
                             overflow: "hidden",
                             width: `${width}%`,
                             left: index * (width + 2) + "%",

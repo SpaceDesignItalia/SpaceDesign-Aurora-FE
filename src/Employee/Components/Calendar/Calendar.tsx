@@ -18,7 +18,7 @@ import CalendarWeek from "./CalendarWeek";
 import CalendarMonth from "./CalendarMonth";
 import CalendarYear from "./CalendarYear";
 import AddEventModal from "./AddEventModal";
-import { AddRounded } from "@mui/icons-material";
+import { AddRounded, FileUploadOutlined } from "@mui/icons-material";
 import axios from "axios";
 
 interface EventPartecipant {
@@ -87,6 +87,79 @@ export default function Calendar() {
   const [redLineBehavior, setRedLineBehavior] = useState<
     "current" | "always" | "full-week"
   >("current");
+  const [prefilledEventData, setPrefilledEventData] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleIcsImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const content = e.target?.result as string;
+
+      const lines = content.split("\n");
+      let event = {
+        title: "",
+        description: "",
+        startDate: "",
+        endDate: "",
+        startTime: "",
+        endTime: "",
+        location: "",
+      };
+
+      let isInEvent = false;
+
+      for (let line of lines) {
+        line = line.trim();
+
+        if (line === "BEGIN:VEVENT") {
+          isInEvent = true;
+          continue;
+        }
+
+        if (line === "END:VEVENT") {
+          isInEvent = false;
+          continue;
+        }
+
+        if (!isInEvent) continue;
+
+        if (line.startsWith("SUMMARY:")) {
+          event.title = line.substring(8);
+        } else if (line.startsWith("DESCRIPTION:")) {
+          event.description = line.substring(12);
+        } else if (line.startsWith("DTSTART;TZID=")) {
+          const datetime = line.split(":")[1];
+          event.startDate = `${datetime.substring(0, 4)}-${datetime.substring(
+            4,
+            6
+          )}-${datetime.substring(6, 8)}`;
+          event.startTime = `${datetime.substring(9, 11)}:${datetime.substring(
+            11,
+            13
+          )}`;
+        } else if (line.startsWith("DTEND;TZID=")) {
+          const datetime = line.split(":")[1];
+          event.endDate = `${datetime.substring(0, 4)}-${datetime.substring(
+            4,
+            6
+          )}-${datetime.substring(6, 8)}`;
+          event.endTime = `${datetime.substring(9, 11)}:${datetime.substring(
+            11,
+            13
+          )}`;
+        } else if (line.startsWith("LOCATION:")) {
+          event.location = line.substring(9);
+        }
+      }
+
+      setPrefilledEventData(event);
+      setIsOpen(true);
+    };
+    reader.readAsText(file);
+  };
 
   async function fetchEvents() {
     const res = await axios.get(`Calendar/GET/GetEventsByEmail`);
@@ -130,7 +203,23 @@ export default function Calendar() {
 
   return (
     <>
-      <AddEventModal isOpen={isOpen} isClosed={() => setIsOpen(false)} />
+      <AddEventModal
+        isOpen={isOpen}
+        isClosed={() => {
+          setPrefilledEventData(null);
+          setIsOpen(false);
+        }}
+        prefilledData={prefilledEventData}
+      />
+
+      <input
+        type="file"
+        accept=".ics"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={handleIcsImport}
+      />
+
       <div className="flex flex-col w-full h-screen rounded-lg border-2">
         <header className="flex flex-none items-center justify-between border-b border-gray-300 px-6 py-4 bg-white mt-1">
           <h1 className="text-xl font-bold text-gray-900">
@@ -138,14 +227,36 @@ export default function Calendar() {
           </h1>
 
           <div className="flex items-center gap-4">
-            <Button
-              className="flex h-10 items-center justify-center rounded-full bg-white text-gray-600 hover:bg-gray-100 focus:relative"
-              variant="bordered"
-              onClick={() => setIsOpen(true)}
-            >
-              <AddRounded className="h-6 w-6" aria-hidden="true" />
-              Aggiungi evento
-            </Button>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button
+                  className="flex h-10 items-center justify-center rounded-full bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+                  variant="bordered"
+                >
+                  <AddRounded className="h-6 w-6 mr-2" aria-hidden="true" />
+                  Aggiungi evento
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu>
+                <DropdownItem
+                  key="add"
+                  onClick={() => {
+                    setPrefilledEventData(null);
+                    setIsOpen(true);
+                  }}
+                  startContent={<AddRounded className="h-5 w-5" />}
+                >
+                  Aggiungi evento
+                </DropdownItem>
+                <DropdownItem
+                  key="import"
+                  onClick={() => fileInputRef.current?.click()}
+                  startContent={<FileUploadOutlined className="h-5 w-5" />}
+                >
+                  Importa da ICS
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
             <div className="relative flex items-center rounded-full bg-gray-100 border-2 border-gray-300">
               <Button
                 onClick={() => changeDate(-1)}

@@ -66,6 +66,7 @@ interface EventTag {
 interface AddEventModalProps {
   isOpen: boolean;
   isClosed: () => void;
+  prefilledData: any | null;
 }
 
 const INITIAL_EVENT_DATA: CalendarEvent = {
@@ -88,6 +89,7 @@ const colors = ["#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#6366F1"];
 export default function AddEventModal({
   isOpen,
   isClosed,
+  prefilledData,
 }: AddEventModalProps) {
   const [newEvent, setNewEvent] = useState<CalendarEvent>(INITIAL_EVENT_DATA);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
@@ -157,9 +159,24 @@ export default function AddEventModal({
   }
 
   useEffect(() => {
+    if (prefilledData) {
+      setNewEvent({
+        ...INITIAL_EVENT_DATA,
+        EventTitle: prefilledData.title,
+        EventStartDate: parseDate(prefilledData.startDate),
+        EventEndDate: parseDate(prefilledData.endDate),
+        EventStartTime: prefilledData.startTime,
+        EventEndTime: prefilledData.endTime,
+        EventDescription: prefilledData.description,
+        EventLocation: prefilledData.location,
+      });
+    }
     fetchUsers();
     fetchTags();
-  }, []);
+  }, [prefilledData]);
+
+  console.log(newEvent);
+  console.log(prefilledData);
 
   async function handleAddEvent() {
     try {
