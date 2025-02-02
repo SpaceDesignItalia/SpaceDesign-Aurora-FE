@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
 import {
   ChevronDownIcon,
@@ -24,8 +22,13 @@ import {
   FileUploadOutlined,
 } from "@mui/icons-material";
 import axios from "axios";
-import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
+import { io, Socket } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../API/API";
+import { useNavigate, useParams } from "react-router-dom";
+import ViewEventModal from "./ViewEventModal";
+
+const socket: Socket = io(API_WEBSOCKET_URL);
 
 interface EventPartecipant {
   EventPartecipantId: number;
@@ -85,6 +88,8 @@ const formatDate = (date: Date, view: string): string => {
 };
 
 export default function Calendar() {
+  const navigate = useNavigate();
+  const { Action, EventId, EventPartecipantEmail } = useParams();
   const [isOpen, setIsOpen] = useState(false);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [view, setView] = useState("day");
@@ -259,8 +264,42 @@ END:VEVENT`;
     setEvents(res.data);
   }
 
+  async function updateEventPartecipantStatus(
+    eventId: string,
+    partecipantEmail: string,
+    status: string
+  ) {
+    try {
+      const res = await axios.put(
+        `Calendar/UPDATE/UpdateEventPartecipantStatus`,
+        {
+          EventId: eventId,
+          EventPartecipantEmail: partecipantEmail,
+          EventPartecipantStatus: status,
+        }
+      );
+      if (res.status === 200) {
+        socket.emit("calendar-update");
+        navigate(`/comunications/calendar/`);
+        setIsOpen(true);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   useEffect(() => {
+    if (Action === "add-event") {
+      setIsOpen(true);
+    } else if (Action === "accept" && EventId && EventPartecipantEmail) {
+      updateEventPartecipantStatus(EventId, EventPartecipantEmail, "Accettato");
+    } else if (Action === "reject" && EventId && EventPartecipantEmail) {
+      updateEventPartecipantStatus(EventId, EventPartecipantEmail, "Rifiutato");
+    }
     fetchEvents();
+    socket.on("calendar-update", () => {
+      fetchEvents();
+    });
   }, []);
 
   const changeDate = (offset: number) => {
@@ -295,6 +334,13 @@ END:VEVENT`;
 
   return (
     <>
+      <ViewEventModal
+        isOpen={isOpen}
+        eventId={EventId ? parseInt(EventId) : 0}
+        isClosed={() => {
+          setIsOpen(false);
+        }}
+      />
       <AddEventModal
         isOpen={isOpen}
         isClosed={() => {

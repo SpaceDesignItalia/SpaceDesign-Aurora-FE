@@ -31,6 +31,12 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import styles
+import { io, Socket } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../API/API";
+import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+
+const socket: Socket = io(API_WEBSOCKET_URL);
 
 interface EventPartecipant {
   EventPartecipantEmail: string;
@@ -91,6 +97,8 @@ export default function AddEventModal({
   isClosed,
   prefilledData,
 }: AddEventModalProps) {
+  const navigate = useNavigate();
+  const { Action } = useParams();
   const [newEvent, setNewEvent] = useState<CalendarEvent>(INITIAL_EVENT_DATA);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [Partecipants, setPartecipants] = useState<EventPartecipant[]>([]);
@@ -190,7 +198,7 @@ export default function AddEventModal({
         },
       });
       if (res.status === 200) {
-        //fetchData();
+        socket.emit("calendar-update");
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -217,6 +225,9 @@ export default function AddEventModal({
   function handleCloseModal() {
     setNewEvent(INITIAL_EVENT_DATA);
     isClosed();
+    if (Action) {
+      navigate(`/comunications/calendar/`);
+    }
   }
 
   return (

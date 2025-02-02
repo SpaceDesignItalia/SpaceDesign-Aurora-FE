@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import ViewEventModal from "./ViewEventModal";
 
 const DAYS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 
@@ -41,6 +42,8 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
   onDateClick,
   events,
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState(0);
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -65,141 +68,163 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
   );
 
   return (
-    <div
-      className="flex-1 overflow-y-auto relative"
-      style={{ minHeight: "100%" }}
-    >
-      <div className="grid grid-cols-7 gap-px bg-gray-200 ">
-        {DAYS.map((day) => (
-          <div
-            key={day}
-            className="bg-white py-2 text-center text-xs font-semibold text-gray-700 uppercase "
-          >
-            {day}
-          </div>
-        ))}
-        {prevMonthDays.map((day) => (
-          <div
-            key={day.toISOString()}
-            className="relative hover:bg-gray-50 cursor-pointer bg-gray-100 opacity-50"
-            style={{ height: "18vh" }}
-            onClick={() => onDateClick(day)}
-          >
-            <div className="absolute top-2 right-2">
-              <time
-                dateTime={day.toISOString()}
-                className="flex h-6 w-6 items-center justify-center rounded-full text-sm text-gray-500"
-              >
-                {day.getDate()}
-              </time>
+    <>
+      <ViewEventModal
+        isOpen={isOpen}
+        eventId={selectedEventId}
+        isClosed={() => setIsOpen(false)}
+      />
+      <div
+        className="flex-1 overflow-y-auto relative"
+        style={{ minHeight: "100%" }}
+      >
+        <div className="grid grid-cols-7 gap-px bg-gray-200 ">
+          {DAYS.map((day) => (
+            <div
+              key={day}
+              className="bg-white py-2 text-center text-xs font-semibold text-gray-700 uppercase "
+            >
+              {day}
             </div>
-            <div className="absolute top-10 left-1 right-1 flex flex-col gap-1 overflow-y-auto max-h-[calc(18vh-40px)]">
-              {events
-                .filter(
-                  (event) =>
-                    day >= new Date(event.EventStartDate) &&
-                    day <= new Date(event.EventEndDate)
-                )
-                .map((event) => (
-                  <div
-                    key={event.EventId}
-                    className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-gray-100"
-                    title={`${event.EventTitle}\n${event.EventDescription}\nDove: ${event.EventLocation}`}
-                  >
+          ))}
+          {prevMonthDays.map((day) => (
+            <div
+              key={day.toISOString()}
+              className="relative hover:bg-gray-50 cursor-pointer bg-gray-100 opacity-50"
+              style={{ height: "18vh" }}
+              onClick={() => onDateClick(day)}
+            >
+              <div className="absolute top-2 right-2">
+                <time
+                  dateTime={day.toISOString()}
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-sm text-gray-500"
+                >
+                  {day.getDate()}
+                </time>
+              </div>
+              <div className="absolute top-10 left-1 right-1 flex flex-col gap-1 overflow-y-auto max-h-[calc(18vh-40px)]">
+                {events
+                  .filter(
+                    (event) =>
+                      day >= new Date(event.EventStartDate) &&
+                      day <= new Date(event.EventEndDate)
+                  )
+                  .map((event) => (
                     <div
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: event.EventColor }}
-                    />
-                    <div className="truncate">{event.EventTitle}</div>
-                  </div>
-                ))}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsOpen(true);
+                        setSelectedEventId(event.EventId);
+                      }}
+                      key={event.EventId}
+                      className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-gray-100"
+                      title={`${event.EventTitle}\n${event.EventDescription}\nDove: ${event.EventLocation}`}
+                    >
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: event.EventColor }}
+                      />
+                      <div className="truncate">{event.EventTitle}</div>
+                    </div>
+                  ))}
+              </div>
             </div>
-          </div>
-        ))}
-        {days.map((day) => (
-          <div
-            key={day.toISOString()}
-            className={`relative hover:bg-gray-50 cursor-pointer ${
-              day < today ? "bg-gray-200" : "bg-white"
-            }`}
-            style={{ height: "18vh" }}
-            onClick={() => onDateClick(day)}
-          >
-            <div className="absolute top-2 right-2">
-              <time
-                dateTime={day.toISOString()}
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
-                  day.toDateString() === today.toDateString()
-                    ? "bg-blue-600 font-semibold text-white"
-                    : "text-gray-900"
-                }`}
-              >
-                {day.getDate()}
-              </time>
-            </div>
-            <div className="absolute top-10 left-1 right-1 flex flex-col gap-1 overflow-y-auto max-h-[calc(18vh-40px)]">
-              {events
-                .filter(
-                  (event) =>
-                    day >= new Date(event.EventStartDate) &&
-                    day <= new Date(event.EventEndDate)
-                )
-                .map((event) => (
-                  <div
-                    key={event.EventId}
-                    className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-gray-100"
-                    title={`${event.EventTitle}\n${event.EventDescription}\nDove: ${event.EventLocation}`}
-                  >
+          ))}
+          {days.map((day) => (
+            <div
+              key={day.toISOString()}
+              className={`relative hover:bg-gray-50 cursor-pointer ${
+                day < today ? "bg-gray-200" : "bg-white"
+              }`}
+              style={{ height: "18vh" }}
+              onClick={() => onDateClick(day)}
+            >
+              <div className="absolute top-2 right-2">
+                <time
+                  dateTime={day.toISOString()}
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
+                    day.toDateString() === today.toDateString()
+                      ? "bg-blue-600 font-semibold text-white"
+                      : "text-gray-900"
+                  }`}
+                >
+                  {day.getDate()}
+                </time>
+              </div>
+              <div className="absolute top-10 left-1 right-1 flex flex-col gap-1 overflow-y-auto max-h-[calc(18vh-40px)]">
+                {events
+                  .filter(
+                    (event) =>
+                      day >= new Date(event.EventStartDate) &&
+                      day <= new Date(event.EventEndDate)
+                  )
+                  .map((event) => (
                     <div
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: event.EventColor }}
-                    />
-                    <div className="truncate">{event.EventTitle}</div>
-                  </div>
-                ))}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsOpen(true);
+                        setSelectedEventId(event.EventId);
+                      }}
+                      key={event.EventId}
+                      className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-gray-100"
+                      title={`${event.EventTitle}\n${event.EventDescription}\nDove: ${event.EventLocation}`}
+                    >
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: event.EventColor }}
+                      />
+                      <div className="truncate">{event.EventTitle}</div>
+                    </div>
+                  ))}
+              </div>
             </div>
-          </div>
-        ))}
-        {nextMonthDays.map((day) => (
-          <div
-            key={day.toISOString()}
-            className="relative hover:bg-gray-50 cursor-pointer bg-gray-100 opacity-50"
-            style={{ height: "18vh" }}
-            onClick={() => onDateClick(day)}
-          >
-            <div className="absolute top-2 right-2">
-              <time
-                dateTime={day.toISOString()}
-                className="flex h-6 w-6 items-center justify-center rounded-full text-sm text-gray-500"
-              >
-                {day.getDate()}
-              </time>
-            </div>
-            <div className="absolute top-10 left-1 right-1 flex flex-col gap-1 overflow-y-auto max-h-[calc(18vh-40px)]">
-              {events
-                .filter(
-                  (event) =>
-                    day >= new Date(event.EventStartDate) &&
-                    day <= new Date(event.EventEndDate)
-                )
-                .map((event) => (
-                  <div
-                    key={event.EventId}
-                    className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-gray-100"
-                    title={`${event.EventTitle}\n${event.EventDescription}\nDove: ${event.EventLocation}`}
-                  >
+          ))}
+          {nextMonthDays.map((day) => (
+            <div
+              key={day.toISOString()}
+              className="relative hover:bg-gray-50 cursor-pointer bg-gray-100 opacity-50"
+              style={{ height: "18vh" }}
+              onClick={() => onDateClick(day)}
+            >
+              <div className="absolute top-2 right-2">
+                <time
+                  dateTime={day.toISOString()}
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-sm text-gray-500"
+                >
+                  {day.getDate()}
+                </time>
+              </div>
+              <div className="absolute top-10 left-1 right-1 flex flex-col gap-1 overflow-y-auto max-h-[calc(18vh-40px)]">
+                {events
+                  .filter(
+                    (event) =>
+                      day >= new Date(event.EventStartDate) &&
+                      day <= new Date(event.EventEndDate)
+                  )
+                  .map((event) => (
                     <div
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: event.EventColor }}
-                    />
-                    <div className="truncate">{event.EventTitle}</div>
-                  </div>
-                ))}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsOpen(true);
+                        setSelectedEventId(event.EventId);
+                      }}
+                      key={event.EventId}
+                      className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-gray-100"
+                      title={`${event.EventTitle}\n${event.EventDescription}\nDove: ${event.EventLocation}`}
+                    >
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: event.EventColor }}
+                      />
+                      <div className="truncate">{event.EventTitle}</div>
+                    </div>
+                  ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

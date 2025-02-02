@@ -46,6 +46,11 @@ import "react-quill/dist/quill.snow.css"; // Import styles
 import EventAttachmentUploaderModal from "./EventAttachmentUploaderModal";
 import FileCard from "../Project/Other/ProjectFiles/FileCard";
 import ConfirmDeleteEventModal from "./ConfirmDeleteEventModal";
+import { io, Socket } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../API/API";
+
+const socket: Socket = io(API_WEBSOCKET_URL);
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -193,6 +198,16 @@ export default function ViewEventModal({
   }
 
   useEffect(() => {
+    socket.on("event-update", (eventId: number) => {
+      if (eventId === newEvent.EventId) {
+        fetchEvent();
+      }
+    });
+    socket.on("file-update", (eventId: number) => {
+      if (eventId === newEvent.EventId) {
+        fetchEvent();
+      }
+    });
     fetchUsers();
     fetchTags();
   }, []);
@@ -263,6 +278,7 @@ export default function ViewEventModal({
     });
 
     if (res.status === 200) {
+      socket.emit("calendar-update");
       setIsAddingData(false);
       handleCloseModal();
     }
@@ -276,6 +292,7 @@ export default function ViewEventModal({
     });
 
     if (res.status === 200) {
+      socket.emit("calendar-update");
       handleCloseModal();
     }
   }
@@ -356,12 +373,16 @@ END:VCALENDAR`;
   }
 
   async function DeleteFile(index: number) {
-    await axios.delete(`/Calendar/DELETE/DeleteEventAttachment`, {
+    const res = await axios.delete(`/Calendar/DELETE/DeleteEventAttachment`, {
       params: {
         EventAttachmentId: newEvent.EventAttachments[index].EventAttachmentId,
         EventAttachmentUrl: newEvent.EventAttachments[index].EventAttachmentUrl,
       },
     });
+
+    if (res.status === 200) {
+      socket.emit("event-update", eventId);
+    }
   }
 
   return (
