@@ -1,4 +1,4 @@
-import { Tabs, Tab, Button, Tooltip, Link, Chip } from "@heroui/react";
+import { Tabs, Tab, Button, Link, Chip } from "@heroui/react";
 import { API_URL_IMG } from "../../../API/API";
 import FindInPageRoundedIcon from "@mui/icons-material/FindInPageRounded";
 import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
@@ -8,7 +8,7 @@ import ConfirmationNumberRoundedIcon from "@mui/icons-material/ConfirmationNumbe
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import CodeIcon from "@mui/icons-material/Code";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import ChangeProjectTheme from "../../Components/Project/Other/ChangeProjectTheme";
@@ -101,9 +101,6 @@ export default function ProjectPage() {
     editProject: false,
   });
   const { hasPermission } = usePermissions();
-  const [escPressCount, setEscPressCount] = useState(0);
-  const ESC_PRESS_REQUIRED = 1; // Numero di pressioni ESC richieste
-  const ESC_RESET_TIMEOUT = 2000; // Reset del contatore dopo 2 secondi
 
   const tabs = [
     { title: "Panoramica", icon: FindInPageRoundedIcon },
@@ -113,57 +110,6 @@ export default function ProjectPage() {
     { title: "Code Share", icon: CodeIcon },
     { title: "Ticket", icon: ConfirmationNumberRoundedIcon },
   ];
-
-  // Add keyboard navigation handler
-  const handleKeyPress = useCallback(
-    (event: KeyboardEvent) => {
-      // Don't trigger if user is typing in an input field
-      if (
-        event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLTextAreaElement
-      ) {
-        return;
-      }
-
-      // Handle ESC key for project settings
-      if (event.key === "Escape" && adminPermission.editProject) {
-        setEscPressCount((prev) => {
-          const newCount = prev + 1;
-          if (newCount >= ESC_PRESS_REQUIRED) {
-            window.location.href = `/projects/${UniqueCode}/edit-project`;
-            return 0;
-          }
-          // Reset counter after timeout
-          setTimeout(() => setEscPressCount(0), ESC_RESET_TIMEOUT);
-          return newCount;
-        });
-        return;
-      }
-
-      // Map number keys to tabs
-      const keyToTab: { [key: string]: string } = {
-        "1": "Panoramica",
-        "2": "Tasks",
-        "3": "Team",
-        "4": "Files",
-        "5": "Code Share",
-        "6": "Ticket",
-      };
-
-      if (keyToTab[event.key]) {
-        setActiveTab(keyToTab[event.key]);
-      }
-    },
-    [UniqueCode, adminPermission.editProject]
-  );
-
-  // Add keyboard event listener
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyPress);
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [handleKeyPress]);
 
   // Add effect to handle Action parameter
   useEffect(() => {
@@ -206,18 +152,6 @@ export default function ProjectPage() {
     setCookie("activeProjectTab", activeTab, 7); // Salva per 7 giorni
   }, [activeTab]);
 
-  // Add keyboard shortcut hints to tabs
-  const tabsWithShortcuts = tabs.map((tab, index) => ({
-    ...tab,
-    shortcut: index + 1,
-  }));
-
-  // Customize tooltips for each tab
-  const getTooltipContent = (tabTitle: string, shortcut: number) => {
-    const baseContent = `Premi ${shortcut} per aprire ${tabTitle}`;
-    return baseContent;
-  };
-
   return (
     <>
       <ChangeProjectTheme
@@ -226,31 +160,19 @@ export default function ProjectPage() {
         ProjectId={ProjectId ? Number.parseInt(ProjectId) : 0}
         ProjectBannerId={projectData.ProjectBannerId}
       />
-      <div className="py-10 m-0 lg:ml-72 h-screen flex flex-col items-start px-4 sm:px-6 lg:px-8">
+      <div className="py-10 m-0 lg:ml-72 h-full flex flex-col items-start px-4 sm:px-6 lg:px-8">
         <main className="w-full flex flex-col gap-3">
           <div className="flex flex-row justify-between items-center sm:hidden">
             {adminPermission.editProject && (
-              <Tooltip
-                content={`Premi ESC per aprire le impostazioni${
-                  escPressCount > 0
-                    ? ` (ancora ${ESC_PRESS_REQUIRED - escPressCount})`
-                    : ""
-                }`}
+              <Button
+                as={Link}
                 color="primary"
-                placement="bottom"
                 radius="full"
-                closeDelay={0}
+                href={"/projects/" + UniqueCode}
+                isIconOnly
               >
-                <Button
-                  as={Link}
-                  color="primary"
-                  radius="full"
-                  href={"/projects/" + UniqueCode}
-                  isIconOnly
-                >
-                  <TuneRoundedIcon />
-                </Button>
-              </Tooltip>
+                <TuneRoundedIcon />
+              </Button>
             )}
             <Chip color="primary" radius="full">
               {projectData.StatusName}
@@ -301,19 +223,14 @@ export default function ProjectPage() {
                     className="hidden sm:flex"
                     onSelectionChange={(key) => setActiveTab(key as string)}
                   >
-                    {tabsWithShortcuts.map((tab) => (
+                    {tabs.map((tab) => (
                       <Tab
                         key={tab.title}
                         title={
-                          <Tooltip
-                            content={getTooltipContent(tab.title, tab.shortcut)}
-                            placement="bottom"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <tab.icon />
-                              <span>{tab.title}</span>
-                            </div>
-                          </Tooltip>
+                          <div className="flex items-center space-x-2">
+                            <tab.icon />
+                            <span>{tab.title}</span>
+                          </div>
                         }
                       />
                     ))}
@@ -329,21 +246,13 @@ export default function ProjectPage() {
                       fullWidth
                       onSelectionChange={(key) => setActiveTab(key as string)}
                     >
-                      {tabsWithShortcuts.map((tab) => (
+                      {tabs.map((tab) => (
                         <Tab
                           key={tab.title}
                           title={
-                            <Tooltip
-                              content={getTooltipContent(
-                                tab.title,
-                                tab.shortcut
-                              )}
-                              placement="top"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <tab.icon />
-                              </div>
-                            </Tooltip>
+                            <div className="flex items-center space-x-2">
+                              <tab.icon />
+                            </div>
                           }
                         />
                       ))}
@@ -352,28 +261,16 @@ export default function ProjectPage() {
                 </div>
 
                 {adminPermission.editProject && (
-                  <Tooltip
-                    content={`Premi ESC per aprire le impostazioni${
-                      escPressCount > 0
-                        ? ` (ancora ${ESC_PRESS_REQUIRED - escPressCount})`
-                        : ""
-                    }`}
+                  <Button
+                    as={Link}
                     color="primary"
-                    placement="bottom"
                     radius="full"
-                    closeDelay={0}
+                    href={"/projects/" + UniqueCode + "/edit-project"}
+                    className="hidden sm:flex"
+                    isIconOnly
                   >
-                    <Button
-                      as={Link}
-                      color="primary"
-                      radius="full"
-                      href={"/projects/" + UniqueCode + "/edit-project"}
-                      className="hidden sm:flex"
-                      isIconOnly
-                    >
-                      <TuneRoundedIcon />
-                    </Button>
-                  </Tooltip>
+                    <TuneRoundedIcon />
+                  </Button>
                 )}
               </div>
             </header>

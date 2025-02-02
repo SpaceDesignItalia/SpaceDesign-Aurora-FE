@@ -232,7 +232,7 @@ export default function TaskCard({
         {...provided.draggableProps}
         {...provided.dragHandleProps}
       >
-        <Card className="h-full p-2" radius="sm">
+        <Card className="h-full p-2" radius="lg">
           <CardHeader className="justify-between items-start">
             <h1 className="text-normal font-bold text-default-600 text-ellipsis overflow-hidden">
               {task.ProjectTaskName}

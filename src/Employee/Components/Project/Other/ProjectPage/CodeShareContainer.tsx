@@ -4,16 +4,11 @@ import {
   PopoverContent,
   PopoverTrigger,
   Input,
-  CardProps,
-  Card,
   Image,
-  CardBody,
-  CardFooter,
-  Spacer,
-  AvatarGroup,
-  Avatar,
 } from "@heroui/react";
-
+import CodeRoundedIcon from "@mui/icons-material/CodeRounded";
+import Person2RoundedIcon from "@mui/icons-material/Person2Rounded";
+import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
 import { AddRounded } from "@mui/icons-material";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -65,10 +60,8 @@ interface Employee {
 }
 
 export default function CodeShareContainer({
-  props,
   projectData,
 }: {
-  props: CardProps;
   projectData: Project;
 }) {
   const [tabs, setTabs] = useState<CodeShareTab[]>([]);
@@ -164,140 +157,147 @@ export default function CodeShareContainer({
   }, []);
 
   return (
-    <>
+    <div className="flex flex-col gap-6 p-4">
       {!selectedTab ? (
-        <>
-          <Popover radius="lg" placement="bottom" showArrow shouldBlockScroll>
-            <PopoverTrigger>
-              <Button
-                color="primary"
-                radius="full"
-                size="sm"
-                className="mb-3"
-                isIconOnly
-              >
-                <AddRounded sx={{ fontSize: 20 }} />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="p-5 w-80">
-              {(titleProps) => (
-                <div className="px-1 py-2 w-full">
-                  <p
-                    className="text-small font-bold text-foreground"
-                    {...titleProps}
-                  >
-                    Crea code share
-                  </p>
-                  <div className="mt-2 flex flex-col gap-2 w-full">
-                    <Input
-                      autoFocus
-                      variant="underlined"
-                      color="primary"
-                      placeholder="Titolo del code share"
-                      value={newCodeShareName}
-                      onChange={(e) => setNewCodeShareName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleAddCodeShare(); // Chiama la funzione quando premi "Enter"
-                        }
-                      }}
-                    />
-                    <Button
-                      color="primary"
-                      size="sm"
-                      radius="full"
-                      onPress={handleAddCodeShare}
-                      startContent={<AddRounded />}
-                      isDisabled={newCodeShareName === ""}
+        <div className="flex flex-col gap-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Stanze di code sharing</h2>
+            <Popover
+              radius="lg"
+              placement="bottom-end"
+              showArrow
+              shouldBlockScroll
+            >
+              <PopoverTrigger>
+                <Button
+                  color="primary"
+                  radius="full"
+                  className="px-4 hover:scale-105 transition-transform"
+                  startContent={<AddRounded sx={{ fontSize: 20 }} />}
+                >
+                  Crea stanza
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="p-6 w-96">
+                {(titleProps) => (
+                  <div className="px-1 py-2 w-full">
+                    <p
+                      className="font-bold text-foreground mb-4"
+                      {...titleProps}
                     >
-                      Aggiungi code share
-                    </Button>
+                      Nome della stanza
+                    </p>
+                    <div className="flex flex-col gap-4 w-full">
+                      <Input
+                        size="sm"
+                        autoFocus
+                        variant="bordered"
+                        color="primary"
+                        label="Nome della stanza"
+                        placeholder="Es. Notifiche.tsx"
+                        value={newCodeShareName}
+                        onChange={(e) => setNewCodeShareName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleAddCodeShare();
+                          }
+                        }}
+                      />
+                      <Button
+                        color="primary"
+                        size="sm"
+                        radius="full"
+                        onPress={handleAddCodeShare}
+                        startContent={<AddRounded />}
+                        isDisabled={newCodeShareName === ""}
+                        className="w-full"
+                      >
+                        Crea stanza
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </PopoverContent>
-          </Popover>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                )}
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
             {tabs.map((tab) => (
-              <Card
-                className="w-full relative" // Aggiungi "relative" per il posizionamento assoluto
-                {...props}
+              <div
+                className="overflow-hidden rounded-xl bg-white border-2 group"
                 key={tab.ProjectCodeShareId}
               >
-                {/* Pulsante Delete posizionato sopra l'immagine */}
-                <div className="absolute top-2 right-2 z-20">
-                  {" "}
-                  {/* Posizionamento in alto a destra */}
-                  <ConfirmDeleteCodeShareModal
-                    codeShareId={tab.ProjectCodeShareId}
-                    DeleteCodeShare={handleDeleteCodeShare}
-                    onlineCodeShareUsers={onlineCodeShareUsers}
-                  />
-                </div>
-
-                <CardBody className="px-3 pb-1">
-                  <div className="relative">
-                    {" "}
-                    {/* Aggiungi relative per assicurarti che l'immagine non copra il pulsante */}
-                    <Image
-                      alt="Card image"
-                      className="aspect-video w-full object-cover object-top"
-                      src={
-                        tab.ImageURL
-                          ? API_URL_IMG + "/codeShare" + tab.ImageURL
-                          : "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/sites/default/files/images/2015/09/blogs/economist-explains/code2.png"
-                      }
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <div className="p-2.5 rounded-md bg-primary">
+                    <CodeRoundedIcon
+                      sx={{ fontSize: 22 }}
+                      className="text-white"
                     />
                   </div>
-                  <Spacer y={2} />
-                  <div className="flex flex-col gap-2 px-2">
-                    <p className="text-large font-medium">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold line-clamp-1 text-default-900">
                       {tab.ProjectCodeShareName}
-                    </p>
-                  </div>
-                </CardBody>
-
-                <CardFooter className="justify-between">
-                  <AvatarGroup
-                    max={3}
-                    isGrid
-                    isBordered
-                    className="grid-cols-3"
-                  >
-                    {onlineCodeShareUsers.map(
-                      (user) =>
-                        user.codeShareId === tab.ProjectCodeShareId && (
-                          <Avatar
-                            key={user.EmployeeId}
-                            src={
-                              user.EmployeeImageUrl &&
-                              API_URL_IMG +
-                                "/profileIcons/" +
-                                user.EmployeeImageUrl
-                            }
-                          />
-                        )
+                    </h3>
+                    {onlineCodeShareUsers.filter(
+                      (codeRoom) =>
+                        codeRoom.codeShareId === tab.ProjectCodeShareId
+                    ).length > 0 && (
+                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <Person2RoundedIcon sx={{ fontSize: 15 }} />
+                        <span>
+                          {
+                            onlineCodeShareUsers.filter(
+                              (codeRoom) =>
+                                codeRoom.codeShareId === tab.ProjectCodeShareId
+                            ).length
+                          }{" "}
+                          persone connesse
+                        </span>
+                      </div>
                     )}
-                  </AvatarGroup>
+                  </div>
+
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ConfirmDeleteCodeShareModal
+                      codeShareId={tab.ProjectCodeShareId}
+                      DeleteCodeShare={handleDeleteCodeShare}
+                      onlineCodeShareUsers={onlineCodeShareUsers}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Image
+                    alt="Code Share Preview"
+                    className="w-full object-cover group-hover:brightness-100 transition-all h-56"
+                    src={
+                      tab.ImageURL
+                        ? API_URL_IMG + "/codeShare" + tab.ImageURL
+                        : "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/sites/default/files/images/2015/09/blogs/economist-explains/code2.png"
+                    }
+                  />
+                </div>
+                <div className="flex flex-col gap-5  px-4 py-4 sm:px-6">
                   <Button
+                    size="md"
                     color="primary"
                     radius="full"
-                    className="w-1/2"
+                    startContent={<LoginRoundedIcon sx={{ fontSize: 18 }} />}
                     onPress={() => setSelectedTab(tab)}
+                    className="w-full shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
                   >
-                    Unisciti
+                    Entra nella stanza
                   </Button>
-                </CardFooter>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
-        </>
+        </div>
       ) : (
         <CodeShareEditor
           codeShare={selectedTab}
           setSelectedTab={setSelectedTab}
         />
       )}
-    </>
+    </div>
   );
 }
