@@ -20,7 +20,6 @@ export default function ChatMessage({
   message: Message;
   type: string;
 }) {
-  console.log(message.SenderFullName);
   const formatDate = (dateStr: Date | undefined): string => {
     if (!dateStr) return "";
 

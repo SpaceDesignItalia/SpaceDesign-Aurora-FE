@@ -134,8 +134,6 @@ const TicketModal: React.FC<TicketModalProps> = ({
       });
   };
 
-  console.log(taskStatus?.ProjectTaskStatusName);
-
   return (
     <>
       <OpenTaskModal

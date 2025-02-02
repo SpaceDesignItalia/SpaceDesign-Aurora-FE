@@ -1,45 +1,37 @@
-import axios from "axios";
-import React, { useState, useRef } from "react";
-import { io } from "socket.io-client";
-import { API_WEBSOCKET_URL } from "../../../../../API/API";
+import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import {
+  Button,
   Modal,
-  ModalHeader,
-  ModalFooter,
   ModalBody,
   ModalContent,
-  Button,
+  ModalFooter,
+  ModalHeader,
 } from "@heroui/react";
-import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
-import FileCard from "./FileCard";
-import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import React, { useRef, useState } from "react";
+import { io } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../API/API";
+import FileCard from "../Project/Other/ProjectFiles/FileCard";
 
 const socket = io(API_WEBSOCKET_URL);
 
-export default function FileUploaderModal({
-  ProjectId,
+export default function EventAttachmentUploaderModal({
+  EventId,
   isOpen,
   isClosed,
-  FolderId,
 }: {
-  ProjectId: number;
+  EventId: number;
   isOpen: boolean;
   isClosed: () => void;
-  FolderId: number;
 }) {
-  const { UniqueCode, Action } = useParams();
-  const navigate = useNavigate();
-  const [files, setFiles] = useState<{ file: File; forClient: boolean }[]>([]);
+  const [files, setFiles] = useState<{ file: File }[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const dropRef = useRef<HTMLDivElement | null>(null);
-
-  socket.emit("join", ProjectId);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files).map((file) => ({
         file,
-        forClient: false,
       }));
       setFiles((prevFiles) => [...prevFiles, ...newFiles]);
     }
@@ -51,7 +43,6 @@ export default function FileUploaderModal({
     if (e.dataTransfer.files) {
       const newFiles = Array.from(e.dataTransfer.files).map((file) => ({
         file,
-        forClient: false,
       }));
       setFiles((prevFiles) => [...prevFiles, ...newFiles]);
     }
@@ -69,25 +60,23 @@ export default function FileUploaderModal({
   const handleUpload = async () => {
     if (files.length > 0) {
       const formData = new FormData();
-      files.forEach(({ file, forClient }) => {
+      files.forEach(({ file }) => {
         formData.append("files", file);
-        formData.append("forClient", forClient.toString());
       });
-      formData.append("FolderId", FolderId.toString());
+      formData.append("EventId", EventId.toString());
 
       try {
-        const res = await axios.post("/Project/POST/UploadFile", formData);
+        const res = await axios.post(
+          "/Calendar/POST/UploadEventAttachment",
+          formData
+        );
         if (res.status == 200) {
           isClosed();
         }
         setFiles([]);
-        socket.emit("file-update", ProjectId);
+        socket.emit("file-update", EventId);
       } catch (error) {
         console.error(error);
-      } finally {
-        if (Action) {
-          navigate(`/projects/${UniqueCode}`);
-        }
       }
     }
   };
@@ -102,7 +91,7 @@ export default function FileUploaderModal({
       isOpen={isOpen}
       onOpenChange={isClosed}
       size="2xl"
-      scrollBehavior="outside"
+      scrollBehavior="inside"
       placement="center"
       backdrop="blur"
       hideCloseButton
@@ -110,7 +99,7 @@ export default function FileUploaderModal({
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">
           <h3 className="text-xl font-semibold">
-            Aggiungi un nuovo file al progetto
+            Aggiungi un nuovo file alla Task
           </h3>
         </ModalHeader>
         <ModalBody>

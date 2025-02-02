@@ -8,7 +8,7 @@ import ConfirmationNumberRoundedIcon from "@mui/icons-material/ConfirmationNumbe
 import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
 import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import CodeIcon from "@mui/icons-material/Code";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import ChangeProjectTheme from "../../Components/Project/Other/ChangeProjectTheme";
@@ -68,11 +68,11 @@ function getCookie(name: string): string | undefined {
 }
 
 export default function ProjectPage() {
-  const { UniqueCode } = useParams<{
+  const { UniqueCode, Action } = useParams<{
     UniqueCode: string;
+    Action: string;
   }>();
   const [ProjectId, setProjectId] = useState("");
-  const [ProjectName, setProjectName] = useState("");
   const [projectData, setProjectData] = useState<Project>({
     ProjectId: 0,
     ProjectName: "",
@@ -101,6 +101,9 @@ export default function ProjectPage() {
     editProject: false,
   });
   const { hasPermission } = usePermissions();
+  const [escPressCount, setEscPressCount] = useState(0);
+  const ESC_PRESS_REQUIRED = 1; // Numero di pressioni ESC richieste
+  const ESC_RESET_TIMEOUT = 2000; // Reset del contatore dopo 2 secondi
 
   const tabs = [
     { title: "Panoramica", icon: FindInPageRoundedIcon },
@@ -111,12 +114,71 @@ export default function ProjectPage() {
     { title: "Ticket", icon: ConfirmationNumberRoundedIcon },
   ];
 
+  // Add keyboard navigation handler
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input field
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      // Handle ESC key for project settings
+      if (event.key === "Escape" && adminPermission.editProject) {
+        setEscPressCount((prev) => {
+          const newCount = prev + 1;
+          if (newCount >= ESC_PRESS_REQUIRED) {
+            window.location.href = `/projects/${UniqueCode}/edit-project`;
+            return 0;
+          }
+          // Reset counter after timeout
+          setTimeout(() => setEscPressCount(0), ESC_RESET_TIMEOUT);
+          return newCount;
+        });
+        return;
+      }
+
+      // Map number keys to tabs
+      const keyToTab: { [key: string]: string } = {
+        "1": "Panoramica",
+        "2": "Tasks",
+        "3": "Team",
+        "4": "Files",
+        "5": "Code Share",
+        "6": "Ticket",
+      };
+
+      if (keyToTab[event.key]) {
+        setActiveTab(keyToTab[event.key]);
+      }
+    },
+    [UniqueCode, adminPermission.editProject]
+  );
+
+  // Add keyboard event listener
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [handleKeyPress]);
+
+  // Add effect to handle Action parameter
+  useEffect(() => {
+    if (Action === "add-task") {
+      setActiveTab("Tasks");
+    } else if (Action === "upload-file") {
+      setActiveTab("Files");
+    }
+  }, [Action]);
+
   useEffect(() => {
     axios
       .get("/Project/GET/GetProjectByUniqueCode", { params: { UniqueCode } })
       .then((res) => {
         setProjectId(res.data.ProjectId);
-        setProjectName(res.data.ProjectName);
 
         return axios
           .get("/Project/GET/GetProjectByIdAndName", {
@@ -137,19 +199,31 @@ export default function ProjectPage() {
         }
         checkPermissions();
       });
-  }, [UniqueCode, ProjectId, ProjectName]);
+  }, [UniqueCode, hasPermission]); // Added hasPermission to dependencies
 
   // Aggiorna il cookie ogni volta che cambia la scheda
   useEffect(() => {
     setCookie("activeProjectTab", activeTab, 7); // Salva per 7 giorni
   }, [activeTab]);
 
+  // Add keyboard shortcut hints to tabs
+  const tabsWithShortcuts = tabs.map((tab, index) => ({
+    ...tab,
+    shortcut: index + 1,
+  }));
+
+  // Customize tooltips for each tab
+  const getTooltipContent = (tabTitle: string, shortcut: number) => {
+    const baseContent = `Premi ${shortcut} per aprire ${tabTitle}`;
+    return baseContent;
+  };
+
   return (
     <>
       <ChangeProjectTheme
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
-        ProjectId={ProjectId ? parseInt(ProjectId) : 0}
+        ProjectId={ProjectId ? Number.parseInt(ProjectId) : 0}
         ProjectBannerId={projectData.ProjectBannerId}
       />
       <div className="py-10 m-0 lg:ml-72 h-screen flex flex-col items-start px-4 sm:px-6 lg:px-8">
@@ -157,7 +231,11 @@ export default function ProjectPage() {
           <div className="flex flex-row justify-between items-center sm:hidden">
             {adminPermission.editProject && (
               <Tooltip
-                content="Impostazioni progetto"
+                content={`Premi ESC per aprire le impostazioni${
+                  escPressCount > 0
+                    ? ` (ancora ${ESC_PRESS_REQUIRED - escPressCount})`
+                    : ""
+                }`}
                 color="primary"
                 placement="bottom"
                 radius="full"
@@ -180,7 +258,10 @@ export default function ProjectPage() {
           </div>
           <div className="w-full sm:h-60 overflow-hidden rounded-xl relative">
             <img
-              src={API_URL_IMG + "/banners/" + projectData.ProjectBannerPath}
+              src={
+                API_URL_IMG + "/banners/" + projectData.ProjectBannerPath ||
+                "/placeholder.svg"
+              }
               className="w-full h-auto object-cover rotate-180"
               alt="Banner del progetto"
             />
@@ -220,14 +301,19 @@ export default function ProjectPage() {
                     className="hidden sm:flex"
                     onSelectionChange={(key) => setActiveTab(key as string)}
                   >
-                    {tabs.map((tab) => (
+                    {tabsWithShortcuts.map((tab) => (
                       <Tab
                         key={tab.title}
                         title={
-                          <div className="flex items-center space-x-2">
-                            <tab.icon />
-                            <span>{tab.title}</span>
-                          </div>
+                          <Tooltip
+                            content={getTooltipContent(tab.title, tab.shortcut)}
+                            placement="bottom"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <tab.icon />
+                              <span>{tab.title}</span>
+                            </div>
+                          </Tooltip>
                         }
                       />
                     ))}
@@ -243,13 +329,21 @@ export default function ProjectPage() {
                       fullWidth
                       onSelectionChange={(key) => setActiveTab(key as string)}
                     >
-                      {tabs.map((tab) => (
+                      {tabsWithShortcuts.map((tab) => (
                         <Tab
                           key={tab.title}
                           title={
-                            <div className="flex items-center space-x-2">
-                              <tab.icon />
-                            </div>
+                            <Tooltip
+                              content={getTooltipContent(
+                                tab.title,
+                                tab.shortcut
+                              )}
+                              placement="top"
+                            >
+                              <div className="flex items-center space-x-2">
+                                <tab.icon />
+                              </div>
+                            </Tooltip>
                           }
                         />
                       ))}
@@ -259,7 +353,11 @@ export default function ProjectPage() {
 
                 {adminPermission.editProject && (
                   <Tooltip
-                    content="Impostazioni progetto"
+                    content={`Premi ESC per aprire le impostazioni${
+                      escPressCount > 0
+                        ? ` (ancora ${ESC_PRESS_REQUIRED - escPressCount})`
+                        : ""
+                    }`}
                     color="primary"
                     placement="bottom"
                     radius="full"

@@ -24,13 +24,10 @@ export default function LeadStats() {
           pendingLeads: pendingLeadRes.data.length,
           readLeads: readLeadRes.data.length,
         };
-
-        console.log(statsData);
-
         setStats(statsData);
       })
       .catch((err) => {
-        console.log(err);
+        console.error(err);
       });
   }
   const stats = [

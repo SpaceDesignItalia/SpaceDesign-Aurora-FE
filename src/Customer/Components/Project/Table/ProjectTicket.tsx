@@ -57,7 +57,6 @@ export default function ProjectTicket() {
         params: { ProjectId: ProjectId },
       })
       .then((res) => {
-        console.log(res.data);
         setTickets(res.data);
       });
   }
