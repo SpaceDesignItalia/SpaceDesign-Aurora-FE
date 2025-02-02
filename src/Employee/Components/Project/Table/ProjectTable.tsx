@@ -115,7 +115,6 @@ export default function ProjectTable() {
   function fetchData() {
     axios.get("/Project/GET/GetAllProjectsTable").then((res) => {
       setProjects(res.data);
-      console.log(res.data);
     });
   }
   const [page, setPage] = useState(1);

@@ -82,7 +82,6 @@ export default function TaskContainer({
   projectData: Project;
 }) {
   const { Action } = useParams<{ Action: string }>();
-  console.log(Action);
   const [columns, setColumns] = useState<Status[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [update, setUpdate] = useState(false);
@@ -301,8 +300,6 @@ export default function TaskContainer({
     }
     fetchArchivedTasks();
   }, [projectId, update]);
-
-  console.log(archivedTasks);
 
   return (
     <>

@@ -170,7 +170,6 @@ export default function AddProjectModel() {
   }
 
   async function handleCreateNewCompany() {
-    console.log(newProjectData);
     try {
       setIsAddingData(true);
 
@@ -206,7 +205,6 @@ export default function AddProjectModel() {
         setTimeout(() => {
           window.location.href = "/projects";
         }, 2000);
-        console.log("Successo:", res.data);
       }
       // Esegui altre azioni dopo la creazione del progetto, se necessario
     } catch (error) {

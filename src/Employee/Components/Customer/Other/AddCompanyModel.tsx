@@ -85,7 +85,6 @@ const AddCompanyModel: React.FC = () => {
         }, 2000);
       }
     } catch (error) {
-      console.log(error);
       if (axios.isAxiosError(error)) {
         // Controllo dell'errore specifico 409 (azienda con lo stesso nome)
         if (error.response?.status === 409) {
