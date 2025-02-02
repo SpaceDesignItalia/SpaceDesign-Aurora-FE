@@ -58,7 +58,6 @@ interface CalendarEvent {
   EventPartecipants: EventPartecipant[];
 }
 
-  onDateClick,
 const formatDate = (date: Date, view: string): string => {
   const options: Intl.DateTimeFormatOptions = {
     month: "long",
