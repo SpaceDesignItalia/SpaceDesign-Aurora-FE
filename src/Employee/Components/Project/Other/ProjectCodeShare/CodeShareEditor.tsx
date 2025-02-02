@@ -5,7 +5,6 @@ import {
   Select,
   SelectItem,
   Avatar,
-  Tooltip,
   Autocomplete,
   AutocompleteItem,
   AvatarGroup,
@@ -296,14 +295,9 @@ export default function CodeShareContainer({
       fetchCode();
     });
 
-    socket.on("connected-users-update", (users: ConnectedUser[]) => {
+    socket.on("get-users-on-code-share", (users: ConnectedUser[]) => {
       setConnectedUsers(users);
     });
-
-    return () => {
-      socket.off("connected-users-update");
-      socket.off("share-code-update");
-    };
   }, []);
 
   const handleLanguageChange = (key: string | null) => {
