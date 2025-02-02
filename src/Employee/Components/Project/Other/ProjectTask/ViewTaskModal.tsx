@@ -525,6 +525,8 @@ export default function ViewTaskModal({
       const end = new Date(newTask.ProjectTaskExpiration.toString());
 
       setDateError(start > end); // If start is after end, show error
+    } else {
+      setDateError(false);
     }
   }, [newTask]);
 
