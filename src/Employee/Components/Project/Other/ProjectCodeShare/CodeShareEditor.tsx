@@ -127,7 +127,6 @@ export default function CodeShareContainer({
       clearTimeout(timeoutRef.current);
     }
     timeoutRef.current = setTimeout(async () => {
-      setIsLoading(true);
       try {
         const response = await axios.post(
           "Project/POST/UpdateProjectCode",
@@ -378,11 +377,12 @@ export default function CodeShareContainer({
               Utenti connessi:
             </span>
             <div className="flex">
-              <AvatarGroup max={3} isGrid isBordered className="grid-cols-3">
+              <AvatarGroup max={3} isBordered size="sm">
                 {onlineCodeShareUsers.map(
                   (user) =>
                     user.codeShareId === codeShare.ProjectCodeShareId && (
                       <Avatar
+                        size="sm"
                         key={user.EmployeeId}
                         src={
                           user.EmployeeImageUrl &&
