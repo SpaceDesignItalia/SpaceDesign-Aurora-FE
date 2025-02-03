@@ -132,7 +132,7 @@ interface AlertData {
   onClose: () => void;
   alertTitle: string;
   alertDescription: string;
-  alertColor: "green" | "red" | "yellow";
+  alertColor: "success" | "danger" | "warning";
 }
 
 const INITIAL_ALERT_DATA: AlertData = {
@@ -140,7 +140,7 @@ const INITIAL_ALERT_DATA: AlertData = {
   onClose: () => {},
   alertTitle: "",
   alertDescription: "",
-  alertColor: "red",
+  alertColor: "danger",
 };
 
 export default function ViewTaskModal({
@@ -503,11 +503,6 @@ export default function ViewTaskModal({
   const [editingCheckbox, setEditingCheckbox] = useState(0);
   const [checkboxText, setCheckboxText] = useState("");
 
-  const handleEditClick = (checkbox: Checkbox) => {
-    setEditingCheckbox(checkbox.CheckboxId);
-    setCheckboxText(checkbox.Text);
-  };
-
   const handleSaveEdit = (checkboxId: number) => {
     // Qui invia la richiesta per aggiornare il testo della checkbox
     axios
@@ -677,7 +672,7 @@ export default function ViewTaskModal({
         onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
         alertTitle: "Operazione completata",
         alertDescription: "La task è stata eliminata con successo.",
-        alertColor: "green",
+        alertColor: "success",
       });
     } catch (error) {
       console.error(error);
@@ -689,7 +684,7 @@ export default function ViewTaskModal({
           alertTitle: "Errore durante l'operazione",
           alertDescription:
             "Si è verificato un errore durante l'eliminazione della task. Per favore, riprova più tardi.",
-          alertColor: "red",
+          alertColor: "danger",
         });
       }
     } finally {

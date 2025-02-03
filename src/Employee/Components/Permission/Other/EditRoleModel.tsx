@@ -36,7 +36,7 @@ interface AlertData {
   onClose: () => void;
   alertTitle: string;
   alertDescription: string;
-  alertColor: "green" | "red" | "yellow";
+  alertColor: "success" | "danger" | "warning";
 }
 
 const initialRoleDataStruct: Role = {
@@ -50,7 +50,7 @@ const INITIAL_ALERT_DATA: AlertData = {
   onClose: () => {},
   alertTitle: "",
   alertDescription: "",
-  alertColor: "red",
+  alertColor: "danger",
 };
 const EditRoleModel: React.FC = () => {
   const { RoleId } = useParams<{ RoleId: string }>();
@@ -192,7 +192,7 @@ const EditRoleModel: React.FC = () => {
           onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
           alertDescription: "Il ruolo è stato aggiornato con successo.",
-          alertColor: "green",
+          alertColor: "success",
         });
         setTimeout(() => {
           window.location.href = "/administration/permission";
@@ -209,7 +209,7 @@ const EditRoleModel: React.FC = () => {
             alertTitle: "Conflitto durante l'operazione",
             alertDescription:
               "Un altro ruolo ha già lo stesso nome. Scegli un nome diverso.",
-            alertColor: "yellow",
+            alertColor: "warning",
           });
         } else {
           // General error handling
@@ -219,7 +219,7 @@ const EditRoleModel: React.FC = () => {
             alertTitle: "Errore durante l'operazione",
             alertDescription:
               "Si è verificato un errore durante l'aggiornamento del ruolo. Per favore, riprova più tardi.",
-            alertColor: "red",
+            alertColor: "danger",
           });
         }
       }
