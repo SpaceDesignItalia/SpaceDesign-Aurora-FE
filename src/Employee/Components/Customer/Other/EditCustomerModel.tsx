@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Input, Button, Autocomplete, AutocompleteItem } from "@heroui/react";
+import {
+  Input,
+  Button,
+  Autocomplete,
+  AutocompleteItem,
+  Checkbox,
+} from "@heroui/react";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
@@ -12,6 +18,7 @@ interface Customer {
   CustomerEmail: string;
   CustomerPhone: string;
   CompanyId: number;
+  isActive: boolean;
 }
 
 interface Company {
@@ -47,6 +54,7 @@ export default function EditCustomerModel() {
     CustomerEmail: "",
     CustomerPhone: "",
     CompanyId: 0,
+    isActive: false,
   });
   const [initialCustomerData, setInitialCustomerData] = useState<Customer>({
     CustomerId: 0,
@@ -55,6 +63,7 @@ export default function EditCustomerModel() {
     CustomerEmail: "",
     CustomerPhone: "",
     CompanyId: 0,
+    isActive: false,
   });
   const [company, setCompany] = useState<Company[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
@@ -68,6 +77,7 @@ export default function EditCustomerModel() {
       .then((res) => {
         setNewCustomerData(res.data[0]);
         setInitialCustomerData(res.data[0]);
+        console.log(res.data[0]);
       });
     axios.get("/Company/GET/GetAllCompany").then((res) => {
       setCompany(res.data);
@@ -106,6 +116,10 @@ export default function EditCustomerModel() {
     setNewCustomerData({ ...newCustomerData, CompanyId: Number(e) });
   }
 
+  const handleCheckboxChange = (isSelected: boolean) => {
+    setNewCustomerData({ ...newCustomerData, isActive: isSelected });
+  };
+
   function checkAllDataCompiled() {
     if (
       newCustomerData.CustomerName !== initialCustomerData.CustomerName ||
@@ -113,7 +127,8 @@ export default function EditCustomerModel() {
       newCustomerData.CustomerEmail !== initialCustomerData.CustomerEmail ||
       newCustomerData.CustomerPhone !== initialCustomerData.CustomerPhone ||
       (newCustomerData.CompanyId !== initialCustomerData.CompanyId &&
-        newCustomerData.CompanyId !== null)
+        newCustomerData.CompanyId !== null) ||
+      newCustomerData.isActive !== initialCustomerData.isActive
     ) {
       return false;
     }
@@ -295,6 +310,24 @@ export default function EditCustomerModel() {
                     )}
                   </Autocomplete>
                 </div>
+              </div>
+
+              <div className="col-span-6 sm:col-span-3">
+                <label className="block text-sm font-medium leading-6 text-gray-900 mb-2">
+                  Stato utente
+                </label>
+                <Checkbox
+                  isSelected={newCustomerData.isActive}
+                  onValueChange={handleCheckboxChange}
+                  color="primary"
+                  className="text-sm"
+                >
+                  Utente attivo sulla piattaforma
+                </Checkbox>
+                <p className="mt-1 text-sm text-gray-500">
+                  Se selezionato, l'utente potrà accedere alla piattaforma,
+                  verrà quindi inviata la mail di attivazione account.
+                </p>
               </div>
             </div>
           </div>
