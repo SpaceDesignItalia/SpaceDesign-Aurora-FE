@@ -14,6 +14,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Spinner,
 } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
 import {
@@ -23,6 +24,7 @@ import {
   SaveRounded as SaveRoundedIcon,
   PeopleRounded as PeopleRoundedIcon,
   LocalOfferRounded as LocalOfferRoundedIcon,
+  AutoFixHighRounded,
   LocationOnRounded as LocationOnRoundedIcon,
 } from "@mui/icons-material";
 import { I18nProvider } from "@react-aria/i18n";
@@ -108,6 +110,7 @@ export default function AddEventModal({
     EventTagId: 0,
     EventTagName: "",
   });
+  const [loading, setLoading] = useState<boolean>(false);
 
   async function fetchTags() {
     const res = await axios.get("/Calendar/GET/GetEventTags");
@@ -228,6 +231,35 @@ export default function AddEventModal({
     if (Action) {
       navigate(`/comunications/calendar/`);
     }
+  }
+
+  const handleRefine = async () => {
+    if (!newEvent.EventDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post(
+        "/Project/POST/RefineEventDescription",
+        {
+          eventDescription: `Riscrivi in modo più formale e completo il seguente testo: ${newEvent.EventDescription}`,
+        }
+      );
+      setNewEvent({
+        ...newEvent,
+        EventDescription: refinedText.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  function hasContent(html: string | undefined): boolean {
+    if (!html) return false;
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return Boolean(div.textContent?.trim().length);
   }
 
   return (
@@ -403,6 +435,32 @@ export default function AddEventModal({
                           }
                         />
                       </dd>
+                      {newEvent.EventDescription &&
+                      hasContent(newEvent.EventDescription) ? (
+                        <Button
+                          variant="bordered"
+                          className="w-max-1/2 mx-auto gap-3 my-5 sm:my-0 py-2"
+                          radius="full"
+                          onClick={handleRefine}
+                          isDisabled={
+                            loading || !hasContent(newEvent.EventDescription)
+                          }
+                        >
+                          {loading ? (
+                            <>
+                              {" "}
+                              <Spinner size="sm" className="text-black" />{" "}
+                              Riscrittura in corso...{" "}
+                            </>
+                          ) : (
+                            <>
+                              {" "}
+                              <AutoFixHighRounded className="w-5 h-5" />{" "}
+                              Riscrivi con AI{" "}
+                            </>
+                          )}
+                        </Button>
+                      ) : null}
                     </div>
 
                     <div className="flex flex-row w-full gap-4">

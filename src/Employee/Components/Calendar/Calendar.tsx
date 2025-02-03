@@ -427,7 +427,7 @@ END:VEVENT`;
                 variant="bordered"
                 classNames={{
                   trigger: "rounded-full",
-                  popover: "rounded-xl",
+                  listboxWrapper: "rounded-xl",
                 }}
                 className="w-48"
                 defaultSelectedKeys={["current"]}
@@ -441,11 +441,11 @@ END:VEVENT`;
                 <SelectItem key="current" value="current">
                   {view === "day" ? "Giorno corrente" : "Settimana corrente"}
                 </SelectItem>
-                {view === "day" && (
+                {view === "day" ? (
                   <SelectItem key="always" value="always">
                     Sempre visibile
                   </SelectItem>
-                )}
+                ) : null}
                 {view === "week" ? (
                   <SelectItem key="full-week" value="full-week">
                     Intera settimana

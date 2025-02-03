@@ -34,6 +34,7 @@ import {
   EditRounded,
   CloseRounded as CloseRoundedIcon,
   SaveRounded as SaveRoundedIcon,
+  AutoFixHighRounded,
 } from "@mui/icons-material";
 import { I18nProvider, useDateFormatter } from "@react-aria/i18n";
 import axios from "axios";
@@ -48,6 +49,7 @@ import FileCard from "../Project/Other/ProjectFiles/FileCard";
 import ConfirmDeleteEventModal from "./ConfirmDeleteEventModal";
 import { io, Socket } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
+import { Spinner } from "@heroui/react";
 
 const socket: Socket = io(API_WEBSOCKET_URL);
 
@@ -91,6 +93,8 @@ interface EventTag {
   EventTagId: number;
   EventTagName: string;
 }
+
+const MAX_DESCRIPTION_LENGTH = 500;
 
 const INITIAL_EVENT_DATA: CalendarEvent = {
   EventId: 0,
@@ -137,6 +141,7 @@ export default function ViewEventModal({
     EventTagId: 0,
     EventTagName: "",
   });
+  const [loading, setLoading] = useState<boolean>(false);
 
   async function fetchTags() {
     const res = await axios.get("/Calendar/GET/GetEventTags");
@@ -385,6 +390,35 @@ END:VCALENDAR`;
     }
   }
 
+  const handleRefine = async () => {
+    if (!newEvent.EventDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post(
+        "/Project/POST/RefineEventDescription",
+        {
+          eventDescription: `Riscrivi in modo più formale e completo il seguente testo: ${newEvent.EventDescription}`,
+        }
+      );
+      setNewEvent({
+        ...newEvent,
+        EventDescription: refinedText.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  function hasContent(html: string | undefined): boolean {
+    if (!html) return false;
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return Boolean(div.textContent?.trim().length);
+  }
+
   return (
     <>
       <Modal
@@ -466,12 +500,66 @@ END:VCALENDAR`;
                             Descrizione
                           </dt>
                           <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                            <ReactQuill
-                              readOnly
-                              className="sm:col-span-2 sm:mt-0 h-fit"
-                              theme="bubble"
-                              value={newEvent.EventDescription}
-                            />
+                            {isEditing ? (
+                              <div className="flex flex-col gap-1">
+                                <ReactQuill
+                                  className="sm:col-span-2 sm:mt-0 h-fit"
+                                  theme="snow"
+                                  value={newEvent.EventDescription}
+                                  onChange={(content) => {
+                                    if (
+                                      content.length <= MAX_DESCRIPTION_LENGTH
+                                    ) {
+                                      setNewEvent((prev) => ({
+                                        ...prev,
+                                        EventDescription: content,
+                                      }));
+                                    }
+                                  }}
+                                />
+                                <div className="text-sm text-right text-gray-500">
+                                  {newEvent.EventDescription.length}/
+                                  {MAX_DESCRIPTION_LENGTH}
+                                </div>
+                                {newEvent.EventDescription &&
+                                  hasContent(newEvent.EventDescription) && (
+                                    <Button
+                                      variant="bordered"
+                                      className="w-max-1/2 mx-auto gap-3 my-5 sm:my-0 py-2"
+                                      radius="full"
+                                      onClick={handleRefine}
+                                      isDisabled={
+                                        loading ||
+                                        !hasContent(newEvent.EventDescription)
+                                      }
+                                    >
+                                      {loading ? (
+                                        <>
+                                          {" "}
+                                          <Spinner
+                                            size="sm"
+                                            className="text-black"
+                                          />{" "}
+                                          Riscrittura in corso...{" "}
+                                        </>
+                                      ) : (
+                                        <>
+                                          {" "}
+                                          <AutoFixHighRounded className="w-5 h-5" />{" "}
+                                          Riscrivi con AI{" "}
+                                        </>
+                                      )}
+                                    </Button>
+                                  )}
+                              </div>
+                            ) : (
+                              <ReactQuill
+                                readOnly
+                                className="sm:col-span-2 sm:mt-0 h-fit"
+                                theme="bubble"
+                                value={newEvent.EventDescription}
+                              />
+                            )}
                           </dd>
                         </div>
 
@@ -761,17 +849,66 @@ END:VCALENDAR`;
                               Descrizione
                             </dt>
                             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                              <ReactQuill
-                                className="sm:col-span-2 sm:mt-0 h-fit"
-                                theme="snow"
-                                value={newEvent.EventDescription}
-                                onChange={(content) =>
-                                  setNewEvent((prev) => ({
-                                    ...prev,
-                                    EventDescription: content,
-                                  }))
-                                }
-                              />
+                              {isEditing ? (
+                                <div className="flex flex-col gap-1">
+                                  <ReactQuill
+                                    className="sm:col-span-2 sm:mt-0 h-fit"
+                                    theme="snow"
+                                    value={newEvent.EventDescription}
+                                    onChange={(content) => {
+                                      if (
+                                        content.length <= MAX_DESCRIPTION_LENGTH
+                                      ) {
+                                        setNewEvent((prev) => ({
+                                          ...prev,
+                                          EventDescription: content,
+                                        }));
+                                      }
+                                    }}
+                                  />
+                                  <div className="text-sm text-right text-gray-500">
+                                    {newEvent.EventDescription.length}/
+                                    {MAX_DESCRIPTION_LENGTH}
+                                  </div>
+                                  {newEvent.EventDescription &&
+                                    hasContent(newEvent.EventDescription) && (
+                                      <Button
+                                        variant="bordered"
+                                        className="w-max-1/2 mx-auto gap-3 my-5 sm:my-0 py-2"
+                                        radius="full"
+                                        onClick={handleRefine}
+                                        isDisabled={
+                                          loading ||
+                                          !hasContent(newEvent.EventDescription)
+                                        }
+                                      >
+                                        {loading ? (
+                                          <>
+                                            {" "}
+                                            <Spinner
+                                              size="sm"
+                                              className="text-black"
+                                            />{" "}
+                                            Riscrittura in corso...{" "}
+                                          </>
+                                        ) : (
+                                          <>
+                                            {" "}
+                                            <AutoFixHighRounded className="w-5 h-5" />{" "}
+                                            Riscrivi con AI{" "}
+                                          </>
+                                        )}
+                                      </Button>
+                                    )}
+                                </div>
+                              ) : (
+                                <ReactQuill
+                                  readOnly
+                                  className="sm:col-span-2 sm:mt-0 h-fit"
+                                  theme="bubble"
+                                  value={newEvent.EventDescription}
+                                />
+                              )}
                             </dd>
                           </div>
 
