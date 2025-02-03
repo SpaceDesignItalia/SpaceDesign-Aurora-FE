@@ -24,6 +24,7 @@ import {
   ScrollShadow,
   Textarea,
   Tooltip,
+  Spinner,
 } from "@heroui/react";
 import { API_URL_IMG } from "../../../../../API/API";
 import { I18nProvider, useDateFormatter } from "@react-aria/i18n";
@@ -34,6 +35,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { parseDate } from "@internationalized/date";
 import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
+import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
 
 import {
   Comment,
@@ -177,6 +179,7 @@ export default function ViewTaskModal({
     open: false,
   });
   const [files, setFiles] = useState<File[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const fetchFiles = async () => {
     try {
@@ -235,6 +238,27 @@ export default function ViewTaskModal({
       });
     }
   }
+
+  const handleRefine = async () => {
+    if (!TaskData.ProjectTaskDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post("/Project/POST/RefineText", {
+        text: `Riscrivi in modo più formale e completo il seguente testo: ${TaskData.ProjectTaskDescription}`,
+      });
+
+      // Assicuriamoci di mantenere tutte le proprietà esistenti quando aggiorniamo newTask
+      setNewTask((prevTask) => ({
+        ...prevTask!,
+        ProjectTaskDescription: refinedText.data,
+      }));
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchTaskData();
@@ -1117,6 +1141,34 @@ export default function ViewTaskModal({
                                   })
                                 }
                               />
+                              {TaskData.ProjectTaskDescription ? (
+                                <Button
+                                  variant="bordered"
+                                  className="w-max-1/2 mx-auto gap-3 my-5 mt-2 py-2"
+                                  radius="full"
+                                  onClick={handleRefine}
+                                  isDisabled={
+                                    loading || !TaskData.ProjectTaskDescription
+                                  }
+                                >
+                                  {loading ? (
+                                    <>
+                                      {" "}
+                                      <Spinner
+                                        size="sm"
+                                        className="text-black"
+                                      />{" "}
+                                      Riscrittura in corso...{" "}
+                                    </>
+                                  ) : (
+                                    <>
+                                      {" "}
+                                      <AutoFixHighRoundedIcon className="w-5 h-5" />{" "}
+                                      Riscrivi con AI{" "}
+                                    </>
+                                  )}
+                                </Button>
+                              ) : null}
                             </>
                           ) : (
                             <ReactQuill
@@ -1366,10 +1418,17 @@ export default function ViewTaskModal({
                                                   <div className="flex flex-row justify-end">
                                                     <Button
                                                       color="warning"
-                                                      variant="light"
                                                       size="sm"
                                                       radius="full"
-                                                      isIconOnly
+                                                      variant="light"
+                                                      onClick={() => {
+                                                        setCommentEditingId(
+                                                          checkbox.CheckboxId
+                                                        );
+                                                        setUpdateComment(
+                                                          checkbox.Text
+                                                        );
+                                                      }}
                                                       startContent={
                                                         <ModeEditRoundedIcon
                                                           sx={{
@@ -1377,11 +1436,7 @@ export default function ViewTaskModal({
                                                           }}
                                                         />
                                                       }
-                                                      onClick={() =>
-                                                        handleEditClick(
-                                                          checkbox
-                                                        )
-                                                      }
+                                                      isIconOnly
                                                     />
                                                     <ConfirmDeleteCheckboxModal
                                                       checkbox={checkbox}
