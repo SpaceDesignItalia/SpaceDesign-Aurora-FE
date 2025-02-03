@@ -268,7 +268,7 @@ export default function CodeShareContainer({
                 <div>
                   <Image
                     alt="Code Share Preview"
-                    className="w-full object-cover group-hover:brightness-100 transition-all h-56"
+                    className="w-full h-auto aspect-[16/9] object-cover group-hover:brightness-100 transition-all"
                     src={
                       tab.ImageURL
                         ? API_URL_IMG + "/codeShare" + tab.ImageURL
@@ -276,6 +276,7 @@ export default function CodeShareContainer({
                     }
                   />
                 </div>
+
                 <div className="flex flex-col gap-5  px-4 py-4 sm:px-6">
                   <Button
                     size="md"
