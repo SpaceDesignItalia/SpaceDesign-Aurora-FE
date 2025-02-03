@@ -94,7 +94,6 @@ export default function PermissionTable() {
   function fetchData() {
     axios.get("/Permission/GET/GetAllPermissions").then((res) => {
       setPermissions(res.data);
-      console.log(res);
     });
   }
 
@@ -164,8 +163,6 @@ export default function PermissionTable() {
       wrapInQuotes(permission.PermissionDescription),
       wrapInQuotes(permission.PermissionGroup.PermissionGroupName),
     ]);
-
-    console.log(rows);
 
     let csvContent =
       "data:text/csv;charset=utf-8," +

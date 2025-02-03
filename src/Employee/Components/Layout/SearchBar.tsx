@@ -30,7 +30,7 @@ import AddModeratorRoundedIcon from "@mui/icons-material/AddModeratorRounded";
 import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
-
+import EventIcon from "@mui/icons-material/Event";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { API_URL_IMG } from "../../../API/API";
@@ -492,6 +492,12 @@ export default function SearchBar({
         name: "Aggiungi Ruolo",
         url: "/administration/permission/add-role",
         icon: AddModeratorRoundedIcon,
+      },
+      {
+        id: "add-event",
+        name: "Aggiungi Evento",
+        url: "/comunications/calendar/add-event",
+        icon: EventIcon,
       },
     ]);
   }

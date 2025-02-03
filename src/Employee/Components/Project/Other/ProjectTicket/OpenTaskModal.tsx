@@ -53,8 +53,8 @@ interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
-  ProjectTaskExpiration: DateValue;
-  ProjectTaskCreation: DateValue;
+  ProjectTaskExpiration: any;
+  ProjectTaskCreation: any;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
@@ -321,10 +321,7 @@ export default function OpenTaskModal({
     );
   }, [newTask]);
 
-  const calculateProgress = (
-    startDate: DateValue,
-    endDate: DateValue
-  ): number => {
+  const calculateProgress = (startDate: any, endDate: any): number => {
     const totalDuration = dayjs(endDate.toString()).diff(
       dayjs(startDate.toString()),
       "day"
@@ -335,7 +332,6 @@ export default function OpenTaskModal({
   };
 
   function handleCloseModal() {
-    console.log("Chiusura modal");
     setNewTask({
       ProjectTaskId: 0,
       ProjectTaskName: "",
@@ -358,7 +354,6 @@ export default function OpenTaskModal({
       const refinedText = await axios.post("/Project/POST/RefineText", {
         text: `Riscrivi in modo più formale e completo il seguente testo: ${newTask.ProjectTaskDescription}`,
       });
-      console.log("Testo raffinato:", refinedText.data);
       setNewTask({
         ...newTask,
         ProjectTaskDescription: refinedText.data,

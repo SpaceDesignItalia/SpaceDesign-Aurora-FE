@@ -116,13 +116,19 @@ const App: React.FC = () => {
   return (
     <>
       {" "}
-      <SearchBar open={openSearchBar} setOpen={setOpenSearchBar} />
+      {isAuth && isStaffer && (
+        <SearchBar open={openSearchBar} setOpen={setOpenSearchBar} />
+      )}
       {isAuth && isStaffer && <Sidebar />}
       {isAuth && !isStaffer && <Navbar />}
       <Routes>
         <Route path="/password-recovery" element={<PasswordRecovery />} />
         <Route path="/password-reset" element={<PasswordReset email="" />} />
         {!isAuth && <Route element={<Login />} path="/login" />}
+        <Route
+          element={<CalendarPage />}
+          path="/comunications/calendar/:EventId/:EventPartecipantEmail/:Action"
+        />
         <Route
           path="/*"
           element={
@@ -226,6 +232,10 @@ const EmployeeProtectedRoutes: React.FC = () => {
         <Route element={<ChatDashboard />} path="/comunications/chat/:Action" />
         <Route element={<CalendarPage />} path="/comunications/calendar" />
 
+        <Route
+          element={<CalendarPage />}
+          path="/comunications/calendar/:Action"
+        />
         <Route element={<ProjectDashboard />} path="/projects" />
         <Route element={<AddProjectPage />} path="/projects/add-project" />
         <Route element={<ProjectPage />} path="/projects/:UniqueCode" />

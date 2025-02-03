@@ -97,7 +97,6 @@ export default function AddProjectTeamMember({
         setTimeout(() => {
           window.location.reload();
         }, 2000);
-        console.log("Successo:", res.data);
       }
       // Esegui altre azioni dopo la creazione del progetto, se necessario
     } catch (error) {

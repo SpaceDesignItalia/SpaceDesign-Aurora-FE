@@ -1,11 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  Input,
-  Button,
-  Autocomplete,
-  AutocompleteItem,
-} from "@heroui/react";
+import { Input, Button, Autocomplete, AutocompleteItem } from "@heroui/react";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
@@ -73,7 +68,6 @@ export default function EditCustomerModel() {
       .then((res) => {
         setNewCustomerData(res.data[0]);
         setInitialCustomerData(res.data[0]);
-        console.log(res.data[0]);
       });
     axios.get("/Company/GET/GetAllCompany").then((res) => {
       setCompany(res.data);
@@ -146,7 +140,6 @@ export default function EditCustomerModel() {
         setTimeout(() => {
           window.location.href = "/administration/customer";
         }, 2000);
-        console.log("Successo:", res.data);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {

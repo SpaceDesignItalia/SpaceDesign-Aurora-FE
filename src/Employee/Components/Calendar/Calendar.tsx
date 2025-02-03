@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
 import {
   ChevronDownIcon,
@@ -13,483 +11,52 @@ import {
   DropdownItem,
   Button,
 } from "@heroui/react";
+import CalendarDay from "./CalendarDay";
+import CalendarWeek from "./CalendarWeek";
+import CalendarMonth from "./CalendarMonth";
+import CalendarYear from "./CalendarYear";
+import AddEventModal from "./AddEventModal";
+import {
+  AddRounded,
+  FileDownloadOutlined,
+  FileUploadOutlined,
+} from "@mui/icons-material";
+import axios from "axios";
+import dayjs from "dayjs";
+import { io, Socket } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../API/API";
+import { useNavigate, useParams } from "react-router-dom";
+import ViewEventModal from "./ViewEventModal";
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const DAYS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
-const MONTHS = [
-  "Gennaio",
-  "Febbraio",
-  "Marzo",
-  "Aprile",
-  "Maggio",
-  "Giugno",
-  "Luglio",
-  "Agosto",
-  "Settembre",
-  "Ottobre",
-  "Novembre",
-  "Dicembre",
-];
+const socket: Socket = io(API_WEBSOCKET_URL);
 
-const ROW_HEIGHT = 60;
-const HEADER_HEIGHT = 78;
+interface EventPartecipant {
+  EventPartecipantId: number;
+  EventPartecipantEmail: string;
+  EventPartecipantRole: string;
+  EventPartecipantStatus: string;
+}
 
-const CalendarDay = ({
-  currentDate,
-  redLineBehavior,
-}: {
-  currentDate: Date;
-  redLineBehavior: string;
-}) => {
-  const now = new Date();
-  const currentTime = new Date(
-    now.toLocaleString("en-US", { timeZone: "Europe/Rome" })
-  );
-  const [currentHour, setCurrentHour] = useState(
-    currentTime.getHours() + currentTime.getMinutes() / 60
-  );
-  const isToday = currentDate.toDateString() === now.toDateString();
-  const scrollRef = useRef<HTMLDivElement>(null);
+interface EventAttachment {
+  EventAttachmentId: number;
+  EventAttachmentUrl: string;
+  EventAttachmentName: string;
+}
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const newNow = new Date();
-      const newCurrentTime = new Date(
-        newNow.toLocaleString("en-US", { timeZone: "Europe/Rome" })
-      );
-      setCurrentHour(
-        newCurrentTime.getHours() + newCurrentTime.getMinutes() / 60
-      );
-    }, 1000); // Update every second
-
-    return () => clearInterval(timer);
-  }, []); // Empty dependency array to run only once on mount
-
-  useEffect(() => {
-    if (isToday && scrollRef.current) {
-      const scrollPosition =
-        currentHour * ROW_HEIGHT - window.innerHeight / 2 + HEADER_HEIGHT;
-      scrollRef.current.scrollTop = Math.max(0, scrollPosition);
-    }
-  }, [isToday, currentHour]);
-
-  return (
-    <div
-      className="flex flex-col h-full overflow-hidden relative"
-      style={{ minHeight: "100%" }}
-    >
-      <div className="flex-1 overflow-y-auto" ref={scrollRef}>
-        <div className="grid grid-cols-8 divide-x divide-gray-100 relative">
-          <div className="col-span-2 divide-y divide-gray-100">
-            {HOURS.map((hour) => (
-              <div
-                key={hour}
-                className="sticky left-0 bg-white text-center pr-4 py-3 text-sm leading-5 text-gray-500"
-                style={{ height: `${ROW_HEIGHT}px` }}
-              >
-                {`${hour.toString().padStart(2, "0")}:00`}
-              </div>
-            ))}
-          </div>
-          <div className="col-span-6 divide-y divide-gray-100">
-            {HOURS.map((hour) => (
-              <div
-                key={hour}
-                className={`py-3 group hover:bg-gray-50`}
-                style={{ height: `${ROW_HEIGHT}px` }}
-              ></div>
-            ))}
-          </div>
-          {(redLineBehavior === "always" || isToday) && (
-            <div
-              className="absolute left-0 right-0 z-10 pointer-events-none"
-              style={{ top: `${currentHour * ROW_HEIGHT}px` }}
-            >
-              <div
-                className="border-t-2 border-red-500 relative"
-                style={{
-                  width: "100%",
-                  marginLeft: "25%",
-                }}
-              >
-                <div className="absolute left-0 -top-3 -translate-x-full bg-red-500 text-white rounded-full px-2 py-1 text-xs">
-                  {new Date().toLocaleTimeString("it-IT", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const isPastDate = (date: Date) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return date < today;
-};
-const CalendarWeek = ({
-  currentDate,
-  onDateClick,
-  redLineBehavior,
-}: {
-  currentDate: Date;
-  onDateClick: (date: Date) => void;
-  redLineBehavior: string;
-}) => {
-  const startOfWeek = new Date(currentDate);
-  startOfWeek.setDate(currentDate.getDate() - ((currentDate.getDay() + 6) % 7));
-
-  const [now, setNow] = useState(new Date());
-  const currentTime = new Date(
-    now.toLocaleString("en-US", { timeZone: "Europe/Rome" })
-  );
-  const [currentHour, setCurrentHour] = useState(
-    currentTime.getHours() + currentTime.getMinutes() / 60
-  );
-  const [currentDayIndex, setCurrentDayIndex] = useState(
-    (new Date(
-      new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Rome" }).format(now)
-    ).getDay() +
-      6) %
-      7
-  );
-
-  const isCurrentWeek =
-    startOfWeek.getTime() <= now.getTime() &&
-    now.getTime() < startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000;
-
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const newNow = new Date();
-      setNow(newNow);
-      const newCurrentTime = new Date(
-        newNow.toLocaleString("en-US", { timeZone: "Europe/Rome" })
-      );
-      setCurrentHour(
-        newCurrentTime.getHours() + newCurrentTime.getMinutes() / 60
-      );
-      setCurrentDayIndex(
-        (new Date(
-          new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Rome" }).format(
-            newNow
-          )
-        ).getDay() +
-          6) %
-          7
-      );
-    }, 1000); // Update every second
-
-    return () => clearInterval(timer);
-  }, []); // Empty dependency array to run only once on mount
-
-  useEffect(() => {
-    if (isCurrentWeek && scrollRef.current) {
-      const scrollPosition =
-        currentHour * ROW_HEIGHT - window.innerHeight / 2 + HEADER_HEIGHT;
-      scrollRef.current.scrollTop = Math.max(0, scrollPosition);
-    }
-  }, [isCurrentWeek, currentHour]);
-
-  return (
-    <div
-      className="flex flex-col h-full overflow-hidden relative"
-      style={{ minHeight: "100%" }}
-    >
-      <div className="flex-none bg-white sticky top-0 z-20 border-b border-gray-200">
-        <div className="grid grid-cols-8 text-sm leading-6 text-gray-500">
-          <div className="py-3"></div>
-          {DAYS.map((day, i) => {
-            const date = new Date(startOfWeek);
-            date.setDate(startOfWeek.getDate() + i);
-            return (
-              <div
-                key={day}
-                className="py-3 text-center font-semibold cursor-pointer hover:bg-gray-100 rounded-lg"
-                onClick={() => onDateClick(date)} // Clic sul giorno nell'header
-              >
-                <span className="block text-lg">{day}</span>
-                <span
-                  className={`block text-base font-bold ${
-                    date.toDateString() === now.toDateString()
-                      ? "text-blue-600"
-                      : "text-gray-900"
-                  }`}
-                >
-                  {date.getDate()}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <div className="flex-1 overflow-y-auto relative" ref={scrollRef}>
-        <div className="grid grid-cols-8 divide-x divide-gray-100 relative">
-          <div className="col-span-1 divide-y divide-gray-100">
-            {HOURS.map((hour) => (
-              <div
-                key={hour}
-                className="sticky left-0 bg-white text-center pr-4 py-3 text-sm leading-5 text-gray-500"
-                style={{ height: `${ROW_HEIGHT}px` }}
-              >
-                {hour === 0
-                  ? "00:00"
-                  : `${hour.toString().padStart(2, "0")}:00`}
-              </div>
-            ))}
-          </div>
-          {Array.from({ length: 7 }).map((_, dayIndex) => {
-            const dayDate = new Date(startOfWeek);
-            dayDate.setDate(startOfWeek.getDate() + dayIndex);
-            const isPastDay = isPastDate(dayDate);
-            return (
-              <div
-                key={dayIndex}
-                className="col-span-1 divide-y divide-gray-100"
-              >
-                {HOURS.map((hour) => (
-                  <div
-                    key={`${dayIndex}-${hour}`}
-                    className={`py-3 group hover:bg-gray-50 ${
-                      isPastDay ? "bg-gray-100" : ""
-                    }`}
-                    style={{ height: `${ROW_HEIGHT}px` }}
-                  ></div>
-                ))}
-              </div>
-            );
-          })}
-          {(redLineBehavior === "always" ||
-            redLineBehavior === "full-week" ||
-            isCurrentWeek) && (
-            <div
-              className="absolute left-0 right-0 z-10 pointer-events-none"
-              style={{
-                top: `${currentHour * ROW_HEIGHT}px`,
-              }}
-            >
-              <div
-                className="border-t-2 border-red-500 relative"
-                style={{
-                  width:
-                    redLineBehavior === "always" ||
-                    redLineBehavior === "full-week"
-                      ? "100%" // Estendi la barra fino alla fine della griglia
-                      : `calc(${(currentDayIndex + 1) * 12.5}%)`, // Larghezza normale per "current"
-                  marginLeft:
-                    redLineBehavior === "always" ||
-                    redLineBehavior === "full-week"
-                      ? "12.5%" // Allinea a sinistra senza margine
-                      : "12.5%", // Margine normale per "current"
-                }}
-              >
-                <div
-                  className="absolute left-0 -top-3 -translate-x-full bg-red-500 text-white rounded-full px-2 py-1 text-xs"
-                  style={{
-                    top: "-0.75rem",
-                  }}
-                >
-                  {currentTime.toLocaleTimeString("it-IT", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-const CalendarMonth = ({
-  currentDate,
-  onDateClick,
-}: {
-  currentDate: Date;
-  onDateClick: (date: Date) => void;
-}) => {
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstDayOfMonth = new Date(year, month, 1).getDay();
-  const firstDayIndex = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // Calcola i giorni del mese precedente
-  const prevMonthLastDay = new Date(year, month, 0).getDate();
-  const prevMonthDays = Array.from({ length: firstDayIndex }, (_, i) => {
-    return new Date(year, month - 1, prevMonthLastDay - firstDayIndex + i + 1);
-  });
-
-  // Calcola i giorni del mese successivo
-  const totalDays = prevMonthDays.length + daysInMonth;
-  const nextMonthDays = Array.from({ length: 42 - totalDays }, (_, i) => {
-    return new Date(year, month + 1, i + 1);
-  });
-
-  const days = Array.from(
-    { length: daysInMonth },
-    (_, i) => new Date(year, month, i + 1)
-  );
-
-  return (
-    <div
-      className="flex-1 overflow-y-auto relative"
-      style={{ minHeight: "100%" }}
-    >
-      <div className="grid grid-cols-7 gap-px bg-gray-200 ">
-        {DAYS.map((day) => (
-          <div
-            key={day}
-            className="bg-white py-2 text-center text-xs font-semibold text-gray-700 uppercase "
-          >
-            {day}
-          </div>
-        ))}
-        {prevMonthDays.map((day) => (
-          <div
-            key={day.toISOString()}
-            className="relative hover:bg-gray-50 cursor-pointer bg-gray-100 opacity-50"
-            style={{ height: "18vh" }}
-            onClick={() => onDateClick(day)}
-          >
-            <div className="absolute top-2 right-2">
-              <time
-                dateTime={day.toISOString()}
-                className="flex h-6 w-6 items-center justify-center rounded-full text-sm text-gray-500"
-              >
-                {day.getDate()}
-              </time>
-            </div>
-          </div>
-        ))}
-        {days.map((day) => (
-          <div
-            key={day.toISOString()}
-            className={`relative hover:bg-gray-50 cursor-pointer ${
-              day < today ? "bg-gray-200" : "bg-white"
-            }`}
-            style={{ height: "18vh" }}
-            onClick={() => onDateClick(day)}
-          >
-            <div className="absolute top-2 right-2">
-              <time
-                dateTime={day.toISOString()}
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
-                  day.toDateString() === today.toDateString()
-                    ? "bg-blue-600 font-semibold text-white"
-                    : "text-gray-900"
-                }`}
-              >
-                {day.getDate()}
-              </time>
-            </div>
-          </div>
-        ))}
-        {nextMonthDays.map((day) => (
-          <div
-            key={day.toISOString()}
-            className="relative hover:bg-gray-50 cursor-pointer bg-gray-100 opacity-50"
-            style={{ height: "18vh" }}
-            onClick={() => onDateClick(day)}
-          >
-            <div className="absolute top-2 right-2">
-              <time
-                dateTime={day.toISOString()}
-                className="flex h-6 w-6 items-center justify-center rounded-full text-sm text-gray-500"
-              >
-                {day.getDate()}
-              </time>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-const CalendarYear = ({
-  currentDate,
-  onDateClick,
-  onMonthClick,
-}: {
-  currentDate: Date;
-  onDateClick: (date: Date) => void;
-  onMonthClick: (date: Date) => void;
-}) => {
-  const year = currentDate.getFullYear();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  return (
-    <div className="flex-1 overflow-y-auto" style={{ minHeight: "100%" }}>
-      <div className="grid xl:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6 p-6">
-        {MONTHS.map((month, monthIndex) => (
-          <div
-            key={month}
-            className={`p-4 rounded-lg shadow cursor-pointer hover:bg-gray-100`}
-            onClick={() => onMonthClick(new Date(year, monthIndex, 1))} // Clic sul mese
-          >
-            <h3 className="text-lg font-semibold text-center mb-4  rounded-full">
-              {month}
-            </h3>
-            <div className="grid grid-cols-7 gap-1 text-xs">
-              {DAYS.map((day) => (
-                <div
-                  key={day}
-                  className="text-center font-semibold text-gray-600 flex items-center justify-center h-8"
-                >
-                  {day}
-                </div>
-              ))}
-              {Array(new Date(year, monthIndex, 1).getDay() || 7 - 1)
-                .fill(null)
-                .map((_, i) => (
-                  <div key={`empty-${i}`} className="h-8"></div>
-                ))}
-              {Array.from(
-                { length: new Date(year, monthIndex + 1, 0).getDate() },
-                (_, i) => i + 1
-              ).map((day) => {
-                const currentDay = new Date(year, monthIndex, day);
-                const isToday =
-                  currentDay.toDateString() === today.toDateString();
-                return (
-                  <div
-                    key={day}
-                    className={`h-8 text-center rounded-full text-gray-900 relative cursor-pointer hover:bg-gray-300 ${
-                      isToday ? "bg-blue-600 text-white" : ""
-                    } flex items-center justify-center`}
-                    onClick={(e) => {
-                      e.stopPropagation(); // Evita la propagazione del clic al mese
-                      onDateClick(currentDay); // Clic sul giorno
-                    }}
-                  >
-                    {isToday && (
-                      <div className="absolute left-0 w-full h-full flex items-center justify-center rounded-full bg-blue-600 text-white text-xs font-semibold">
-                        {day}
-                      </div>
-                    )}
-                    {!isToday && <span>{day}</span>}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+interface CalendarEvent {
+  EventId: number;
+  EventTitle: string;
+  EventStartDate: Date;
+  EventEndDate: Date;
+  EventStartTime: string;
+  EventEndTime: string;
+  EventColor: string;
+  EventDescription: string;
+  EventLocation: string;
+  EventTagName: string;
+  EventAttachments: EventAttachment[];
+  EventPartecipants: EventPartecipant[];
+}
 
 const formatDate = (date: Date, view: string): string => {
   const options: Intl.DateTimeFormatOptions = {
@@ -519,13 +86,221 @@ const formatDate = (date: Date, view: string): string => {
     })
     .replace(/^\w/, (c) => c.toUpperCase());
 };
+
 export default function Calendar() {
-  const [view, setView] = useState("week");
+  const navigate = useNavigate();
+  const { Action, EventId, EventPartecipantEmail } = useParams();
+  const [isOpen, setIsOpen] = useState(false);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [view, setView] = useState("day");
   const [currentDate, setCurrentDate] = useState(new Date());
   const container = useRef<HTMLDivElement>(null);
   const [redLineBehavior, setRedLineBehavior] = useState<
     "current" | "always" | "full-week"
   >("current");
+  const [prefilledEventData, setPrefilledEventData] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleIcsImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const content = e.target?.result as string;
+
+      const lines = content.split("\n");
+      let event = {
+        title: "",
+        description: "",
+        startDate: "",
+        endDate: "",
+        startTime: "",
+        endTime: "",
+        location: "",
+      };
+
+      let isInEvent = false;
+
+      for (let line of lines) {
+        line = line.trim();
+
+        if (line === "BEGIN:VEVENT") {
+          isInEvent = true;
+          continue;
+        }
+
+        if (line === "END:VEVENT") {
+          isInEvent = false;
+          continue;
+        }
+
+        if (!isInEvent) continue;
+
+        if (line.startsWith("SUMMARY:")) {
+          event.title = line.substring(8);
+        } else if (line.startsWith("DESCRIPTION:")) {
+          event.description = line.substring(12);
+        } else if (line.startsWith("DTSTART;TZID=")) {
+          const datetime = line.split(":")[1];
+          event.startDate = `${datetime.substring(0, 4)}-${datetime.substring(
+            4,
+            6
+          )}-${datetime.substring(6, 8)}`;
+          event.startTime = `${datetime.substring(9, 11)}:${datetime.substring(
+            11,
+            13
+          )}`;
+        } else if (line.startsWith("DTEND;TZID=")) {
+          const datetime = line.split(":")[1];
+          event.endDate = `${datetime.substring(0, 4)}-${datetime.substring(
+            4,
+            6
+          )}-${datetime.substring(6, 8)}`;
+          event.endTime = `${datetime.substring(9, 11)}:${datetime.substring(
+            11,
+            13
+          )}`;
+        } else if (line.startsWith("LOCATION:")) {
+          event.location = line.substring(9);
+        }
+      }
+
+      setPrefilledEventData(event);
+      setIsOpen(true);
+    };
+    reader.readAsText(file);
+  };
+
+  function handleExportEvent() {
+    // Format date and time for ICS file
+    const formatICSDateTime = (date: any, time: string) => {
+      const dateStr = dayjs(date).format("YYYYMMDD");
+      const timeStr = time.replace(":", "") + "00";
+      return `${dateStr}T${timeStr}`;
+    };
+
+    const getCurrentTimestamp = () => {
+      return dayjs().format("YYYYMMDDTHHmmss");
+    };
+
+    let icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Calendar App//IT
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VTIMEZONE
+TZID:Europe/Rome
+LAST-MODIFIED:20240422T053451Z
+TZURL:https://www.tzurl.org/zoneinfo-outlook/Europe/Rome
+X-LIC-LOCATION:Europe/Rome
+BEGIN:DAYLIGHT
+TZNAME:CEST
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+DTSTART:19700329T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZNAME:CET
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+DTSTART:19701025T030000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+END:STANDARD
+END:VTIMEZONE`;
+
+    for (let event of events) {
+      const startDateTime = formatICSDateTime(
+        event.EventStartDate,
+        event.EventStartTime
+      );
+      const endDateTime = formatICSDateTime(
+        event.EventEndDate,
+        event.EventEndTime
+      );
+
+      // Escape special characters and handle line folding
+      const description = event.EventDescription.replace(/\n/g, "\\n")
+        .replace(/,/g, "\\,")
+        .replace(/;/g, "\\;");
+      const location = event.EventLocation.replace(/,/g, "\\,").replace(
+        /;/g,
+        "\\;"
+      );
+      const summary = event.EventTitle.replace(/,/g, "\\,").replace(
+        /;/g,
+        "\\;"
+      );
+
+      icsContent += `
+BEGIN:VEVENT
+DTSTAMP:${getCurrentTimestamp()}Z
+UID:${event.EventId}@calendar-app
+DTSTART;TZID=Europe/Rome:${startDateTime}
+DTEND;TZID=Europe/Rome:${endDateTime}
+SUMMARY:${summary}
+DESCRIPTION:${description}
+LOCATION:${location}
+END:VEVENT`;
+    }
+
+    icsContent += `\nEND:VCALENDAR`;
+
+    // Create and download the file
+    const blob = new Blob([icsContent], {
+      type: "text/calendar;charset=utf-8",
+    });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute("download", "Calendario.ics");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  async function fetchEvents() {
+    const res = await axios.get(`Calendar/GET/GetEventsByEmail`);
+    setEvents(res.data);
+  }
+
+  async function updateEventPartecipantStatus(
+    eventId: string,
+    partecipantEmail: string,
+    status: string
+  ) {
+    try {
+      const res = await axios.put(
+        `Calendar/UPDATE/UpdateEventPartecipantStatus`,
+        {
+          EventId: eventId,
+          EventPartecipantEmail: partecipantEmail,
+          EventPartecipantStatus: status,
+        }
+      );
+      if (res.status === 200) {
+        socket.emit("calendar-update");
+        navigate(`/comunications/calendar/`);
+        setIsOpen(true);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    if (Action === "add-event") {
+      setIsOpen(true);
+    } else if (Action === "accept" && EventId && EventPartecipantEmail) {
+      updateEventPartecipantStatus(EventId, EventPartecipantEmail, "Accettato");
+    } else if (Action === "reject" && EventId && EventPartecipantEmail) {
+      updateEventPartecipantStatus(EventId, EventPartecipantEmail, "Rifiutato");
+    }
+    fetchEvents();
+    socket.on("calendar-update", () => {
+      fetchEvents();
+    });
+  }, []);
 
   const changeDate = (offset: number) => {
     const newDate = new Date(currentDate);
@@ -555,116 +330,196 @@ export default function Calendar() {
     if (container.current) {
       container.current.scrollTop = 0;
     }
-  }, [view, currentDate]);
+  }, [container]); //Corrected useEffect dependency
 
   return (
-    <div className="flex flex-col w-full h-screen rounded-lg border-2">
-      <header className="flex flex-none items-center justify-between border-b border-gray-300 px-6 py-4 bg-white mt-1">
-        <h1 className="text-xl font-bold text-gray-900">
-          {formatDate(currentDate, view)}
-        </h1>
+    <>
+      <ViewEventModal
+        isOpen={isOpen}
+        eventId={EventId ? parseInt(EventId) : 0}
+        isClosed={() => {
+          setIsOpen(false);
+        }}
+      />
+      <AddEventModal
+        isOpen={isOpen}
+        isClosed={() => {
+          setPrefilledEventData(null);
+          setIsOpen(false);
+        }}
+        prefilledData={prefilledEventData}
+      />
 
-        <div className="flex items-center gap-4">
-          <div className="relative flex items-center rounded-full bg-gray-100 border-2 border-gray-300">
-            <button
-              onClick={() => changeDate(-1)}
-              type="button"
-              className="flex h-10 w-12 items-center justify-center rounded-l-full border-r bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+      <input
+        type="file"
+        accept=".ics"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={handleIcsImport}
+      />
+
+      <div className="flex flex-col w-full h-screen rounded-lg border-2">
+        <header className="flex flex-none items-center justify-between border-b border-gray-300 px-6 py-4 bg-white mt-1">
+          <h1 className="text-xl font-bold text-gray-900">
+            {formatDate(currentDate, view)}
+          </h1>
+
+          <div className="flex items-center gap-4">
+            <Button
+              className="flex h-10 items-center justify-center rounded-full bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+              variant="bordered"
+              onClick={handleExportEvent}
             >
-              <ChevronLeftIcon className="h-6 w-6" aria-hidden="true" />
-            </button>
-            <button
-              onClick={() => changeDate(1)}
-              type="button"
-              className="flex h-10 w-12 items-center justify-center rounded-r-full border-l bg-white text-gray-600 hover:bg-gray-100 focus:relative"
-            >
-              <ChevronRightIcon className="h-6 w-6" aria-hidden="true" />
-            </button>
-          </div>
-          {(view === "day" || view === "week") && (
+              <FileDownloadOutlined
+                className="h-6 w-6 mr-2"
+                aria-hidden="true"
+              />
+              Esporta calendario
+            </Button>
             <Dropdown>
-              <DropdownTrigger variant="bordered" className="rounded-full h-11">
-                <Button className="flex items-center px-4 text-sm font-semibold text-gray-600">
-                  Orario
-                  <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
+              <DropdownTrigger>
+                <Button
+                  className="flex h-10 items-center justify-center rounded-full bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+                  variant="bordered"
+                >
+                  <AddRounded className="h-6 w-6 mr-2" aria-hidden="true" />
+                  Aggiungi evento
                 </Button>
               </DropdownTrigger>
               <DropdownMenu>
                 <DropdownItem
-                  key="current"
-                  onClick={() => setRedLineBehavior("current")}
+                  key="add"
+                  onClick={() => {
+                    setPrefilledEventData(null);
+                    setIsOpen(true);
+                  }}
+                  startContent={<AddRounded className="h-5 w-5" />}
                 >
-                  {view === "day" ? "Giorno corrente" : "Settimana corrente"}
+                  Aggiungi evento
                 </DropdownItem>
                 <DropdownItem
-                  key="always"
-                  onClick={() => setRedLineBehavior("always")}
+                  key="import"
+                  onClick={() => fileInputRef.current?.click()}
+                  startContent={<FileUploadOutlined className="h-5 w-5" />}
                 >
-                  Sempre visibile
+                  Importa da ICS
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>
-          )}
-
-          <Dropdown>
-            <DropdownTrigger variant="bordered" className="rounded-full h-11">
-              <Button className="flex items-center px-4 text-sm font-semibold text-gray-600">
-                {view === "day"
-                  ? "Giorno"
-                  : view === "week"
-                  ? "Settimana"
-                  : view === "month"
-                  ? "Mese"
-                  : "Anno"}
-                <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
+            <div className="relative flex items-center rounded-full bg-gray-100 border-2 border-gray-300">
+              <Button
+                onClick={() => changeDate(-1)}
+                className="flex h-10 w-12 items-center justify-center rounded-l-full border-r bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+              >
+                <ChevronLeftIcon className="h-6 w-6" aria-hidden="true" />
               </Button>
-            </DropdownTrigger>
-            <DropdownMenu>
-              <DropdownItem key="day" onClick={() => setView("day")}>
-                Giorno
-              </DropdownItem>
-              <DropdownItem key="week" onClick={() => setView("week")}>
-                Settimana
-              </DropdownItem>
-              <DropdownItem key="month" onClick={() => setView("month")}>
-                Mese
-              </DropdownItem>
-              <DropdownItem key="year" onClick={() => setView("year")}>
-                Anno
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-        </div>
-      </header>
+              <Button
+                onClick={() => changeDate(1)}
+                className="flex h-10 w-12 items-center justify-center rounded-r-full border-l bg-white text-gray-600 hover:bg-gray-100 focus:relative"
+              >
+                <ChevronRightIcon className="h-6 w-6" aria-hidden="true" />
+              </Button>
+            </div>
+            {(view === "day" || view === "week") && (
+              <Dropdown>
+                <DropdownTrigger
+                  variant="bordered"
+                  className="rounded-full h-11"
+                >
+                  <Button className="flex items-center px-4 text-sm font-semibold text-gray-600">
+                    Orario
+                    <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu>
+                  <DropdownItem
+                    key="current"
+                    onClick={() => setRedLineBehavior("current")}
+                  >
+                    {view === "day" ? "Giorno corrente" : "Settimana corrente"}
+                  </DropdownItem>
+                  <DropdownItem
+                    key="always"
+                    onClick={() => setRedLineBehavior("always")}
+                  >
+                    Sempre visibile
+                  </DropdownItem>
+                  {view === "week" ? (
+                    <DropdownItem
+                      key="full-week"
+                      onClick={() => setRedLineBehavior("full-week")}
+                    >
+                      Intera settimana
+                    </DropdownItem>
+                  ) : null}
+                </DropdownMenu>
+              </Dropdown>
+            )}
 
-      <div className="flex-1 overflow-y-auto rounded-lg" ref={container}>
-        {view === "day" && (
-          <CalendarDay
-            currentDate={currentDate}
-            redLineBehavior={redLineBehavior}
-          />
-        )}
-        {view === "week" && (
-          <CalendarWeek
-            currentDate={currentDate}
-            onDateClick={handleDateClick}
-            redLineBehavior={redLineBehavior}
-          />
-        )}
-        {view === "month" && (
-          <CalendarMonth
-            currentDate={currentDate}
-            onDateClick={handleDateClick}
-          />
-        )}
-        {view === "year" && (
-          <CalendarYear
-            currentDate={currentDate}
-            onDateClick={handleDateClick}
-            onMonthClick={handleMonthClick}
-          />
-        )}
+            <Dropdown>
+              <DropdownTrigger variant="bordered" className="rounded-full h-11">
+                <Button className="flex items-center px-4 text-sm font-semibold text-gray-600">
+                  {view === "day"
+                    ? "Giorno"
+                    : view === "week"
+                    ? "Settimana"
+                    : view === "month"
+                    ? "Mese"
+                    : "Anno"}
+                  <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu>
+                <DropdownItem key="day" onClick={() => setView("day")}>
+                  Giorno
+                </DropdownItem>
+                <DropdownItem key="week" onClick={() => setView("week")}>
+                  Settimana
+                </DropdownItem>
+                <DropdownItem key="month" onClick={() => setView("month")}>
+                  Mese
+                </DropdownItem>
+                <DropdownItem key="year" onClick={() => setView("year")}>
+                  Anno
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto rounded-lg" ref={container}>
+          {view === "day" && (
+            <CalendarDay
+              currentDate={currentDate}
+              redLineBehavior={redLineBehavior}
+              events={events}
+            />
+          )}
+          {view === "week" && (
+            <CalendarWeek
+              currentDate={currentDate}
+              onDateClick={handleDateClick}
+              redLineBehavior={redLineBehavior}
+              events={events}
+            />
+          )}
+          {view === "month" && (
+            <CalendarMonth
+              currentDate={currentDate}
+              onDateClick={handleDateClick}
+              events={events}
+            />
+          )}
+          {view === "year" && (
+            <CalendarYear
+              currentDate={currentDate}
+              onDateClick={handleDateClick}
+              onMonthClick={handleMonthClick}
+              events={events}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

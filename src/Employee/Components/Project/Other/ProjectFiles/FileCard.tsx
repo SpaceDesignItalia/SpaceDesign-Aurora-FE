@@ -31,7 +31,8 @@ export default function FileCard({
   const [isEditing, setIsEditing] = useState(false);
 
   // Ottieni nome del file e la sua estensione separatamente
-  const initialFileName = file.FileName || file.file.name;
+  const initialFileName =
+    file.FileName || file.EventAttachmentName || file.file.name;
   const extension = initialFileName.substring(initialFileName.lastIndexOf("."));
   const [newFileName, setNewFileName] = useState("");
 
@@ -58,7 +59,10 @@ export default function FileCard({
 
   async function fetchFileIcon() {
     try {
-      const fileName = variant === "default" ? file.FileName : file.file.name;
+      const fileName =
+        variant === "default"
+          ? file.FileName
+          : file.EventAttachmentName || file.file.name;
       const res = await axios.get(`/Fileicon/GET/GetFileIconByExtension`, {
         params: { fileName },
       });
@@ -196,7 +200,9 @@ export default function FileCard({
             <div className="border rounded-xl h-12 w-12 p-2 bg-white">
               <img src={API_URL_IMG + fileIcon} alt={fileIcon} />
             </div>
-            <h4 className="text-sm truncate w-3/4">{file.file.name}</h4>
+            <h4 className="text-sm truncate w-3/4">
+              {file.EventAttachmentName || file.file.name}
+            </h4>
           </div>
           <div className="flex flex-row gap-3 items-center">
             <ConfirmRemoveFilePopover index={index} DeleteFile={DeleteFile} />

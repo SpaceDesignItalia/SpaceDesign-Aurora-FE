@@ -73,7 +73,6 @@ export default function ProjectPage() {
     Action: string;
   }>();
   const [ProjectId, setProjectId] = useState("");
-  const [ProjectName, setProjectName] = useState("");
   const [projectData, setProjectData] = useState<Project>({
     ProjectId: 0,
     ProjectName: "",
@@ -180,7 +179,6 @@ export default function ProjectPage() {
       .get("/Project/GET/GetProjectByUniqueCode", { params: { UniqueCode } })
       .then((res) => {
         setProjectId(res.data.ProjectId);
-        setProjectName(res.data.ProjectName);
 
         return axios
           .get("/Project/GET/GetProjectByIdAndName", {

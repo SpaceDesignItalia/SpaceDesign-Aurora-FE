@@ -74,7 +74,6 @@ export default function SettingsModel() {
     axios
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then((res) => {
-        console.log(res.data);
         setUserEditedData(res.data);
         setUserData(res.data);
         setProfileImagePreview(

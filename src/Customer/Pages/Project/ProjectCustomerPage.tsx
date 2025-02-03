@@ -64,7 +64,6 @@ export default function ProjectCustomerPage() {
       })
       .then((res) => {
         setProjectData(res.data);
-        console.log(res.data);
       });
   }, [UniqueCode]);
 
