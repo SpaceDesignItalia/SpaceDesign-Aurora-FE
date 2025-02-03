@@ -634,27 +634,31 @@ export default function AddTaskModal({
                           }
                         />
                       </dd>
-                      <Button
-                        variant="bordered"
-                        className="w-max-1/2 mx-auto cursor-pointer gap-3 my-5 sm:my-0 py-2"
-                        radius="full"
-                        onClick={handleRefine}
-                        disabled={loading || !newTask.ProjectTaskDescription}
-                      >
-                        {loading ? (
-                          <>
-                            {" "}
-                            <Spinner className="text-black" /> Riscrittura in
-                            corso...{" "}
-                          </>
-                        ) : (
-                          <>
-                            {" "}
-                            <AutoFixHighRoundedIcon className="w-5 h-5" />{" "}
-                            Riscrivi in modo formale{" "}
-                          </>
-                        )}
-                      </Button>
+                      {newTask.ProjectTaskDescription ? (
+                        <Button
+                          variant="bordered"
+                          className="w-max-1/2 mx-auto gap-3 my-5 sm:my-0 py-2"
+                          radius="full"
+                          onClick={handleRefine}
+                          isDisabled={
+                            loading || !newTask.ProjectTaskDescription
+                          }
+                        >
+                          {loading ? (
+                            <>
+                              {" "}
+                              <Spinner size="sm" className="text-black" />{" "}
+                              Riscrittura in corso...{" "}
+                            </>
+                          ) : (
+                            <>
+                              {" "}
+                              <AutoFixHighRoundedIcon className="w-5 h-5" />{" "}
+                              Riscrivi con AI{" "}
+                            </>
+                          )}
+                        </Button>
+                      ) : null}
                     </div>
                   </dl>
                 </div>

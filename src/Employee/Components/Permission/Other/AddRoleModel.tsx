@@ -8,9 +8,11 @@ import {
   Checkbox,
   Select,
   SelectItem,
+  Spinner,
 } from "@heroui/react";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
+import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
 
 interface Role {
   RoleName: string;
@@ -64,6 +66,8 @@ const AddRoleModel: React.FC = () => {
   const [rolePermissions, setRolePermissions] = useState<number[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [generateLoading, setGenerateLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -115,6 +119,49 @@ const AddRoleModel: React.FC = () => {
           PermissionId: Number(permission.PermissionId),
         }))
       );
+    }
+  };
+
+  const handleRefine = async () => {
+    if (!newRole.RoleDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post(
+        "/Project/POST/RefineRoleDescription",
+        {
+          text: `Riscrivi in modo più formale e completo il seguente testo: ${newRole.RoleDescription}`,
+        }
+      );
+      console.log("Testo raffinato:", refinedText.data);
+      setNewRole({
+        ...newRole,
+        RoleDescription: refinedText.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleGenerate = async () => {
+    if (!newRole.RoleName) return;
+    setGenerateLoading(true);
+    try {
+      const response = await axios.post(
+        "/Project/POST/GenerateRoleDescriptionFromName",
+        { roleName: newRole.RoleName } // Passa direttamente il nome del ruolo
+      );
+      console.log("Testo generato:", response.data);
+      setNewRole({
+        ...newRole,
+        RoleDescription: response.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setGenerateLoading(false);
     }
   };
 
@@ -228,7 +275,52 @@ const AddRoleModel: React.FC = () => {
                 value={newRole.RoleDescription}
                 onChange={handleRoleChange("RoleDescription")}
                 fullWidth
+                className="mb-2"
               />
+
+              {newRole.RoleName && !newRole.RoleDescription ? (
+                <Button
+                  variant="bordered"
+                  className="w-max-1/2 mx-auto gap-3 my-5 sm:my-0 py-2 mr-2"
+                  radius="full"
+                  onClick={handleGenerate}
+                  isDisabled={generateLoading}
+                >
+                  {generateLoading ? (
+                    <>
+                      <Spinner size="sm" className="text-black" /> Generazione
+                      in corso...
+                    </>
+                  ) : (
+                    <>
+                      <AutoFixHighRoundedIcon className="w-5 h-5" /> Genera
+                      descrizione per: {newRole.RoleName}
+                    </>
+                  )}
+                </Button>
+              ) : null}
+
+              {newRole.RoleDescription ? (
+                <Button
+                  variant="bordered"
+                  className="w-max-1/2 gap-3 my-5 sm:my-0 py-2"
+                  radius="full"
+                  onClick={handleRefine}
+                  isDisabled={loading || !newRole.RoleDescription}
+                >
+                  {loading ? (
+                    <>
+                      <Spinner size="sm" className="text-black" /> Riscrittura
+                      in corso...
+                    </>
+                  ) : (
+                    <>
+                      <AutoFixHighRoundedIcon className="w-5 h-5" /> Riscrivi
+                      con AI
+                    </>
+                  )}
+                </Button>
+              ) : null}
             </div>
 
             <div className="col-span-6 sm:col-span-2">
