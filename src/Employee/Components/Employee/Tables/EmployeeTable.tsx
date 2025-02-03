@@ -63,7 +63,9 @@ const columns = [
 ];
 
 export default function EmployeeTable() {
-  const employeeId = useParams().EmployeeId;
+  const employeeId = !isNaN(Number(useParams().EmployeeId))
+    ? useParams().EmployeeId
+    : null;
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
