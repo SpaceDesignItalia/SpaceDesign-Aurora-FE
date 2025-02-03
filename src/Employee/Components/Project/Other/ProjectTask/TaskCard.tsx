@@ -234,7 +234,7 @@ export default function TaskCard({
       >
         <Card className="h-full p-2" radius="lg">
           <CardHeader className="justify-between items-start">
-            <h1 className="text-normal font-bold text-default-600 text-ellipsis overflow-hidden">
+            <h1 className="text-normal font-semibold text-default-600 text-ellipsis overflow-hidden">
               {task.ProjectTaskName}
             </h1>
 
@@ -288,7 +288,7 @@ export default function TaskCard({
                 showArrow
                 placement="bottom"
               >
-                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
+                <div className="flex flex-row justify-center items-center gap-1 font-medium">
                   <LocalOfferRoundedIcon />
                   {task.ProjectTaskTags.length}
                 </div>
@@ -300,7 +300,7 @@ export default function TaskCard({
                 showArrow
                 placement="bottom"
               >
-                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
+                <div className="flex flex-row justify-center items-center gap-1 font-medium">
                   <AttachFileRoundedIcon />
                   {fileCount}
                 </div>
@@ -312,7 +312,7 @@ export default function TaskCard({
                 showArrow
                 placement="bottom"
               >
-                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
+                <div className="flex flex-row justify-center items-center gap-1 font-medium">
                   <CheckCircleOutlineRoundedIcon />
                   {checkboxCount}
                 </div>
@@ -324,7 +324,7 @@ export default function TaskCard({
                 showArrow
                 placement="bottom"
               >
-                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
+                <div className="flex flex-row justify-center items-center gap-1 font-medium">
                   <ChatRoundedIcon />
                   {commentsCount}
                 </div>
@@ -362,7 +362,7 @@ export default function TaskCard({
             )}
             <div className="flex flex-row items-center justify-between gap-3 w-full">
               <Tooltip content="Scadenza task" showArrow placement="bottom">
-                <span className="flex flex-row gap-2 justify-center items-center font-semibold text-sm">
+                <span className="flex flex-row gap-2 justify-center items-center font-medium text-sm">
                   <CalendarMonthRoundedIcon sx={{ fontSize: 20 }} />
                   {formatDate(task.ProjectTaskExpiration)}
                 </span>

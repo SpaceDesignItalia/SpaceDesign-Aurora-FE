@@ -113,7 +113,7 @@ export default function Notification() {
           <span className="sr-only">View notifications</span>
           <BellIcon className={`h-6 w-6 ${update ? "animate-shake" : ""}`} />
           {unreadNotificationsCount > 0 && (
-            <span className="absolute top-0 right-0 inline-flex items-center justify-center px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full">
+            <span className="absolute top-0 right-0 inline-flex items-center justify-center px-[4px] py-0.5 text-xs font-semibold leading-none text-white bg-primary rounded-full">
               {unreadNotificationsCount}
             </span>
           )}

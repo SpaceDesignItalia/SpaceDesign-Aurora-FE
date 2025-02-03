@@ -247,16 +247,16 @@ export default function AddProjectModel() {
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
         <div className="space-y-6 bg-white py-6">
           <div>
-            <h3 className="text-base font-semibold leading-6 text-gray-900">
+            <h3 className="text-base font-medium leading-6 text-gray-900">
               Progetto
             </h3>
             <p className="mt-1 text-sm text-gray-500 sm:w-1/3">
               In questo pannello potrai creare un nuovo progetto nel database. I
               campi contrassegnati con un asterisco (
-              <span className="text-danger font-bold">*</span>) sono obbligatori
-              e devono essere compilati per completare la registrazione.
-              Assicurati di fornire tutte le informazioni necessarie per
-              garantire un inserimento corretto.
+              <span className="text-danger font-semibold">*</span>) sono
+              obbligatori e devono essere compilati per completare la
+              registrazione. Assicurati di fornire tutte le informazioni
+              necessarie per garantire un inserimento corretto.
             </p>
           </div>
 
@@ -266,7 +266,7 @@ export default function AddProjectModel() {
                 htmlFor="last-name"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Banner <span className="text-red-600 font-bold">*</span>
+                Banner <span className="text-red-600 font-semibold">*</span>
               </label>
               <div className="flex flex-wrap gap-5 mt-3">
                 <RadioGroup
@@ -296,7 +296,8 @@ export default function AddProjectModel() {
                 htmlFor="project-name"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Nome progetto <span className="text-red-600 font-bold">*</span>
+                Nome progetto{" "}
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <Input
                 variant="bordered"
@@ -314,7 +315,8 @@ export default function AddProjectModel() {
                 htmlFor="project-end-date"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Fine Progetto <span className="text-red-600 font-bold">*</span>
+                Fine Progetto{" "}
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <I18nProvider locale="it-GB">
                 <DatePicker
@@ -331,7 +333,8 @@ export default function AddProjectModel() {
                 htmlFor="project-description"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Descrizione <span className="text-red-600 font-bold">*</span>
+                Descrizione{" "}
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <Textarea
                 variant="bordered"
@@ -350,7 +353,7 @@ export default function AddProjectModel() {
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
                 Project Manager{" "}
-                <span className="text-red-600 font-bold">*</span>
+                <span className="text-red-600 font-semibold">*</span>
               </label>
 
               <Autocomplete

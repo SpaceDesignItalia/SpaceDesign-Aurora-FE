@@ -464,7 +464,7 @@ export default function CustomersTable() {
             searchTerm == "" ? (
               <div className="text-center p-10">
                 <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
-                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                <h3 className="mt-2 text-sm font-medium text-gray-900">
                   Nessun cliente trovato!
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
@@ -483,12 +483,12 @@ export default function CustomersTable() {
             ) : (
               <div className="text-center p-10">
                 <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
-                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                <h3 className="mt-2 text-sm font-medium text-gray-900">
                   Nessun cliente trovato!
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Nessun risultato corrisponde alla tua ricerca:{" "}
-                  <span className="font-semibold italic">{searchTerm}</span>
+                  <span className="font-medium italic">{searchTerm}</span>
                 </p>
               </div>
             )

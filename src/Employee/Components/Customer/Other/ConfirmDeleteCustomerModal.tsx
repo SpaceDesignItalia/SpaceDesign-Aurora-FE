@@ -1,11 +1,6 @@
 // ConfirmDeleteModal.tsx
 import { useState } from "react";
-import {
-  Button,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@heroui/react";
+import { Button, Popover, PopoverContent, PopoverTrigger } from "@heroui/react";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
 
@@ -50,7 +45,7 @@ export default function ConfirmDeleteCustomerModal({
       </PopoverTrigger>
       <PopoverContent>
         <div className="px-1 py-2">
-          <div className="flex flex-row gap-2 items-center text-small font-bold mb-2">
+          <div className="flex flex-row gap-2 items-center text-small font-semibold mb-2">
             <ErrorRoundedIcon className="text-warning" sx={{ fontSize: 20 }} />
             Sei sicuro?
           </div>

@@ -170,7 +170,7 @@ export default function EditEmployeeModel() {
         <form>
           <div className="space-y-6 bg-white py-6">
             <div>
-              <h3 className="text-base font-semibold leading-6 text-gray-900">
+              <h3 className="text-base font-medium leading-6 text-gray-900">
                 Dipendente
               </h3>
               <p className="mt-1 text-sm text-gray-500">
@@ -184,7 +184,7 @@ export default function EditEmployeeModel() {
                   htmlFor="EmployeeName"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Nome <span className="text-danger font-bold">*</span>
+                  Nome <span className="text-danger font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -201,7 +201,7 @@ export default function EditEmployeeModel() {
                   htmlFor="EmployeeSurname"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Cognome <span className="text-danger font-bold">*</span>
+                  Cognome <span className="text-danger font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -218,7 +218,7 @@ export default function EditEmployeeModel() {
                   htmlFor="EmployeeEmail"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Email <span className="text-danger font-bold">*</span>
+                  Email <span className="text-danger font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -254,7 +254,7 @@ export default function EditEmployeeModel() {
                   htmlFor="role"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Ruolo <span className="text-danger font-bold">*</span>
+                  Ruolo <span className="text-danger font-semibold">*</span>
                 </label>
                 <Autocomplete
                   placeholder="Seleziona ruolo"

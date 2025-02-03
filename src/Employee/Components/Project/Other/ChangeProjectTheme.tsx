@@ -93,7 +93,7 @@ export default function ChangeProjectTheme({
         {(isClosed) => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">Seleziona un tema</h3>
+              <h3 className="text-xl font-medium">Seleziona un tema</h3>
             </ModalHeader>
             <ModalBody>
               <RadioGroup

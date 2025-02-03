@@ -137,12 +137,12 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
               return (
                 <div
                   key={day}
-                  className="py-3 text-center font-semibold cursor-pointer hover:bg-gray-100 rounded-lg"
+                  className="py-3 text-center font-medium cursor-pointer hover:bg-gray-100 rounded-lg"
                   onClick={() => onDateClick(date)}
                 >
                   <span className="block text-lg">{day}</span>
                   <span
-                    className={`block text-base font-bold ${
+                    className={`block text-base font-semibold ${
                       date.toDateString() === now.toDateString()
                         ? "text-blue-600"
                         : "text-gray-900"
@@ -297,7 +297,7 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                                 event.EventDescription
                               )}\nDove: ${event.EventLocation}`}
                             >
-                              <div className="font-semibold">
+                              <div className="font-medium">
                                 {event.EventTitle}
                               </div>
                               <div className="text-xs opacity-90">

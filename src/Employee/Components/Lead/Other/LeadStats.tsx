@@ -68,7 +68,7 @@ export default function LeadStats() {
               </p>
             </dt>
             <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p className="text-lg md:text-2xl font-semibold text-gray-900">
+              <p className="text-lg md:text-2xl font-medium text-gray-900">
                 {item.stat != 0 ? item.stat : "Dati non disponibili"}
               </p>
             </dd>

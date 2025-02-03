@@ -132,7 +132,7 @@ export default function AddProjectTeamMember({
           {(isClosed) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                <h3 className="text-xl font-semibold">Aggiungi un membro</h3>
+                <h3 className="text-xl font-medium">Aggiungi un membro</h3>
               </ModalHeader>
               <ModalBody>
                 <div className="grid grid-cols-6 gap-6">

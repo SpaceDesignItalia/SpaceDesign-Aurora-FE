@@ -11,7 +11,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <HeroUIProvider>
       <Router>
         <PermissionsProvider>
-          <App />
+          <main>
+            <App />
+          </main>
         </PermissionsProvider>
       </Router>
     </HeroUIProvider>

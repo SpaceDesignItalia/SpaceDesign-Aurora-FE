@@ -1,11 +1,6 @@
 import { useEffect, useState, ChangeEvent } from "react";
 import axios from "axios";
-import {
-  Input,
-  Autocomplete,
-  AutocompleteItem,
-  Button,
-} from "@heroui/react";
+import { Input, Autocomplete, AutocompleteItem, Button } from "@heroui/react";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
@@ -173,13 +168,13 @@ export default function EditCustomerModel() {
         <form>
           <div className="space-y-6 bg-white py-6">
             <div>
-              <h3 className="text-base font-semibold leading-6 text-gray-900">
+              <h3 className="text-base font-medium leading-6 text-gray-900">
                 Modifica Cliente
               </h3>
               <p className="mt-1 text-sm text-gray-500 sm:w-1/3">
                 In questo pannello potrai aggiungere un nuovo cliente al
                 database. I campi contrassegnati con un asterisco (
-                <span className="text-danger font-bold">*</span>) sono
+                <span className="text-danger font-semibold">*</span>) sono
                 obbligatori.
               </p>
             </div>
@@ -189,7 +184,7 @@ export default function EditCustomerModel() {
                   htmlFor="CustomerName"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Nome <span className="text-red-600 font-bold">*</span>
+                  Nome <span className="text-red-600 font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -208,7 +203,7 @@ export default function EditCustomerModel() {
                   htmlFor="CustomerSurname"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Cognome <span className="text-red-600 font-bold">*</span>
+                  Cognome <span className="text-red-600 font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -227,7 +222,7 @@ export default function EditCustomerModel() {
                   htmlFor="CustomerEmail"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Email <span className="text-red-600 font-bold">*</span>
+                  Email <span className="text-red-600 font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -265,7 +260,7 @@ export default function EditCustomerModel() {
                   htmlFor="company"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Azienda <span className="text-red-600 font-bold">*</span>
+                  Azienda <span className="text-red-600 font-semibold">*</span>
                 </label>
                 <div className="flex flex-col md:flex-row gap-4">
                   <Autocomplete

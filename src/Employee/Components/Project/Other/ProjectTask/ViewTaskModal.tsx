@@ -703,7 +703,10 @@ export default function ViewTaskModal({
     <PopoverContent className="w-[350px] p-5">
       {(titleProps) => (
         <div className="px-1 py-2 w-full flex flex-col gap-3">
-          <h2 className="text-small font-bold text-foreground" {...titleProps}>
+          <h2
+            className="text-small font-semibold text-foreground"
+            {...titleProps}
+          >
             Tag
           </h2>
           <div className="mt-2 flex flex-col gap-2 w-full">
@@ -734,7 +737,7 @@ export default function ViewTaskModal({
   const memberPopoverContent = (
     <PopoverContent className="w-[350px] p-5">
       <div className="px-1 py-2 w-full flex flex-col gap-3">
-        <h2 className="text-small font-bold text-foreground">Membri</h2>
+        <h2 className="text-small font-semibold text-foreground">Membri</h2>
         <div className="mt-2 flex flex-col gap-2 w-full">
           <Autocomplete
             defaultItems={members}
@@ -862,7 +865,7 @@ export default function ViewTaskModal({
                 <div className="mt-4">
                   <dl>
                     <div className="px-4 flex flex-col sm:gap-4 sm:px-0">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                      <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                         <LocalOfferRoundedIcon />
                         Tag associati
                       </dt>
@@ -934,7 +937,7 @@ export default function ViewTaskModal({
                       </dd>
                     </div>
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                      <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                         <Groups2RoundedIcon />
                         Membri
                       </dt>
@@ -1019,7 +1022,7 @@ export default function ViewTaskModal({
                     </div>
 
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                      <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                         <CalendarMonthRoundedIcon />
                         {newTask?.ProjectTaskExpiration
                           ? "Durata task"
@@ -1098,7 +1101,7 @@ export default function ViewTaskModal({
                       hasValidDescription(newTask!.ProjectTaskDescription)) ||
                       editing) && (
                       <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                        <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                           <NotesRoundedIcon />
                           Descrizione
                         </dt>
@@ -1148,7 +1151,7 @@ export default function ViewTaskModal({
                             key="1"
                             aria-label="Accordion 1"
                             title={
-                              <div className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                              <div className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                                 <AttachFileRoundedIcon />
                                 Allegati
                                 <Chip
@@ -1216,7 +1219,7 @@ export default function ViewTaskModal({
                                   {(titleProps) => (
                                     <div className="px-1 py-2 w-full">
                                       <p
-                                        className="text-small font-bold text-foreground"
+                                        className="text-small font-semibold text-foreground"
                                         {...titleProps}
                                       >
                                         Crea checklist
@@ -1266,7 +1269,7 @@ export default function ViewTaskModal({
                                       aria-label="Accordion 1"
                                       title={
                                         <div className="flex items-center justify-between border-b">
-                                          <h4 className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                                          <h4 className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                                             <CheckBoxOutlinedIcon />{" "}
                                             {checklist.Text}
                                           </h4>
@@ -1433,7 +1436,7 @@ export default function ViewTaskModal({
                                               {(titleProps) => (
                                                 <div className="px-1 py-2 w-full">
                                                   <p
-                                                    className="text-small font-bold text-foreground"
+                                                    className="text-small font-semibold text-foreground"
                                                     {...titleProps}
                                                   >
                                                     Aggiungi elemento
@@ -1491,7 +1494,7 @@ export default function ViewTaskModal({
                         </div>
 
                         <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                          <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                          <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                             <ChatRoundedIcon />
                             Commenti
                           </dt>
@@ -1615,7 +1618,7 @@ export default function ViewTaskModal({
                                                     }
                                                     className="w-10 h-10 rounded-full"
                                                   />
-                                                  <p className="font-semibold text-base">
+                                                  <p className="font-medium text-base">
                                                     {comment.StafferFullName}
                                                   </p>
                                                   -

@@ -43,7 +43,7 @@ export default function ConfirmDeleteFileModal({
         {(isClosed) => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">
+              <h3 className="text-xl font-medium">
                 Conferma eliminazione del file {FileData.FileName}
               </h3>
             </ModalHeader>

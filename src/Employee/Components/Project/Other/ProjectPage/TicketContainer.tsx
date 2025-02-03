@@ -124,7 +124,7 @@ export default function TicketContainer({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 my-5">
         <div className="col-span-1 flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
           <div className="flex flex-col gap-5">
-            <h1 className="font-bold">Customer chat</h1>
+            <h1 className="font-semibold">Customer chat</h1>
             <ScrollShadow
               className="w-full h-[500px]"
               ref={scrollRef}

@@ -140,7 +140,7 @@ export default function ProjectDashboard() {
     <div className="py-10 m-0 lg:ml-72">
       <header>
         <div className="px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900">
             Progetti
           </h1>
         </div>
@@ -158,7 +158,7 @@ export default function ProjectDashboard() {
             <div className="w-full border-t border-gray-300" />
           </div>
           <div className="relative flex justify-center">
-            <span className="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
+            <span className="bg-white px-3 text-base font-medium leading-6 text-gray-900">
               Progetti
             </span>
           </div>

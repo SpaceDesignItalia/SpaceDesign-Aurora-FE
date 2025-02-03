@@ -43,7 +43,7 @@ export default function PasswordRecovery() {
           <div className="border border-gray-300 rounded-md p-6 max-w-md shadow-lg">
             <form className="space-y-6" onSubmit={handlePasswordRecovery}>
               <div className="mb-10">
-                <h3 className="text-3xl font-bold">Password Recovery</h3>
+                <h3 className="text-3xl font-semibold">Password Recovery</h3>
                 <p className="text-sm mt-4">
                   Enter your email to receive a password reset link.
                 </p>

@@ -316,7 +316,7 @@ export default function CodeShareContainer({
           >
             Indietro
           </Button>
-          <h2 className="text-xl font-semibold">
+          <h2 className="text-xl font-medium">
             {codeShare.ProjectCodeShareName}
           </h2>
         </div>

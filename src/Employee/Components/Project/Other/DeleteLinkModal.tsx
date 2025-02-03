@@ -48,7 +48,7 @@ export default function DeleteLinkModal({
         {(isClosed) => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">Rimuovi collegamento:</h3>
+              <h3 className="text-xl font-medium">Rimuovi collegamento:</h3>
             </ModalHeader>
             <ModalBody>
               <RadioGroup

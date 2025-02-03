@@ -117,7 +117,7 @@ export default function Login() {
                 autoComplete="on"
               >
                 <div className="mb-10">
-                  <h3 className="text-3xl font-bold">Accedi</h3>
+                  <h3 className="text-3xl font-semibold">Accedi</h3>
                   <p className="text-sm mt-4">
                     Accedi per continuare e scoprire tutte le funzionalità a tua
                     disposizione. Il tuo viaggio inizia qui.

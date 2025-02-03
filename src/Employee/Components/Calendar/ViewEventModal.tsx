@@ -440,7 +440,7 @@ END:VCALENDAR`;
                     <div className="mt-4">
                       <dl>
                         <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
-                          <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                          <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                             <CalendarMonthRoundedIcon />
                             Data e ora
                           </dt>
@@ -461,7 +461,7 @@ END:VCALENDAR`;
                         </div>
 
                         <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                          <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                          <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                             <NotesRoundedIcon />
                             Descrizione
                           </dt>
@@ -491,7 +491,7 @@ END:VCALENDAR`;
                               key="1"
                               aria-label="Accordion 1"
                               title={
-                                <div className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                                <div className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                                   <AttachFileRoundedIcon />
                                   Allegati
                                   <Chip
@@ -544,7 +544,7 @@ END:VCALENDAR`;
 
                         <div className="flex flex-row w-full gap-4">
                           <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
-                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                            <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                               <PeopleRoundedIcon />
                               Partecipanti
                             </dt>
@@ -577,7 +577,7 @@ END:VCALENDAR`;
                           </div>
 
                           <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
-                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                            <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                               <LocalOfferRoundedIcon />
                               Tag
                             </dt>
@@ -589,7 +589,7 @@ END:VCALENDAR`;
                           </div>
                         </div>
                         <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                          <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                          <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                             <LocationOnRoundedIcon />
                             Location
                           </dt>
@@ -687,7 +687,7 @@ END:VCALENDAR`;
                       <div className="mt-4">
                         <dl>
                           <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
-                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                            <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                               <CalendarMonthRoundedIcon />
                               Data e ora
                             </dt>
@@ -756,7 +756,7 @@ END:VCALENDAR`;
                           </div>
 
                           <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                            <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                               <NotesRoundedIcon />
                               Descrizione
                             </dt>
@@ -777,7 +777,7 @@ END:VCALENDAR`;
 
                           <div className="flex flex-row w-full gap-4">
                             <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
-                              <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                              <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                                 <PeopleRoundedIcon />
                                 Partecipanti
                               </dt>
@@ -851,7 +851,7 @@ END:VCALENDAR`;
                             </div>
 
                             <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
-                              <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                              <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                                 <LocalOfferRoundedIcon />
                                 Tag
                               </dt>
@@ -922,7 +922,7 @@ END:VCALENDAR`;
                             </div>
                           </div>
                           <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                            <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                               <LocationOnRoundedIcon />
                               Location
                             </dt>

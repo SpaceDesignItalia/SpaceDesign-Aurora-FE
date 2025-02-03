@@ -74,7 +74,7 @@ export default function ConfirmDeleteCodeShareModal({
           </PopoverTrigger>
           <PopoverContent>
             <div className="px-1 py-2">
-              <div className="flex flex-row gap-2 items-center text-small font-bold mb-2">
+              <div className="flex flex-row gap-2 items-center text-small font-semibold mb-2">
                 <ErrorRoundedIcon
                   className="text-warning"
                   sx={{ fontSize: 20 }}

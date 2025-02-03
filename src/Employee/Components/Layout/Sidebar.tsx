@@ -363,7 +363,7 @@ export default function Sidebar() {
                                   item.current
                                     ? "bg-primary text-white"
                                     : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-medium"
                                 )}
                               >
                                 <item.icon
@@ -385,7 +385,7 @@ export default function Sidebar() {
                       {sales &&
                         sales.some((sale) => sale.requiredCondition) && (
                           <li>
-                            <div className="text-xs font-semibold leading-6 text-gray-400">
+                            <div className="text-xs font-medium leading-6 text-gray-400">
                               Vendite
                             </div>
                             <ul role="list" className="-mx-2 mt-2 space-y-1">
@@ -397,7 +397,7 @@ export default function Sidebar() {
                                       item.current
                                         ? "bg-primary text-white"
                                         : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                      "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                                      "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-medium"
                                     )}
                                   >
                                     <item.icon
@@ -418,7 +418,7 @@ export default function Sidebar() {
                         )}
 
                       <li>
-                        <div className="text-xs font-semibold leading-6 text-gray-400">
+                        <div className="text-xs font-medium leading-6 text-gray-400">
                           Comunicazioni
                         </div>
                         <ul role="list" className="-mx-2 mt-2 space-y-1">
@@ -430,7 +430,7 @@ export default function Sidebar() {
                                   item.current
                                     ? "bg-primary text-white"
                                     : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-medium"
                                 )}
                               >
                                 <item.icon
@@ -445,7 +445,7 @@ export default function Sidebar() {
                                 {item.name}
                                 {item.notificationCount &&
                                 item.notificationCount > 0 ? (
-                                  <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                                  <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-semibold leading-none text-white bg-primary rounded-full self-center">
                                     {item.notificationCount}
                                   </span>
                                 ) : (
@@ -462,7 +462,7 @@ export default function Sidebar() {
                           (admin) => admin.requiredCondition
                         ) && (
                           <li>
-                            <div className="text-xs font-semibold leading-6 text-gray-400">
+                            <div className="text-xs font-medium leading-6 text-gray-400">
                               Amministrazione
                             </div>
                             <ul role="list" className="-mx-2 mt-2 space-y-1">
@@ -476,7 +476,7 @@ export default function Sidebar() {
                                           admin.current
                                             ? "bg-primary text-white"
                                             : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-medium"
                                         )}
                                       >
                                         <admin.icon
@@ -502,7 +502,7 @@ export default function Sidebar() {
                           (project) => project.requiredCondition
                         ) && (
                           <li>
-                            <div className="text-xs font-semibold leading-6 text-gray-400">
+                            <div className="text-xs font-medium leading-6 text-gray-400">
                               Gestione Progetti
                             </div>
                             <ul role="list" className="-mx-2 mt-2 space-y-1">
@@ -516,7 +516,7 @@ export default function Sidebar() {
                                           project.current
                                             ? "bg-primary text-white"
                                             : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-medium"
                                         )}
                                       >
                                         <project.icon
@@ -539,7 +539,7 @@ export default function Sidebar() {
 
                       {projects.length > 0 && (
                         <li>
-                          <div className="text-xs font-semibold leading-6 text-gray-400">
+                          <div className="text-xs font-medium leading-6 text-gray-400">
                             Progetti
                           </div>
                           <ul role="list" className="-mx-2 mt-2 space-y-1">
@@ -547,7 +547,7 @@ export default function Sidebar() {
                               <li key={project.ProjectId}>
                                 <a
                                   href={"/projects/" + project.UniqueCode}
-                                  className="group flex gap-x-3 rounded-full p-2 px-4 text-sm font-semibold leading-6 text-gray-700 hover:text-white hover:bg-gray-500"
+                                  className="group flex gap-x-3 rounded-full p-2 px-4 text-sm font-medium leading-6 text-gray-700 hover:text-white hover:bg-gray-500"
                                 >
                                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-gray-700 group-hover:text-gray-700">
                                     {project.ProjectName.charAt(0)}
@@ -556,7 +556,7 @@ export default function Sidebar() {
                                     {project.ProjectName}
                                   </span>
                                   {project.NotificationCount > 0 && (
-                                    <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                                    <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-semibold leading-none text-white bg-primary rounded-full self-center">
                                       {project.NotificationCount}
                                     </span>
                                   )}
@@ -594,7 +594,7 @@ export default function Sidebar() {
                           item.current
                             ? "bg-primary text-white"
                             : "text-gray-700 hover:text-white hover:bg-gray-500",
-                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-medium"
                         )}
                       >
                         <item.icon
@@ -615,7 +615,7 @@ export default function Sidebar() {
 
               {sales && sales.some((sale) => sale.requiredCondition) && (
                 <li>
-                  <div className="text-xs font-semibold leading-6 text-gray-400">
+                  <div className="text-xs font-medium leading-6 text-gray-400">
                     Vendite
                   </div>
                   <ul role="list" className="-mx-2 mt-2 space-y-1">
@@ -627,7 +627,7 @@ export default function Sidebar() {
                             item.current
                               ? "bg-primary text-white"
                               : "text-gray-700 hover:text-white hover:bg-gray-500",
-                            "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                            "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-medium"
                           )}
                         >
                           <item.icon
@@ -648,7 +648,7 @@ export default function Sidebar() {
               )}
 
               <li>
-                <div className="text-xs font-semibold leading-6 text-gray-400">
+                <div className="text-xs font-medium leading-6 text-gray-400">
                   Comunicazioni
                 </div>
                 <ul role="list" className="-mx-2 mt-2 space-y-1">
@@ -660,7 +660,7 @@ export default function Sidebar() {
                           item.current
                             ? "bg-primary text-white"
                             : "text-gray-700 hover:text-white hover:bg-gray-500",
-                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-medium"
                         )}
                       >
                         <item.icon
@@ -675,7 +675,7 @@ export default function Sidebar() {
                         {item.name}
                         {item.notificationCount &&
                         item.notificationCount > 0 ? (
-                          <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                          <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-semibold leading-none text-white bg-primary rounded-full self-center">
                             {item.notificationCount}
                           </span>
                         ) : (
@@ -690,7 +690,7 @@ export default function Sidebar() {
               {administration &&
                 administration.some((admin) => admin.requiredCondition) && (
                   <li>
-                    <div className="text-xs font-semibold leading-6 text-gray-400">
+                    <div className="text-xs font-medium leading-6 text-gray-400">
                       Amministrazione
                     </div>
                     <ul role="list" className="-mx-2 mt-2 space-y-1">
@@ -704,7 +704,7 @@ export default function Sidebar() {
                                   admin.current
                                     ? "bg-primary text-white"
                                     : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-medium"
                                 )}
                               >
                                 <admin.icon
@@ -730,7 +730,7 @@ export default function Sidebar() {
                   (project) => project.requiredCondition
                 ) && (
                   <li>
-                    <div className="text-xs font-semibold leading-6 text-gray-400">
+                    <div className="text-xs font-medium leading-6 text-gray-400">
                       Gestione Progetti
                     </div>
                     <ul role="list" className="-mx-2 mt-2 space-y-1">
@@ -744,7 +744,7 @@ export default function Sidebar() {
                                   project.current
                                     ? "bg-primary text-white"
                                     : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
+                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-medium"
                                 )}
                               >
                                 <project.icon
@@ -767,7 +767,7 @@ export default function Sidebar() {
 
               {projects.length > 0 && (
                 <li>
-                  <div className="text-xs font-semibold leading-6 text-gray-400">
+                  <div className="text-xs font-medium leading-6 text-gray-400">
                     Progetti
                   </div>
                   <ul role="list" className="-mx-2 mt-2 space-y-1">
@@ -775,7 +775,7 @@ export default function Sidebar() {
                       <li key={project.ProjectId}>
                         <a
                           href={"/projects/" + project.UniqueCode}
-                          className="group flex gap-x-3 rounded-full p-2 px-4 text-sm font-semibold leading-6 text-gray-700 hover:text-white hover:bg-gray-500"
+                          className="group flex gap-x-3 rounded-full p-2 px-4 text-sm font-medium leading-6 text-gray-700 hover:text-white hover:bg-gray-500"
                         >
                           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-gray-700 group-hover:text-gray-700">
                             {project.ProjectName.charAt(0)}
@@ -784,7 +784,7 @@ export default function Sidebar() {
                             {project.ProjectName}
                           </span>
                           {project.NotificationCount > 0 && (
-                            <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                            <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-semibold leading-none text-white bg-primary rounded-full self-center">
                               {project.NotificationCount}
                             </span>
                           )}
@@ -846,7 +846,7 @@ export default function Sidebar() {
                       />
                       <span className="hidden lg:flex lg:items-center">
                         <span
-                          className="ml-4 text-sm font-semibold leading-6 text-gray-900"
+                          className="ml-4 text-sm font-medium leading-6 text-gray-900"
                           aria-hidden="true"
                         >
                           {userData.EmployeeId !== 0 ? (

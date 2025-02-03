@@ -154,13 +154,13 @@ export default function EditPermissionModel() {
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
         <div className="space-y-6 bg-white py-6">
           <div>
-            <h3 className="text-base font-semibold leading-6 text-gray-900">
+            <h3 className="text-base font-medium leading-6 text-gray-900">
               Modifica permesso
             </h3>
             <p className="mt-1 text-sm text-gray-500 w-1/3">
               In questo pannello potrai modificare un permesso esistente nel
               database. I campi contrassegnati con un asterisco (
-              <span className="text-danger font-bold">*</span>) sono
+              <span className="text-danger font-semibold">*</span>) sono
               obbligatori. Assicurati di aggiornare tutte le informazioni
               necessarie prima di procedere.
             </p>
@@ -172,7 +172,8 @@ export default function EditPermissionModel() {
                 htmlFor="permission-name"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Nome permesso <span className="text-red-600 font-bold">*</span>
+                Nome permesso{" "}
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <Input
                 id="permission-name"
@@ -191,7 +192,7 @@ export default function EditPermissionModel() {
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
                 Descrizione permesso{" "}
-                <span className="text-red-600 font-bold">*</span>
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <Textarea
                 id="permission-description"
@@ -209,7 +210,7 @@ export default function EditPermissionModel() {
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
                 Azione permesso{" "}
-                <span className="text-red-600 font-bold">*</span>
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <Input
                 id="permission-action"
@@ -228,7 +229,7 @@ export default function EditPermissionModel() {
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
                 Gruppo permesso{" "}
-                <span className="text-red-600 font-bold">*</span>
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <Autocomplete
                 items={permissionGroup.map((group) => ({

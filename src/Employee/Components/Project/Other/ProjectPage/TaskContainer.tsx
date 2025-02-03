@@ -371,7 +371,7 @@ export default function TaskContainer({
                       : "min-h-[200px]"
                   }`}
                 >
-                  <h2 className="text-xl font-bold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
+                  <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
                     {column.ProjectTaskStatusName}
                     <Chip
                       radius="full"
@@ -435,7 +435,7 @@ export default function TaskContainer({
               archivedTasks.length === 0 ? "min-h-[100px]" : "min-h-[200px]"
             }`}
           >
-            <h2 className="text-xl font-bold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
+            <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
               Archiviate
               <Chip radius="full" color="primary" variant="faded" size="sm">
                 {archivedTasks.length}

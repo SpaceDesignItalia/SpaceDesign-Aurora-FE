@@ -263,7 +263,7 @@ export default function SettingsModel() {
       <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
         <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8 border-b-2 border-gray-200">
           <div>
-            <h2 className="text-base font-semibold leading-7">
+            <h2 className="text-base font-medium leading-7">
               Informazioni personali
             </h2>
             <p className="mt-1 text-sm leading-6 text-gray-400">
@@ -398,9 +398,7 @@ export default function SettingsModel() {
 
         <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
           <div>
-            <h2 className="text-base font-semibold leading-7">
-              Cambia password
-            </h2>
+            <h2 className="text-base font-medium leading-7">Cambia password</h2>
             <p className="mt-1 text-sm leading-6 text-gray-400">
               Aggiorna la password del tuo account.
             </p>

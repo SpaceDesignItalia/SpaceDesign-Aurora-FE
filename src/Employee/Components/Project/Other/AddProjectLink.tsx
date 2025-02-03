@@ -172,7 +172,7 @@ export default function AddProjectLink({
           {(isClosed) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                <h3 className="text-xl font-semibold">
+                <h3 className="text-xl font-medium">
                   Aggiungi un nuovo collegamento:
                 </h3>
               </ModalHeader>

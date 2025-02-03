@@ -147,7 +147,10 @@ export default function AddTaskModal({
     <PopoverContent className="w-[350px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
-          <h2 className="text-small font-bold text-foreground" {...titleProps}>
+          <h2
+            className="text-small font-semibold text-foreground"
+            {...titleProps}
+          >
             Dipendente
           </h2>
           <div className="mt-2 flex flex-col gap-2 w-full">
@@ -188,7 +191,10 @@ export default function AddTaskModal({
     <PopoverContent className="w-[350px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
-          <h2 className="text-small font-bold text-foreground" {...titleProps}>
+          <h2
+            className="text-small font-semibold text-foreground"
+            {...titleProps}
+          >
             Tag
           </h2>
           <div className="mt-2 flex flex-col gap-2 w-full">
@@ -432,7 +438,7 @@ export default function AddTaskModal({
                 <div className="mt-4">
                   <dl>
                     <div className="px-4 flex flex-col sm:gap-4 sm:px-0">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                      <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                         <LocalOfferRoundedIcon />
                         Tag associati
                       </dt>
@@ -487,7 +493,7 @@ export default function AddTaskModal({
                       </dd>
                     </div>
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                      <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                         <Groups2RoundedIcon />
                         Membri
                       </dt>
@@ -551,7 +557,7 @@ export default function AddTaskModal({
                     </div>
 
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                      <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                         <CalendarMonthRoundedIcon />
                         Durata task
                       </dt>
@@ -616,7 +622,7 @@ export default function AddTaskModal({
                     </div>
 
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                      <dt className="flex flex-row gap-2 items-center text-sm font-medium leading-6 text-gray-900">
                         <NotesRoundedIcon />
                         Descrizione
                       </dt>

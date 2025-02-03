@@ -161,7 +161,7 @@ export default function CodeShareContainer({
       {!selectedTab ? (
         <div className="flex flex-col gap-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">Stanze di code sharing</h2>
+            <h2 className="text-2xl font-semibold">Stanze di code sharing</h2>
             <Popover
               radius="lg"
               placement="bottom-end"
@@ -182,7 +182,7 @@ export default function CodeShareContainer({
                 {(titleProps) => (
                   <div className="px-1 py-2 w-full">
                     <p
-                      className="font-bold text-foreground mb-4"
+                      className="font-semibold text-foreground mb-4"
                       {...titleProps}
                     >
                       Nome della stanza
@@ -235,7 +235,7 @@ export default function CodeShareContainer({
                     />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold line-clamp-1 text-default-900">
+                    <h3 className="text-lg font-medium line-clamp-1 text-default-900">
                       {tab.ProjectCodeShareName}
                     </h3>
                     {onlineCodeShareUsers.filter(

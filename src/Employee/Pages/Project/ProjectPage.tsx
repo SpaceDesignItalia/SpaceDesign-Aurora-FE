@@ -207,7 +207,7 @@ export default function ProjectPage() {
                 <Chip color="primary" radius="full" className="hidden sm:flex">
                   {projectData.StatusName}
                 </Chip>
-                <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900 w-full text-wrap">
+                <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900 w-full text-wrap">
                   {projectData.ProjectName}
                 </h1>
               </div>
@@ -294,13 +294,7 @@ export default function ProjectPage() {
             )}
             {activeTab === "Code Share" && (
               <div>
-                <CodeShareContainer
-                  props={{
-                    radius: "lg",
-                    shadow: "sm",
-                  }}
-                  projectData={projectData}
-                />
+                <CodeShareContainer projectData={projectData} />
               </div>
             )}
             {activeTab === "Ticket" && (

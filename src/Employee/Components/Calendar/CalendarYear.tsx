@@ -73,22 +73,27 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto" style={{ minHeight: "100%" }}>
+    <div
+      className="flex-1 overflow-y-auto bg-gray-50"
+      style={{ minHeight: "100%" }}
+    >
       <div className="grid xl:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6 p-6">
         {MONTHS.map((month, monthIndex) => (
           <div
             key={month}
-            className={`p-4 rounded-lg shadow cursor-pointer hover:bg-gray-100`}
-            onClick={() => onMonthClick(new Date(year, monthIndex, 1))}
+            className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
           >
-            <h3 className="text-lg font-semibold text-center mb-4  rounded-full">
+            <h3
+              className="text-lg font-medium text-center mb-4 px-4 py-2 rounded-full cursor-pointer w-fit mx-auto hover:bg-gray-100 transition-colors duration-200"
+              onClick={() => onMonthClick(new Date(year, monthIndex, 1))}
+            >
               {month}
             </h3>
             <div className="grid grid-cols-7 gap-1 text-xs">
               {DAYS.map((day) => (
                 <div
                   key={day}
-                  className="text-center font-semibold text-gray-600 flex items-center justify-center h-8"
+                  className="text-center font-medium text-gray-600 flex items-center justify-center h-8"
                 >
                   {day}
                 </div>
@@ -110,28 +115,26 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
                 return (
                   <div
                     key={day}
-                    className={`h-8 text-center rounded-full text-gray-900 relative cursor-pointer hover:bg-gray-300 ${
-                      isToday ? "bg-blue-600 text-white" : ""
-                    } flex flex-col items-center justify-center`}
+                    className={`h-8 text-center rounded-full relative cursor-pointer
+                      ${
+                        isToday
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "hover:bg-gray-100"
+                      } 
+                      transition-colors duration-200 flex flex-col items-center justify-center`}
                     onClick={(e) => {
                       e.stopPropagation();
                       onDateClick(currentDay);
                     }}
                   >
-                    {isToday ? (
-                      <div className="absolute left-0 w-full h-full flex flex-col items-center justify-center rounded-full bg-blue-600 text-white text-xs font-semibold">
-                        <span>{day}</span>
-                        {hasEvents && (
-                          <div className="w-1 h-1 rounded-full bg-red-500 mt-0.5" />
-                        )}
-                      </div>
-                    ) : (
-                      <>
-                        <span>{day}</span>
-                        {hasEvents && (
-                          <div className="w-1 h-1 rounded-full bg-red-500 mt-0.5" />
-                        )}
-                      </>
+                    <span className={`${hasEvents ? "font-medium" : ""}`}>
+                      {day}
+                    </span>
+                    {hasEvents && (
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full mt-0.5 
+                        ${isToday ? "bg-white" : "bg-blue-500"}`}
+                      />
                     )}
                   </div>
                 );

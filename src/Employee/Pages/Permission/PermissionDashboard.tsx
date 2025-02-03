@@ -33,7 +33,7 @@ export default function PermissionDashboard() {
     <div className="py-10 m-0 lg:ml-72">
       <header>
         <div className="flex flex-col gap-3 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900">
             Ruoli
           </h1>
           <Breadcrumbs variant="bordered" radius="full">
@@ -52,7 +52,7 @@ export default function PermissionDashboard() {
         {permissions.permission && (
           <>
             <header>
-              <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+              <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900">
                 Permessi
               </h1>
             </header>

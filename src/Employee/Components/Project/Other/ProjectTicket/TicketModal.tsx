@@ -153,7 +153,7 @@ const TicketModal: React.FC<TicketModalProps> = ({
           {newTicket && (
             <>
               <ModalHeader className="flex flex-col gap-1 text-center">
-                <h2 className="text-2xl font-semibold text-gray-900">
+                <h2 className="text-2xl font-medium text-gray-900">
                   Modifica stato del ticket
                 </h2>
               </ModalHeader>

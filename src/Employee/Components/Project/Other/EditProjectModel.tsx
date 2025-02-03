@@ -298,7 +298,7 @@ export default function EditProjectModel() {
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
         <div className="space-y-6 bg-white">
           <div>
-            <h3 className="text-base font-semibold leading-6 text-gray-900">
+            <h3 className="text-base font-medium leading-6 text-gray-900">
               Progetto
             </h3>
             <p className="mt-1 text-sm text-gray-500">
