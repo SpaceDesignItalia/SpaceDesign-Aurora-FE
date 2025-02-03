@@ -21,6 +21,7 @@ interface Customer {
   CustomerEmail: string;
   CustomerPhone: string;
   CustomerImageUrl: string;
+  IsActive: boolean;
 }
 
 interface Company {
@@ -70,8 +71,22 @@ export default function ViewCustomerModal({
         {(isClosed) => (
           <>
             <ModalBody className="flex justify-center items-center">
-              <Card className="w-[400px]">
-                <CardHeader className="relative flex h-[100px] flex-col justify-end overflow-visible bg-gradient-to-br from-yellow-300 via-lime-400 to-green-500">
+              <Card
+                className={cn(
+                  "w-[400px]",
+                  CustomerData.IsActive
+                    ? "ring-2 ring-green-500/20"
+                    : "ring-2 ring-gray-200"
+                )}
+              >
+                <CardHeader
+                  className={cn(
+                    "relative flex h-[100px] flex-col justify-end overflow-visible",
+                    CustomerData.IsActive
+                      ? "bg-gradient-to-br from-yellow-300 via-lime-400 to-green-500"
+                      : "bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400"
+                  )}
+                >
                   {CustomerData.CustomerImageUrl && (
                     <Avatar
                       className="h-20 w-20 translate-y-12"
@@ -116,32 +131,58 @@ export default function ViewCustomerModal({
                       "pb-4"
                     )}
                   >
-                    <p className="text-large font-medium">
-                      {CustomerData.CustomerFullName}
-                    </p>
-                    <p className="max-w-[90%] text-small text-default-400">
-                      {CustomerData.CustomerEmail}
-                    </p>
-                    <div className="flex gap-2 pb-1 pt-2">
-                      {customerCompanies.length > 0 &&
-                        customerCompanies.map((company: Company) => (
-                          <span className="inline-flex my-auto items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-2 ring-inset ring-gray-200 bg-white">
-                            <svg
-                              viewBox="0 0 6 6"
-                              aria-hidden="true"
-                              className="h-1.5 w-1.5 fill-blue-500"
-                            >
-                              <circle r={3} cx={3} cy={3} />
-                            </svg>
-                            {company.CompanyName}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-large font-medium">
+                          {CustomerData.CustomerFullName}
+                        </p>
+                        <span
+                          className={cn(
+                            "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+                            CustomerData.IsActive
+                              ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"
+                              : "bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/20"
+                          )}
+                        >
+                          <span className="flex items-center gap-1">
+                            <div
+                              className={cn(
+                                "h-1.5 w-1.5 rounded-full",
+                                CustomerData.IsActive
+                                  ? "bg-green-600"
+                                  : "bg-gray-500"
+                              )}
+                            />
+                            {CustomerData.IsActive
+                              ? "Utente attivato"
+                              : "Utente disattivato"}
                           </span>
-                        ))}
-                    </div>
-                    {CustomerData.CustomerPhone && (
-                      <p className="py-2 text-small text-foreground">
-                        +39 {CustomerData.CustomerPhone}
+                        </span>
+                      </div>
+                      <p className="text-small text-default-400">
+                        {CustomerData.CustomerEmail}
                       </p>
-                    )}
+                      <div className="flex gap-2 pb-1 pt-2">
+                        {customerCompanies.length > 0 &&
+                          customerCompanies.map((company: Company) => (
+                            <span className="inline-flex my-auto items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-2 ring-inset ring-gray-200 bg-white">
+                              <svg
+                                viewBox="0 0 6 6"
+                                aria-hidden="true"
+                                className="h-1.5 w-1.5 fill-blue-500"
+                              >
+                                <circle r={3} cx={3} cy={3} />
+                              </svg>
+                              {company.CompanyName}
+                            </span>
+                          ))}
+                      </div>
+                      {CustomerData.CustomerPhone && (
+                        <p className="py-2 text-small text-foreground">
+                          +39 {CustomerData.CustomerPhone}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </CardBody>
               </Card>
