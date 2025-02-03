@@ -18,7 +18,7 @@ interface Customer {
   CustomerEmail: string;
   CustomerPhone: string | null;
   CompanyId: number;
-  isActive: boolean;
+  IsActive: boolean;
 }
 
 interface Company {
@@ -42,7 +42,7 @@ const initialCustomerData: Customer = {
   CustomerEmail: "",
   CustomerPhone: null,
   CompanyId: 0,
-  isActive: false,
+  IsActive: false,
 };
 
 const INITIAL_ALERT_DATA: AlertData = {
@@ -170,7 +170,7 @@ export default function EditCustomerModel() {
   };
 
   const handleCheckboxChange = (isSelected: boolean) => {
-    setCustomerData((prevData) => ({ ...prevData, isActive: isSelected }));
+    setCustomerData((prevData) => ({ ...prevData, IsActive: isSelected }));
   };
 
   return (
@@ -310,7 +310,7 @@ export default function EditCustomerModel() {
                   Stato utente
                 </label>
                 <Checkbox
-                  isSelected={customerData.isActive}
+                  isSelected={customerData.IsActive}
                   onValueChange={handleCheckboxChange}
                   color="primary"
                   className="text-sm"

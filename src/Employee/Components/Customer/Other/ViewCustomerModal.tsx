@@ -21,7 +21,7 @@ interface Customer {
   CustomerEmail: string;
   CustomerPhone: string;
   CustomerImageUrl: string;
-  isActive: boolean;
+  IsActive: boolean;
 }
 
 interface Company {
@@ -74,7 +74,7 @@ export default function ViewCustomerModal({
               <Card
                 className={cn(
                   "w-[400px]",
-                  CustomerData.isActive
+                  CustomerData.IsActive
                     ? "ring-2 ring-green-500/20"
                     : "ring-2 ring-gray-200"
                 )}
@@ -82,7 +82,7 @@ export default function ViewCustomerModal({
                 <CardHeader
                   className={cn(
                     "relative flex h-[100px] flex-col justify-end overflow-visible",
-                    CustomerData.isActive
+                    CustomerData.IsActive
                       ? "bg-gradient-to-br from-yellow-300 via-lime-400 to-green-500"
                       : "bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400"
                   )}
@@ -139,7 +139,7 @@ export default function ViewCustomerModal({
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
-                            CustomerData.isActive
+                            CustomerData.IsActive
                               ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"
                               : "bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/20"
                           )}
@@ -148,12 +148,12 @@ export default function ViewCustomerModal({
                             <div
                               className={cn(
                                 "h-1.5 w-1.5 rounded-full",
-                                CustomerData.isActive
+                                CustomerData.IsActive
                                   ? "bg-green-600"
                                   : "bg-gray-500"
                               )}
                             />
-                            {CustomerData.isActive
+                            {CustomerData.IsActive
                               ? "Utente attivato"
                               : "Utente disattivato"}
                           </span>

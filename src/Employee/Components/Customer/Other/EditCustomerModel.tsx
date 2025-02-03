@@ -18,7 +18,7 @@ interface Customer {
   CustomerEmail: string;
   CustomerPhone: string;
   CompanyId: number;
-  isActive: boolean;
+  IsActive: boolean;
 }
 
 interface Company {
@@ -54,7 +54,7 @@ export default function EditCustomerModel() {
     CustomerEmail: "",
     CustomerPhone: "",
     CompanyId: 0,
-    isActive: false,
+    IsActive: false,
   });
   const [initialCustomerData, setInitialCustomerData] = useState<Customer>({
     CustomerId: 0,
@@ -63,7 +63,7 @@ export default function EditCustomerModel() {
     CustomerEmail: "",
     CustomerPhone: "",
     CompanyId: 0,
-    isActive: false,
+    IsActive: false,
   });
   const [company, setCompany] = useState<Company[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
@@ -117,7 +117,7 @@ export default function EditCustomerModel() {
   }
 
   const handleCheckboxChange = (isSelected: boolean) => {
-    setNewCustomerData({ ...newCustomerData, isActive: isSelected });
+    setNewCustomerData({ ...newCustomerData, IsActive: isSelected });
   };
 
   function checkAllDataCompiled() {
@@ -128,7 +128,7 @@ export default function EditCustomerModel() {
       newCustomerData.CustomerPhone !== initialCustomerData.CustomerPhone ||
       (newCustomerData.CompanyId !== initialCustomerData.CompanyId &&
         newCustomerData.CompanyId !== null) ||
-      newCustomerData.isActive !== initialCustomerData.isActive
+      newCustomerData.IsActive !== initialCustomerData.IsActive
     ) {
       return false;
     }
@@ -317,7 +317,7 @@ export default function EditCustomerModel() {
                   Stato utente
                 </label>
                 <Checkbox
-                  isSelected={newCustomerData.isActive}
+                  isSelected={newCustomerData.IsActive}
                   onValueChange={handleCheckboxChange}
                   color="primary"
                   className="text-sm"
