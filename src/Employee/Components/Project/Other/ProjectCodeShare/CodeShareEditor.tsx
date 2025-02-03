@@ -146,7 +146,7 @@ export default function CodeShareContainer({
       } finally {
         setIsLoading(false);
       }
-    }, 0);
+    }, 800);
   }
 
   async function captureScreenshot() {
