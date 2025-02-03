@@ -6,14 +6,14 @@ interface AlertData {
   onClose: () => void;
   alertTitle: string;
   alertDescription: string;
-  alertColor: "success" | "danger" | "warning";
+  alertColor: "green" | "red" | "yellow";
 }
 
 export default function StatusAlert(props: { AlertData: AlertData }) {
   const { AlertData } = props;
   const [show, setShow] = useState(false);
 
-  const getAlertColor = (color: string) => {
+  const getAlertColor = (color: "green" | "red" | "yellow") => {
     switch (color) {
       case "green":
         return "success";
