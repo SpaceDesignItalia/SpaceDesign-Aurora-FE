@@ -5,6 +5,7 @@ import {
   Autocomplete,
   AutocompleteItem,
   Button,
+  Checkbox,
 } from "@heroui/react";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
@@ -17,6 +18,7 @@ interface Customer {
   CustomerEmail: string;
   CustomerPhone: string | null;
   CompanyId: number;
+  IsActive: boolean;
 }
 
 interface Company {
@@ -40,6 +42,7 @@ const initialCustomerData: Customer = {
   CustomerEmail: "",
   CustomerPhone: null,
   CompanyId: 0,
+  IsActive: false,
 };
 
 const INITIAL_ALERT_DATA: AlertData = {
@@ -121,7 +124,7 @@ export default function EditCustomerModel() {
       const res = await axios.post("/Customer/POST/AddCustomer", {
         CustomerData: {
           ...customerData,
-          CustomerPassword: generatePassword(), // Assign the generated password
+          CustomerPassword: generatePassword(),
         },
       });
 
@@ -164,6 +167,10 @@ export default function EditCustomerModel() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleCheckboxChange = (isSelected: boolean) => {
+    setCustomerData((prevData) => ({ ...prevData, IsActive: isSelected }));
   };
 
   return (
@@ -297,6 +304,23 @@ export default function EditCustomerModel() {
                     )}
                   </Autocomplete>
                 </div>
+              </div>
+              <div className="col-span-6 sm:col-span-3">
+                <label className="block text-sm font-medium leading-6 text-gray-900 mb-2">
+                  Stato utente
+                </label>
+                <Checkbox
+                  isSelected={customerData.IsActive}
+                  onValueChange={handleCheckboxChange}
+                  color="primary"
+                  className="text-sm"
+                >
+                  Utente attivo sulla piattaforma
+                </Checkbox>
+                <p className="mt-1 text-sm text-gray-500">
+                  Se selezionato, l'utente potrà accedere alla piattaforma,
+                  verrà quindi inviata la mail di attivazione account.
+                </p>
               </div>
             </div>
           </div>

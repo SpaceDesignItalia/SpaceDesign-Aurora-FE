@@ -9,9 +9,11 @@ import {
   Checkbox,
   Select,
   SelectItem,
+  Spinner,
 } from "@heroui/react";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
+import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
 
 interface Role {
   RoleName: string;
@@ -34,7 +36,7 @@ interface AlertData {
   onClose: () => void;
   alertTitle: string;
   alertDescription: string;
-  alertColor: "green" | "red" | "yellow";
+  alertColor: "success" | "danger" | "warning";
 }
 
 const initialRoleDataStruct: Role = {
@@ -48,7 +50,7 @@ const INITIAL_ALERT_DATA: AlertData = {
   onClose: () => {},
   alertTitle: "",
   alertDescription: "",
-  alertColor: "red",
+  alertColor: "danger",
 };
 const EditRoleModel: React.FC = () => {
   const { RoleId } = useParams<{ RoleId: string }>();
@@ -64,6 +66,8 @@ const EditRoleModel: React.FC = () => {
   >([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [generateLoading, setGenerateLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -130,6 +134,49 @@ const EditRoleModel: React.FC = () => {
     );
   };
 
+  const handleRefine = async () => {
+    if (!roleData.RoleDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post(
+        "/Project/POST/RefineRoleDescription",
+        {
+          text: `Riscrivi in modo più formale e completo il seguente testo: ${roleData.RoleDescription}`,
+        }
+      );
+      console.log("Testo raffinato:", refinedText.data);
+      setRoleData({
+        ...roleData,
+        RoleDescription: refinedText.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleGenerate = async () => {
+    if (!roleData.RoleName) return;
+    setGenerateLoading(true);
+    try {
+      const response = await axios.post(
+        "/Project/POST/GenerateRoleDescriptionFromName",
+        { roleName: roleData.RoleName }
+      );
+      console.log("Testo generato:", response.data);
+      setRoleData({
+        ...roleData,
+        RoleDescription: response.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setGenerateLoading(false);
+    }
+  };
+
   const handleUpdateRole = async () => {
     try {
       setIsAddingData(true);
@@ -145,7 +192,7 @@ const EditRoleModel: React.FC = () => {
           onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
           alertDescription: "Il ruolo è stato aggiornato con successo.",
-          alertColor: "green",
+          alertColor: "success",
         });
         setTimeout(() => {
           window.location.href = "/administration/permission";
@@ -162,7 +209,7 @@ const EditRoleModel: React.FC = () => {
             alertTitle: "Conflitto durante l'operazione",
             alertDescription:
               "Un altro ruolo ha già lo stesso nome. Scegli un nome diverso.",
-            alertColor: "yellow",
+            alertColor: "warning",
           });
         } else {
           // General error handling
@@ -172,7 +219,7 @@ const EditRoleModel: React.FC = () => {
             alertTitle: "Errore durante l'operazione",
             alertDescription:
               "Si è verificato un errore durante l'aggiornamento del ruolo. Per favore, riprova più tardi.",
-            alertColor: "red",
+            alertColor: "danger",
           });
         }
       }
@@ -232,7 +279,51 @@ const EditRoleModel: React.FC = () => {
                 value={roleData.RoleDescription}
                 onChange={handleRoleChange("RoleDescription")}
                 fullWidth
+                className="mb-2"
               />
+              {roleData.RoleName && !roleData.RoleDescription ? (
+                <Button
+                  variant="bordered"
+                  className="w-max-1/2 mx-auto gap-3 my-5 sm:my-0 py-2 mr-2"
+                  radius="full"
+                  onClick={handleGenerate}
+                  isDisabled={generateLoading}
+                >
+                  {generateLoading ? (
+                    <>
+                      <Spinner size="sm" className="text-black" /> Generazione
+                      in corso...
+                    </>
+                  ) : (
+                    <>
+                      <AutoFixHighRoundedIcon className="w-5 h-5" /> Genera
+                      descrizione per: {roleData.RoleName}
+                    </>
+                  )}
+                </Button>
+              ) : null}
+
+              {roleData.RoleDescription ? (
+                <Button
+                  variant="bordered"
+                  className="w-max-1/2 gap-3 my-5 sm:my-0 py-2"
+                  radius="full"
+                  onClick={handleRefine}
+                  isDisabled={loading || !roleData.RoleDescription}
+                >
+                  {loading ? (
+                    <>
+                      <Spinner size="sm" className="text-black" /> Riscrittura
+                      in corso...
+                    </>
+                  ) : (
+                    <>
+                      <AutoFixHighRoundedIcon className="w-5 h-5" /> Riscrivi
+                      con AI
+                    </>
+                  )}
+                </Button>
+              ) : null}
             </div>
 
             <div className="col-span-6 sm:col-span-2">

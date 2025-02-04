@@ -76,7 +76,7 @@ interface AlertData {
   onClose: () => void;
   alertTitle: string;
   alertDescription: string;
-  alertColor: "green" | "red" | "yellow";
+  alertColor: "success" | "danger" | "warning";
 }
 
 const INITIAL_TASK_DATA: Task = {
@@ -96,7 +96,7 @@ const INITIAL_ALERT_DATA: AlertData = {
   onClose: () => {},
   alertTitle: "",
   alertDescription: "",
-  alertColor: "red",
+  alertColor: "danger",
 };
 
 export default function AddTaskModal({
@@ -240,7 +240,7 @@ export default function AddTaskModal({
           onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
           alertDescription: "La task è stata aggiunta con successo.",
-          alertColor: "green",
+          alertColor: "success",
         });
       }
     } catch (error) {
@@ -252,7 +252,7 @@ export default function AddTaskModal({
           alertTitle: "Errore durante l'operazione",
           alertDescription:
             "Si è verificato un errore durante l'aggiunta della task. Per favore, riprova più tardi.",
-          alertColor: "red",
+          alertColor: "danger",
         });
       }
     } finally {
@@ -635,27 +635,31 @@ export default function AddTaskModal({
                           }
                         />
                       </dd>
-                      <Button
-                        variant="bordered"
-                        className="w-max-1/2 mx-auto cursor-pointer gap-3 my-5 sm:my-0 py-2"
-                        radius="full"
-                        onClick={handleRefine}
-                        disabled={loading || !newTask.ProjectTaskDescription}
-                      >
-                        {loading ? (
-                          <>
-                            {" "}
-                            <Spinner className="text-black" /> Riscrittura in
-                            corso...{" "}
-                          </>
-                        ) : (
-                          <>
-                            {" "}
-                            <AutoFixHighRoundedIcon className="w-5 h-5" />{" "}
-                            Riscrivi in modo formale{" "}
-                          </>
-                        )}
-                      </Button>
+                      {newTask.ProjectTaskDescription ? (
+                        <Button
+                          variant="bordered"
+                          className="w-max-1/2 mx-auto gap-3 my-5 sm:my-0 py-2"
+                          radius="full"
+                          onClick={handleRefine}
+                          isDisabled={
+                            loading || !newTask.ProjectTaskDescription
+                          }
+                        >
+                          {loading ? (
+                            <>
+                              {" "}
+                              <Spinner size="sm" className="text-black" />{" "}
+                              Riscrittura in corso...{" "}
+                            </>
+                          ) : (
+                            <>
+                              {" "}
+                              <AutoFixHighRoundedIcon className="w-5 h-5" />{" "}
+                              Riscrivi con AI{" "}
+                            </>
+                          )}
+                        </Button>
+                      ) : null}
                     </div>
                   </dl>
                 </div>

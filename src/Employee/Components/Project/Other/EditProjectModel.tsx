@@ -8,6 +8,7 @@ import {
   AutocompleteItem,
   Chip,
   DatePicker,
+  Spinner,
 } from "@heroui/react";
 import { I18nProvider } from "@react-aria/i18n";
 import SaveIcon from "@mui/icons-material/Save";
@@ -15,6 +16,7 @@ import StatusAlert from "../../Layout/StatusAlert";
 import { DateValue, parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 import { useParams } from "react-router-dom";
+import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
 
 interface Project {
   ProjectName: string;
@@ -93,6 +95,7 @@ export default function EditProjectModel() {
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [statusList, setStatusList] = useState<Status[]>([]);
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -209,6 +212,29 @@ export default function EditProjectModel() {
       newProjectData.StatusId === initialProjectData.StatusId
     );
   }
+
+  const handleRefine = async () => {
+    if (!newProjectData.ProjectDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post(
+        "/Project/POST/RefineProjectDescription",
+        {
+          text: `Riscrivi in modo più formale e completo il seguente testo: ${newProjectData.ProjectDescription}`,
+        }
+      );
+      console.log("Testo raffinato:", refinedText.data);
+      setNewProjectData({
+        ...newProjectData,
+        ProjectDescription: refinedText.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   async function handleUpdateProject() {
     try {
@@ -370,6 +396,29 @@ export default function EditProjectModel() {
                 onChange={handleProjectDescriptionChange}
                 fullWidth
               />
+              {newProjectData.ProjectDescription ? (
+                <Button
+                  variant="bordered"
+                  className="w-max-1/2 mx-auto  gap-3 my-5 py-2 mt-2"
+                  radius="full"
+                  onClick={handleRefine}
+                  isDisabled={loading || !newProjectData.ProjectDescription}
+                >
+                  {loading ? (
+                    <>
+                      {" "}
+                      <Spinner size="sm" className="text-black" /> Riscrittura
+                      in corso...{" "}
+                    </>
+                  ) : (
+                    <>
+                      {" "}
+                      <AutoFixHighRoundedIcon className="w-5 h-5" /> Riscrivi
+                      con AI{" "}
+                    </>
+                  )}
+                </Button>
+              ) : null}
             </div>
             <div className="col-span-6 sm:col-span-3">
               <label

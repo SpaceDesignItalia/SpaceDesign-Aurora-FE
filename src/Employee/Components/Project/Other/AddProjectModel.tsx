@@ -12,14 +12,16 @@ import {
   Radio,
   cn,
   User,
+  Spinner,
 } from "@heroui/react";
 import { I18nProvider } from "@react-aria/i18n";
 import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
 import { API_URL_IMG } from "../../../../API/API";
-import { parseDate, getLocalTimeZone } from "@internationalized/date";
+import { getLocalTimeZone } from "@internationalized/date";
 import dayjs from "dayjs";
 import { useDateFormatter } from "@react-aria/i18n";
+import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
 
 interface Project {
   ProjectName: string;
@@ -105,6 +107,7 @@ export default function AddProjectModel() {
   const [managers, setManagers] = useState<Manager[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     axios.get("/Project/GET/GetAllBanners").then((res) => {
@@ -117,6 +120,29 @@ export default function AddProjectModel() {
       setManagers(res.data);
     });
   }, []);
+
+  const handleRefine = async () => {
+    if (!newProjectData.ProjectDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post(
+        "/Project/POST/RefineProjectDescription",
+        {
+          text: `Riscrivi in modo più formale e completo il seguente testo: ${newProjectData.ProjectDescription}`,
+        }
+      );
+      console.log("Testo raffinato:", refinedText.data);
+      setNewProjectData({
+        ...newProjectData,
+        ProjectDescription: refinedText.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   function handleProjectBannerChange(e: React.ChangeEvent<HTMLInputElement>) {
     setNewProjectData({
@@ -341,7 +367,31 @@ export default function AddProjectModel() {
                 value={newProjectData.ProjectDescription}
                 onChange={handleProjectDescriptionChange}
                 fullWidth
+                className="mb-2"
               />
+              {newProjectData.ProjectDescription ? (
+                <Button
+                  variant="bordered"
+                  className="w-max-1/2 mx-auto  gap-3 my-5 sm:my-0 py-2"
+                  radius="full"
+                  onClick={handleRefine}
+                  isDisabled={loading || !newProjectData.ProjectDescription}
+                >
+                  {loading ? (
+                    <>
+                      {" "}
+                      <Spinner size="sm" className="text-black" /> Riscrittura
+                      in corso...{" "}
+                    </>
+                  ) : (
+                    <>
+                      {" "}
+                      <AutoFixHighRoundedIcon className="w-5 h-5" /> Riscrivi
+                      con AI{" "}
+                    </>
+                  )}
+                </Button>
+              ) : null}
             </div>
 
             <div className="col-span-6 sm:col-span-3">

@@ -10,6 +10,8 @@ import {
   DropdownMenu,
   DropdownItem,
   Button,
+  Select,
+  SelectItem,
 } from "@heroui/react";
 import CalendarDay from "./CalendarDay";
 import CalendarWeek from "./CalendarWeek";
@@ -421,39 +423,35 @@ END:VEVENT`;
               </Button>
             </div>
             {(view === "day" || view === "week") && (
-              <Dropdown>
-                <DropdownTrigger
-                  variant="bordered"
-                  className="rounded-full h-11"
-                >
-                  <Button className="flex items-center px-4 text-sm font-semibold text-gray-600">
-                    Orario
-                    <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  <DropdownItem
-                    key="current"
-                    onClick={() => setRedLineBehavior("current")}
-                  >
-                    {view === "day" ? "Giorno corrente" : "Settimana corrente"}
-                  </DropdownItem>
-                  <DropdownItem
-                    key="always"
-                    onClick={() => setRedLineBehavior("always")}
-                  >
+              <Select
+                variant="bordered"
+                classNames={{
+                  trigger: "rounded-full",
+                  listboxWrapper: "rounded-xl",
+                }}
+                className="w-48"
+                defaultSelectedKeys={["current"]}
+                value={redLineBehavior}
+                onChange={(e) =>
+                  setRedLineBehavior(
+                    e.target.value as "current" | "always" | "full-week"
+                  )
+                }
+              >
+                <SelectItem key="current" value="current">
+                  {view === "day" ? "Giorno corrente" : "Settimana corrente"}
+                </SelectItem>
+                {view === "day" ? (
+                  <SelectItem key="always" value="always">
                     Sempre visibile
-                  </DropdownItem>
-                  {view === "week" ? (
-                    <DropdownItem
-                      key="full-week"
-                      onClick={() => setRedLineBehavior("full-week")}
-                    >
-                      Intera settimana
-                    </DropdownItem>
-                  ) : null}
-                </DropdownMenu>
-              </Dropdown>
+                  </SelectItem>
+                ) : null}
+                {view === "week" ? (
+                  <SelectItem key="full-week" value="full-week">
+                    Intera settimana
+                  </SelectItem>
+                ) : null}
+              </Select>
             )}
 
             <Dropdown>
