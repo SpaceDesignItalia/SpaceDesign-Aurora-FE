@@ -1,4 +1,3 @@
-import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import {
   Button,
   Modal,
@@ -7,6 +6,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import React, { useRef, useState } from "react";
 import { io } from "socket.io-client";
@@ -120,7 +120,7 @@ export default function EventAttachmentUploaderModal({
             ref={dropRef}
             onClick={() => fileInputRef.current?.click()} // Add this line
           >
-            <CloudUploadRoundedIcon />
+            <Icon icon="solar:upload-linear" fontSize={24} />
             <p className="text-xs font-medium text-gray-400 mt-2">
               Clicca o trascina i file per caricarli
             </p>

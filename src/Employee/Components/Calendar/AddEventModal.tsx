@@ -17,16 +17,7 @@ import {
   Spinner,
 } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
-import {
-  CalendarMonthRounded as CalendarMonthRoundedIcon,
-  CloseRounded as CloseRoundedIcon,
-  NotesRounded as NotesRoundedIcon,
-  SaveRounded as SaveRoundedIcon,
-  PeopleRounded as PeopleRoundedIcon,
-  LocalOfferRounded as LocalOfferRoundedIcon,
-  AutoFixHighRounded,
-  LocationOnRounded as LocationOnRoundedIcon,
-} from "@mui/icons-material";
+import { Icon } from "@iconify/react";
 import { I18nProvider } from "@react-aria/i18n";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -278,7 +269,7 @@ export default function AddEventModal({
             <>
               <ModalHeader className="flex flex-row justify-between items-center gap-2">
                 <div className="flex flex-row justify-between items-center gap-2 w-full">
-                  <CalendarMonthRoundedIcon />
+                  <Icon icon="solar:calendar-linear" fontSize={18} />
                   <Input
                     className="w-full"
                     variant="underlined"
@@ -337,10 +328,7 @@ export default function AddEventModal({
                     size="sm"
                     isIconOnly
                     startContent={
-                      <CloseRoundedIcon
-                        sx={{ fontSize: 17 }}
-                        className="text-gray-700"
-                      />
+                      <Icon icon="solar:close-circle-linear" fontSize={18} />
                     }
                   />
                 </div>
@@ -350,7 +338,7 @@ export default function AddEventModal({
                   <dl>
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <CalendarMonthRoundedIcon />
+                        <Icon icon="solar:calendar-linear" fontSize={18} />
                         Data e ora
                       </dt>
                       <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
@@ -419,7 +407,7 @@ export default function AddEventModal({
 
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <NotesRoundedIcon />
+                        <Icon icon="solar:notes-linear" fontSize={18} />
                         Descrizione
                       </dt>
                       <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -455,7 +443,10 @@ export default function AddEventModal({
                           ) : (
                             <>
                               {" "}
-                              <AutoFixHighRounded className="w-5 h-5" />{" "}
+                              <Icon
+                                icon="solar:magic-stick-3-linear"
+                                fontSize={18}
+                              />{" "}
                               Riscrivi con AI{" "}
                             </>
                           )}
@@ -466,7 +457,10 @@ export default function AddEventModal({
                     <div className="flex flex-row w-full gap-4">
                       <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
                         <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                          <PeopleRoundedIcon />
+                          <Icon
+                            icon="solar:users-group-rounded-linear"
+                            fontSize={18}
+                          />
                           Partecipanti
                         </dt>
                         <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -559,7 +553,7 @@ export default function AddEventModal({
 
                       <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
                         <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                          <LocalOfferRoundedIcon />
+                          <Icon icon="solar:tag-linear" fontSize={18} />
                           Tag
                         </dt>
                         <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -626,7 +620,7 @@ export default function AddEventModal({
                     </div>
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <LocationOnRoundedIcon />
+                        <Icon icon="solar:location-linear" fontSize={18} />
                         Location
                       </dt>
                       <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -669,7 +663,11 @@ export default function AddEventModal({
                   color="primary"
                   onClick={handleAddEvent}
                   radius="full"
-                  startContent={!isAddingData && <SaveRoundedIcon />}
+                  startContent={
+                    !isAddingData && (
+                      <Icon icon="basil:save-outline" fontSize={24} />
+                    )
+                  }
                   isLoading={isAddingData}
                   variant="solid"
                 >

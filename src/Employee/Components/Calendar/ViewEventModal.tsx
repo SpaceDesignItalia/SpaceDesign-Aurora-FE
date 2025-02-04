@@ -20,22 +20,7 @@ import {
   AutocompleteItem,
 } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
-import {
-  CalendarMonthRounded as CalendarMonthRoundedIcon,
-  LocalOfferRounded as LocalOfferRoundedIcon,
-  LocationOnRounded as LocationOnRoundedIcon,
-  NotesRounded as NotesRoundedIcon,
-  PeopleRounded as PeopleRoundedIcon,
-  HelpOutlineRounded as HelpOutlineRoundedIcon,
-  CheckCircleOutline as CheckCircleOutlineIcon,
-  HighlightOff as HighlightOffIcon,
-  AttachFileRounded as AttachFileRoundedIcon,
-  NoteAddRounded as NoteAddRoundedIcon,
-  EditRounded,
-  CloseRounded as CloseRoundedIcon,
-  SaveRounded as SaveRoundedIcon,
-  AutoFixHighRounded,
-} from "@mui/icons-material";
+import { Icon } from "@iconify/react";
 import { I18nProvider, useDateFormatter } from "@react-aria/i18n";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -437,7 +422,7 @@ END:VCALENDAR`;
                 <>
                   <ModalHeader className="flex flex-row justify-between items-center gap-2">
                     <div className="flex flex-row justify-between items-center gap-2 w-full">
-                      <CalendarMonthRoundedIcon />
+                      <Icon icon="solar:calendar-linear" fontSize={18} />
                       <div className="flex flex-row justify-between items-center gap-2 w-full">
                         <p>{newEvent.EventTitle}</p>
                         <div
@@ -453,7 +438,9 @@ END:VCALENDAR`;
                       color="warning"
                       variant="light"
                       radius="full"
-                      startContent={<EditRounded sx={{ fontSize: 17 }} />}
+                      startContent={
+                        <Icon icon="solar:pen-linear" fontSize={18} />
+                      }
                       onPress={() => setIsEditing(true)}
                       size="sm"
                     />
@@ -475,7 +462,7 @@ END:VCALENDAR`;
                       <dl>
                         <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
                           <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                            <CalendarMonthRoundedIcon />
+                            <Icon icon="solar:calendar-linear" fontSize={18} />
                             Data e ora
                           </dt>
                           <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
@@ -496,7 +483,7 @@ END:VCALENDAR`;
 
                         <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                           <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                            <NotesRoundedIcon />
+                            <Icon icon="solar:notes-linear" fontSize={18} />
                             Descrizione
                           </dt>
                           <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -545,7 +532,10 @@ END:VCALENDAR`;
                                       ) : (
                                         <>
                                           {" "}
-                                          <AutoFixHighRounded className="w-5 h-5" />{" "}
+                                          <Icon
+                                            icon="solar:magic-stick-3-linear"
+                                            fontSize={18}
+                                          />
                                           Riscrivi con AI{" "}
                                         </>
                                       )}
@@ -580,7 +570,10 @@ END:VCALENDAR`;
                               aria-label="Accordion 1"
                               title={
                                 <div className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                                  <AttachFileRoundedIcon />
+                                  <Icon
+                                    icon="solar:paperclip-linear"
+                                    fontSize={18}
+                                  />
                                   Allegati
                                   <Chip
                                     color="primary"
@@ -612,7 +605,12 @@ END:VCALENDAR`;
                                 <Button
                                   radius="full"
                                   color="primary"
-                                  startContent={<NoteAddRoundedIcon />}
+                                  startContent={
+                                    <Icon
+                                      icon="solar:upload-linear"
+                                      fontSize={18}
+                                    />
+                                  }
                                   className="w-1/3 sm:w-1/4"
                                   variant="solid"
                                   onClick={() =>
@@ -633,7 +631,10 @@ END:VCALENDAR`;
                         <div className="flex flex-row w-full gap-4">
                           <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
                             <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                              <PeopleRoundedIcon />
+                              <Icon
+                                icon="solar:users-group-rounded-linear"
+                                fontSize={18}
+                              />
                               Partecipanti
                             </dt>
                             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -647,12 +648,21 @@ END:VCALENDAR`;
                                       startContent={
                                         Partecipant.EventPartecipantStatus ===
                                         "In Attesa" ? (
-                                          <HelpOutlineRoundedIcon />
+                                          <Icon
+                                            icon="solar:help-circle-linear"
+                                            fontSize={18}
+                                          />
                                         ) : Partecipant.EventPartecipantStatus ===
                                           "Accettato" ? (
-                                          <CheckCircleOutlineIcon className="text-green-500" />
+                                          <Icon
+                                            icon="solar:check-circle-linear"
+                                            fontSize={18}
+                                          />
                                         ) : (
-                                          <HighlightOffIcon className="text-red-500" />
+                                          <Icon
+                                            icon="solar:highlight-off-linear"
+                                            fontSize={18}
+                                          />
                                         )
                                       }
                                     >
@@ -666,7 +676,7 @@ END:VCALENDAR`;
 
                           <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
                             <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                              <LocalOfferRoundedIcon />
+                              <Icon icon="solar:tag-linear" fontSize={18} />
                               Tag
                             </dt>
                             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -678,7 +688,7 @@ END:VCALENDAR`;
                         </div>
                         <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                           <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                            <LocationOnRoundedIcon />
+                            <Icon icon="solar:location-linear" fontSize={18} />
                             Location
                           </dt>
                           <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -704,7 +714,7 @@ END:VCALENDAR`;
                   <>
                     <ModalHeader className="flex flex-row justify-between items-center gap-2">
                       <div className="flex flex-row justify-between items-center gap-2 w-full">
-                        <CalendarMonthRoundedIcon />
+                        <Icon icon="solar:calendar-linear" fontSize={18} />
                         <Input
                           className="w-full"
                           variant="underlined"
@@ -763,9 +773,9 @@ END:VCALENDAR`;
                           size="sm"
                           isIconOnly
                           startContent={
-                            <CloseRoundedIcon
-                              sx={{ fontSize: 17 }}
-                              className="text-gray-700"
+                            <Icon
+                              icon="solar:close-circle-linear"
+                              fontSize={18}
                             />
                           }
                         />
@@ -776,7 +786,10 @@ END:VCALENDAR`;
                         <dl>
                           <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
                             <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                              <CalendarMonthRoundedIcon />
+                              <Icon
+                                icon="solar:calendar-linear"
+                                fontSize={18}
+                              />
                               Data e ora
                             </dt>
                             <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
@@ -845,7 +858,7 @@ END:VCALENDAR`;
 
                           <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                             <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                              <NotesRoundedIcon />
+                              <Icon icon="solar:notes-linear" fontSize={18} />
                               Descrizione
                             </dt>
                             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -894,7 +907,10 @@ END:VCALENDAR`;
                                         ) : (
                                           <>
                                             {" "}
-                                            <AutoFixHighRounded className="w-5 h-5" />{" "}
+                                            <Icon
+                                              icon="solar:magic-stick-3-linear"
+                                              fontSize={18}
+                                            />{" "}
                                             Riscrivi con AI{" "}
                                           </>
                                         )}
@@ -915,7 +931,10 @@ END:VCALENDAR`;
                           <div className="flex flex-row w-full gap-4">
                             <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
                               <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                                <PeopleRoundedIcon />
+                                <Icon
+                                  icon="solar:users-group-rounded-linear"
+                                  fontSize={18}
+                                />
                                 Partecipanti
                               </dt>
                               <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -989,7 +1008,7 @@ END:VCALENDAR`;
 
                             <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
                               <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                                <LocalOfferRoundedIcon />
+                                <Icon icon="solar:tag-linear" fontSize={18} />
                                 Tag
                               </dt>
                               <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -1060,7 +1079,10 @@ END:VCALENDAR`;
                           </div>
                           <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                             <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                              <LocationOnRoundedIcon />
+                              <Icon
+                                icon="solar:location-linear"
+                                fontSize={18}
+                              />
                               Location
                             </dt>
                             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -1103,7 +1125,11 @@ END:VCALENDAR`;
                         color="primary"
                         onClick={handleUpdateEvent}
                         radius="full"
-                        startContent={!isAddingData && <SaveRoundedIcon />}
+                        startContent={
+                          !isAddingData && (
+                            <Icon icon="basil:save-outline" fontSize={24} />
+                          )
+                        }
                         isLoading={isAddingData}
                         variant="solid"
                       >

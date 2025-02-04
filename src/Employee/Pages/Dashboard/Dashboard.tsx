@@ -7,7 +7,7 @@ import axios from "axios";
 export default function Dashboard() {
   const [stafferId, setStafferId] = useState<number>(0);
   const [attendances, setAttendances] = useState<any[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const selectedDate = new Date();
 
   const fetchAttendances = async () => {
     try {
@@ -29,7 +29,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchAttendances();
-  }, [selectedDate]);
+  }, []);
 
   return (
     <div className="py-10 m-0 lg:ml-72">

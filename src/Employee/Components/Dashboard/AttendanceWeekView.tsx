@@ -7,7 +7,7 @@ import {
   DropdownItem,
 } from "@heroui/react";
 import { formatInTimeZone } from "date-fns-tz";
-import { format, addDays, subDays } from "date-fns";
+import { format, addDays } from "date-fns";
 import { it } from "date-fns/locale";
 import axios from "axios";
 
@@ -69,7 +69,7 @@ export default function AttendanceWeekView({
 
   return (
     <div className="grid grid-cols-7 gap-3">
-      {days.map((day, index) => {
+      {days.map((day) => {
         const attendance = getAttendanceForDay(day);
         const isToday = day.toDateString() === today.toDateString();
         const dayName = format(day, "EEE", { locale: it });
