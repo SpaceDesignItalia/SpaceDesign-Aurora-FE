@@ -68,7 +68,7 @@ export default function AttendanceWeekView({
   };
 
   return (
-    <div className="grid grid-cols-7 gap-3">
+    <div className="grid grid-cols-8 gap-3 items-center justify-center">
       {days.map((day) => {
         const attendance = getAttendanceForDay(day);
         const isToday = day.toDateString() === today.toDateString();
@@ -80,7 +80,11 @@ export default function AttendanceWeekView({
             <DropdownTrigger>
               <Button
                 className={`w-full h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl
-                  ${isToday ? "border-primary" : "border-gray-200"}
+                  ${
+                    isToday
+                      ? "border-primary h-32 col-span-2"
+                      : "border-gray-200"
+                  }
                   ${
                     attendance
                       ? statusConfig[
@@ -90,7 +94,9 @@ export default function AttendanceWeekView({
                   }`}
               >
                 <span className="text-sm font-medium text-gray-600">
-                  {dayName}
+                  {isToday
+                    ? format(day, "EEEE, MMMM yyyy", { locale: it })
+                    : dayName}
                 </span>
                 <span
                   className={`text-xl font-bold ${
@@ -134,17 +140,16 @@ export default function AttendanceWeekView({
                 <DropdownItem
                   key="delete"
                   onPress={() => handleStatusChange("delete", day)}
-                  className="text-danger"
                   startContent={
-                    <div className="w-6 h-6 bg-danger-100 rounded-lg flex items-center justify-center">
+                    <div className="w-6 h-6 bg-zinc-300 rounded-lg flex items-center justify-center">
                       <Icon
                         icon="material-symbols-light:delete-outline"
-                        className="w-4 h-4 text-danger"
+                        className="w-4 h-4 text-gray-700"
                       />
                     </div>
                   }
                 >
-                  Rimuovi presenza
+                  Elimina
                 </DropdownItem>
               )}
             </DropdownMenu>

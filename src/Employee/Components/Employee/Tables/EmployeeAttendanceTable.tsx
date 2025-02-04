@@ -210,7 +210,7 @@ export default function EmployeeAttendanceTable({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border-2">
+    <div className="rounded-2xl shadow-sm border-2">
       <div className="mb-6 flex justify-between items-center border-b border-gray-100 pb-4">
         <h2 className="text-xl font-semibold text-gray-900 px-2 py-4">
           Presenze e assenze
@@ -244,7 +244,7 @@ export default function EmployeeAttendanceTable({
         <div className="flex">
           {/* Colonna nomi fissa */}
           <div className="w-64 pl-2 flex-shrink-0 sticky left-0 bg-white z-10 border-r border-gray-200">
-            <div className="h-12 bg-gray-50 border-1 rounded-l-lg border-gray-200 p-4 font-medium text-gray-600 text-sm shadow-md">
+            <div className="flex items-center h-12 bg-gray-50 border-1 rounded-l-lg border-gray-200 p-4 font-medium text-gray-600 text-sm shadow-md">
               Nome
             </div>
             {employees.map((employee, index) => (
