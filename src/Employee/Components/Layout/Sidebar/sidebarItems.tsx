@@ -1,7 +1,7 @@
 import { Chip } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-import { type SidebarItem, SidebarItemType } from "./sidebarOption";
+import { type SidebarItem, SidebarItemType } from "./SidebarOption";
 import TeamAvatar from "./TeamAvatar";
 
 /**
