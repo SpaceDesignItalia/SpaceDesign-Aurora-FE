@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Chip, cn } from "@heroui/react";
+import { Card, cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
 import { format, subMonths } from "date-fns";
@@ -18,9 +18,13 @@ interface Employee {
 
 interface Props {
   employees: Employee[];
+  selectedDate: Date;
 }
 
-export default function EmployeeAttendanceStats({ employees }: Props) {
+export default function EmployeeAttendanceStats({
+  employees,
+  selectedDate,
+}: Props) {
   if (!employees) return null;
 
   // Calcola le statistiche mensili per il confronto
@@ -68,8 +72,11 @@ export default function EmployeeAttendanceStats({ employees }: Props) {
   // Calcola le statistiche settimanali per il grafico
   const calculateLastWeekStats = (date: Date) => {
     const weeklyStats = [];
+    // Usa l'ultimo giorno del mese selezionato come data finale
+    const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
     for (let i = 6; i >= 0; i--) {
-      const currentDate = new Date(date);
+      const currentDate = new Date(lastDayOfMonth);
       currentDate.setDate(currentDate.getDate() - i);
 
       const totalEmployees = employees.length;
@@ -100,11 +107,9 @@ export default function EmployeeAttendanceStats({ employees }: Props) {
     return weeklyStats;
   };
 
-  const currentMonthStats = calculateMonthStats(new Date(2025, 0, 15));
-  const lastMonthStats = calculateMonthStats(
-    subMonths(new Date(2025, 0, 15), 1)
-  );
-  const weeklyStats = calculateLastWeekStats(new Date(2025, 0, 15));
+  const currentMonthStats = calculateMonthStats(selectedDate);
+  const lastMonthStats = calculateMonthStats(subMonths(selectedDate, 1));
+  const weeklyStats = calculateLastWeekStats(selectedDate);
 
   const getChangePercentage = (current: number, previous: number) => {
     const change = ((current - previous) / previous) * 100;

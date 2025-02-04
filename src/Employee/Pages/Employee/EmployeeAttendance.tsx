@@ -5,6 +5,8 @@ import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
 import EmployeeAttendanceStats from "../../Components/Employee/Other/EmployeeAttendanceStats";
+import axios from "axios";
+import { API_URL_IMG } from "../../../API/API";
 
 interface Employee {
   id: string;
@@ -18,7 +20,9 @@ interface Employee {
 
 export default function EmployeeAttendance() {
   const { hasPermission } = usePermissions();
-  const [employees] = useState<Employee[]>([
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [loggedStafferId, setLoggedStafferId] = useState<number>(0);
+  const [employees, setEmployees] = useState<Employee[]>([
     {
       id: "1",
       name: "Mario Rossi",
@@ -44,93 +48,54 @@ export default function EmployeeAttendance() {
         })),
       ],
     },
-    {
-      id: "2",
-      name: "Laura Bianchi",
-      avatar: "https://i.pravatar.cc/150?u=laura",
-      attendances: [
-        // Gennaio 2025 - Bilanciato
-        ...Array.from({ length: 31 }, (_, i) => ({
-          date: new Date(2025, 0, i + 1).toISOString(),
-          status: (i % 3 === 0
-            ? "present"
-            : i % 2 === 0
-            ? "smartworking"
-            : "absent") as "present" | "absent" | "smartworking",
-        })),
-        // Dicembre 2024 - Simile (variazione minima)
-        ...Array.from({ length: 31 }, (_, i) => ({
-          date: new Date(2024, 11, i + 1).toISOString(),
-          status: (i % 3 === 0
-            ? "present"
-            : i % 2 === 0
-            ? "smartworking"
-            : "absent") as "present" | "absent" | "smartworking",
-        })),
-      ],
-    },
-    {
-      id: "3",
-      name: "Giuseppe Verdi",
-      avatar: "https://i.pravatar.cc/150?u=giuseppe",
-      attendances: [
-        // Gennaio 2025 - Più smartworking
-        ...Array.from({ length: 31 }, (_, i) => ({
-          date: new Date(2025, 0, i + 1).toISOString(),
-          status: (i % 4 === 0
-            ? "present"
-            : i % 5 === 0
-            ? "absent"
-            : "smartworking") as "present" | "absent" | "smartworking",
-        })),
-        // Dicembre 2024 - Più presenze
-        ...Array.from({ length: 31 }, (_, i) => ({
-          date: new Date(2024, 11, i + 1).toISOString(),
-          status: (i % 4 === 0
-            ? "smartworking"
-            : i % 1 === 0
-            ? "absent"
-            : "present") as "present" | "absent" | "smartworking",
-        })),
-      ],
-    },
-    {
-      id: "4",
-      name: "Anna Neri",
-      avatar: "https://i.pravatar.cc/150?u=anna",
-      attendances: [
-        // Gennaio 2025 - Molte presenze
-        ...Array.from({ length: 31 }, (_, i) => ({
-          date: new Date(2025, 0, i + 1).toISOString(),
-          status: (i < 20
-            ? "present"
-            : i % 2 === 0
-            ? "smartworking"
-            : "absent") as "present" | "absent" | "smartworking",
-        })),
-        // Dicembre 2024 - Presenze simili (variazione minima)
-        ...Array.from({ length: 31 }, (_, i) => ({
-          date: new Date(2024, 11, i + 1).toISOString(),
-          status: (i < 18
-            ? "present"
-            : i % 2 === 0
-            ? "smartworking"
-            : "absent") as "present" | "absent" | "smartworking",
-        })),
-      ],
-    },
   ]);
 
   useEffect(() => {
     async function fetchData() {
       const permission = await hasPermission("VIEW_EMPLOYEE");
-
       if (!permission) {
         return (window.location.href = "/");
       }
+
+      const sessionData = await axios.get("/Authentication/GET/GetSessionData");
+      setLoggedStafferId(sessionData.data.StafferId);
+
+      const staffers = await axios.get("/Staffer/GET/GetAllStaffers");
+
+      // Reset employees all'inizio di ogni fetch
+      setEmployees([]);
+
+      for (const staffer of staffers.data) {
+        const res = await axios.get("/Staffer/GET/GetAttendanceByStafferId", {
+          params: {
+            month: selectedDate.getMonth() + 1,
+            year: selectedDate.getFullYear(),
+            stafferId: staffer.EmployeeId,
+          },
+        });
+
+        console.log(res.data);
+
+        setEmployees((prev) => {
+          // Controlla se esiste già un employee con lo stesso ID
+          const exists = prev.some((emp) => emp.id === staffer.EmployeeId);
+          if (exists) return prev;
+
+          // Se non esiste, aggiungilo
+          return [
+            ...prev,
+            {
+              id: staffer.EmployeeId,
+              name: staffer.EmployeeFullName,
+              avatar: API_URL_IMG + "/profileIcons/" + staffer.EmployeeImageUrl,
+              attendances: res.data,
+            },
+          ];
+        });
+      }
     }
     fetchData();
-  }, [hasPermission]);
+  }, [hasPermission, selectedDate]);
 
   return (
     <div className="py-10 m-0 lg:ml-72">
@@ -153,9 +118,17 @@ export default function EmployeeAttendance() {
         </div>
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
-        <EmployeeAttendanceStats employees={employees} />
+        <EmployeeAttendanceStats
+          employees={employees}
+          selectedDate={selectedDate}
+        />
         <div className="py-6 lg:py-8">
-          <EmployeeAttendanceTable employees={employees} />
+          <EmployeeAttendanceTable
+            employees={employees}
+            selectedDate={selectedDate}
+            onDateChange={setSelectedDate}
+            loggedStafferId={loggedStafferId}
+          />
         </div>
       </main>
     </div>

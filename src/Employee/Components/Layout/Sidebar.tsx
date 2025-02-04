@@ -112,7 +112,6 @@ export default function SidebarLayout() {
         withCredentials: true,
       })
       .then((res) => {
-        console.log(res.data);
         setProjects(res.data);
       });
   }
