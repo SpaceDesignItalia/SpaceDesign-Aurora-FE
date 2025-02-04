@@ -41,6 +41,7 @@ import PasswordReset from "./Employee/Components/Login/PasswordReset";
 import Loader from "./Employee/Components/Layout/Loader";
 import SearchBar from "./Employee/Components/Layout/SearchBar";
 import { io } from "socket.io-client";
+import EmployeeAttendance from "./Employee/Pages/Employee/EmployeeAttendance";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -203,6 +204,10 @@ const EmployeeProtectedRoutes: React.FC = () => {
         <Route
           element={<EmployeeDashboard />}
           path="/administration/employee"
+        />
+        <Route
+          element={<EmployeeAttendance />}
+          path="/administration/employee/attendance"
         />
         <Route
           element={<AddEmployeePage />}

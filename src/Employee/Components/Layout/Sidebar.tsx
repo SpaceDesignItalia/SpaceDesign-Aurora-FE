@@ -1,48 +1,39 @@
-import { usePermissions } from "./PermissionProvider";
-import { Fragment, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import {
   Bars3Icon,
   Cog6ToothIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import Logo from "../../../assets/SpaceDesignLogo.png";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
-import EngineeringOutlinedIcon from "@mui/icons-material/EngineeringOutlined";
-import FolderCopyOutlinedIcon from "@mui/icons-material/FolderCopyOutlined";
-import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
-import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
-import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
-import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
-import axios from "axios";
-import { API_URL_IMG } from "../../../API/API";
 import {
   Avatar,
   Dropdown,
-  DropdownTrigger,
   DropdownItem,
-  Skeleton,
   DropdownMenu,
+  DropdownTrigger,
+  Skeleton,
 } from "@heroui/react";
-import Notification from "./Notification/Notification";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import axios from "axios";
+import { Fragment, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { API_WEBSOCKET_URL } from "../../../API/API";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import { API_URL_IMG, API_WEBSOCKET_URL } from "../../../API/API";
+import Logo from "../../../assets/SpaceDesignLogo.png";
+import Notification from "./Notification/Notification";
+import { usePermissions } from "./PermissionProvider";
+import {
+  administrationItems,
+  communicationItems,
+  mainNavigationItems,
+  projectManagementItems,
+  salesItems,
+} from "./Sidebar/SidebarItems";
+import Sidebar, { type SidebarItem } from "./Sidebar/sidebarOption";
 
 interface Notification {
   NotificationId: number;
   NotificationTypeName: string;
   IsRead: boolean;
-}
-
-interface NavigationItem {
-  name: string;
-  href: string;
-  icon: React.ElementType;
-  requiredCondition: boolean;
-  current: boolean;
 }
 
 interface Employee {
@@ -71,34 +62,18 @@ const USERDATA_VALUE: Employee = {
   StafferImageUrl: "",
 };
 
-const PROJECT_DATA: Project[] = [
-  {
-    ProjectId: 0,
-    ProjectName: "",
-    CompanyName: "",
-    NotificationCount: 0,
-    UniqueCode: "",
-  },
-];
-
 const socket: Socket = io(API_WEBSOCKET_URL);
 
-export default function Sidebar() {
+export default function SidebarLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUrl = window.location.pathname;
 
   const { hasPermission } = usePermissions();
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [sales, setSales] = useState<NavigationItem[]>([]);
-  const [administration, setAdministration] = useState<NavigationItem[]>([]);
-  const [projectManagement, setProjectManagement] = useState<NavigationItem[]>(
-    []
-  );
-
   const [userData, setUserData] = useState<Employee>(USERDATA_VALUE);
-  const [projects, setProjects] = useState<Project[]>(PROJECT_DATA);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [notificationUpdate, setNotificationUpdate] = useState(false);
+  const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
 
   useEffect(() => {
     axios
@@ -108,102 +83,28 @@ export default function Sidebar() {
         socket.emit("join-notifications", res.data.StafferId);
       });
     fetchProjects();
-    fetchPermissions();
-  }, [currentUrl]);
+  }, [currentUrl, notificationUpdate]);
 
   useEffect(() => {
-    fetchNotifications();
+    getAllSidebarItems().then((items) => {
+      setSidebarItems(items as SidebarItem[]);
+    });
+  }, [projects, currentUrl, notificationUpdate]);
+
+  useEffect(() => {
+    socket.on("delete-notifications", () => {
+      setNotificationUpdate(!notificationUpdate);
+    });
+
+    socket.on("newNotification", () => {
+      setNotificationUpdate(!notificationUpdate);
+    });
+
+    return () => {
+      socket.off("delete-notifications");
+      socket.off("newNotification");
+    };
   }, [notificationUpdate]);
-
-  socket.on("delete-notifications", () => {
-    setNotificationUpdate(!notificationUpdate);
-  });
-
-  socket.on("newNotification", () => {
-    setNotificationUpdate(!notificationUpdate);
-  });
-
-  socket.on("delete-notifications", () => {
-    setNotificationUpdate(!notificationUpdate);
-  });
-
-  async function fetchPermissions() {
-    setSales([
-      {
-        name: "Lead",
-        href: "/lead",
-        icon: MailOutlineRoundedIcon,
-        requiredCondition: await hasPermission("VIEW_LEAD"),
-        current: isSubRoute({
-          currentUrl,
-          parentRoute: { href: "/lead", subRoutes: [] },
-        }),
-      },
-    ]);
-    setAdministration([
-      {
-        name: "Clienti",
-        href: "/administration/customer",
-        icon: PeopleAltOutlinedIcon,
-        requiredCondition:
-          (await hasPermission("VIEW_CUSTOMER")) ||
-          (await hasPermission("VIEW_COMPANY")),
-        current: isSubRoute({
-          currentUrl,
-          parentRoute: {
-            href: "/administration/customer",
-            subRoutes: [
-              "/administration/customer/add-customer",
-              "/administration/customer/edit-customer",
-              "/administration/customer/add-company",
-              "/administration/customer/edit-company",
-            ],
-          },
-        }),
-      },
-      {
-        name: "Dipendenti",
-        href: "/administration/employee",
-        icon: EngineeringOutlinedIcon,
-        requiredCondition: await hasPermission("VIEW_EMPLOYEE"),
-        current: isSubRoute({
-          currentUrl,
-          parentRoute: {
-            href: "/administration/employee",
-            subRoutes: [
-              "/administration/employee/add-employee",
-              "/administration/employee/edit-employee",
-            ],
-          },
-        }),
-      },
-      {
-        name: "Permessi",
-        href: "/administration/permission",
-        icon: VpnKeyOutlinedIcon,
-        requiredCondition: await hasPermission("VIEW_ROLE"),
-        current: isSubRoute({
-          currentUrl,
-          parentRoute: {
-            href: "/administration/permission",
-            subRoutes: ["/administration/permission/edit-role"],
-          },
-        }),
-      },
-    ]);
-    setProjectManagement([
-      {
-        name: "Progetti",
-        href: "/projects",
-        icon: FolderCopyOutlinedIcon,
-        requiredCondition: await hasPermission("VIEW_PROJECT"),
-        current: isSubRoute({
-          currentUrl,
-          parentRoute: { href: "/projects", subRoutes: ["/projects/"] },
-        }),
-      },
-    ]);
-  }
 
   function fetchProjects() {
     axios
@@ -215,64 +116,63 @@ export default function Sidebar() {
       });
   }
 
-  function fetchNotifications() {
-    axios
-      .get("/Notification/GET/GetAllNotifications", { withCredentials: true })
-      .then((response) => {
-        setNotifications(response.data);
-      });
-  }
+  const getAllSidebarItems = async () => {
+    // Get base items
+    const baseItems = [
+      ...mainNavigationItems,
+      ...((await hasPermission("VIEW_LEAD")) ? salesItems : []),
+      ...communicationItems,
+      ...(await Promise.all(
+        administrationItems.map(async (item) => {
+          const permission = await hasPermission(
+            getPermissionForRoute(item.items?.[0]?.href ?? "")
+          );
+          return permission ? item : null;
+        })
+      )),
+    ].filter(Boolean);
 
-  function isSubRoute({
-    currentUrl,
-    parentRoute,
-  }: {
-    currentUrl: string;
-    parentRoute: { href: string; subRoutes: string[] };
-  }): boolean {
-    if (currentUrl === parentRoute.href) {
-      return true;
+    // Add projects if user has permission
+    const hasProjectPermission = await hasPermission("VIEW_PROJECT");
+
+    if (hasProjectPermission && projects.length > 0) {
+      const currentPath = window.location.pathname;
+      const projectSubItems = projects.map((project) => ({
+        key: `project-${project.ProjectId}`,
+        href: `/projects/${project.UniqueCode}`,
+        title: project.ProjectName,
+        startContent: (
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-gray-700 group-hover:text-gray-700">
+            {project.ProjectName.charAt(0)}
+          </span>
+        ),
+        endContent:
+          project.NotificationCount > 0 ? (
+            <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+              {project.NotificationCount}
+            </span>
+          ) : undefined,
+        selected: currentPath === `/projects/${project.UniqueCode}`,
+      }));
+
+      const projectItems = projectManagementItems.map((section) => ({
+        ...section,
+        items: section.items?.map((item) =>
+          item.key === "projects"
+            ? {
+                ...item,
+                items: projectSubItems,
+                selected: currentPath.startsWith("/projects/"),
+              }
+            : item
+        ),
+      }));
+
+      baseItems.push(...projectItems);
     }
-    if (parentRoute.subRoutes && parentRoute.subRoutes.length > 0) {
-      return parentRoute.subRoutes.some((subRoute) =>
-        currentUrl.startsWith(subRoute)
-      );
-    }
-    return false;
-  }
 
-  const navigation: NavigationItem[] = [
-    {
-      name: "Dashboard",
-      href: "/",
-      icon: DashboardOutlinedIcon,
-      requiredCondition: true,
-      current: isSubRoute({
-        currentUrl,
-        parentRoute: { href: "/", subRoutes: [] },
-      }),
-    },
-  ];
-
-  const comunications = [
-    {
-      name: "Chat",
-      href: "/comunications/chat",
-      icon: ChatBubbleOutlineRoundedIcon,
-      current: currentUrl === "/comunications/chat",
-      notificationCount: notifications.filter(
-        (notification) =>
-          notification.NotificationTypeName === "Dipendente" &&
-          !notification.IsRead
-      ).length,
-    },
-    {
-      name: "Calendario",
-      href: "/comunications/calendar",
-      icon: CalendarMonthIcon,
-      current: currentUrl === "/comunications/calendar",
-    },
-  ];
+    return baseItems;
+  };
 
   function logout() {
     axios
@@ -284,9 +184,38 @@ export default function Sidebar() {
       });
   }
 
-  function classNames(...classes: string[]): string {
-    return classes.filter(Boolean).join(" ");
-  }
+  const getCurrentKey = (pathname: string): string => {
+    if (pathname === "/") return "dashboard";
+
+    // Per i progetti, seleziona il progetto specifico o la tab progetti
+    if (pathname.startsWith("/projects/")) {
+      const projectCode = pathname.split("/")[2];
+      if (projectCode) {
+        // Se siamo in una pagina di progetto specifica
+        const project = projects.find((p) => p.UniqueCode === projectCode);
+        if (project) {
+          return `project-${project.ProjectId}`;
+        }
+      }
+      // Se siamo nella pagina principale dei progetti o il progetto non è stato trovato
+      return "projects";
+    }
+
+    // Per i sottomenu dei dipendenti
+    if (pathname === "/administration/employee") return "employee-list";
+    if (pathname === "/administration/employee/attendance") return "attendance";
+
+    const pathMap: Record<string, string> = {
+      "/lead": "lead",
+      "/comunications/chat": "chat",
+      "/comunications/calendar": "calendar",
+      "/administration/customer": "customers",
+      "/administration/permission": "permissions",
+      "/projects": "projects",
+    };
+
+    return pathMap[pathname] || pathname;
+  };
 
   return (
     <div>
@@ -342,7 +271,6 @@ export default function Sidebar() {
                     </button>
                   </div>
                 </Transition.Child>
-                {/* Sidebar component, swap this element with another sidebar if you like */}
                 <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
                   <div className="flex h-16 shrink-0 items-center justify-center border-b">
                     <img
@@ -351,223 +279,19 @@ export default function Sidebar() {
                       alt="Your Company"
                     />
                   </div>
-                  <nav className="flex flex-1 flex-col">
-                    <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                      <li>
-                        <ul role="list" className="-mx-2 space-y-1">
-                          {navigation.map((item) => (
-                            <li key={item.name}>
-                              <a
-                                href={item.href}
-                                className={classNames(
-                                  item.current
-                                    ? "bg-primary text-white"
-                                    : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
-                                )}
-                              >
-                                <item.icon
-                                  className={classNames(
-                                    item.current
-                                      ? "text-white-700"
-                                      : "text-white-700 group-hover:text-white",
-                                    "h-6 w-6 shrink-0"
-                                  )}
-                                  aria-hidden="true"
-                                />
-                                {item.name}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
-
-                      {sales &&
-                        sales.some((sale) => sale.requiredCondition) && (
-                          <li>
-                            <div className="text-xs font-semibold leading-6 text-gray-400">
-                              Vendite
-                            </div>
-                            <ul role="list" className="-mx-2 mt-2 space-y-1">
-                              {sales.map((item) => (
-                                <li key={item.name}>
-                                  <a
-                                    href={item.href}
-                                    className={classNames(
-                                      item.current
-                                        ? "bg-primary text-white"
-                                        : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                      "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
-                                    )}
-                                  >
-                                    <item.icon
-                                      className={classNames(
-                                        item.current
-                                          ? "text-white-700"
-                                          : "text-white-700 group-hover:text-white",
-                                        "h-6 w-6 shrink-0"
-                                      )}
-                                      aria-hidden="true"
-                                    />
-                                    {item.name}
-                                  </a>
-                                </li>
-                              ))}
-                            </ul>
-                          </li>
-                        )}
-
-                      <li>
-                        <div className="text-xs font-semibold leading-6 text-gray-400">
-                          Comunicazioni
-                        </div>
-                        <ul role="list" className="-mx-2 mt-2 space-y-1">
-                          {comunications.map((item) => (
-                            <li key={item.name}>
-                              <a
-                                href={item.href}
-                                className={classNames(
-                                  item.current
-                                    ? "bg-primary text-white"
-                                    : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
-                                )}
-                              >
-                                <item.icon
-                                  className={classNames(
-                                    item.current
-                                      ? "text-white-700"
-                                      : "text-white-700 group-hover:text-white",
-                                    "h-6 w-6 shrink-0"
-                                  )}
-                                  aria-hidden="true"
-                                />
-                                {item.name}
-                                {item.notificationCount &&
-                                item.notificationCount > 0 ? (
-                                  <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
-                                    {item.notificationCount}
-                                  </span>
-                                ) : (
-                                  <></>
-                                )}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
-
-                      {administration &&
-                        administration.some(
-                          (admin) => admin.requiredCondition
-                        ) && (
-                          <li>
-                            <div className="text-xs font-semibold leading-6 text-gray-400">
-                              Amministrazione
-                            </div>
-                            <ul role="list" className="-mx-2 mt-2 space-y-1">
-                              {administration.map(
-                                (admin) =>
-                                  admin.requiredCondition && (
-                                    <li key={admin.name}>
-                                      <a
-                                        href={admin.href}
-                                        className={classNames(
-                                          admin.current
-                                            ? "bg-primary text-white"
-                                            : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
-                                        )}
-                                      >
-                                        <admin.icon
-                                          className={classNames(
-                                            admin.current
-                                              ? "text-white-700"
-                                              : "text-white-700 group-hover:text-white",
-                                            "h-6 w-6 shrink-0"
-                                          )}
-                                          aria-hidden="true"
-                                        />
-                                        {admin.name}
-                                      </a>
-                                    </li>
-                                  )
-                              )}
-                            </ul>
-                          </li>
-                        )}
-
-                      {projectManagement &&
-                        projectManagement.some(
-                          (project) => project.requiredCondition
-                        ) && (
-                          <li>
-                            <div className="text-xs font-semibold leading-6 text-gray-400">
-                              Gestione Progetti
-                            </div>
-                            <ul role="list" className="-mx-2 mt-2 space-y-1">
-                              {projectManagement.map(
-                                (project) =>
-                                  project.requiredCondition && (
-                                    <li key={project.name}>
-                                      <a
-                                        href={project.href}
-                                        className={classNames(
-                                          project.current
-                                            ? "bg-primary text-white"
-                                            : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
-                                        )}
-                                      >
-                                        <project.icon
-                                          className={classNames(
-                                            project.current
-                                              ? "text-white-700"
-                                              : "text-white-700 group-hover:text-white",
-                                            "h-6 w-6 shrink-0"
-                                          )}
-                                          aria-hidden="true"
-                                        />
-                                        {project.name}
-                                      </a>
-                                    </li>
-                                  )
-                              )}
-                            </ul>
-                          </li>
-                        )}
-
-                      {projects.length > 0 && (
-                        <li>
-                          <div className="text-xs font-semibold leading-6 text-gray-400">
-                            Progetti
-                          </div>
-                          <ul role="list" className="-mx-2 mt-2 space-y-1">
-                            {projects.map((project: Project) => (
-                              <li key={project.ProjectId}>
-                                <a
-                                  href={"/projects/" + project.UniqueCode}
-                                  className="group flex gap-x-3 rounded-full p-2 px-4 text-sm font-semibold leading-6 text-gray-700 hover:text-white hover:bg-gray-500"
-                                >
-                                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-gray-700 group-hover:text-gray-700">
-                                    {project.ProjectName.charAt(0)}
-                                  </span>
-                                  <span className="truncate">
-                                    {project.ProjectName}
-                                  </span>
-                                  {project.NotificationCount > 0 && (
-                                    <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
-                                      {project.NotificationCount}
-                                    </span>
-                                  )}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        </li>
-                      )}
-                    </ul>
-                  </nav>
+                  <Sidebar
+                    items={sidebarItems}
+                    defaultSelectedKey={getCurrentKey(currentUrl)}
+                    defaultExpandedKeys={[
+                      "overview",
+                      "sales",
+                      "communications",
+                      "administration",
+                      "project-management",
+                      "employees",
+                      "projects",
+                    ]}
+                  />
                 </div>
               </Dialog.Panel>
             </Transition.Child>
@@ -577,225 +301,24 @@ export default function Sidebar() {
 
       {/* Static sidebar for desktop */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-        {/* Sidebar component, swap this element with another sidebar if you like */}
         <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
           <div className="flex h-16 shrink-0 items-center justify-center border-b">
             <img className="h-20 w-auto" src={Logo} alt="Your Company" />
           </div>
-          <nav className="flex flex-1 flex-col">
-            <ul role="list" className="flex flex-1 flex-col gap-y-7">
-              <li>
-                <ul role="list" className="-mx-2 space-y-1">
-                  {navigation.map((item) => (
-                    <li key={item.name}>
-                      <a
-                        href={item.href}
-                        className={classNames(
-                          item.current
-                            ? "bg-primary text-white"
-                            : "text-gray-700 hover:text-white hover:bg-gray-500",
-                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
-                        )}
-                      >
-                        <item.icon
-                          className={classNames(
-                            item.current
-                              ? "text-white-700"
-                              : "text-white-700 group-hover:text-white",
-                            "h-6 w-6 shrink-0"
-                          )}
-                          aria-hidden="true"
-                        />
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-
-              {sales && sales.some((sale) => sale.requiredCondition) && (
-                <li>
-                  <div className="text-xs font-semibold leading-6 text-gray-400">
-                    Vendite
-                  </div>
-                  <ul role="list" className="-mx-2 mt-2 space-y-1">
-                    {sales.map((item) => (
-                      <li key={item.name}>
-                        <a
-                          href={item.href}
-                          className={classNames(
-                            item.current
-                              ? "bg-primary text-white"
-                              : "text-gray-700 hover:text-white hover:bg-gray-500",
-                            "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
-                          )}
-                        >
-                          <item.icon
-                            className={classNames(
-                              item.current
-                                ? "text-white-700"
-                                : "text-white-700 group-hover:text-white",
-                              "h-6 w-6 shrink-0"
-                            )}
-                            aria-hidden="true"
-                          />
-                          {item.name}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              )}
-
-              <li>
-                <div className="text-xs font-semibold leading-6 text-gray-400">
-                  Comunicazioni
-                </div>
-                <ul role="list" className="-mx-2 mt-2 space-y-1">
-                  {comunications.map((item) => (
-                    <li key={item.name}>
-                      <a
-                        href={item.href}
-                        className={classNames(
-                          item.current
-                            ? "bg-primary text-white"
-                            : "text-gray-700 hover:text-white hover:bg-gray-500",
-                          "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
-                        )}
-                      >
-                        <item.icon
-                          className={classNames(
-                            item.current
-                              ? "text-white-700"
-                              : "text-white-700 group-hover:text-white",
-                            "h-6 w-6 shrink-0"
-                          )}
-                          aria-hidden="true"
-                        />
-                        {item.name}
-                        {item.notificationCount &&
-                        item.notificationCount > 0 ? (
-                          <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
-                            {item.notificationCount}
-                          </span>
-                        ) : (
-                          <></>
-                        )}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-
-              {administration &&
-                administration.some((admin) => admin.requiredCondition) && (
-                  <li>
-                    <div className="text-xs font-semibold leading-6 text-gray-400">
-                      Amministrazione
-                    </div>
-                    <ul role="list" className="-mx-2 mt-2 space-y-1">
-                      {administration.map(
-                        (admin) =>
-                          admin.requiredCondition && (
-                            <li key={admin.name}>
-                              <a
-                                href={admin.href}
-                                className={classNames(
-                                  admin.current
-                                    ? "bg-primary text-white"
-                                    : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
-                                )}
-                              >
-                                <admin.icon
-                                  className={classNames(
-                                    admin.current
-                                      ? "text-white-700"
-                                      : "text-white-700 group-hover:text-white",
-                                    "h-6 w-6 shrink-0"
-                                  )}
-                                  aria-hidden="true"
-                                />
-                                {admin.name}
-                              </a>
-                            </li>
-                          )
-                      )}
-                    </ul>
-                  </li>
-                )}
-
-              {projectManagement &&
-                projectManagement.some(
-                  (project) => project.requiredCondition
-                ) && (
-                  <li>
-                    <div className="text-xs font-semibold leading-6 text-gray-400">
-                      Gestione Progetti
-                    </div>
-                    <ul role="list" className="-mx-2 mt-2 space-y-1">
-                      {projectManagement.map(
-                        (project) =>
-                          project.requiredCondition && (
-                            <li key={project.name}>
-                              <a
-                                href={project.href}
-                                className={classNames(
-                                  project.current
-                                    ? "bg-primary text-white"
-                                    : "text-gray-700 hover:text-white hover:bg-gray-500",
-                                  "group flex gap-x-3 rounded-full p-2 px-4 text-sm leading-6 font-semibold"
-                                )}
-                              >
-                                <project.icon
-                                  className={classNames(
-                                    project.current
-                                      ? "text-white-700"
-                                      : "text-white-700 group-hover:text-white",
-                                    "h-6 w-6 shrink-0"
-                                  )}
-                                  aria-hidden="true"
-                                />
-                                {project.name}
-                              </a>
-                            </li>
-                          )
-                      )}
-                    </ul>
-                  </li>
-                )}
-
-              {projects.length > 0 && (
-                <li>
-                  <div className="text-xs font-semibold leading-6 text-gray-400">
-                    Progetti
-                  </div>
-                  <ul role="list" className="-mx-2 mt-2 space-y-1">
-                    {projects.map((project: Project) => (
-                      <li key={project.ProjectId}>
-                        <a
-                          href={"/projects/" + project.UniqueCode}
-                          className="group flex gap-x-3 rounded-full p-2 px-4 text-sm font-semibold leading-6 text-gray-700 hover:text-white hover:bg-gray-500"
-                        >
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-gray-700 group-hover:text-gray-700">
-                            {project.ProjectName.charAt(0)}
-                          </span>
-                          <span className="truncate">
-                            {project.ProjectName}
-                          </span>
-                          {project.NotificationCount > 0 && (
-                            <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
-                              {project.NotificationCount}
-                            </span>
-                          )}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              )}
-            </ul>
-          </nav>
+          <Sidebar
+            items={sidebarItems}
+            defaultSelectedKey={getCurrentKey(currentUrl)}
+            selectedKeys={new Set([getCurrentKey(currentUrl)])}
+            defaultExpandedKeys={[
+              "overview",
+              "sales",
+              "communications",
+              "administration",
+              "project-management",
+              "employees",
+              "projects",
+            ]}
+          />
         </div>
       </div>
 
@@ -887,4 +410,18 @@ export default function Sidebar() {
       </div>
     </div>
   );
+}
+
+function getPermissionForRoute(route: string): string {
+  switch (route) {
+    case "/administration/customer":
+      return "VIEW_CUSTOMER";
+    case "/administration/employee":
+    case "/administration/employee/attendance":
+      return "VIEW_EMPLOYEE";
+    case "/administration/permission":
+      return "VIEW_ROLE";
+    default:
+      return "";
+  }
 }

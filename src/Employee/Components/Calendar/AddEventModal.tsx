@@ -412,7 +412,7 @@ export default function AddEventModal({
                           Partecipanti
                         </dt>
                         <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          <div className="flex flex-row gap-2">
+                          <div className="flex flex-col gap-2">
                             <Autocomplete
                               defaultItems={users}
                               onSelectionChange={(e) => {
@@ -420,12 +420,27 @@ export default function AddEventModal({
                                   e.toString() &&
                                   addPartecipant(
                                     e?.toString() || "",
-                                    Partecipants.find(
-                                      (p) => p.EventPartecipantEmail === e
-                                    )?.EventPartecipantRole || "cliente"
+                                    users.find(
+                                      (u) => u.EventPartecipantEmail === e
+                                    )?.EventPartecipantRole || "esterno"
                                   );
                               }}
-                              placeholder="Email"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  const input = e.currentTarget.value;
+                                  if (
+                                    input &&
+                                    input.includes("@") &&
+                                    !users.some(
+                                      (u) => u.EventPartecipantEmail === input
+                                    )
+                                  ) {
+                                    addPartecipant(input, "esterno");
+                                    e.currentTarget.value = "";
+                                  }
+                                }
+                              }}
+                              placeholder="Seleziona partecipanti"
                             >
                               {users.map((user) => (
                                 <AutocompleteItem
@@ -436,8 +451,8 @@ export default function AddEventModal({
                                         backgroundColor:
                                           user.EventPartecipantRole ===
                                           "dipendente"
-                                            ? "#EF4444" // red
-                                            : "#3B82F6", // blue
+                                            ? "#EF4444"
+                                            : "#3B82F6",
                                       }}
                                     />
                                   }
@@ -449,6 +464,7 @@ export default function AddEventModal({
                               ))}
                             </Autocomplete>
                           </div>
+
                           <div className="flex flex-wrap gap-2 mt-2">
                             {Partecipants.map((Partecipant) => (
                               <Chip
@@ -467,8 +483,11 @@ export default function AddEventModal({
                                       backgroundColor:
                                         Partecipant.EventPartecipantRole ===
                                         "dipendente"
-                                          ? "#EF4444" // red
-                                          : "#3B82F6", // blue
+                                          ? "#EF4444"
+                                          : Partecipant.EventPartecipantRole ===
+                                            "cliente"
+                                          ? "#3B82F6"
+                                          : "#10B981", // Green for external participants
                                     }}
                                   />
                                 }
