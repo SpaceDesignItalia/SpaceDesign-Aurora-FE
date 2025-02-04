@@ -132,6 +132,7 @@ export default function EmployeeAttendanceTable({
       startDate: Date;
     } | null = null;
     const attendanceBlocks: JSX.Element[] = [];
+    let emptyDays = 0;
 
     days.forEach((date, index) => {
       const attendance = employee.attendances.find(
@@ -145,7 +146,19 @@ export default function EmployeeAttendanceTable({
           );
           currentStreak = null;
         }
+        emptyDays++;
         return;
+      }
+
+      // Aggiungi spazio vuoto prima del primo status se necessario
+      if (!currentStreak && emptyDays > 0) {
+        attendanceBlocks.push(
+          <div
+            key={`empty-${date.toISOString()}`}
+            style={{ width: `${emptyDays * 64 - 8}px`, margin: "0 4px" }}
+          />
+        );
+        emptyDays = 0;
       }
 
       if (!currentStreak) {
