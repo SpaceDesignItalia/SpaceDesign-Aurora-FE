@@ -121,7 +121,7 @@ export default function AttendanceStats({
       icon: "material-symbols-light:home-work-outline",
     },
     {
-      title: "Assenze e Ferie",
+      title: "Assenze/Ferie",
       value: `${Math.round(currentMonthStats.absent)}%`,
       chartData: weeklyStats,
       change: getChangePercentage(
