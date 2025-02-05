@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import { Button, Popover, PopoverContent, PopoverTrigger } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import { useEffect, useState } from "react";
 
 interface Employee {
   EmployeeId: number;
@@ -23,7 +23,7 @@ export default function ConfirmDeleteCodeShareModal({
   DeleteCodeShare,
   onlineCodeShareUsers,
 }: ConfirmDeleteCodeShareModalProps) {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [, setIsOpen] = useState<boolean>(false);
 
   function checkDisabled() {
     if (onlineCodeShareUsers.length == 0) {
@@ -47,41 +47,15 @@ export default function ConfirmDeleteCodeShareModal({
     <>
       {onlineCodeShareUsers.filter((user) => user.codeShareId === codeShareId)
         .length == 0 && (
-        <Popover
-          placement="top"
-          showArrow={true}
-          size="sm"
-          color="danger"
-          radius="full"
-          startContent={
-            <Icon icon="solar:trash-bin-trash-linear" fontSize={17} />
-          }
-          aria-label="Remove"
-          aria-labelledby="Remove"
-          isIconOnly
-          disabled={checkDisabled()}
-          onClick={() => {
-            setIsOpen(true);
-          }}
-          className="mt-1 mr-1"
-        />
-      </PopoverTrigger>
-      <PopoverContent>
-        <div className="px-1 py-2">
-          <div className="flex flex-row gap-2 items-center text-small font-bold mb-2">
-            <Icon
-              icon="iconamoon:attention-circle-light"
-              className="text-warning"
-              fontSize={20}
-            />
-            Sei sicuro?
-          </div>
-          <div className="flex flex-row gap-2">
+        <Popover placement="top" showArrow={true}>
+          <PopoverTrigger>
             <Button
               size="sm"
               color="danger"
               radius="full"
-              startContent={<DeleteRoundedIcon sx={{ fontSize: 17 }} />}
+              startContent={
+                <Icon icon="solar:trash-bin-trash-linear" fontSize={17} />
+              }
               aria-label="Remove"
               aria-labelledby="Remove"
               isIconOnly
@@ -95,9 +69,10 @@ export default function ConfirmDeleteCodeShareModal({
           <PopoverContent>
             <div className="px-1 py-2">
               <div className="flex flex-row gap-2 items-center text-small font-semibold mb-2">
-                <ErrorRoundedIcon
+                <Icon
+                  icon="iconamoon:attention-circle-light"
                   className="text-warning"
-                  sx={{ fontSize: 20 }}
+                  fontSize={20}
                 />
                 Sei sicuro?{" "}
               </div>

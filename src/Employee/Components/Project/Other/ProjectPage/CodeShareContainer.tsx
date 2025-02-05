@@ -204,7 +204,7 @@ export default function CodeShareContainer({
                       isDisabled={newCodeShareName === ""}
                     >
                       Nome della stanza
-                    </p>
+                    </Button>
                     <div className="flex flex-col gap-4 w-full">
                       <Input
                         size="sm"
@@ -226,7 +226,9 @@ export default function CodeShareContainer({
                         size="sm"
                         radius="full"
                         onPress={handleAddCodeShare}
-                        startContent={<AddRounded />}
+                        startContent={
+                          <Icon icon="mynaui:plus-solid" fontSize={20} />
+                        }
                         isDisabled={newCodeShareName === ""}
                         className="w-full"
                       >
@@ -234,10 +236,10 @@ export default function CodeShareContainer({
                       </Button>
                     </div>
                   </div>
-                )}
-              </PopoverContent>
-            </Popover>
-          </div>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
             {tabs.map((tab) => (
@@ -247,8 +249,9 @@ export default function CodeShareContainer({
               >
                 <div className="flex items-center gap-3 px-4 py-3">
                   <div className="p-2.5 rounded-md bg-primary">
-                    <CodeRoundedIcon
-                      sx={{ fontSize: 22 }}
+                    <Icon
+                      icon="solar:code-linear"
+                      fontSize={22}
                       className="text-white"
                     />
                   </div>
@@ -261,7 +264,7 @@ export default function CodeShareContainer({
                         codeRoom.codeShareId === tab.ProjectCodeShareId
                     ).length > 0 && (
                       <div className="flex items-center gap-1 text-sm text-gray-600">
-                        <Person2RoundedIcon sx={{ fontSize: 15 }} />
+                        <Icon icon="solar:user-rounded-linear" fontSize={15} />
                         <span>
                           {
                             onlineCodeShareUsers.filter(
@@ -300,7 +303,9 @@ export default function CodeShareContainer({
                     size="md"
                     color="primary"
                     radius="full"
-                    startContent={<LoginRoundedIcon sx={{ fontSize: 18 }} />}
+                    startContent={
+                      <Icon icon="solar:login-linear" fontSize={18} />
+                    }
                     onPress={() => setSelectedTab(tab)}
                     className="w-full shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
                   >
@@ -310,7 +315,7 @@ export default function CodeShareContainer({
               </div>
             ))}
           </div>
-        </div>
+        </>
       ) : (
         <CodeShareEditor
           codeShare={selectedTab}

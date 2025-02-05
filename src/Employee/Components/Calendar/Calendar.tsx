@@ -1,24 +1,23 @@
-import { useState, useEffect, useRef } from "react";
-import { Icon } from "@iconify/react";
 import {
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
   Button,
-  Select,
-  SelectItem,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Kbd,
 } from "@heroui/react";
-import CalendarDay from "./CalendarDay";
-import CalendarWeek from "./CalendarWeek";
-import CalendarMonth from "./CalendarMonth";
-import CalendarYear from "./CalendarYear";
-import AddEventModal from "./AddEventModal";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import dayjs from "dayjs";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
-import { useNavigate, useParams } from "react-router-dom";
+import AddEventModal from "./AddEventModal";
+import CalendarDay from "./CalendarDay";
+import CalendarMonth from "./CalendarMonth";
+import CalendarWeek from "./CalendarWeek";
+import CalendarYear from "./CalendarYear";
 import ViewEventModal from "./ViewEventModal";
 
 const socket: Socket = io(API_WEBSOCKET_URL);
@@ -366,6 +365,8 @@ END:VEVENT`;
     }
   }, [container]); //Corrected useEffect dependency
 
+  const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+
   return (
     <>
       <ViewEventModal
@@ -437,35 +438,46 @@ END:VEVENT`;
                       : view === "month"
                       ? "Mese"
                       : "Anno"}
-                    <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
+                    <Icon
+                      icon="solar:alt-arrow-down-linear"
+                      className="ml-2 h-5 w-5 text-gray-500"
+                    />
                   </Button>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="Vista calendario" className="w-48">
                   <DropdownItem
                     key="day"
                     onClick={() => setView("day")}
-                    shortcut="CTRL + 1"
+                    endContent={
+                      <Kbd keys={[isMac ? "command" : "ctrl"]}>1</Kbd>
+                    }
                   >
                     Giorno
                   </DropdownItem>
                   <DropdownItem
                     key="week"
                     onClick={() => setView("week")}
-                    shortcut="CTRL + 2"
+                    endContent={
+                      <Kbd keys={[isMac ? "command" : "ctrl"]}>2</Kbd>
+                    }
                   >
                     Settimana
                   </DropdownItem>
                   <DropdownItem
                     key="month"
                     onClick={() => setView("month")}
-                    shortcut="CTRL + 3"
+                    endContent={
+                      <Kbd keys={[isMac ? "command" : "ctrl"]}>3</Kbd>
+                    }
                   >
                     Mese
                   </DropdownItem>
                   <DropdownItem
                     key="year"
                     onClick={() => setView("year")}
-                    shortcut="CTRL + 4"
+                    endContent={
+                      <Kbd keys={[isMac ? "command" : "ctrl"]}>4</Kbd>
+                    }
                   >
                     Anno
                   </DropdownItem>
@@ -480,7 +492,10 @@ END:VEVENT`;
                   >
                     <Button className="flex items-center px-4 text-sm font-medium text-gray-600 bg-white hover:bg-gray-50">
                       Indicatore orario
-                      <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
+                      <Icon
+                        icon="solar:alt-arrow-down-linear"
+                        className="ml-2 h-5 w-5 text-gray-500"
+                      />
                     </Button>
                   </DropdownTrigger>
                   <DropdownMenu className="w-72">
@@ -517,7 +532,11 @@ END:VEVENT`;
             <Dropdown>
               <DropdownTrigger>
                 <Button className="flex h-11 items-center justify-center rounded-full bg-primary text-white hover:bg-primary-dark transition-colors">
-                  <AddRounded className="h-5 w-5 sm:mr-2" aria-hidden="true" />
+                  <Icon
+                    icon="mynaui:plus-solid"
+                    className="h-5 w-5 sm:mr-2"
+                    aria-hidden="true"
+                  />
                   <span className="hidden sm:inline">Nuovo evento</span>
                 </Button>
               </DropdownTrigger>
@@ -528,14 +547,18 @@ END:VEVENT`;
                     setPrefilledEventData(null);
                     setIsOpen(true);
                   }}
-                  startContent={<AddRounded className="h-5 w-5" />}
+                  startContent={
+                    <Icon icon="mynaui:plus-solid" className="h-5 w-5" />
+                  }
                 >
                   Aggiungi evento
                 </DropdownItem>
                 <DropdownItem
                   key="import"
                   onClick={() => fileInputRef.current?.click()}
-                  startContent={<FileUploadOutlined className="h-5 w-5" />}
+                  startContent={
+                    <Icon icon="solar:file-upload-linear" className="h-5 w-5" />
+                  }
                 >
                   Importa da ICS
                 </DropdownItem>
@@ -592,7 +615,8 @@ END:VEVENT`;
               className="flex h-10 items-center justify-center rounded-full bg-white text-gray-600 hover:bg-gray-50 border border-gray-300 transition-colors"
               onClick={handleExportEvent}
             >
-              <FileDownloadOutlined
+              <Icon
+                icon="solar:file-download-linear"
                 className="h-5 w-5 mr-2"
                 aria-hidden="true"
               />

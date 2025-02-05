@@ -1,7 +1,7 @@
-import { Button, Chip, Link, Tab, Tabs, Tooltip } from "@heroui/react";
+import { Button, Chip, Link, Tab, Tabs } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import axios from "axios";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { API_URL_IMG } from "../../../API/API";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
@@ -184,16 +184,8 @@ export default function ProjectPage() {
                 href={"/projects/" + UniqueCode}
                 isIconOnly
               >
-                <Button
-                  as={Link}
-                  color="primary"
-                  radius="full"
-                  href={"/projects/" + UniqueCode}
-                  isIconOnly
-                >
-                  <Icon icon="solar:pen-linear" fontSize={22} />
-                </Button>
-              </Tooltip>
+                <Icon icon="solar:pen-linear" fontSize={22} />
+              </Button>
             )}
             <Chip color="primary" radius="full">
               {projectData.StatusName}
@@ -248,15 +240,10 @@ export default function ProjectPage() {
                       <Tab
                         key={tab.title}
                         title={
-                          <Tooltip
-                            content={getTooltipContent(tab.title, tab.shortcut)}
-                            placement="bottom"
-                          >
-                            <div className="flex items-center space-x-2">
-                              {tab.icon}
-                              <span>{tab.title}</span>
-                            </div>
-                          </Tooltip>
+                          <div className="flex items-center space-x-2">
+                            {tab.icon}
+                            <span>{tab.title}</span>
+                          </div>
                         }
                       />
                     ))}
@@ -276,17 +263,9 @@ export default function ProjectPage() {
                         <Tab
                           key={tab.title}
                           title={
-                            <Tooltip
-                              content={getTooltipContent(
-                                tab.title,
-                                tab.shortcut
-                              )}
-                              placement="top"
-                            >
-                              <div className="flex items-center space-x-2">
-                                {tab.icon}
-                              </div>
-                            </Tooltip>
+                            <div className="flex items-center space-x-2">
+                              {tab.icon}
+                            </div>
                           }
                         />
                       ))}
@@ -303,17 +282,8 @@ export default function ProjectPage() {
                     className="hidden sm:flex"
                     isIconOnly
                   >
-                    <Button
-                      as={Link}
-                      color="primary"
-                      radius="full"
-                      href={"/projects/" + UniqueCode + "/edit-project"}
-                      className="hidden sm:flex"
-                      isIconOnly
-                    >
-                      <Icon icon="solar:pen-linear" fontSize={22} />
-                    </Button>
-                  </Tooltip>
+                    <Icon icon="solar:pen-linear" fontSize={22} />
+                  </Button>
                 )}
               </div>
             </header>
