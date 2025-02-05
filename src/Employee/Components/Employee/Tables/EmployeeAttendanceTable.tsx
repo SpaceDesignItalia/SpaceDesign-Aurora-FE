@@ -15,6 +15,10 @@ import {
 } from "@heroui/react";
 import { formatInTimeZone } from "date-fns-tz";
 import axios from "axios";
+import { io } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../../API/API";
+
+const socket = io(API_WEBSOCKET_URL);
 
 interface Employee {
   id: string;
@@ -53,22 +57,22 @@ export default function EmployeeAttendanceTable({
   const statusConfig = {
     present: {
       color: "bg-emerald-100 border-emerald-300",
-      icon: "material-symbols-light:work-outline",
+      icon: "hugeicons:office",
       label: "Presente in ufficio",
     },
     absent: {
       color: "bg-red-100 border-red-300",
-      icon: "material-symbols-light:sick-outline",
+      icon: "material-symbols-light:sick-outline-rounded",
       label: "Assente",
     },
     vacation: {
       color: "bg-blue-100 border-blue-300",
-      icon: "material-symbols-light:beach-access-outline",
+      icon: "proicons:beach",
       label: "Ferie",
     },
     smartworking: {
       color: "bg-amber-100 border-amber-300",
-      icon: "material-symbols-light:home-work-outline",
+      icon: "solar:smart-home-linear",
       label: "Smart Working",
     },
   };
@@ -206,7 +210,10 @@ export default function EmployeeAttendanceTable({
       StafferId: loggedStafferId,
       Date: date,
     });
-    console.log(res);
+
+    if (res.status === 200) {
+      socket.emit("employee-attendance-update");
+    }
   }
 
   return (
@@ -280,7 +287,7 @@ export default function EmployeeAttendanceTable({
               <div className="h-12 bg-gray-50 border-b border-gray-200 flex divide-x divide-gray-200">
                 {getDaysInMonth().map((date) => {
                   return (
-                    <Popover>
+                    <Popover showArrow>
                       <PopoverTrigger>
                         <div
                           key={date.toISOString()}

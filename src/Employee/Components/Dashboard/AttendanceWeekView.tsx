@@ -10,6 +10,10 @@ import { formatInTimeZone } from "date-fns-tz";
 import { format, addDays } from "date-fns";
 import { it } from "date-fns/locale";
 import axios from "axios";
+import { io } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../API/API";
+
+const socket = io(API_WEBSOCKET_URL);
 
 interface AttendanceWeekViewProps {
   stafferId: number;
@@ -20,7 +24,6 @@ interface AttendanceWeekViewProps {
 export default function AttendanceWeekView({
   stafferId,
   attendances,
-  onUpdate,
 }: AttendanceWeekViewProps) {
   const today = new Date();
   const days = [-3, -2, -1, 0, 1, 2, 3].map((offset) => addDays(today, offset));
@@ -28,22 +31,22 @@ export default function AttendanceWeekView({
   const statusConfig = {
     present: {
       color: "bg-emerald-100 border-emerald-300",
-      icon: "material-symbols-light:work-outline",
+      icon: "hugeicons:office",
       label: "Presente in ufficio",
     },
     absent: {
       color: "bg-red-100 border-red-300",
-      icon: "material-symbols-light:sick-outline",
+      icon: "material-symbols-light:sick-outline-rounded",
       label: "Assente",
     },
     vacation: {
       color: "bg-blue-100 border-blue-300",
-      icon: "material-symbols-light:beach-access-outline",
+      icon: "proicons:beach",
       label: "Ferie",
     },
     smartworking: {
       color: "bg-amber-100 border-amber-300",
-      icon: "material-symbols-light:home-work-outline",
+      icon: "solar:smart-home-linear",
       label: "Smart Working",
     },
   };
@@ -56,12 +59,15 @@ export default function AttendanceWeekView({
 
   const handleStatusChange = async (status: string, date: Date) => {
     try {
-      await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
+      const res = await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
         Status: status,
         StafferId: stafferId,
         Date: formatInTimeZone(date, "Europe/Rome", "yyyy-MM-dd"),
       });
-      onUpdate();
+
+      if (res.status === 200) {
+        socket.emit("employee-attendance-update");
+      }
     } catch (error) {
       console.error(error);
     }
@@ -76,7 +82,7 @@ export default function AttendanceWeekView({
         const dayNum = format(day, "d");
 
         return (
-          <Dropdown key={day.toISOString()}>
+          <Dropdown key={day.toISOString()} showArrow>
             <DropdownTrigger>
               <Button
                 className={`w-full h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl

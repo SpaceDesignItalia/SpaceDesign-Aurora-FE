@@ -3,6 +3,10 @@ import UpcomingCalendarEvents from "../../Components/Dashboard/UpcomingCalendarE
 import AttendanceWeekView from "../../Components/Dashboard/AttendanceWeekView";
 import AttendanceStats from "../../Components/Dashboard/AttendanceStats";
 import axios from "axios";
+import { io } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../API/API";
+
+const socket = io(API_WEBSOCKET_URL);
 
 export default function Dashboard() {
   const [stafferId, setStafferId] = useState<number>(0);
@@ -29,6 +33,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchAttendances();
+
+    socket.on("employee-attendance-update", () => {
+      fetchAttendances();
+    });
   }, []);
 
   return (
