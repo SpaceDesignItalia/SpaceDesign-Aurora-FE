@@ -35,7 +35,7 @@ import ConfirmDeleteEventModal from "./ConfirmDeleteEventModal";
 import { io, Socket } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
 import { Spinner } from "@heroui/react";
-
+import StatusAlert from "../Layout/StatusAlert";
 const socket: Socket = io(API_WEBSOCKET_URL);
 
 dayjs.extend(utc);
@@ -127,6 +127,15 @@ export default function ViewEventModal({
     EventTagName: "",
   });
   const [loading, setLoading] = useState<boolean>(false);
+  const [statusAlert, setStatusAlert] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
   async function fetchTags() {
     const res = await axios.get("/Calendar/GET/GetEventTags");
@@ -256,21 +265,43 @@ export default function ViewEventModal({
   }
 
   async function handleUpdateEvent() {
-    setIsAddingData(true);
-    const res = await axios.put("/Calendar/UPDATE/UpdateEvent", {
-      Partecipants: Partecipants,
-      Tag: newTag.EventTagId,
-      EventData: {
-        ...newEvent,
-        EventStartDate: new Date(newEvent.EventStartDate.toString()),
-        EventEndDate: new Date(newEvent.EventEndDate.toString()),
-      },
-    });
+    try {
+      setIsAddingData(true);
+      const res = await axios.put("/Calendar/UPDATE/UpdateEvent", {
+        Partecipants: Partecipants,
+        Tag: newTag.EventTagId,
+        EventData: {
+          ...newEvent,
+          EventStartDate: new Date(newEvent.EventStartDate.toString()),
+          EventEndDate: new Date(newEvent.EventEndDate.toString()),
+        },
+      });
 
-    if (res.status === 200) {
-      socket.emit("calendar-update");
+      if (res.status === 200) {
+        socket.emit("calendar-update");
+        setStatusAlert({
+          show: true,
+          type: "success",
+          message: "Evento modificato con successo!",
+        });
+        handleCloseModal();
+        setTimeout(() => {
+          setStatusAlert((prev) => ({ ...prev, show: false }));
+        }, 5000);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setStatusAlert({
+          show: true,
+          type: "error",
+          message: "Errore durante la modifica dell'evento",
+        });
+        setTimeout(() => {
+          setStatusAlert((prev) => ({ ...prev, show: false }));
+        }, 5000);
+      }
+    } finally {
       setIsAddingData(false);
-      handleCloseModal();
     }
   }
 
@@ -406,6 +437,15 @@ END:VCALENDAR`;
 
   return (
     <>
+      <StatusAlert
+        AlertData={{
+          isOpen: statusAlert.show,
+          onClose: () => setStatusAlert({ ...statusAlert, show: false }),
+          alertTitle: "",
+          alertDescription: statusAlert.message,
+          alertColor: statusAlert.type === "success" ? "green" : "red",
+        }}
+      />
       <Modal
         isOpen={isOpen}
         onOpenChange={handleCloseModal}

@@ -28,6 +28,7 @@ import { io, Socket } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import StatusAlert from "../Layout/StatusAlert";
 
 const socket: Socket = io(API_WEBSOCKET_URL);
 
@@ -102,6 +103,15 @@ export default function AddEventModal({
     EventTagName: "",
   });
   const [loading, setLoading] = useState<boolean>(false);
+  const [statusAlert, setStatusAlert] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
   async function fetchTags() {
     const res = await axios.get("/Calendar/GET/GetEventTags");
@@ -193,13 +203,25 @@ export default function AddEventModal({
       });
       if (res.status === 200) {
         socket.emit("calendar-update");
+        setStatusAlert({
+          show: true,
+          type: "success",
+          message: "Evento aggiunto con successo!",
+        });
+        setTimeout(() => {
+          handleCloseModal();
+        }, 2000);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        setStatusAlert({
+          show: true,
+          type: "error",
+          message: "Errore durante l'aggiunta dell'evento",
+        });
       }
     } finally {
       setIsAddingData(false);
-      handleCloseModal();
     }
   }
 
@@ -255,6 +277,15 @@ export default function AddEventModal({
 
   return (
     <>
+      <StatusAlert
+        AlertData={{
+          isOpen: statusAlert.show,
+          onClose: () => setStatusAlert({ ...statusAlert, show: false }),
+          alertTitle: "",
+          alertDescription: statusAlert.message,
+          alertColor: statusAlert.type === "success" ? "green" : "red",
+        }}
+      />
       <Modal
         isOpen={isOpen}
         onOpenChange={handleCloseModal}
