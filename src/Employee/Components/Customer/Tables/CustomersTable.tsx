@@ -463,7 +463,7 @@ export default function CustomersTable() {
         <TableBody
           emptyContent={
             searchTerm == "" ? (
-              <div className="text-center p-10">
+              <div className="flex flex-col justify-center items-center p-10">
                 <Icon icon="solar:user-plus-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun cliente trovato!
@@ -484,7 +484,7 @@ export default function CustomersTable() {
                 </div>
               </div>
             ) : (
-              <div className="text-center p-10">
+              <div className="flex flex-col justify-center items-center p-10">
                 <Icon icon="solar:user-plus-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun cliente trovato!

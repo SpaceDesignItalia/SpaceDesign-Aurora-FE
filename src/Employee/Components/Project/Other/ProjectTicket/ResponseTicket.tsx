@@ -193,7 +193,17 @@ export default function ResponseTicket() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Nessun ticket trovato!"} items={items}>
+        <TableBody
+          emptyContent={
+            <div className="flex flex-col justify-center items-center p-10">
+              <Icon icon="solar:ticket-linear" fontSize={50} />
+              <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                Nessun ticket trovato!
+              </h3>
+            </div>
+          }
+          items={items}
+        >
           {(item) => (
             <TableRow key={item.ProjectTicketId}>
               {(columnKey) => (
