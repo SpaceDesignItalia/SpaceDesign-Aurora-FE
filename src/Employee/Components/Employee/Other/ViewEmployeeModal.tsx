@@ -12,8 +12,7 @@ import {
   Tab,
 } from "@heroui/react";
 import { API_URL_IMG } from "../../../../API/API";
-
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -155,7 +154,12 @@ export default function ViewEmployeeModal({
                         isClosed();
                         navigate("/administration/employee");
                       }}
-                      startContent={<CloseRoundedIcon className="h-1 w-1" />}
+                      startContent={
+                        <Icon
+                          icon="material-symbols:close-rounded"
+                          fontSize={24}
+                        />
+                      }
                     />
                   </div>
                 </CardHeader>

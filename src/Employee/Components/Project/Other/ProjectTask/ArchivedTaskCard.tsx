@@ -15,17 +15,6 @@ import {
   Chip,
   Tooltip,
 } from "@heroui/react";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
-import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
-import ChatRoundedIcon from "@mui/icons-material/ChatRounded";
-import LocalOfferRoundedIcon from "@mui/icons-material/LocalOfferRounded";
-import NotesRoundedIcon from "@mui/icons-material/NotesRounded";
-import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
-import AttachFileRoundedIcon from "@mui/icons-material/AttachFileRounded";
 import { API_URL_IMG } from "../../../../../API/API";
 import dayjs from "dayjs";
 import { useDateFormatter } from "@react-aria/i18n";
@@ -37,8 +26,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { usePermissions } from "../../../Layout/PermissionProvider";
 import ReactQuill from "react-quill";
-import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
-import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
+import { Icon } from "@iconify/react";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -273,7 +261,7 @@ export default function TaskCard({
                 showArrow
                 placement="bottom"
               >
-                <NotesRoundedIcon />
+                <Icon icon="fluent:text-description-16-filled" fontSize={22} />
               </Tooltip>
             )}
             {task.ProjectTaskTags.length > 0 && (
@@ -283,7 +271,7 @@ export default function TaskCard({
                 placement="bottom"
               >
                 <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <LocalOfferRoundedIcon />
+                  <Icon icon="solar:tag-linear" fontSize={22} />
                   {task.ProjectTaskTags.length}
                 </div>
               </Tooltip>
@@ -295,7 +283,7 @@ export default function TaskCard({
                 placement="bottom"
               >
                 <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <AttachFileRoundedIcon />
+                  <Icon icon="solar:paperclip-linear" fontSize={22} />
                   {fileCount}
                 </div>
               </Tooltip>
@@ -307,7 +295,7 @@ export default function TaskCard({
                 placement="bottom"
               >
                 <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <CheckCircleOutlineRoundedIcon />
+                  <Icon icon="solar:checklist-linear" fontSize={22} />
                   {checkboxCount}
                 </div>
               </Tooltip>
@@ -319,7 +307,7 @@ export default function TaskCard({
                 placement="bottom"
               >
                 <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <ChatRoundedIcon />
+                  <Icon icon="solar:chat-round-line-linear" fontSize={22} />
                   {commentsCount}
                 </div>
               </Tooltip>
@@ -357,7 +345,7 @@ export default function TaskCard({
             <div className="flex flex-row items-center justify-between gap-3 w-full">
               <Tooltip content="Scadenza task" showArrow placement="bottom">
                 <span className="flex flex-row gap-2 justify-center items-center font-semibold text-sm">
-                  <CalendarMonthRoundedIcon sx={{ fontSize: 20 }} />
+                  <Icon icon="solar:calendar-linear" fontSize={22} />
                   {formatDate(task.ProjectTaskExpiration)}
                 </span>
               </Tooltip>

@@ -351,8 +351,10 @@ export default function FilesCustomerContainer({
                             variant="light"
                             radius="full"
                             isIconOnly
-                            startContent={<MoreVertRoundedIcon />}
-                            className="cursor-pointer"
+                            startContent={
+                              <Icon icon="solar:menu-dots-bold" fontSize={24} />
+                            }
+                            className="cursor-pointer rotate-90"
                           />
                         </DropdownTrigger>
                         <DropdownMenu
@@ -361,7 +363,9 @@ export default function FilesCustomerContainer({
                         >
                           <DropdownItem
                             key="edit"
-                            startContent={<BorderColorRoundedIcon />}
+                            startContent={
+                              <Icon icon="solar:pen-2-linear" fontSize={22} />
+                            }
                             onClick={() =>
                               setFolderModalData({
                                 isOpen: true,
@@ -376,7 +380,12 @@ export default function FilesCustomerContainer({
                             key="delete"
                             className="text-danger"
                             color="danger"
-                            startContent={<DeleteRoundedIcon />}
+                            startContent={
+                              <Icon
+                                icon="solar:trash-bin-trash-linear"
+                                fontSize={24}
+                              />
+                            }
                             onClick={() => DeleteFolder(folder)}
                           >
                             Rimuovi cartella

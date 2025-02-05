@@ -101,7 +101,7 @@ export default function AttendanceStats({
         getChangePercentage(currentMonthStats.present, lastMonthStats.present)
       ),
       dataKey: "present",
-      icon: "material-symbols-light:work-outline",
+      icon: "hugeicons:office",
     },
     {
       title: "Smart Working",
@@ -118,10 +118,10 @@ export default function AttendanceStats({
         )
       ),
       dataKey: "smartworking",
-      icon: "material-symbols-light:home-work-outline",
+      icon: "solar:smart-home-linear",
     },
     {
-      title: "Assenze e Ferie",
+      title: "Assenze/Ferie",
       value: `${Math.round(currentMonthStats.absent)}%`,
       chartData: weeklyStats,
       change: getChangePercentage(
@@ -132,7 +132,7 @@ export default function AttendanceStats({
         getChangePercentage(currentMonthStats.absent, lastMonthStats.absent)
       ),
       dataKey: "absent",
-      icon: "material-symbols-light:beach-access-outline",
+      icon: "proicons:beach",
     },
   ];
 

@@ -1,19 +1,17 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
 import {
-  Input,
   Button,
-  Textarea,
-  CheckboxGroup,
   Checkbox,
+  CheckboxGroup,
+  Input,
   Select,
   SelectItem,
   Spinner,
+  Textarea,
 } from "@heroui/react";
-import SaveIcon from "@mui/icons-material/Save";
+import { Icon } from "@iconify/react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import StatusAlert from "../../Layout/StatusAlert";
-import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
-
 interface Role {
   RoleName: string;
   RoleDescription: string;
@@ -39,7 +37,7 @@ interface AlertData {
   onClose: () => void;
   alertTitle: string;
   alertDescription: string;
-  alertColor: "success" | "danger" | "warning";
+  alertColor: "green" | "red" | "yellow";
 }
 
 const initialRoleData: Role = {
@@ -53,7 +51,7 @@ const INITIAL_ALERT_DATA: AlertData = {
   onClose: () => {},
   alertTitle: "",
   alertDescription: "",
-  alertColor: "danger",
+  alertColor: "red",
 };
 
 const AddRoleModel: React.FC = () => {
@@ -189,7 +187,7 @@ const AddRoleModel: React.FC = () => {
           onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
           alertDescription: "Il ruolo è stato aggiunto con successo.",
-          alertColor: "success",
+          alertColor: "green",
         });
         setTimeout(() => {
           window.location.href = "/administration/permission";
@@ -205,7 +203,7 @@ const AddRoleModel: React.FC = () => {
             alertTitle: "Conflitto durante l'operazione",
             alertDescription:
               "Esiste già un ruolo con questo nome. Usa un nome diverso.",
-            alertColor: "warning",
+            alertColor: "yellow",
           });
         } else {
           // General error handling
@@ -215,7 +213,7 @@ const AddRoleModel: React.FC = () => {
             alertTitle: "Errore durante l'operazione",
             alertDescription:
               "Si è verificato un errore durante l'aggiunta del ruolo. Per favore, riprova più tardi.",
-            alertColor: "danger",
+            alertColor: "red",
           });
         }
       }
@@ -293,8 +291,8 @@ const AddRoleModel: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <AutoFixHighRoundedIcon className="w-5 h-5" /> Genera
-                      descrizione per: {newRole.RoleName}
+                      <Icon icon="solar:magic-stick-3-linear" fontSize={24} />{" "}
+                      Genera descrizione per: {newRole.RoleName}
                     </>
                   )}
                 </Button>
@@ -315,8 +313,8 @@ const AddRoleModel: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <AutoFixHighRoundedIcon className="w-5 h-5" /> Riscrivi
-                      con AI
+                      <Icon icon="solar:magic-stick-3-linear" fontSize={24} />{" "}
+                      Riscrivi con AI
                     </>
                   )}
                 </Button>
@@ -447,7 +445,9 @@ const AddRoleModel: React.FC = () => {
             color="primary"
             className="text-white"
             radius="full"
-            startContent={!isAddingData && <SaveIcon />}
+            startContent={
+              !isAddingData && <Icon icon="basil:save-outline" fontSize={24} />
+            }
             isDisabled={checkAllDataCompiled()}
             isLoading={isAddingData}
             onClick={handleCreateNewRole}

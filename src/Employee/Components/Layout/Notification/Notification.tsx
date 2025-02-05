@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { BellIcon } from "@heroicons/react/24/outline";
 import {
   Popover,
   PopoverTrigger,
@@ -14,12 +13,11 @@ import {
   CardBody,
   CardFooter,
 } from "@heroui/react";
-import NotificationItem from "./NotificationItem";
-import NotificationsPausedRoundedIcon from "@mui/icons-material/NotificationsPausedRounded";
-import DoneAllRoundedIcon from "@mui/icons-material/DoneAllRounded";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import { io, Socket } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../API/API";
+import NotificationItem from "./NotificationItem";
 
 const socket: Socket = io(API_WEBSOCKET_URL);
 
@@ -111,7 +109,10 @@ export default function Notification() {
           className="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
         >
           <span className="sr-only">View notifications</span>
-          <BellIcon className={`h-6 w-6 ${update ? "animate-shake" : ""}`} />
+          <Icon
+            icon="solar:bell-linear"
+            className={`h-6 w-6 ${update ? "animate-shake" : ""}`}
+          />
           {unreadNotificationsCount > 0 && (
             <span className="absolute top-0 right-0 inline-flex items-center justify-center px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full">
               {unreadNotificationsCount}
@@ -204,7 +205,8 @@ export default function Notification() {
                 onClick={markAllAsRead}
                 isDisabled={unreadNotificationsCount === 0}
               >
-                <DoneAllRoundedIcon /> Segna tutte come lette
+                <Icon icon="solar:check-circle-linear" fontSize={18} /> Segna
+                tutte come lette
               </Button>
             </CardFooter>
           </Card>
@@ -216,10 +218,7 @@ export default function Notification() {
 
 const renderEmptyState = () => (
   <div className="flex h-full w-full flex-col items-center justify-center gap-2">
-    <NotificationsPausedRoundedIcon
-      sx={{ fontSize: 35 }}
-      className="text-default-400"
-    />
+    <Icon icon="solar:bell-linear" fontSize={35} className="text-default-400" />
     <p className="text-small text-default-400">Nessuna notifica da mostrare</p>
   </div>
 );

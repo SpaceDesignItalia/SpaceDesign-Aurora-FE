@@ -9,28 +9,7 @@ import {
 } from "@headlessui/react";
 
 import { Kbd } from "@heroui/kbd";
-
-import {
-  ExclamationTriangleIcon,
-  FolderIcon,
-  LifebuoyIcon,
-  MagnifyingGlassIcon,
-  ArrowTurnDownRightIcon,
-} from "@heroicons/react/24/outline";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
-import EngineeringOutlinedIcon from "@mui/icons-material/EngineeringOutlined";
-import FolderCopyOutlinedIcon from "@mui/icons-material/FolderCopyOutlined";
-import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
-import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import ChatBubbleOutlineRoundedIcon from "@mui/icons-material/ChatBubbleOutlineRounded";
-import AddBusinessRoundedIcon from "@mui/icons-material/AddBusinessRounded";
-import AddModeratorRoundedIcon from "@mui/icons-material/AddModeratorRounded";
-import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
-import GroupAddIcon from "@mui/icons-material/GroupAdd";
-import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
-import EventIcon from "@mui/icons-material/Event";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { API_URL_IMG } from "../../../API/API";
@@ -71,7 +50,7 @@ interface Page {
   id: string;
   name: string;
   url: string;
-  icon: React.ComponentType<any>;
+  icon: React.ReactNode;
 }
 
 interface Conversation {
@@ -91,7 +70,7 @@ interface Add {
   id: string;
   name: string;
   url: string;
-  icon: React.ComponentType<any>;
+  icon: React.ReactNode;
 }
 
 function classNames(...classes: any) {
@@ -408,49 +387,49 @@ export default function SearchBar({
         id: "dashboard",
         name: "Dashboard",
         url: "/",
-        icon: DashboardOutlinedIcon,
+        icon: <Icon icon="solar:home-2-linear" fontSize={24} />,
       },
       {
         id: "leads",
         name: "Leads",
         url: "/lead",
-        icon: MailOutlineRoundedIcon,
+        icon: <Icon icon="solar:mailbox-linear" fontSize={24} />,
       },
       {
         id: "chat",
         name: "Chat",
         url: "/comunications/chat",
-        icon: ChatBubbleOutlineRoundedIcon,
+        icon: <Icon icon="solar:chat-round-dots-linear" fontSize={24} />,
       },
       {
         id: "calendar",
         name: "Calendario",
         url: "/comunications/calendar",
-        icon: CalendarMonthIcon,
+        icon: <Icon icon="solar:calendar-linear" fontSize={24} />,
       },
       {
         id: "customers",
         name: "Clienti",
         url: "/administration/customer",
-        icon: PeopleAltOutlinedIcon,
+        icon: <Icon icon="solar:users-group-rounded-linear" fontSize={24} />,
       },
       {
         id: "employees",
         name: "Dipendenti",
         url: "/administration/employee",
-        icon: EngineeringOutlinedIcon,
+        icon: <Icon icon="solar:user-id-linear" fontSize={24} />,
       },
       {
         id: "permissions",
         name: "Permessi",
         url: "/administration/permission",
-        icon: VpnKeyOutlinedIcon,
+        icon: <Icon icon="solar:key-linear" fontSize={24} />,
       },
       {
         id: "projects",
         name: "Progetti",
         url: "/projects",
-        icon: FolderCopyOutlinedIcon,
+        icon: <Icon icon="solar:folder-linear" fontSize={24} />,
       },
     ]);
   }
@@ -461,43 +440,43 @@ export default function SearchBar({
         id: "add-project",
         name: "Aggiungi Progetto",
         url: "/projects/add-project",
-        icon: CreateNewFolderRoundedIcon,
+        icon: <Icon icon="solar:add-folder-linear" fontSize={24} />,
       },
       {
         id: "add-employee",
         name: "Aggiungi Dipendente",
         url: "/administration/employee/add-employee",
-        icon: GroupAddIcon,
+        icon: <Icon icon="solar:user-id-linear" fontSize={24} />,
       },
       {
         id: "add-customer",
         name: "Aggiungi Cliente",
         url: "/administration/customer/add-customer",
-        icon: PersonAddAlt1RoundedIcon,
+        icon: <Icon icon="solar:user-plus-linear" fontSize={24} />,
       },
       {
         id: "add-company",
         name: "Aggiungi Azienda",
         url: "/administration/customer/-add-company",
-        icon: AddBusinessRoundedIcon,
+        icon: <Icon icon="hugeicons:store-add-01" fontSize={24} />,
       },
       {
         id: "add-permission",
         name: "Aggiungi Permesso",
         url: "/administration/permission/add-permission",
-        icon: VpnKeyOutlinedIcon,
+        icon: <Icon icon="solar:key-linear" fontSize={24} />,
       },
       {
         id: "add-role",
         name: "Aggiungi Ruolo",
         url: "/administration/permission/add-role",
-        icon: AddModeratorRoundedIcon,
+        icon: <Icon icon="solar:shield-plus-linear" fontSize={24} />,
       },
       {
         id: "add-event",
         name: "Aggiungi Evento",
         url: "/comunications/calendar/add-event",
-        icon: EventIcon,
+        icon: <Icon icon="solar:calendar-add-linear" fontSize={24} />,
       },
     ]);
   }
@@ -568,7 +547,8 @@ export default function SearchBar({
                 onChange={(event) => setRawQuery(event.target.value)}
                 onBlur={() => setRawQuery("")}
               />
-              <MagnifyingGlassIcon
+              <Icon
+                icon="solar:magnifying-glass-linear"
                 className="pointer-events-none col-start-1 row-start-1 ml-4 size-5 self-center text-gray-400"
                 aria-hidden="true"
               />
@@ -608,7 +588,8 @@ export default function SearchBar({
                               }, [focus]),
                               (
                                 <>
-                                  <FolderIcon
+                                  <Icon
+                                    icon="solar:folder-linear"
                                     className={classNames(
                                       "size-6 flex-none text-gray-400 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]",
                                       focus ? "text-white" : ""
@@ -646,8 +627,9 @@ export default function SearchBar({
                                   value={action}
                                   className="flex cursor-default select-none items-center py-2 pl-16 data-[focus]:bg-primary data-[focus]:text-white"
                                 >
-                                  <ArrowTurnDownRightIcon
-                                    className="mb-1.5 pr-1 size-5 flex-none text-gray-300 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
+                                  <Icon
+                                    icon="solar:arrow-to-down-right-linear"
+                                    className="mb-1.5 pr-1 size-5 flex-none text-gray-600 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight] -rotate-90"
                                     aria-hidden="true"
                                   />
                                   {action.name}
@@ -715,8 +697,9 @@ export default function SearchBar({
                                   value={action}
                                   className="flex cursor-default select-none items-center py-2 pl-16 data-[focus]:bg-primary data-[focus]:text-white"
                                 >
-                                  <ArrowTurnDownRightIcon
-                                    className="mb-1.5 pr-1 size-5 flex-none text-gray-300 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
+                                  <Icon
+                                    icon="solar:arrow-to-down-right-linear"
+                                    className="mb-1.5 pr-1 size-5 flex-none text-gray-600 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight] -rotate-90"
                                     aria-hidden="true"
                                   />
                                   {action.name}
@@ -751,10 +734,7 @@ export default function SearchBar({
                               }, [focus]),
                               (
                                 <>
-                                  <page.icon
-                                    className="size-6 flex-none text-gray-400 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
-                                    aria-hidden="true"
-                                  />
+                                  {page.icon}
                                   <span className="ml-3 flex-auto truncate">
                                     {page.name}
                                   </span>
@@ -800,10 +780,7 @@ export default function SearchBar({
                               }, [focus]),
                               (
                                 <>
-                                  <add.icon
-                                    className="size-6 flex-none text-gray-400 group-data-[focus]:text-white forced-colors:group-data-[focus]:text-[Highlight]"
-                                    aria-hidden="true"
-                                  />
+                                  {add.icon}
                                   <span className="ml-3 flex-auto truncate">
                                     {add.name}
                                   </span>
@@ -829,7 +806,8 @@ export default function SearchBar({
             )}
             {rawQuery === "?" && (
               <div className="px-6 py-14 text-center text-sm sm:px-14">
-                <LifebuoyIcon
+                <Icon
+                  icon="solar:help-line-duotone"
                   className="mx-auto size-6 text-gray-400"
                   aria-hidden="true"
                 />
@@ -852,7 +830,8 @@ export default function SearchBar({
               filteredPages.length === 0 &&
               filteredAdd.length === 0 && (
                 <div className="px-6 py-14 text-center text-sm sm:px-14">
-                  <ExclamationTriangleIcon
+                  <Icon
+                    icon="solar:exclamation-triangle-linear"
                     className="mx-auto size-6 text-gray-400"
                     aria-hidden="true"
                   />

@@ -7,9 +7,7 @@ import {
   Button,
   useDisclosure,
 } from "@heroui/react";
-import AccessAlarmsRoundedIcon from "@mui/icons-material/AccessAlarmsRounded";
-import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
-import EventBusyRoundedIcon from "@mui/icons-material/EventBusyRounded";
+import { Icon } from "@iconify/react";
 import dayjs from "dayjs";
 
 export default function UpcomingEventsCard() {
@@ -70,11 +68,11 @@ export default function UpcomingEventsCard() {
                   {event.title}
                 </h2>
                 <p className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-                  <AccessAlarmsRoundedIcon className="text-primary" />
+                  <Icon icon="solar:clock-linear" className="text-primary" />
                   {event.time} | {dayjs(event.date).format("DD MMMM YYYY")}
                 </p>
                 <p className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 italic">
-                  <PlaceRoundedIcon className="text-primary" />
+                  <Icon icon="solar:location-linear" className="text-primary" />
                   {event.location}
                 </p>
               </div>
@@ -96,11 +94,17 @@ export default function UpcomingEventsCard() {
                       <ModalBody>
                         <div className="text-gray-700">
                           <p className="flex items-center gap-2 text-sm">
-                            <AccessAlarmsRoundedIcon className="text-primary" />
+                            <Icon
+                              icon="solar:clock-linear"
+                              className="text-primary"
+                            />
                             {event.time}
                           </p>
                           <p className="flex items-center gap-2 text-sm italic">
-                            <PlaceRoundedIcon className="text-primary" />
+                            <Icon
+                              icon="solar:location-linear"
+                              className="text-primary"
+                            />
                             {event.location}
                           </p>
                           <p className="mt-3 text-sm">{event.description}</p>
@@ -125,7 +129,7 @@ export default function UpcomingEventsCard() {
           ))
         ) : (
           <div className="flex flex-col items-center justify-center text-gray-500">
-            <EventBusyRoundedIcon className="text-4xl mb-2" />
+            <Icon icon="solar:calendar-linear" className="text-4xl mb-2" />
             <p>Nessun evento in programma.</p>
           </div>
         )}

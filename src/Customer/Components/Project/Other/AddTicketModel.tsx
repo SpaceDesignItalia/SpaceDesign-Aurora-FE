@@ -7,7 +7,7 @@ import {
   Autocomplete,
   AutocompleteItem,
 } from "@heroui/react";
-import SaveIcon from "@mui/icons-material/Save";
+import { Icon } from "@iconify/react";
 import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
 import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded";
@@ -236,7 +236,7 @@ export default function AddTicketModal() {
                 color="success"
                 className="text-white"
                 radius="sm"
-                startContent={<SaveIcon />}
+                startContent={<Icon icon="basil:save-outline" fontSize={24} />}
                 isDisabled={checkAllDataCompiled()}
                 isLoading={isSaving}
                 onClick={handleUpdateCustomer}

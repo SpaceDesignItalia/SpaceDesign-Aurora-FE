@@ -10,7 +10,7 @@ import {
   ModalHeader,
   Switch,
 } from "@heroui/react";
-import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
+import { Icon } from "@iconify/react";
 
 interface FolderSettingsModalProps {
   isOpen: boolean;
@@ -81,7 +81,9 @@ export default function AddFolderModal({
                 }}
                 radius="full"
                 className="mr-2"
-                startContent={<CreateNewFolderRoundedIcon />}
+                startContent={
+                  <Icon icon="solar:add-folder-linear" fontSize={20} />
+                }
               >
                 Crea cartella
               </Button>

@@ -10,7 +10,7 @@ import {
   Pagination,
   SortDescriptor,
 } from "@heroui/react";
-import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import TicketModal from "./TicketModal"; // Import the TicketModal component
@@ -110,15 +110,14 @@ export default function ResponseTicket() {
             <div className="relative flex justify-left items-center gap-2">
               <Button
                 size="sm"
-                color="primary"
+                variant="light"
                 radius="sm"
                 isIconOnly
                 onClick={() =>
                   setModalData({ ...modalData, open: true, Ticket: ticket })
                 }
-              >
-                <OpenInNewRoundedIcon />
-              </Button>
+                startContent={<Icon icon="solar:eye-linear" fontSize={22} />}
+              />
             </div>
           );
         default:

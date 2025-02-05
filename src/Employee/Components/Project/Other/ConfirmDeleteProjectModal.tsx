@@ -1,5 +1,4 @@
 // ConfirmDeleteModal.tsx
-import { useState } from "react";
 import {
   Button,
   DateValue,
@@ -7,9 +6,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@heroui/react";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
-
+import { useState } from "react";
+import { Icon } from "@iconify/react";
 interface Project {
   ProjectId: number;
   ProjectName: string;
@@ -48,7 +46,9 @@ export default function ConfirmDeleteProjectModal({
           variant="light"
           size="sm"
           color="danger"
-          startContent={<DeleteOutlinedIcon />}
+          startContent={
+            <Icon icon="solar:trash-bin-trash-linear" fontSize={24} />
+          }
           aria-label="Remove"
           aria-labelledby="Remove"
           isIconOnly
@@ -60,7 +60,11 @@ export default function ConfirmDeleteProjectModal({
       <PopoverContent>
         <div className="px-1 py-2">
           <div className="flex flex-row gap-2 items-center text-small font-bold mb-2">
-            <ErrorRoundedIcon className="text-warning" sx={{ fontSize: 20 }} />
+            <Icon
+              icon="iconamoon:attention-circle-light"
+              className="text-warning"
+              fontSize={20}
+            />
             Sei sicuro?
           </div>
           <div className="flex flex-row gap-2">

@@ -1,12 +1,11 @@
 import { Button, Input, ScrollShadow } from "@heroui/react";
-import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import ChatMessage from "../ProjectTicket/ChatMessage";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import ResponseTicket from "../ProjectTicket/ResponseTicket";
-
+import { Icon } from "@iconify/react";
 const socket = io(API_WEBSOCKET_URL);
 
 interface Message {
@@ -167,7 +166,7 @@ export default function TicketContainer({
                 isIconOnly
                 isDisabled={newMessage.trim() === ""}
               >
-                <SendRoundedIcon />
+                <Icon icon="prime:send" fontSize={22} />
               </Button>
             </div>
           </div>

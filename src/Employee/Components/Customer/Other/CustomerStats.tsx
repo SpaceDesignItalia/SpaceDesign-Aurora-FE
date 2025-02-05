@@ -32,17 +32,17 @@ export default function CustomerStats() {
     {
       title: "Clienti Totali",
       value: stats[0]?.stat,
-      icon: "material-symbols:groups-2-rounded",
+      icon: "material-symbols-light:groups-2-rounded",
     },
     {
       title: "Aziende Totali",
       value: stats[1]?.stat,
-      icon: "material-symbols:store-rounded",
+      icon: "material-symbols-light:store-rounded",
     },
     {
       title: "Media Clienti per Azienda",
       value: stats[2]?.stat,
-      icon: "material-symbols:analytics-rounded",
+      icon: "material-symbols-light:analytics-rounded",
     },
   ];
 

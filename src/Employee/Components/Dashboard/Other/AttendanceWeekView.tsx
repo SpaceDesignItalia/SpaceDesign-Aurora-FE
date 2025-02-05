@@ -7,9 +7,13 @@ import {
   DropdownItem,
 } from "@heroui/react";
 import { formatInTimeZone } from "date-fns-tz";
-import { format, addDays, subDays } from "date-fns";
+import { format, addDays } from "date-fns";
 import { it } from "date-fns/locale";
 import axios from "axios";
+import { io } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../../API/API";
+
+const socket = io(API_WEBSOCKET_URL);
 
 interface AttendanceWeekViewProps {
   stafferId: number;
@@ -20,7 +24,6 @@ interface AttendanceWeekViewProps {
 export default function AttendanceWeekView({
   stafferId,
   attendances,
-  onUpdate,
 }: AttendanceWeekViewProps) {
   const today = new Date();
   const days = [-3, -2, -1, 0, 1, 2, 3].map((offset) => addDays(today, offset));
@@ -28,22 +31,22 @@ export default function AttendanceWeekView({
   const statusConfig = {
     present: {
       color: "bg-emerald-100 border-emerald-300",
-      icon: "material-symbols-light:work-outline",
+      icon: "hugeicons:office",
       label: "Presente in ufficio",
     },
     absent: {
       color: "bg-red-100 border-red-300",
-      icon: "material-symbols-light:sick-outline",
+      icon: "material-symbols-light:sick-outline-rounded",
       label: "Assente",
     },
     vacation: {
       color: "bg-blue-100 border-blue-300",
-      icon: "material-symbols-light:beach-access-outline",
+      icon: "proicons:beach",
       label: "Ferie",
     },
     smartworking: {
       color: "bg-amber-100 border-amber-300",
-      icon: "material-symbols-light:home-work-outline",
+      icon: "solar:smart-home-linear",
       label: "Smart Working",
     },
   };
@@ -56,31 +59,38 @@ export default function AttendanceWeekView({
 
   const handleStatusChange = async (status: string, date: Date) => {
     try {
-      await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
+      const res = await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
         Status: status,
         StafferId: stafferId,
         Date: formatInTimeZone(date, "Europe/Rome", "yyyy-MM-dd"),
       });
-      onUpdate();
+
+      if (res.status === 200) {
+        socket.emit("employee-attendance-update");
+      }
     } catch (error) {
       console.error(error);
     }
   };
 
   return (
-    <div className="grid grid-cols-7 gap-3">
-      {days.map((day, index) => {
+    <div className="grid grid-cols-8 gap-3 items-center justify-center">
+      {days.map((day) => {
         const attendance = getAttendanceForDay(day);
         const isToday = day.toDateString() === today.toDateString();
         const dayName = format(day, "EEE", { locale: it });
         const dayNum = format(day, "d");
 
         return (
-          <Dropdown key={day.toISOString()}>
+          <Dropdown key={day.toISOString()} showArrow>
             <DropdownTrigger>
               <Button
                 className={`w-full h-24 flex flex-col items-center justify-center gap-2 border-2 rounded-xl
-                  ${isToday ? "border-primary" : "border-gray-200"}
+                  ${
+                    isToday
+                      ? "border-primary h-32 col-span-2"
+                      : "border-gray-200"
+                  }
                   ${
                     attendance
                       ? statusConfig[
@@ -90,7 +100,9 @@ export default function AttendanceWeekView({
                   }`}
               >
                 <span className="text-sm font-medium text-gray-600">
-                  {dayName}
+                  {isToday
+                    ? format(day, "EEEE, MMMM yyyy", { locale: it })
+                    : dayName}
                 </span>
                 <span
                   className={`text-xl font-bold ${
@@ -134,17 +146,16 @@ export default function AttendanceWeekView({
                 <DropdownItem
                   key="delete"
                   onPress={() => handleStatusChange("delete", day)}
-                  className="text-danger"
                   startContent={
-                    <div className="w-6 h-6 bg-danger-100 rounded-lg flex items-center justify-center">
+                    <div className="w-6 h-6 bg-zinc-300 rounded-lg flex items-center justify-center">
                       <Icon
                         icon="material-symbols-light:delete-outline"
-                        className="w-4 h-4 text-danger"
+                        className="w-4 h-4 text-gray-700"
                       />
                     </div>
                   }
                 >
-                  Rimuovi presenza
+                  Elimina
                 </DropdownItem>
               )}
             </DropdownMenu>

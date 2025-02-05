@@ -1,5 +1,3 @@
-"use client";
-
 import { Card, cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";

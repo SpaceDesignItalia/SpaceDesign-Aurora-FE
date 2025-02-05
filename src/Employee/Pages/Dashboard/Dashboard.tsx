@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
-import UpcomingCalendarEvents from "../../Components/Dashboard/UpcomingCalendarEvents";
-import AttendanceWeekView from "../../Components/Dashboard/AttendanceWeekView";
-import AttendanceStats from "../../Components/Dashboard/AttendanceStats";
+import UpcomingCalendarEvents from "../../Components/Dashboard/Other/UpcomingCalendarEvents";
+import AttendanceWeekView from "../../Components/Dashboard/Other/AttendanceWeekView";
+import AttendanceStats from "../../Components/Dashboard/Other/AttendanceStats";
 import axios from "axios";
+import { io } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../API/API";
+
+const socket = io(API_WEBSOCKET_URL);
 
 export default function Dashboard() {
   const [stafferId, setStafferId] = useState<number>(0);
   const [attendances, setAttendances] = useState<any[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const selectedDate = new Date();
 
   const fetchAttendances = async () => {
     try {
@@ -29,7 +33,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchAttendances();
-  }, [selectedDate]);
+
+    socket.on("employee-attendance-update", () => {
+      fetchAttendances();
+    });
+  }, []);
 
   return (
     <div className="py-10 m-0 lg:ml-72">

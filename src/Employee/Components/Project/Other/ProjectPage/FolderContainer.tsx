@@ -1,10 +1,3 @@
-import BorderColorRoundedIcon from "@mui/icons-material/BorderColorRounded";
-import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import FolderRoundedIcon from "@mui/icons-material/FolderRounded";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
-import PermMediaIcon from "@mui/icons-material/PermMedia";
 import {
   BreadcrumbItem,
   Breadcrumbs,
@@ -14,8 +7,8 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
-import { Folder } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
@@ -340,7 +333,7 @@ export default function FolderContainer({
                     >
                       <div className="flex flex-row gap-2 items-center w-3/4">
                         <div className="rounded-full border-2 p-2 bg-white">
-                          <FolderRoundedIcon />
+                          <Icon icon="solar:folder-linear" fontSize={24} />
                         </div>
                         <h3 className="cursor-default truncate w-full">
                           {folder.FolderName}
@@ -353,8 +346,10 @@ export default function FolderContainer({
                             variant="light"
                             radius="full"
                             isIconOnly
-                            startContent={<MoreVertRoundedIcon />}
-                            className="cursor-pointer"
+                            startContent={
+                              <Icon icon="solar:menu-dots-bold" fontSize={24} />
+                            }
+                            className="cursor-pointer rotate-90"
                           />
                         </DropdownTrigger>
                         <DropdownMenu
@@ -363,7 +358,9 @@ export default function FolderContainer({
                         >
                           <DropdownItem
                             key="edit"
-                            startContent={<BorderColorRoundedIcon />}
+                            startContent={
+                              <Icon icon="solar:pen-2-linear" fontSize={22} />
+                            }
                             onClick={() =>
                               setFolderModalData({
                                 isOpen: true,
@@ -378,7 +375,12 @@ export default function FolderContainer({
                             key="delete"
                             className="text-danger"
                             color="danger"
-                            startContent={<DeleteRoundedIcon />}
+                            startContent={
+                              <Icon
+                                icon="solar:trash-bin-trash-linear"
+                                fontSize={24}
+                              />
+                            }
                             onClick={() => DeleteFolder(folder)}
                           >
                             Rimuovi cartella
@@ -412,8 +414,8 @@ export default function FolderContainer({
               </div>
             </>
           ) : (
-            <div className="text-center">
-              <PermMediaIcon />
+            <div className="flex flex-col items-center justify-center p-10">
+              <Icon icon="solar:file-linear" fontSize={50} />
               <h3 className="mt-2 text-sm font-semibold text-gray-900">
                 Nessun documento o cartella presente!
               </h3>
@@ -435,7 +437,7 @@ export default function FolderContainer({
               })
             }
           >
-            <CreateNewFolderRoundedIcon sx={{ fontSize: 20 }} /> Crea nuova
+            <Icon icon="solar:add-folder-linear" fontSize={20} /> Crea nuova
             cartella
           </ContextMenuItem>
           <ContextMenuItem
@@ -448,7 +450,7 @@ export default function FolderContainer({
               })
             }
           >
-            <NoteAddRoundedIcon sx={{ fontSize: 20 }} /> Carica file
+            <Icon icon="solar:file-send-linear" fontSize={20} /> Carica file
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>

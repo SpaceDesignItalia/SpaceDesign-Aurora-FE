@@ -160,7 +160,9 @@ export default function FileCard({
                 </DropdownItem>
                 <DropdownItem
                   key="edit"
-                  startContent={<BorderColorRoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:pen-2-linear" fontSize={22} />
+                  }
                   onClick={() => setIsEditing(true)} // Entra in modalità di modifica
                 >
                   Rinomina file
@@ -169,7 +171,9 @@ export default function FileCard({
                   key="delete"
                   className="text-danger"
                   color="danger"
-                  startContent={<DeleteRoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:trash-bin-trash-linear" fontSize={24} />
+                  }
                   onClick={() => DeleteFile(file)}
                 >
                   Rimuovi file

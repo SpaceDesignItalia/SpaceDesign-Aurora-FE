@@ -1,12 +1,16 @@
 import { useState } from "react";
 import EmployeeAttendanceTable from "../../Components/Employee/Tables/EmployeeAttendanceTable";
-import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import { Breadcrumbs, BreadcrumbItem, Spinner } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
 import EmployeeAttendanceStats from "../../Components/Employee/Other/EmployeeAttendanceStats";
 import axios from "axios";
 import { API_URL_IMG } from "../../../API/API";
+import { io } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../API/API";
+
+const socket = io(API_WEBSOCKET_URL);
 
 interface Employee {
   id: string;
@@ -20,38 +24,14 @@ interface Employee {
 
 export default function EmployeeAttendance() {
   const { hasPermission } = usePermissions();
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loggedStafferId, setLoggedStafferId] = useState<number>(0);
-  const [employees, setEmployees] = useState<Employee[]>([
-    {
-      id: "1",
-      name: "Mario Rossi",
-      avatar: "https://i.pravatar.cc/150?u=mario",
-      attendances: [
-        // Gennaio 2025 - Più presenze in ufficio
-        ...Array.from({ length: 31 }, (_, i) => ({
-          date: new Date(2025, 0, i + 1).toISOString(),
-          status: (i % 5 === 0
-            ? "smartworking"
-            : i % 7 === 0
-            ? "absent"
-            : "present") as "present" | "absent" | "smartworking",
-        })),
-        // Dicembre 2024 - Più smart working
-        ...Array.from({ length: 31 }, (_, i) => ({
-          date: new Date(2024, 11, i + 1).toISOString(),
-          status: (i % 3 === 0
-            ? "present"
-            : i % 7 === 0
-            ? "absent"
-            : "smartworking") as "present" | "absent" | "smartworking",
-        })),
-      ],
-    },
-  ]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
   useEffect(() => {
     async function fetchData() {
+      setIsLoading(true);
       const permission = await hasPermission("VIEW_EMPLOYEE");
       if (!permission) {
         return (window.location.href = "/");
@@ -93,9 +73,17 @@ export default function EmployeeAttendance() {
           ];
         });
       }
+      setIsLoading(false);
     }
+
     fetchData();
+
+    socket.on("employee-attendance-update", () => {
+      fetchData();
+    });
   }, [hasPermission, selectedDate]);
+
+  console.log(isLoading);
 
   return (
     <div className="py-10 m-0 lg:ml-72">
@@ -106,7 +94,7 @@ export default function EmployeeAttendance() {
           </h1>
           <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/administration/employee">
               Dipendenti
@@ -118,18 +106,26 @@ export default function EmployeeAttendance() {
         </div>
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
-        <EmployeeAttendanceStats
-          employees={employees}
-          selectedDate={selectedDate}
-        />
-        <div className="py-6 lg:py-8">
-          <EmployeeAttendanceTable
-            employees={employees}
-            selectedDate={selectedDate}
-            onDateChange={setSelectedDate}
-            loggedStafferId={loggedStafferId}
-          />
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-96">
+            <Spinner />
+          </div>
+        ) : (
+          <>
+            <EmployeeAttendanceStats
+              employees={employees}
+              selectedDate={selectedDate}
+            />
+            <div className="py-6 lg:py-8">
+              <EmployeeAttendanceTable
+                employees={employees}
+                selectedDate={selectedDate}
+                onDateChange={setSelectedDate}
+                loggedStafferId={loggedStafferId}
+              />{" "}
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

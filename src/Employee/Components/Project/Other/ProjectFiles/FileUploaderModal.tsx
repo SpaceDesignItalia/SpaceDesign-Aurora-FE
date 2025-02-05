@@ -10,10 +10,9 @@ import {
   ModalContent,
   Button,
 } from "@heroui/react";
-import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import FileCard from "./FileCard";
 import { useParams, useNavigate } from "react-router-dom";
-
+import { Icon } from "@iconify/react";
 const socket = io(API_WEBSOCKET_URL);
 
 export default function FileUploaderModal({
@@ -131,7 +130,7 @@ export default function FileUploaderModal({
             ref={dropRef}
             onClick={() => fileInputRef.current?.click()} // Add this line
           >
-            <CloudUploadRoundedIcon />
+            <Icon icon="solar:cloud-upload-linear" fontSize={24} />
             <p className="text-xs font-medium text-gray-400 mt-2">
               Clicca o trascina i file per caricarli
             </p>

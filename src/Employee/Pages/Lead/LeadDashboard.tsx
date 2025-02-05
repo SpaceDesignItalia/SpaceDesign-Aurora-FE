@@ -1,10 +1,10 @@
 import LeadTable from "../../Components/Lead/Tables/LeadTable";
 import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
 import LeadStats from "../../Components/Lead/Other/LeadStats";
 import LeadGraph from "../../Components/Lead/Other/LeadGraph";
+import { Icon } from "@iconify/react";
 
 export default function LeadDashboard() {
   const { hasPermission } = usePermissions();
@@ -28,7 +28,7 @@ export default function LeadDashboard() {
           </h1>
           <Breadcrumbs variant="bordered" radius="sm">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/administration/lead">Lead</BreadcrumbItem>
           </Breadcrumbs>

@@ -1,7 +1,6 @@
-import React from "react";
 import Calendar from "../../Components/Calendar/Calendar";
 import { BreadcrumbItem, Breadcrumbs } from "@heroui/react";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import { Icon } from "@iconify/react";
 
 export default function CalendarPage() {
   return (
@@ -13,7 +12,7 @@ export default function CalendarPage() {
           </h1>
           <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/calendar">Calendario</BreadcrumbItem>
           </Breadcrumbs>

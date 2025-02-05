@@ -1,13 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Button } from "@heroui/react";
-import KeyboardBackspaceRoundedIcon from "@mui/icons-material/KeyboardBackspaceRounded";
 import Editor from "@monaco-editor/react";
 import { io, Socket } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import { toPng } from "html-to-image"; // Importa la libreria per gli screenshot
 import "monaco-editor/min/vs/editor/editor.main.css"; // Importa lo stile di Monaco localmente
-
+import { Icon } from "@iconify/react";
 const socket: Socket = io(API_WEBSOCKET_URL);
 
 interface CodeShareTab {
@@ -184,7 +183,7 @@ export default function CodeShareContainer({
           handleGoBack();
         }}
       >
-        <KeyboardBackspaceRoundedIcon sx={{ fontSize: 20 }} />
+        <Icon icon="solar:alt-arrow-left-linear" fontSize={20} />
         Indietro
       </Button>
       <div ref={editorRef}>

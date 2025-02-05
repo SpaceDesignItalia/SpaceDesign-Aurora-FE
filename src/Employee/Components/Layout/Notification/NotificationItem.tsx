@@ -1,7 +1,5 @@
 import React from "react";
-import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
-import Person2RoundedIcon from "@mui/icons-material/Person2Rounded";
-import CloseIcon from "@mui/icons-material/Close"; // Importa l'icona della X
+import { Icon } from "@iconify/react";
 import { Link, Badge, Avatar, cn } from "@heroui/react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -98,13 +96,13 @@ export default function NotificationItem({
   const contentByType: Record<string, JSX.Element | null> = {
     Progetto: (
       <div className="flex items-center gap-2">
-        <FolderCopyRoundedIcon />
+        <Icon icon="solar:folder-linear" fontSize={24} />
         <strong>{NotificationInfo.ProjectName}</strong>
       </div>
     ),
     Dipendente: (
       <div className="flex items-center gap-2">
-        <Person2RoundedIcon />
+        <Icon icon="solar:user-rounded-linear" fontSize={24} />
         <strong>{NotificationInfo.userfullname}</strong>
       </div>
     ),
@@ -135,7 +133,7 @@ export default function NotificationItem({
           role="button"
           aria-label="Close notification"
         >
-          <CloseIcon className="hover:text-red-600" />
+          <Icon icon="material-symbols:close-rounded" fontSize={24} />
         </span>
         <div className="w-full flex gap-3 items-center">
           {NotificationInfo.NotificationTypeName === "Dipendente" && (

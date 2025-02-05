@@ -1,6 +1,5 @@
 import { format, addMonths, subMonths, startOfMonth } from "date-fns";
 import { it } from "date-fns/locale";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { Icon } from "@iconify/react";
 import {
   Avatar,
@@ -15,6 +14,10 @@ import {
 } from "@heroui/react";
 import { formatInTimeZone } from "date-fns-tz";
 import axios from "axios";
+import { io } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../../API/API";
+
+const socket = io(API_WEBSOCKET_URL);
 
 interface Employee {
   id: string;
@@ -53,22 +56,22 @@ export default function EmployeeAttendanceTable({
   const statusConfig = {
     present: {
       color: "bg-emerald-100 border-emerald-300",
-      icon: "material-symbols-light:work-outline",
+      icon: "hugeicons:office",
       label: "Presente in ufficio",
     },
     absent: {
       color: "bg-red-100 border-red-300",
-      icon: "material-symbols-light:sick-outline",
+      icon: "material-symbols-light:sick-outline-rounded",
       label: "Assente",
     },
     vacation: {
       color: "bg-blue-100 border-blue-300",
-      icon: "material-symbols-light:beach-access-outline",
+      icon: "proicons:beach",
       label: "Ferie",
     },
     smartworking: {
       color: "bg-amber-100 border-amber-300",
-      icon: "material-symbols-light:home-work-outline",
+      icon: "solar:smart-home-linear",
       label: "Smart Working",
     },
   };
@@ -206,11 +209,14 @@ export default function EmployeeAttendanceTable({
       StafferId: loggedStafferId,
       Date: date,
     });
-    console.log(res);
+
+    if (res.status === 200) {
+      socket.emit("employee-attendance-update");
+    }
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border-2">
+    <div className="rounded-2xl shadow-sm border-2">
       <div className="mb-6 flex justify-between items-center border-b border-gray-100 pb-4">
         <h2 className="text-xl font-semibold text-gray-900 px-2 py-4">
           Presenze e assenze
@@ -220,7 +226,7 @@ export default function EmployeeAttendanceTable({
             onClick={() => onDateChange(subMonths(selectedDate, 1))}
             className="p-2 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-1 text-gray-600"
           >
-            <ChevronLeftIcon className="w-5 h-5" />
+            <Icon icon="solar:alt-arrow-left-linear" fontSize={24} />
             <span className="text-sm">
               {format(subMonths(selectedDate, 1), "MMMM", { locale: it })}
             </span>
@@ -235,7 +241,7 @@ export default function EmployeeAttendanceTable({
             <span className="text-sm">
               {format(addMonths(selectedDate, 1), "MMMM", { locale: it })}
             </span>
-            <ChevronRightIcon className="w-5 h-5" />
+            <Icon icon="solar:alt-arrow-right-linear" fontSize={24} />
           </button>
         </div>
       </div>
@@ -244,7 +250,7 @@ export default function EmployeeAttendanceTable({
         <div className="flex">
           {/* Colonna nomi fissa */}
           <div className="w-64 pl-2 flex-shrink-0 sticky left-0 bg-white z-10 border-r border-gray-200">
-            <div className="h-12 bg-gray-50 border-1 rounded-l-lg border-gray-200 p-4 font-medium text-gray-600 text-sm shadow-md">
+            <div className="flex items-center h-12 bg-gray-50 border-1 rounded-l-lg border-gray-200 p-4 font-medium text-gray-600 text-sm shadow-md">
               Nome
             </div>
             {employees.map((employee, index) => (
@@ -280,7 +286,7 @@ export default function EmployeeAttendanceTable({
               <div className="h-12 bg-gray-50 border-b border-gray-200 flex divide-x divide-gray-200">
                 {getDaysInMonth().map((date) => {
                   return (
-                    <Popover>
+                    <Popover showArrow>
                       <PopoverTrigger>
                         <div
                           key={date.toISOString()}

@@ -1,8 +1,8 @@
 import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import EditPermissionModel from "../../Components/Permission/Other/EditPermissionModel";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
+import { Icon } from "@iconify/react";
 
 export default function EditPermissionPage() {
   const { hasPermission } = usePermissions();
@@ -27,7 +27,7 @@ export default function EditPermissionPage() {
           </h1>
           <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/administration/permission">
               Permessi

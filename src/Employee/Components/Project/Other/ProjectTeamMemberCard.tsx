@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardBody, Badge, User, Button } from "@heroui/react";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { Icon } from "@iconify/react";
 import { API_URL_IMG } from "../../../../API/API";
 import axios from "axios";
 import StatusAlert from "../../Layout/StatusAlert";
@@ -110,7 +110,9 @@ export default function ProjectTeamMemberCard({
               variant="light"
               size="sm"
               onClick={handleMemberRemove}
-              startContent={<CloseRoundedIcon sx={{ fontSize: 15 }} />}
+              startContent={
+                <Icon icon="material-symbols:close-rounded" fontSize={15} />
+              }
               isIconOnly
             />
           </CardBody>

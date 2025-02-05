@@ -11,15 +11,12 @@ import {
   Pagination,
   SortDescriptor,
 } from "@heroui/react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import ViewLeadModal from "../Other/ViewLeadModal";
 import axios from "axios";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import dayjs from "dayjs";
 import ConfirmDeleteLeadModal from "../Other/ConfirmDeleteModal";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import { Icon } from "@iconify/react";
 
 interface Lead {
   IdContact: number;
@@ -47,7 +44,7 @@ const columns = [
   { name: "Azioni", uid: "actions" },
 ];
 
-export default function EmployeeTable() {
+export default function LeadTable() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -197,7 +194,7 @@ export default function EmployeeTable() {
                 <Button
                   color="primary"
                   variant="light"
-                  startContent={<RemoveRedEyeOutlinedIcon />}
+                  startContent={<Icon icon="solar:eye-linear" fontSize={24} />}
                   onClick={() => setModalData({ open: true, Lead: lead })}
                   isIconOnly
                 />
@@ -233,7 +230,13 @@ export default function EmployeeTable() {
             <Input
               radius="full"
               variant="bordered"
-              startContent={<SearchOutlinedIcon className="text-gray-400" />}
+              startContent={
+                <Icon
+                  icon="solar:magnifer-linear"
+                  fontSize={24}
+                  color="gray-400"
+                />
+              }
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 if (e.target.value.trim() === "") {
@@ -248,7 +251,7 @@ export default function EmployeeTable() {
             <Button
               color="primary"
               radius="full"
-              endContent={<SearchOutlinedIcon />}
+              endContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
               isDisabled={searchTerm == ""}
               onClick={SearchLead}
               className="hidden sm:flex"
@@ -263,7 +266,7 @@ export default function EmployeeTable() {
               className="sm:hidden"
               isIconOnly
             >
-              <SearchOutlinedIcon />
+              <Icon icon="solar:magnifer-linear" fontSize={22} />
             </Button>
           </div>
           {leads.length > 0 && (
@@ -271,7 +274,9 @@ export default function EmployeeTable() {
               <Button
                 color="primary"
                 radius="full"
-                startContent={<FileDownloadOutlinedIcon />}
+                startContent={
+                  <Icon icon="solar:file-download-linear" fontSize={24} />
+                }
                 onClick={exportCSV}
               >
                 Esporta tabella lead

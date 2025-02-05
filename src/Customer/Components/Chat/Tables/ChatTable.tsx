@@ -286,7 +286,7 @@ export default function ChatTable() {
           <Input
             radius="sm"
             variant="bordered"
-            startContent={<SearchOutlinedIcon />}
+            startContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
             value={searchQuery}
             onChange={SearchEmployee}
             placeholder="Cerca dipendente per email..."
@@ -331,7 +331,7 @@ export default function ChatTable() {
                       color="danger"
                       onClick={() => handleDeleteConversation(conversation)}
                     >
-                      <DeleteOutlinedIcon />
+                      <Icon icon="solar:trash-bin-trash-linear" fontSize={24} />
                     </Button>
                     <p className="flex justify-end text-sm">
                       {conversation.lastMessageDate &&

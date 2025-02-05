@@ -1,9 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/20/solid";
+import { Icon } from "@iconify/react";
 import {
   Dropdown,
   DropdownTrigger,
@@ -18,11 +14,6 @@ import CalendarWeek from "./CalendarWeek";
 import CalendarMonth from "./CalendarMonth";
 import CalendarYear from "./CalendarYear";
 import AddEventModal from "./AddEventModal";
-import {
-  AddRounded,
-  FileDownloadOutlined,
-  FileUploadOutlined,
-} from "@mui/icons-material";
 import axios from "axios";
 import dayjs from "dayjs";
 import { io, Socket } from "socket.io-client";
@@ -372,10 +363,7 @@ END:VEVENT`;
               variant="bordered"
               onClick={handleExportEvent}
             >
-              <FileDownloadOutlined
-                className="h-6 w-6 mr-2"
-                aria-hidden="true"
-              />
+              <Icon icon="solar:file-download-linear" fontSize={18} />
               Esporta calendario
             </Button>
             <Dropdown>
@@ -384,7 +372,7 @@ END:VEVENT`;
                   className="flex h-10 items-center justify-center rounded-full bg-white text-gray-600 hover:bg-gray-100 focus:relative"
                   variant="bordered"
                 >
-                  <AddRounded className="h-6 w-6 mr-2" aria-hidden="true" />
+                  <Icon icon="solar:calendar-add-linear" fontSize={18} />
                   Aggiungi evento
                 </Button>
               </DropdownTrigger>
@@ -395,14 +383,18 @@ END:VEVENT`;
                     setPrefilledEventData(null);
                     setIsOpen(true);
                   }}
-                  startContent={<AddRounded className="h-5 w-5" />}
+                  startContent={
+                    <Icon icon="solar:calendar-add-linear" fontSize={18} />
+                  }
                 >
                   Aggiungi evento
                 </DropdownItem>
                 <DropdownItem
                   key="import"
                   onClick={() => fileInputRef.current?.click()}
-                  startContent={<FileUploadOutlined className="h-5 w-5" />}
+                  startContent={
+                    <Icon icon="solar:upload-linear" fontSize={18} />
+                  }
                 >
                   Importa da ICS
                 </DropdownItem>
@@ -413,13 +405,13 @@ END:VEVENT`;
                 onClick={() => changeDate(-1)}
                 className="flex h-10 w-12 items-center justify-center rounded-l-full border-r bg-white text-gray-600 hover:bg-gray-100 focus:relative"
               >
-                <ChevronLeftIcon className="h-6 w-6" aria-hidden="true" />
+                <Icon icon="solar:alt-arrow-left-linear" fontSize={18} />
               </Button>
               <Button
                 onClick={() => changeDate(1)}
                 className="flex h-10 w-12 items-center justify-center rounded-r-full border-l bg-white text-gray-600 hover:bg-gray-100 focus:relative"
               >
-                <ChevronRightIcon className="h-6 w-6" aria-hidden="true" />
+                <Icon icon="solar:alt-arrow-right-linear" fontSize={18} />
               </Button>
             </div>
             {(view === "day" || view === "week") && (
@@ -464,7 +456,7 @@ END:VEVENT`;
                     : view === "month"
                     ? "Mese"
                     : "Anno"}
-                  <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-500" />
+                  <Icon icon="solar:alt-arrow-down-linear" fontSize={18} />
                 </Button>
               </DropdownTrigger>
               <DropdownMenu>

@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import RoleTable from "../../Components/Permission/Tables/RoleTable";
 import PermissionTable from "../../Components/Permission/Tables/PermissionTable";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { BreadcrumbItem, Breadcrumbs } from "@heroui/react";
 import RoleTree from "../../Components/Permission/Other/RoleTree";
+import { Icon } from "@iconify/react";
 
 export default function PermissionDashboard() {
   const { hasPermission } = usePermissions();
@@ -38,7 +38,7 @@ export default function PermissionDashboard() {
           </h1>
           <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/administration/permission">
               Ruoli

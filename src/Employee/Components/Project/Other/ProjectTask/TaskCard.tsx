@@ -15,17 +15,7 @@ import {
   Chip,
   Tooltip,
 } from "@heroui/react";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
-import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
-import ChatRoundedIcon from "@mui/icons-material/ChatRounded";
-import LocalOfferRoundedIcon from "@mui/icons-material/LocalOfferRounded";
-import NotesRoundedIcon from "@mui/icons-material/NotesRounded";
-import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
-import AttachFileRoundedIcon from "@mui/icons-material/AttachFileRounded";
+
 import { API_URL_IMG } from "../../../../../API/API";
 import dayjs from "dayjs";
 import { useDateFormatter } from "@react-aria/i18n";
@@ -37,8 +27,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { usePermissions } from "../../../Layout/PermissionProvider";
 import ReactQuill from "react-quill";
-import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
-import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
+import { Icon } from "@iconify/react";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -264,7 +253,10 @@ export default function TaskCard({
               {hasValidDescription(task.ProjectTaskDescription) && (
                 <Tooltip content="Descrizione presente" showArrow>
                   <div className="flex items-center gap-1.5 text-sm bg-default-100 px-2.5 py-1 rounded-lg">
-                    <NotesRoundedIcon className="w-4 h-4" />
+                    <Icon
+                      icon="fluent:text-description-16-filled"
+                      fontSize={22}
+                    />
                     <span>Descrizione</span>
                   </div>
                 </Tooltip>
@@ -272,7 +264,7 @@ export default function TaskCard({
               {fileCount > 0 && (
                 <Tooltip content={`${fileCount} file allegati`} showArrow>
                   <div className="flex items-center gap-1.5 text-sm bg-default-100 px-2.5 py-1 rounded-lg">
-                    <AttachFileRoundedIcon className="w-4 h-4" />
+                    <Icon icon="solar:paperclip-linear" fontSize={22} />
                     <span>{fileCount} file</span>
                   </div>
                 </Tooltip>
@@ -280,7 +272,7 @@ export default function TaskCard({
               {checkboxCount > 0 && (
                 <Tooltip content={`${checkboxCount} checklist items`} showArrow>
                   <div className="flex items-center gap-1.5 text-sm bg-default-100 px-2.5 py-1 rounded-lg">
-                    <CheckCircleOutlineRoundedIcon className="w-4 h-4" />
+                    <Icon icon="solar:checklist-linear" fontSize={22} />
                     <span>{checkboxCount} task</span>
                   </div>
                 </Tooltip>
@@ -288,7 +280,7 @@ export default function TaskCard({
               {commentsCount > 0 && (
                 <Tooltip content={`${commentsCount} commenti`} showArrow>
                   <div className="flex items-center gap-1.5 text-sm bg-default-100 px-2.5 py-1 rounded-lg">
-                    <ChatRoundedIcon className="w-4 h-4" />
+                    <Icon icon="solar:chat-round-line-linear" fontSize={22} />
                     <span>{commentsCount} commenti</span>
                   </div>
                 </Tooltip>
@@ -324,7 +316,7 @@ export default function TaskCard({
               )}
               <Tooltip content="Data di scadenza" showArrow>
                 <div className="flex items-center gap-1.5 text-sm text-default-500 bg-default-100 px-2.5 py-1 rounded-lg">
-                  <CalendarMonthRoundedIcon className="w-4 h-4" />
+                  <Icon icon="solar:calendar-linear" fontSize={22} />
                   <span>{formatDate(task.ProjectTaskExpiration)}</span>
                 </div>
               </Tooltip>

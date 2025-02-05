@@ -1,10 +1,4 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import {
-  Bars3Icon,
-  Cog6ToothIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
 import {
   Avatar,
   Dropdown,
@@ -13,7 +7,6 @@ import {
   DropdownTrigger,
   Skeleton,
 } from "@heroui/react";
-import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import axios from "axios";
 import { Fragment, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
@@ -27,8 +20,9 @@ import {
   mainNavigationItems,
   projectManagementItems,
   salesItems,
-} from "./Sidebar/SidebarItems";
-import Sidebar, { type SidebarItem } from "./Sidebar/sidebarOption";
+} from "./Sidebar/sidebarItems";
+import Sidebar, { type SidebarItem } from "./Sidebar/SidebarOption";
+import { Icon } from "@iconify/react";
 
 interface Notification {
   NotificationId: number;
@@ -264,7 +258,8 @@ export default function SidebarLayout() {
                       onClick={() => setSidebarOpen(false)}
                     >
                       <span className="sr-only">Close sidebar</span>
-                      <XMarkIcon
+                      <Icon
+                        icon="material-symbols:close-rounded"
                         className="h-6 w-6 text-white"
                         aria-hidden="true"
                       />
@@ -331,7 +326,7 @@ export default function SidebarLayout() {
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
-              <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+              <Icon icon="solar:hamburger-menu-linear" fontSize={26} />
             </button>
             {/* Separator */}
             <div
@@ -378,7 +373,8 @@ export default function SidebarLayout() {
                             <Skeleton className="h-3 rounded-lg" />
                           )}
                         </span>
-                        <ChevronDownIcon
+                        <Icon
+                          icon="solar:alt-arrow-down-linear"
                           className="ml-2 h-5 w-5 text-gray-400"
                           aria-hidden="true"
                         />
@@ -388,7 +384,8 @@ export default function SidebarLayout() {
                   <DropdownMenu aria-label="User Actions" variant="flat">
                     <DropdownItem key="settings" href="/settings">
                       <div className="flex flex-row gap-2">
-                        <Cog6ToothIcon
+                        <Icon
+                          icon="solar:settings-linear"
                           className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-primary"
                           aria-hidden="true"
                         />
@@ -397,7 +394,10 @@ export default function SidebarLayout() {
                     </DropdownItem>
                     <DropdownItem key="logout" color="danger" onClick={logout}>
                       <div className="flex flex-row gap-2">
-                        <LogoutRoundedIcon className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-danger" />
+                        <Icon
+                          icon="solar:logout-linear"
+                          className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-danger"
+                        />
                         Logout
                       </div>
                     </DropdownItem>

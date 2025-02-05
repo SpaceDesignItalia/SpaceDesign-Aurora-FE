@@ -12,7 +12,7 @@ import {
 } from "@heroui/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import SaveIcon from "@mui/icons-material/Save";
+import { Icon } from "@iconify/react";
 import { API_URL_IMG } from "../../../../API/API";
 import StatusAlert from "../../Layout/StatusAlert";
 
@@ -265,7 +265,11 @@ export default function AddProjectLink({
                   color="primary"
                   className="text-white"
                   radius="full"
-                  startContent={!isAddingData && <SaveIcon />}
+                  startContent={
+                    !isAddingData && (
+                      <Icon icon="basil:save-outline" fontSize={24} />
+                    )
+                  }
                   isDisabled={checkAllDataCompiled()}
                   isLoading={isAddingData}
                   onClick={handleCreateNewLink}

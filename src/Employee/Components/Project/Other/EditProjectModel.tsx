@@ -11,18 +11,17 @@ import {
   Spinner,
 } from "@heroui/react";
 import { I18nProvider } from "@react-aria/i18n";
-import SaveIcon from "@mui/icons-material/Save";
+import { Icon } from "@iconify/react";
 import StatusAlert from "../../Layout/StatusAlert";
-import { DateValue, parseDate } from "@internationalized/date";
+import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 import { useParams } from "react-router-dom";
-import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
 
 interface Project {
   ProjectName: string;
   ProjectDescription: string;
-  ProjectCreationDate: DateValue;
-  ProjectEndDate: DateValue;
+  ProjectCreationDate: any;
+  ProjectEndDate: any;
   ProjectManagerId: number;
   CompanyId: number;
   ProjectBannerId: number;
@@ -170,14 +169,14 @@ export default function EditProjectModel() {
     });
   }
 
-  function handleProjectCreationDateChange(date: DateValue) {
+  function handleProjectCreationDateChange(date: any) {
     setNewProjectData({
       ...newProjectData,
       ProjectCreationDate: date,
     });
   }
 
-  function handleProjectEndDateChange(date: DateValue) {
+  function handleProjectEndDateChange(date: any) {
     setNewProjectData({
       ...newProjectData,
       ProjectEndDate: date,
@@ -413,8 +412,11 @@ export default function EditProjectModel() {
                   ) : (
                     <>
                       {" "}
-                      <AutoFixHighRoundedIcon className="w-5 h-5" /> Riscrivi
-                      con AI{" "}
+                      <Icon
+                        icon="solar:magic-stick-3-linear"
+                        fontSize={24}
+                      />{" "}
+                      Riscrivi con AI{" "}
                     </>
                   )}
                 </Button>
@@ -547,7 +549,9 @@ export default function EditProjectModel() {
             color="primary"
             className="text-white"
             radius="full"
-            startContent={!isAddingData && <SaveIcon />}
+            startContent={
+              !isAddingData && <Icon icon="basil:save-outline" fontSize={24} />
+            }
             isDisabled={checkAllDataCompiled()}
             isLoading={isAddingData}
             onClick={handleUpdateProject}

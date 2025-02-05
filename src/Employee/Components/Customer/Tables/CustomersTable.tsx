@@ -19,20 +19,11 @@ import {
   SortDescriptor,
   Link,
 } from "@heroui/react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axios from "axios";
 import ViewCustomerModal from "../Other/ViewCustomerModal";
 import ConfirmDeleteCustomerModal from "../Other/ConfirmDeleteCustomerModal";
-import { Edit } from "@mui/icons-material";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import StatusAlert from "../../Layout/StatusAlert";
-
+import { Icon } from "@iconify/react";
 interface Customer {
   CustomerId: number;
   CustomerFullName: string;
@@ -284,7 +275,7 @@ export default function CustomersTable() {
                 color="primary"
                 variant="light"
                 size="sm"
-                startContent={<RemoveRedEyeOutlinedIcon />}
+                startContent={<Icon icon="solar:eye-linear" fontSize={24} />}
                 aria-label="View"
                 aria-labelledby="View"
                 onClick={() =>
@@ -328,7 +319,13 @@ export default function CustomersTable() {
             <Input
               radius="full"
               variant="bordered"
-              startContent={<SearchOutlinedIcon className="text-gray-400" />}
+              startContent={
+                <Icon
+                  icon="solar:magnifer-linear"
+                  fontSize={24}
+                  color="gray-400"
+                />
+              }
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 if (e.target.value.trim() === "") {
@@ -342,7 +339,7 @@ export default function CustomersTable() {
             <Button
               color="primary"
               radius="full"
-              endContent={<SearchOutlinedIcon />}
+              endContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
               isDisabled={searchTerm == ""}
               onClick={SearchCustomer}
               className="hidden sm:flex"
@@ -357,7 +354,7 @@ export default function CustomersTable() {
               className="sm:hidden"
               isIconOnly
             >
-              <SearchOutlinedIcon />
+              <Icon icon="solar:magnifer-linear" fontSize={22} />
             </Button>
           </div>
           <div className="flex gap-3">
@@ -368,7 +365,9 @@ export default function CustomersTable() {
                   href="./customer/add-customer"
                   color="primary"
                   radius="full"
-                  startContent={<PersonAddAlt1RoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:user-plus-linear" fontSize={24} />
+                  }
                   className="hidden sm:flex"
                 >
                   Aggiungi cliente
@@ -381,7 +380,7 @@ export default function CustomersTable() {
                   isIconOnly
                   className="sm:hidden"
                 >
-                  <PersonAddAlt1RoundedIcon />
+                  <Icon icon="solar:user-plus-linear" fontSize={24} />
                 </Button>
               </>
             )}
@@ -400,7 +399,9 @@ export default function CustomersTable() {
               color="primary"
               variant="ghost"
               radius="full"
-              startContent={<FileDownloadOutlinedIcon />}
+              startContent={
+                <Icon icon="solar:file-download-linear" fontSize={24} />
+              }
               onClick={exportCSV}
             >
               Esporta Tabella
@@ -463,7 +464,7 @@ export default function CustomersTable() {
           emptyContent={
             searchTerm == "" ? (
               <div className="text-center p-10">
-                <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
+                <Icon icon="solar:user-plus-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun cliente trovato!
                 </h3>
@@ -474,7 +475,9 @@ export default function CustomersTable() {
                   <Button
                     color="primary"
                     radius="full"
-                    startContent={<AddRoundedIcon />}
+                    startContent={
+                      <Icon icon="solar:user-plus-linear" fontSize={24} />
+                    }
                   >
                     Aggiungi cliente
                   </Button>
@@ -482,7 +485,7 @@ export default function CustomersTable() {
               </div>
             ) : (
               <div className="text-center p-10">
-                <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
+                <Icon icon="solar:user-plus-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun cliente trovato!
                 </h3>

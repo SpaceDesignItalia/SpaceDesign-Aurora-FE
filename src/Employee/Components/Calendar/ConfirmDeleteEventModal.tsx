@@ -2,8 +2,7 @@
 
 import { Button, Popover, PopoverContent, PopoverTrigger } from "@heroui/react";
 import { useState } from "react";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
+import { Icon } from "@iconify/react";
 
 interface Event {
   EventId: number;
@@ -43,7 +42,9 @@ export default function ConfirmDeleteEventModal({
           color="danger"
           variant="light"
           radius="full"
-          startContent={<DeleteRoundedIcon sx={{ fontSize: 17 }} />}
+          startContent={
+            <Icon icon="solar:trash-bin-trash-linear" fontSize={18} />
+          }
           aria-label="Remove"
           aria-labelledby="Remove"
           isIconOnly
@@ -55,7 +56,11 @@ export default function ConfirmDeleteEventModal({
       <PopoverContent>
         <div className="px-1 py-2">
           <div className="flex flex-row gap-2 items-center text-small font-bold mb-2">
-            <ErrorRoundedIcon className="text-warning" sx={{ fontSize: 20 }} />
+            <Icon
+              icon="iconamoon:attention-circle-light"
+              className="text-warning"
+              fontSize={20}
+            />
             Sei sicuro?
           </div>
           <div className="flex flex-row gap-2">

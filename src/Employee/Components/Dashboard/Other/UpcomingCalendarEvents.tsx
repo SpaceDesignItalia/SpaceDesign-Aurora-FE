@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Card, CardBody, CardHeader, Divider } from "@heroui/react";
+import { Card, CardBody, CardHeader } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import dayjs from "dayjs";
 import axios from "axios";
-import ViewEventModal from "../../Components/Calendar/ViewEventModal";
+import ViewEventModal from "../../../Components/Calendar/ViewEventModal";
 
 interface CalendarEvent {
   EventId: number;
@@ -96,7 +96,7 @@ export default function UpcomingCalendarEvents() {
         isClosed={() => setIsOpen(false)}
       />
 
-      <Card className="h-full">
+      <Card className="h-fit shadow-none border-2">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div className="space-y-1">
             <h3 className="text-xl font-semibold">Prossimi eventi</h3>
@@ -105,8 +105,7 @@ export default function UpcomingCalendarEvents() {
             </p>
           </div>
         </CardHeader>
-        <Divider />
-        <CardBody className="px-2">
+        <CardBody className="p-2">
           <div className="space-y-3">
             {events.length > 0 ? (
               events.map((event) => (
