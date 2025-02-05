@@ -13,13 +13,21 @@ export default function StatusAlert(props: { AlertData: AlertData }) {
   const { AlertData } = props;
   const [show, setShow] = useState(false);
 
-  const getAlertColor = (color: "green" | "red" | "yellow") => {
+  const getAlertColor = (
+    color: "green" | "red" | "yellow" | "success" | "danger" | "warning"
+  ) => {
     switch (color) {
       case "green":
         return "success";
       case "red":
         return "danger";
       case "yellow":
+        return "warning";
+      case "success":
+        return "success";
+      case "danger":
+        return "danger";
+      case "warning":
         return "warning";
       default:
         return "warning";
