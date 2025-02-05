@@ -96,7 +96,7 @@ export default function EmployeeAttendanceTable({
         key={key}
         className={`h-9 ${
           statusColors[streak.status as keyof typeof statusColors]
-        } rounded-xl flex items-center justify-center gap-2 cursor-pointer`}
+        } rounded-xl border-2 flex items-center justify-center gap-2 cursor-pointer`}
         style={{
           width: `${streak.count * 64 - 8}px`,
           margin: "0 4px",
@@ -399,7 +399,7 @@ export default function EmployeeAttendanceTable({
         {Object.entries(statusConfig).map(([key, config]) => (
           <div key={key} className="flex items-center gap-2">
             <div
-              className={`w-10 h-10 ${config.color} rounded-xl border flex items-center justify-center`}
+              className={`w-10 h-10 ${config.color} rounded-xl border-2 flex items-center justify-center`}
             >
               <Icon
                 icon={config.icon}
