@@ -91,24 +91,21 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
         eventId={selectedEventId}
         isClosed={() => setIsOpen(false)}
       />
-      <div
-        className="flex flex-col h-full overflow-hidden relative"
-        style={{ minHeight: "100%" }}
-      >
-        <div className="flex-1 overflow-y-auto" ref={scrollRef}>
-          <div className="grid grid-cols-8 divide-x divide-gray-100 relative">
-            <div className="col-span-2 divide-y divide-gray-100">
+      <div className="flex flex-col h-full overflow-hidden">
+        <div className="flex-1 overflow-x-hidden" ref={scrollRef}>
+          <div className="grid grid-cols-12 divide-x divide-gray-100 relative">
+            <div className="col-span-1 divide-y divide-gray-100">
               {HOURS.map((hour) => (
                 <div
                   key={hour}
-                  className="sticky left-0 bg-white text-center pr-4 py-3 text-sm leading-5 text-gray-500"
+                  className="sticky left-0 bg-white text-center py-3 text-sm leading-5 text-gray-500"
                   style={{ height: `${ROW_HEIGHT}px` }}
                 >
                   {`${hour.toString().padStart(2, "0")}:00`}
                 </div>
               ))}
             </div>
-            <div className="col-span-6 divide-y divide-gray-100">
+            <div className="col-span-11 divide-y divide-gray-100">
               {HOURS.map((hour) => (
                 <div
                   key={hour}
@@ -209,53 +206,107 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
                             setSelectedEventId(event.EventId);
                           }}
                           key={event.EventId}
-                          className="absolute mx-1 rounded-lg p-2 text-xs opacity-70 hover:opacity-90 transition-opacity"
+                          className="absolute mx-1 rounded-lg p-2 text-sm cursor-pointer shadow-md hover:shadow-lg transition-all duration-200 border border-white/20"
                           style={{
                             backgroundColor: event.EventColor,
                             color: "white",
                             zIndex: 10,
                             height: `${duration * ROW_HEIGHT}px`,
                             top: `${topOffset}px`,
-                            overflow: "hidden",
                             width: `${width}%`,
                             left: index * (width + 2) + "%",
+                            opacity: 0.95,
+                            transform: "scale(0.98)",
+                            transition:
+                              "transform 0.2s ease-in-out, opacity 0.2s ease-in-out",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.opacity = "1";
+                            e.currentTarget.style.transform = "scale(1.01)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.opacity = "0.95";
+                            e.currentTarget.style.transform = "scale(0.98)";
                           }}
                         >
-                          <div className="font-semibold">
-                            {event.EventTitle}
-                          </div>
-                          <div className="text-xs opacity-90">
-                            {(() => {
-                              if (
-                                currentDate.toDateString() ===
-                                eventStartDate.toDateString()
-                              ) {
-                                if (
-                                  eventStartDate.toDateString() ===
-                                  eventEndDate.toDateString()
-                                ) {
-                                  return `${event.EventStartTime} - ${event.EventEndTime}`;
-                                }
-                                return `dalle ${event.EventStartTime}`;
-                              } else if (
-                                currentDate.toDateString() ===
-                                eventEndDate.toDateString()
-                              ) {
-                                return `fino alle ${event.EventEndTime}`;
-                              }
-                              return "Tutto il giorno";
-                            })()}
-                          </div>
-                          {width > 50 && (
-                            <>
-                              <div className="text-xs mt-1">
-                                {stripHtml(event.EventDescription)}
+                          <div className="h-full flex flex-col">
+                            <div
+                              className={`flex flex-col ${
+                                duration <= 1.5 ? "h-full justify-center" : ""
+                              }`}
+                            >
+                              <div className="font-semibold text-xs sm:text-sm truncate">
+                                {event.EventTitle}
                               </div>
-                              <div className="text-xs opacity-75">
-                                {event.EventLocation}
+                              <div className="text-xs opacity-90 truncate">
+                                {(() => {
+                                  if (
+                                    currentDate.toDateString() ===
+                                    eventStartDate.toDateString()
+                                  ) {
+                                    if (
+                                      eventStartDate.toDateString() ===
+                                      eventEndDate.toDateString()
+                                    ) {
+                                      return `${event.EventStartTime} - ${event.EventEndTime}`;
+                                    }
+                                    return `dalle ${event.EventStartTime}`;
+                                  } else if (
+                                    currentDate.toDateString() ===
+                                    eventEndDate.toDateString()
+                                  ) {
+                                    return `fino alle ${event.EventEndTime}`;
+                                  }
+                                  return "Tutto il giorno";
+                                })()}
                               </div>
-                            </>
-                          )}
+                            </div>
+
+                            {duration > 1.5 && width > 50 && (
+                              <div className="mt-1.5 flex-1 min-h-0 flex flex-col">
+                                {event.EventDescription && (
+                                  <div
+                                    className={`text-xs opacity-90 overflow-hidden ${
+                                      duration <= 2
+                                        ? "line-clamp-1"
+                                        : duration <= 3
+                                        ? "line-clamp-2"
+                                        : duration <= 4
+                                        ? "line-clamp-3"
+                                        : "line-clamp-4"
+                                    }`}
+                                  >
+                                    {stripHtml(event.EventDescription)}
+                                  </div>
+                                )}
+
+                                {event.EventLocation && duration > 2 && (
+                                  <div className="text-xs mt-1 flex items-start opacity-90">
+                                    <svg
+                                      className="w-3 h-3 mr-1 mt-0.5 shrink-0"
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                    <span
+                                      className={`truncate ${
+                                        duration <= 3
+                                          ? "line-clamp-1"
+                                          : "line-clamp-2"
+                                      }`}
+                                    >
+                                      {event.EventLocation}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       );
                     });
@@ -272,7 +323,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
                   className="border-t-2 border-red-500 relative"
                   style={{
                     width: "100%",
-                    marginLeft: "25%",
+                    marginLeft: "5.8%",
                   }}
                 >
                   <div className="absolute left-0 -top-3 -translate-x-full bg-red-500 text-white rounded-full px-2 py-1 text-xs">

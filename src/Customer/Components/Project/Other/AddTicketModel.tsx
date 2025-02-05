@@ -137,7 +137,7 @@ export default function AddTicketModal() {
           <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
             <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
               <div>
-                <h3 className="text-base font-semibold leading-6 text-gray-900">
+                <h3 className="text-base font-medium leading-6 text-gray-900">
                   Apri ticket
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
@@ -173,7 +173,7 @@ export default function AddTicketModal() {
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Titolo ticket{" "}
-                    <span className="text-red-600 font-bold">*</span>
+                    <span className="text-red-600 font-semibold">*</span>
                   </label>
                   <Input
                     variant="bordered"
@@ -192,7 +192,7 @@ export default function AddTicketModal() {
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Descrizione ticket{" "}
-                    <span className="text-red-600 font-bold">*</span>
+                    <span className="text-red-600 font-semibold">*</span>
                   </label>
                   <Textarea
                     variant="bordered"
@@ -211,7 +211,7 @@ export default function AddTicketModal() {
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Tipo di ticket{" "}
-                    <span className="text-red-600 font-bold">*</span>
+                    <span className="text-red-600 font-semibold">*</span>
                   </label>
                   <Autocomplete
                     defaultItems={ticketType}

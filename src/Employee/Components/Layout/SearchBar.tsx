@@ -565,7 +565,7 @@ export default function SearchBar({
               >
                 {filteredProjects.length > 0 && (
                   <li>
-                    <h2 className="text-xs font-semibold text-gray-900">
+                    <h2 className="text-xs font-medium text-gray-900">
                       Progetti
                     </h2>
                     <ul className="-mx-4 mt-2 text-sm text-gray-700">
@@ -602,7 +602,7 @@ export default function SearchBar({
                                   <Kbd
                                     keys={["tab"]}
                                     className={classNames(
-                                      "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                                      "mx-1 flex size-5 items-center justify-center rounded border bg-white font-medium sm:mx-2",
                                       rawQuery.endsWith("/")
                                         ? "border-primary text-primary"
                                         : "border-gray-400 text-gray-900"
@@ -642,7 +642,7 @@ export default function SearchBar({
                 )}
                 {filteredUsers.length > 0 && (
                   <li>
-                    <h2 className="text-xs font-semibold text-gray-900">
+                    <h2 className="text-xs font-medium text-gray-900">
                       Utenti
                     </h2>
                     <ul className="-mx-4 mt-2 text-sm text-gray-700">
@@ -677,7 +677,7 @@ export default function SearchBar({
                                   <Kbd
                                     keys={["tab"]}
                                     className={classNames(
-                                      "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                                      "mx-1 flex size-5 items-center justify-center rounded border bg-white font-medium sm:mx-2",
                                       rawQuery.endsWith("/")
                                         ? "border-primary text-primary"
                                         : "border-gray-400 text-gray-900"
@@ -712,7 +712,7 @@ export default function SearchBar({
                 )}
                 {filteredPages.length > 0 && (
                   <li>
-                    <h2 className="text-xs font-semibold text-gray-900">
+                    <h2 className="text-xs font-medium text-gray-900">
                       Pagine
                     </h2>
                     <ul className="-mx-4 mt-2 text-sm text-gray-700">
@@ -741,7 +741,7 @@ export default function SearchBar({
                                   <Kbd
                                     keys={["tab"]}
                                     className={classNames(
-                                      "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                                      "mx-1 flex size-5 items-center justify-center rounded border bg-white font-medium sm:mx-2",
                                       rawQuery.endsWith("/")
                                         ? "border-primary text-primary"
                                         : "border-gray-400 text-gray-900"
@@ -758,7 +758,7 @@ export default function SearchBar({
                 )}
                 {filteredAdd.length > 0 && (
                   <li>
-                    <h2 className="text-xs font-semibold text-gray-900">
+                    <h2 className="text-xs font-medium text-gray-900">
                       Pagine
                     </h2>
                     <ul className="-mx-4 mt-2 text-sm text-gray-700">
@@ -787,7 +787,7 @@ export default function SearchBar({
                                   <Kbd
                                     keys={["tab"]}
                                     className={classNames(
-                                      "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                                      "mx-1 flex size-5 items-center justify-center rounded border bg-white font-medium sm:mx-2",
                                       rawQuery.endsWith("/")
                                         ? "border-primary text-primary"
                                         : "border-gray-400 text-gray-900"
@@ -811,7 +811,7 @@ export default function SearchBar({
                   className="mx-auto size-6 text-gray-400"
                   aria-hidden="true"
                 />
-                <p className="mt-4 font-semibold text-gray-900">
+                <p className="mt-4 font-medium text-gray-900">
                   Aiuto con la ricerca
                 </p>
                 <p className="mt-2 text-gray-500">
@@ -835,7 +835,7 @@ export default function SearchBar({
                     className="mx-auto size-6 text-gray-400"
                     aria-hidden="true"
                   />
-                  <p className="mt-4 font-semibold text-gray-900">
+                  <p className="mt-4 font-medium text-gray-900">
                     Nessun risultato trovato
                   </p>
                   <p className="mt-2 text-gray-500">
@@ -849,7 +849,7 @@ export default function SearchBar({
               Scrivi{" "}
               <Kbd
                 className={classNames(
-                  "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                  "mx-1 flex size-5 items-center justify-center rounded border bg-white font-medium sm:mx-2",
                   rawQuery.startsWith("#")
                     ? "border-primary text-primary"
                     : "border-gray-400 text-gray-900"
@@ -860,7 +860,7 @@ export default function SearchBar({
               per progetti,
               <Kbd
                 className={classNames(
-                  "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                  "mx-1 flex size-5 items-center justify-center rounded border bg-white font-medium sm:mx-2",
                   rawQuery.startsWith(">")
                     ? "border-primary text-primary"
                     : "border-gray-400 text-gray-900"
@@ -871,7 +871,7 @@ export default function SearchBar({
               per utenti,
               <Kbd
                 className={classNames(
-                  "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                  "mx-1 flex size-5 items-center justify-center rounded border bg-white font-medium sm:mx-2",
                   rawQuery.startsWith(":")
                     ? "border-primary text-primary"
                     : "border-gray-400 text-gray-900"
@@ -882,7 +882,7 @@ export default function SearchBar({
               per pagine,
               <Kbd
                 className={classNames(
-                  "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                  "mx-1 flex size-5 items-center justify-center rounded border bg-white font-medium sm:mx-2",
                   rawQuery === "+"
                     ? "border-primary text-primary"
                     : "border-gray-400 text-gray-900"
@@ -893,7 +893,7 @@ export default function SearchBar({
               per aggiungere e{" "}
               <Kbd
                 className={classNames(
-                  "mx-1 flex size-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2",
+                  "mx-1 flex size-5 items-center justify-center rounded border bg-white font-medium sm:mx-2",
                   rawQuery === "?"
                     ? "border-primary text-primary"
                     : "border-gray-400 text-gray-900"

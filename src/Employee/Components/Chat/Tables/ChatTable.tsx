@@ -391,7 +391,7 @@ export default function ChatTable() {
       />
 
       <div className="w-full lg:hidden flex justify-between items-center p-3">
-        <h1 className="text-2xl font-semibold">Chat</h1>
+        <h1 className="text-2xl font-medium">Chat</h1>
         <Button
           size="lg"
           color="primary"
@@ -468,7 +468,7 @@ export default function ChatTable() {
                     </div>
                     <div className="ml-4 flex flex-col w-5/6">
                       <div className="flex items-center justify-between">
-                        <h2 className="font-bold text-lg">
+                        <h2 className="font-semibold text-lg">
                           {conversation.Staffer1Id === loggedStafferId
                             ? conversation.Staffer2FullName
                             : conversation.Staffer1FullName}
@@ -568,7 +568,7 @@ export default function ChatTable() {
                     </div>
                     <div className="ml-4 flex flex-col w-5/6">
                       <div className="flex items-center justify-between">
-                        <h2 className="font-bold text-lg">
+                        <h2 className="font-semibold text-lg">
                           {conversation.Staffer1Id === loggedStafferId
                             ? conversation.Staffer2FullName
                             : conversation.Staffer1FullName}
@@ -586,7 +586,7 @@ export default function ChatTable() {
                       )}
                     </div>
                     {conversation.notificationCount > 0 && (
-                      <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                      <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-semibold leading-none text-white bg-primary rounded-full self-center">
                         {conversation.notificationCount}
                       </span>
                     )}
@@ -631,7 +631,7 @@ export default function ChatTable() {
                       size="lg"
                     />
                     <div className="flex flex-col">
-                      <h2 className="ml-2 font-bold">
+                      <h2 className="ml-2 font-semibold">
                         {selectedConversation.Staffer1Id === loggedStafferId
                           ? selectedConversation.Staffer2FullName
                           : selectedConversation.Staffer1FullName}
@@ -731,7 +731,7 @@ export default function ChatTable() {
             ) : (
               <div className="flex flex-col h-screen justify-center items-center p-2">
                 <Groups2RoundedIcon sx={{ fontSize: 50 }} />
-                <h3 className="mt-2 text-base font-semibold text-gray-900">
+                <h3 className="mt-2 text-base font-medium text-gray-900">
                   Nessuna conversazione selezionata
                 </h3>
                 <p className="mt-1 text-base text-gray-500 text-center">
@@ -757,7 +757,7 @@ export default function ChatTable() {
       ) : (
         <div className="w-full flex flex-col h-screen justify-center items-center">
           <Groups2RoundedIcon sx={{ fontSize: 50 }} />
-          <h3 className="mt-2 text-base font-semibold text-gray-900">
+          <h3 className="mt-2 text-base font-medium text-gray-900">
             Nessuna conversazione trovata!
           </h3>
           <p className="mt-1 text-base text-gray-500">

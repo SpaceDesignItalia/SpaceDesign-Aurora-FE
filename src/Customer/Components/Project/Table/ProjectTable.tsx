@@ -107,7 +107,7 @@ export default function ProjectTable() {
       </div>
       {Object.keys(groupedProjects).map((companyName, index) => (
         <div key={index} className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">{companyName}</h2>
+          <h2 className="text-2xl font-semibold mb-4">{companyName}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {groupedProjects[companyName].map((project: Project) => (
               <TableCard key={project.ProjectId} project={project} />

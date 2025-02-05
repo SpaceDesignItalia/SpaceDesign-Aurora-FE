@@ -581,7 +581,10 @@ export default function ViewTaskModal({
     <PopoverContent className="w-[350px] p-5">
       {(titleProps) => (
         <div className="px-1 py-2 w-full flex flex-col gap-3">
-          <h2 className="text-small font-bold text-foreground" {...titleProps}>
+          <h2
+            className="text-small font-semibold text-foreground"
+            {...titleProps}
+          >
             Tag
           </h2>
           <div className="mt-2 flex flex-col gap-2 w-full">
@@ -612,7 +615,7 @@ export default function ViewTaskModal({
   const memberPopoverContent = (
     <PopoverContent className="w-[350px] p-5">
       <div className="px-1 py-2 w-full flex flex-col gap-3">
-        <h2 className="text-small font-bold text-foreground">Membri</h2>
+        <h2 className="text-small font-semibold text-foreground">Membri</h2>
         <div className="mt-2 flex flex-col gap-2 w-full">
           <Autocomplete
             defaultItems={members}
@@ -1232,7 +1235,7 @@ export default function ViewTaskModal({
                                                     }
                                                     className="w-10 h-10 rounded-full"
                                                   />
-                                                  <p className="font-semibold text-base">
+                                                  <p className="font-medium text-base">
                                                     {comment.StafferFullName}
                                                   </p>
                                                   -

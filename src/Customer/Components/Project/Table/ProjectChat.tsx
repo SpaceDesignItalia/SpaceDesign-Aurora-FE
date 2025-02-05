@@ -105,7 +105,7 @@ export default function ProjectChat() {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
-          <h1 className="font-bold">Team chat</h1>
+          <h1 className="font-semibold">Team chat</h1>
           <ScrollShadow
             className="w-full h-[500px]"
             ref={scrollRef}

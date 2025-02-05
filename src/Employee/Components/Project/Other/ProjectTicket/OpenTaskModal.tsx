@@ -144,7 +144,10 @@ export default function OpenTaskModal({
     <PopoverContent className="w-[350px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
-          <h2 className="text-small font-bold text-foreground" {...titleProps}>
+          <h2
+            className="text-small font-semibold text-foreground"
+            {...titleProps}
+          >
             Dipendente
           </h2>
           <div className="mt-2 flex flex-col gap-2 w-full">
@@ -185,7 +188,10 @@ export default function OpenTaskModal({
     <PopoverContent className="w-[350px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
-          <h2 className="text-small font-bold text-foreground" {...titleProps}>
+          <h2
+            className="text-small font-semibold text-foreground"
+            {...titleProps}
+          >
             Tag
           </h2>
           <div className="mt-2 flex flex-col gap-2 w-full">

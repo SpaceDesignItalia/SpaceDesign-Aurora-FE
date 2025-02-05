@@ -87,7 +87,7 @@ export default function TableCard({ project }: { project: Project }) {
         >
           <div className="flex items-center justify-between gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
             <div className="flex flex-col gap-2">
-              <div className="text-lg font-semibold leading-6 text-gray-900">
+              <div className="text-lg font-medium leading-6 text-gray-900">
                 {project.ProjectName}
               </div>
             </div>

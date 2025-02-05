@@ -325,7 +325,7 @@ export default function FilesCustomerContainer({
           {folders.length > 0 || files.length > 0 ? (
             <>
               <div>
-                <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
+                <h2 className="font-medium text-lg flex flex-row gap-2 items-center">
                   Cartelle
                 </h2>
 
@@ -400,7 +400,7 @@ export default function FilesCustomerContainer({
               <div className="flex flex-col flex-wrap gap-3 mt-5 items-start justify-start">
                 {files.length > 0 && (
                   <>
-                    <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
+                    <h2 className="font-medium text-lg flex flex-row gap-2 items-center">
                       File
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full">
@@ -421,7 +421,7 @@ export default function FilesCustomerContainer({
           ) : (
             <div className="text-center">
               <PermMediaIcon />
-              <h3 className="mt-2 text-sm font-semibold text-gray-900">
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
                 Nessun documento o cartella presente!
               </h3>
               <p className="mt-1 text-sm text-gray-500">

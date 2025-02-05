@@ -44,16 +44,12 @@ export default function ConfirmDeleteCodeShareModal({
   }, [onlineCodeShareUsers]);
 
   return (
-    <Popover
-      placement="top"
-      showArrow={true}
-      size="sm"
-      isOpen={isOpen}
-      onOpenChange={() => setIsOpen(false)}
-      offset={10}
-    >
-      <PopoverTrigger>
-        <Button
+    <>
+      {onlineCodeShareUsers.filter((user) => user.codeShareId === codeShareId)
+        .length == 0 && (
+        <Popover
+          placement="top"
+          showArrow={true}
           size="sm"
           color="danger"
           radius="full"
@@ -82,27 +78,54 @@ export default function ConfirmDeleteCodeShareModal({
           </div>
           <div className="flex flex-row gap-2">
             <Button
-              variant="light"
-              radius="sm"
               size="sm"
-              onPress={() => setIsOpen(false)}
-            >
-              Annulla
-            </Button>
-            <Button
               color="danger"
-              variant="ghost"
-              onPress={() => {
-                DeleteCodeShare(codeShareId);
+              radius="full"
+              startContent={<DeleteRoundedIcon sx={{ fontSize: 17 }} />}
+              aria-label="Remove"
+              aria-labelledby="Remove"
+              isIconOnly
+              disabled={checkDisabled()}
+              onClick={() => {
+                setIsOpen(true);
               }}
-              radius="sm"
-              size="sm"
-            >
-              Elimina
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+              className="mt-1 mr-1"
+            />
+          </PopoverTrigger>
+          <PopoverContent>
+            <div className="px-1 py-2">
+              <div className="flex flex-row gap-2 items-center text-small font-semibold mb-2">
+                <ErrorRoundedIcon
+                  className="text-warning"
+                  sx={{ fontSize: 20 }}
+                />
+                Sei sicuro?{" "}
+              </div>
+              <div className="flex flex-row gap-2">
+                <Button
+                  variant="light"
+                  radius="sm"
+                  size="sm"
+                  onPress={() => setIsOpen(false)}
+                >
+                  Annulla
+                </Button>
+                <Button
+                  color="danger"
+                  variant="ghost"
+                  onPress={() => {
+                    DeleteCodeShare(codeShareId);
+                  }}
+                  radius="sm"
+                  size="sm"
+                >
+                  Elimina
+                </Button>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
+    </>
   );
 }

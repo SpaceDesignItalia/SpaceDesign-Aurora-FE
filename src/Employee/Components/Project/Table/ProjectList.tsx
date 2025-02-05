@@ -242,7 +242,7 @@ export default function ProjectList() {
                     </h3>
                     <p className="mt-1 text-sm text-gray-500">
                       Nessun risultato corrisponde alla tua ricerca:{" "}
-                      <span className="font-semibold italic">{searchTerm}</span>
+                      <span className="font-medium italic">{searchTerm}</span>
                     </p>
                   </div>
                 )}
@@ -254,31 +254,31 @@ export default function ProjectList() {
                   <tr>
                     <th
                       scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
+                      className="py-3.5 pl-4 pr-3 text-left text-sm font-medium text-gray-900 sm:pl-3"
                     >
                       Nome Progetto
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-medium text-gray-900"
                     >
                       Project Manager
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-medium text-gray-900"
                     >
                       Durata
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-medium text-gray-900"
                     >
                       Stato
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-medium text-gray-900"
                     >
                       Azioni
                     </th>
@@ -291,7 +291,7 @@ export default function ProjectList() {
                         <th
                           scope="colgroup"
                           colSpan={5}
-                          className="bg-gray-100 py-2 pl-4 pr-3 text-left text-lg font-semibold sm:pl-3"
+                          className="bg-gray-100 py-2 pl-4 pr-3 text-left text-lg font-medium sm:pl-3"
                         >
                           {companyName != "null"
                             ? companyName

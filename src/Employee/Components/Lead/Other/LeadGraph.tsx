@@ -142,7 +142,7 @@ export default function LeadGraph() {
               <span className="text-xs text-muted-foreground">
                 {chartConfig.total.label} ({selectedYear})
               </span>
-              <span className="text-lg font-bold leading-none sm:text-3xl">
+              <span className="text-lg font-semibold leading-none sm:text-3xl">
                 {total.toLocaleString()}
               </span>
             </button>

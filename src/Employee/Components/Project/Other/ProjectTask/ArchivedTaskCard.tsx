@@ -216,7 +216,7 @@ export default function TaskCard({
       >
         <Card className="h-full p-2" radius="sm">
           <CardHeader className="justify-between items-start">
-            <h1 className="text-normal font-bold text-default-600 text-ellipsis overflow-hidden">
+            <h1 className="text-normal font-semibold text-default-600 text-ellipsis overflow-hidden">
               {task.ProjectTaskName}
             </h1>
 

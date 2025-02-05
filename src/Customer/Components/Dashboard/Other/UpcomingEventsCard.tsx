@@ -53,7 +53,7 @@ export default function UpcomingEventsCard() {
 
   return (
     <div className="border-2 h-full rounded-xl p-4 md:p-5 bg-white">
-      <h1 className="text-lg md:text-xl font-semibold mb-4 text-gray-800">
+      <h1 className="text-lg md:text-xl font-medium mb-4 text-gray-800">
         Eventi in programma
       </h1>
       <div className="space-y-4">

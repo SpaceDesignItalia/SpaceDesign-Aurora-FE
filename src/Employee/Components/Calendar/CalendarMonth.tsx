@@ -82,7 +82,7 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
           {DAYS.map((day) => (
             <div
               key={day}
-              className="bg-white py-2 text-center text-xs font-semibold text-gray-700 uppercase "
+              className="bg-white py-2 text-center text-xs font-medium text-gray-700 uppercase "
             >
               {day}
             </div>
@@ -144,7 +144,7 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                   dateTime={day.toISOString()}
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
                     day.toDateString() === today.toDateString()
-                      ? "bg-blue-600 font-semibold text-white"
+                      ? "bg-blue-600 font-medium text-white"
                       : "text-gray-900"
                   }`}
                 >

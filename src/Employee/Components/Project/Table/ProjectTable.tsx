@@ -382,7 +382,7 @@ export default function ProjectTable() {
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Nessun risultato corrisponde alla tua ricerca:{" "}
-                  <span className="font-semibold italic">{searchTerm}</span>
+                  <span className="font-medium italic">{searchTerm}</span>
                 </p>
               </div>
             )

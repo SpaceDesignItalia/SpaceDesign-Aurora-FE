@@ -392,7 +392,7 @@ export default function TeamContainer({
 
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
           <div className="flex flex-row justify-between items-center">
-            <h1 className="font-bold">Membri del progetto</h1>
+            <h1 className="font-semibold">Membri del progetto</h1>
             <div className="flex flex-row gap-2">
               <Button
                 onClick={startJitsiCall}

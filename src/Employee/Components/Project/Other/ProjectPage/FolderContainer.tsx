@@ -319,7 +319,7 @@ export default function FolderContainer({
             <>
               <div>
                 {folders.length > 0 && (
-                  <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
+                  <h2 className="font-medium text-lg flex flex-row gap-2 items-center">
                     Cartelle
                   </h2>
                 )}
@@ -395,7 +395,7 @@ export default function FolderContainer({
               <div className="flex flex-col flex-wrap gap-3 mt-5 items-start justify-start">
                 {files.length > 0 && (
                   <>
-                    <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
+                    <h2 className="font-medium text-lg flex flex-row gap-2 items-center">
                       File
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full">

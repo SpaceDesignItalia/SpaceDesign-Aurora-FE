@@ -85,7 +85,7 @@ export default function ProjectCustomerPage() {
                 <Chip color="primary" radius="sm">
                   {projectData.StatusName}
                 </Chip>
-                <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+                <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900">
                   {projectData.ProjectName}
                 </h1>
               </div>

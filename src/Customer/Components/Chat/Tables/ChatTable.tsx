@@ -302,7 +302,9 @@ export default function ChatTable() {
                 >
                   <Avatar src="https://miro.medium.com/v2/resize:fit:1224/1*XKpA4-JcY06QcMOiPB1zaQ.jpeg" />
                   <div className="flex flex-col justify-start col-span-3">
-                    <h2 className="font-bold">{employee.EmployeeFullName}</h2>
+                    <h2 className="font-semibold">
+                      {employee.EmployeeFullName}
+                    </h2>
                   </div>
                 </div>
               ))
@@ -318,7 +320,7 @@ export default function ChatTable() {
                 >
                   <Avatar src="https://miro.medium.com/v2/resize:fit:1224/1*XKpA4-JcY06QcMOiPB1zaQ.jpeg" />
                   <div className="flex flex-col justify-start col-span-3">
-                    <h2 className="font-bold">
+                    <h2 className="font-semibold">
                       {conversation.Staffer1Id === loggedStafferId
                         ? conversation.Staffer2FullName
                         : conversation.Staffer1FullName}

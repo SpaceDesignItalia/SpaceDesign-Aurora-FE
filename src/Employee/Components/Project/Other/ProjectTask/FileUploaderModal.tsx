@@ -100,7 +100,7 @@ export default function FileUploaderModal({
     >
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">
-          <h3 className="text-xl font-semibold">
+          <h3 className="text-xl font-medium">
             Aggiungi un nuovo file alla Task
           </h3>
         </ModalHeader>
@@ -116,7 +116,7 @@ export default function FileUploaderModal({
           />
 
           <div
-            className="rounded-xl bg-white text-gray-500 font-semibold text-base w-full h-52 flex flex-col items-center justify-center cursor-pointer border-2 border-gray-300 border-dashed mx-auto font-[sans-serif]"
+            className="rounded-xl bg-white text-gray-500 font-medium text-base w-full h-52 flex flex-col items-center justify-center cursor-pointer border-2 border-gray-300 border-dashed mx-auto font-[sans-serif]"
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             ref={dropRef}
@@ -129,7 +129,7 @@ export default function FileUploaderModal({
           </div>
           {files.length > 0 && (
             <section className="mt-4 text-left">
-              <h4 className="font-semibold">File selezionati</h4>
+              <h4 className="font-medium">File selezionati</h4>
               <ul className="flex flex-col list-disc mt-3 gap-2">
                 {files.map((file, index) => (
                   <FileCard

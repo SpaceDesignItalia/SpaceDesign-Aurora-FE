@@ -234,13 +234,13 @@ const EditRoleModel: React.FC = () => {
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
         <div className="space-y-6 bg-white px-4 py-6">
           <div>
-            <h3 className="text-base font-semibold leading-6 text-gray-900">
+            <h3 className="text-base font-medium leading-6 text-gray-900">
               Modifica ruolo
             </h3>
             <p className="mt-1 text-sm text-gray-500 w-1/3">
               In questo pannello potrai modificare il ruolo esistente nel
               database. I campi contrassegnati con un asterisco (
-              <span className="text-danger font-bold">*</span>) sono
+              <span className="text-danger font-semibold">*</span>) sono
               obbligatori. Assicurati di aggiornare tutte le informazioni
               necessarie prima di procedere.
             </p>
