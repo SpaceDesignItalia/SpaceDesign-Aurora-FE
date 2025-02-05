@@ -1118,7 +1118,9 @@ export default function ViewTaskModal({
                       </dd>
                     </div>
                     {((newTask!.ProjectTaskDescription &&
-                      hasValidDescription(newTask!.ProjectTaskDescription)) ||
+                      hasValidDescription(
+                        newTask!.ProjectTaskDescription || ""
+                      )) ||
                       editing) && (
                       <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                         <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
@@ -1143,7 +1145,7 @@ export default function ViewTaskModal({
                                 }
                               />
                               {hasValidDescription(
-                                newTask!.ProjectTaskDescription
+                                newTask!.ProjectTaskDescription || ""
                               ) ? (
                                 <div className="flex justify-center items-center">
                                   <Button
@@ -1168,7 +1170,10 @@ export default function ViewTaskModal({
                                     ) : (
                                       <>
                                         {" "}
-                                        <AutoFixHighRoundedIcon className="w-5 h-5" />{" "}
+                                        <Icon
+                                          icon="solar:magic-stick-3-linear"
+                                          fontSize={24}
+                                        />{" "}
                                         Riscrivi con AI{" "}
                                       </>
                                     )}
