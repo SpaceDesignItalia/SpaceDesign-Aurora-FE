@@ -1,14 +1,16 @@
-import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
-import MarkEmailReadOutlinedIcon from "@mui/icons-material/MarkEmailReadOutlined";
-import MarkEmailUnreadOutlinedIcon from "@mui/icons-material/MarkEmailUnreadOutlined";
-import axios from "axios";
+"use client";
+
+import { Card } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
+import axios from "axios";
 
 export default function LeadStats() {
   const [statistics, setStats] = useState({
     readLeads: 0,
     pendingLeads: 0,
   });
+
   useEffect(() => {
     fetchStats();
   }, []);
@@ -30,51 +32,47 @@ export default function LeadStats() {
         console.error(err);
       });
   }
+
   const stats = [
     {
-      id: 1,
-      name: "Contatti totali",
-      stat: statistics.readLeads + statistics.pendingLeads,
-      icon: MailOutlineRoundedIcon,
+      title: "Contatti totali",
+      value: statistics.readLeads + statistics.pendingLeads,
+      icon: "material-symbols:mail-outline-rounded",
     },
     {
-      id: 2,
-      name: "Contatti in attesa",
-      stat: statistics.pendingLeads,
-      icon: MarkEmailUnreadOutlinedIcon,
+      title: "Contatti in attesa",
+      value: statistics.pendingLeads,
+      icon: "material-symbols:mark-email-unread-outline-rounded",
     },
     {
-      id: 3,
-      name: "Contatti letti",
-      stat: statistics.readLeads,
-      icon: MarkEmailReadOutlinedIcon,
+      title: "Contatti letti",
+      value: statistics.readLeads,
+      icon: "material-symbols:mark-email-read-outline-rounded",
     },
   ];
 
   return (
-    <div>
-      <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {stats.map((item) => (
-          <div
-            key={item.id}
-            className="relative overflow-hidden rounded-lg bg-white px-4 pt-5 sm:px-6 sm:pt-6 border border-gray"
-          >
-            <dt>
-              <div className="absolute rounded-md bg-primary p-3">
-                <item.icon aria-hidden="true" className="h-6 w-6 text-white" />
+    <dl className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+      {stats.map((item, index) => (
+        <Card
+          key={index}
+          className="mt-5 border-2 dark:border-default-100 shadow-none"
+        >
+          <section className="flex flex-nowrap justify-between p-4">
+            <div className="flex flex-col justify-between gap-y-2">
+              <div className="flex flex-col gap-y-4">
+                <dt className="text-sm font-medium text-gray-500 flex items-center gap-2">
+                  <Icon icon={item.icon} className="w-5 h-5" />
+                  {item.title}
+                </dt>
+                <dd className="text-3xl font-semibold text-gray-900">
+                  {item.value || "Dati non disponibili"}
+                </dd>
               </div>
-              <p className="ml-16 truncate text-sm font-medium text-gray-500">
-                {item.name}
-              </p>
-            </dt>
-            <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p className="text-lg md:text-2xl font-semibold text-gray-900">
-                {item.stat != 0 ? item.stat : "Dati non disponibili"}
-              </p>
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </div>
+            </div>
+          </section>
+        </Card>
+      ))}
+    </dl>
   );
 }

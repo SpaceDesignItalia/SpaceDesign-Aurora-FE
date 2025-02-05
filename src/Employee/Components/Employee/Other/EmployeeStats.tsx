@@ -1,26 +1,44 @@
-import EngineeringRoundedIcon from "@mui/icons-material/EngineeringRounded";
-import PersonAddRoundedIcon from "@mui/icons-material/PersonAddRounded";
+"use client";
+
+import { Card } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
 export default function EmployeeStats() {
-  const [stats, setStats] = useState([{ stat: 0 }, { stat: 0 }]);
+  const [stats, setStats] = useState([{ stat: 0 }, { stat: 0 }, { stat: 0 }]);
 
   async function fetchStats() {
     try {
-      const res = await axios.get("/Staffer/GET/GetAllStaffers");
-      setStats((prev) => [{ stat: res.data.length }, prev[1]]);
-    } catch (error) {
-      console.error("Errore nel recupero dei dipendenti totali:", error);
-      setStats((prev) => [{ stat: 0 }, prev[1]]);
-    }
+      const [totalRes, newRes] = await Promise.all([
+        axios.get("/Staffer/GET/GetAllStaffers"),
+        axios.get("/Staffer/GET/GetNewStaffers"),
+      ]);
 
-    try {
-      const res1 = await axios.get("/Staffer/GET/GetNewStaffers");
-      setStats((prev) => [prev[0], { stat: res1.data.length }]);
+      // Calcola la media dei progetti per dipendente
+      const employeeProjects = await Promise.all(
+        totalRes.data.map((emp: any) =>
+          axios.get("/Staffer/GET/GetStafferProjectsForModal", {
+            params: { EmployeeId: emp.EmployeeId },
+          })
+        )
+      );
+
+      const totalProjects = employeeProjects.reduce(
+        (sum, res) => sum + res.data.length,
+        0
+      );
+      const averageProjects =
+        Math.round((totalProjects / totalRes.data.length) * 100) / 100;
+
+      setStats([
+        { stat: totalRes.data.length },
+        { stat: newRes.data.length },
+        { stat: averageProjects },
+      ]);
     } catch (error) {
-      console.error("Errore nel recupero dei nuovi dipendenti:", error);
-      setStats((prev) => [prev[0], { stat: 0 }]);
+      console.error("Errore nel recupero delle statistiche:", error);
+      setStats([{ stat: 0 }, { stat: 0 }, { stat: 0 }]);
     }
   }
 
@@ -30,43 +48,44 @@ export default function EmployeeStats() {
 
   const statistics = [
     {
-      id: 1,
-      name: "Dipendenti Totali",
-      stat: stats[0]?.stat,
-      icon: EngineeringRoundedIcon,
+      title: "Dipendenti Totali",
+      value: stats[0]?.stat,
+      icon: "material-symbols:engineering-rounded",
     },
     {
-      id: 2,
-      name: "Nuovi dipendenti (Ultimo mese)",
-      stat: stats[1]?.stat,
-      icon: PersonAddRoundedIcon,
+      title: "Nuovi dipendenti (Ultimo mese)",
+      value: stats[1]?.stat,
+      icon: "material-symbols:person-add-rounded",
+    },
+    {
+      title: "Media Progetti per Dipendente",
+      value: stats[2]?.stat,
+      icon: "material-symbols:work-outline-rounded",
     },
   ];
 
   return (
-    <div>
-      <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {statistics.map((item) => (
-          <div
-            key={item.id}
-            className="relative overflow-hidden rounded-lg bg-white px-4 pt-5 sm:px-6 sm:pt-6 border border-gray"
-          >
-            <dt>
-              <div className="absolute rounded-md bg-primary p-3">
-                <item.icon aria-hidden="true" className="h-6 w-6 text-white" />
+    <dl className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+      {statistics.map((item, index) => (
+        <Card
+          key={index}
+          className="mt-5 border-2 dark:border-default-100 shadow-none"
+        >
+          <section className="flex flex-nowrap justify-between p-4">
+            <div className="flex flex-col justify-between gap-y-2">
+              <div className="flex flex-col gap-y-4">
+                <dt className="text-sm font-medium text-gray-500 flex items-center gap-2">
+                  <Icon icon={item.icon} className="w-5 h-5" />
+                  {item.title}
+                </dt>
+                <dd className="text-3xl font-semibold text-gray-900">
+                  {item.value !== 0 ? item.value : "Dati non disponibili"}
+                </dd>
               </div>
-              <p className="ml-16 truncate text-sm font-medium text-gray-500">
-                {item.name}
-              </p>
-            </dt>
-            <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p className="text-lg md:text-2xl font-semibold text-gray-900">
-                {item.stat !== 0 ? item.stat : "Dati non disponibili"}
-              </p>
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </div>
+            </div>
+          </section>
+        </Card>
+      ))}
+    </dl>
   );
 }

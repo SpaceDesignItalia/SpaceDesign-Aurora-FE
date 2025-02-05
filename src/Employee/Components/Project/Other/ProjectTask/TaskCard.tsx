@@ -231,141 +231,102 @@ export default function TaskCard({
         ref={provided.innerRef}
         {...provided.draggableProps}
         {...provided.dragHandleProps}
+        className="w-full cursor-pointer"
       >
-        <Card className="h-full p-2" radius="sm">
-          <CardHeader className="justify-between items-start">
-            <h1 className="text-normal font-bold text-default-600 text-ellipsis overflow-hidden">
-              {task.ProjectTaskName}
-            </h1>
-
-            <div className="flex flex-row">
-              {/*  {Number(task.ProjectTaskStatusId) > 1 && (
-                <Button
-                  variant="light"
-                  isIconOnly
-                  size="sm"
-                  onClick={() =>
-                    updateTaskStatus(
-                      task.ProjectTaskId,
-                      Number(task.ProjectTaskStatusId) - 1
-                    )
-                  }
-                >
-                  <ArrowBackIosNewRoundedIcon />
-                </Button>
+        <Card
+          className="w-full hover:shadow-lg transition-shadow duration-200"
+          radius="sm"
+        >
+          <CardHeader className="flex justify-between items-start gap-3 px-4 pt-4 pb-2">
+            <div className="flex flex-col gap-2 flex-grow">
+              <h1 className="text-lg font-semibold text-default-700 line-clamp-2">
+                {task.ProjectTaskName}
+              </h1>
+              {task.ProjectTaskTags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {task.ProjectTaskTags.map((tag) => (
+                    <Chip
+                      key={tag.ProjectTaskTagId}
+                      size="sm"
+                      variant="flat"
+                      className="text-xs px-2 py-1 bg-default-100"
+                    >
+                      {tag.ProjectTaskTagName}
+                    </Chip>
+                  ))}
+                </div>
               )}
-
-              {task.ProjectTaskStatusId < columnCount && (
-                <Button
-                  variant="light"
-                  isIconOnly
-                  size="sm"
-                  onClick={() =>
-                    updateTaskStatus(
-                      task.ProjectTaskId,
-                      Number(task.ProjectTaskStatusId) + 1
-                    )
-                  }
-                >
-                  <ArrowForwardIosRoundedIcon />
-                </Button>
-              )} */}
             </div>
           </CardHeader>
-          <CardBody className="flex flex-row gap-3 px-3 py-0 text-small">
-            {hasValidDescription(task.ProjectTaskDescription) && (
-              <Tooltip
-                content="Questa task ha una descrizione"
-                showArrow
-                placement="bottom"
-              >
-                <NotesRoundedIcon />
-              </Tooltip>
-            )}
-            {task.ProjectTaskTags.length > 0 && (
-              <Tooltip
-                content="Tags assegnati alla task"
-                showArrow
-                placement="bottom"
-              >
-                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <LocalOfferRoundedIcon />
-                  {task.ProjectTaskTags.length}
-                </div>
-              </Tooltip>
-            )}
-            {fileCount > 0 && (
-              <Tooltip
-                content="File assegnati alla task"
-                showArrow
-                placement="bottom"
-              >
-                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <AttachFileRoundedIcon />
-                  {fileCount}
-                </div>
-              </Tooltip>
-            )}
-            {checkboxCount > 0 && (
-              <Tooltip
-                content="Checklist assegnata alla task"
-                showArrow
-                placement="bottom"
-              >
-                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <CheckCircleOutlineRoundedIcon />
-                  {checkboxCount}
-                </div>
-              </Tooltip>
-            )}
-            {commentsCount > 0 && (
-              <Tooltip
-                content="Commenti riguardo la task"
-                showArrow
-                placement="bottom"
-              >
-                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <ChatRoundedIcon />
-                  {commentsCount}
-                </div>
-              </Tooltip>
-            )}
+
+          <CardBody className="px-4 py-3">
+            <div className="flex flex-wrap gap-3 text-default-500">
+              {hasValidDescription(task.ProjectTaskDescription) && (
+                <Tooltip content="Descrizione presente" showArrow>
+                  <div className="flex items-center gap-1.5 text-sm bg-default-100 px-2.5 py-1 rounded-lg">
+                    <NotesRoundedIcon className="w-4 h-4" />
+                    <span>Descrizione</span>
+                  </div>
+                </Tooltip>
+              )}
+              {fileCount > 0 && (
+                <Tooltip content={`${fileCount} file allegati`} showArrow>
+                  <div className="flex items-center gap-1.5 text-sm bg-default-100 px-2.5 py-1 rounded-lg">
+                    <AttachFileRoundedIcon className="w-4 h-4" />
+                    <span>{fileCount} file</span>
+                  </div>
+                </Tooltip>
+              )}
+              {checkboxCount > 0 && (
+                <Tooltip content={`${checkboxCount} checklist items`} showArrow>
+                  <div className="flex items-center gap-1.5 text-sm bg-default-100 px-2.5 py-1 rounded-lg">
+                    <CheckCircleOutlineRoundedIcon className="w-4 h-4" />
+                    <span>{checkboxCount} task</span>
+                  </div>
+                </Tooltip>
+              )}
+              {commentsCount > 0 && (
+                <Tooltip content={`${commentsCount} commenti`} showArrow>
+                  <div className="flex items-center gap-1.5 text-sm bg-default-100 px-2.5 py-1 rounded-lg">
+                    <ChatRoundedIcon className="w-4 h-4" />
+                    <span>{commentsCount} commenti</span>
+                  </div>
+                </Tooltip>
+              )}
+            </div>
           </CardBody>
-          <CardFooter className="gap-3 flex flex-col items-end">
-            {task.ProjectTaskMembers.length !== 0 && (
-              <AvatarGroup
-                isBordered
-                isGrid
-                className={
-                  task.ProjectTaskMembers.length > 3
-                    ? `grid-cols-4`
-                    : `grid-cols-${task.ProjectTaskMembers.length}`
-                }
-                max={3}
-              >
-                {task.ProjectTaskMembers.map((member) => (
-                  <Tooltip
-                    key={member.StafferId}
-                    content={member.StafferFullName}
-                  >
-                    <Avatar
-                      size="sm"
-                      src={
-                        member.StafferImageUrl &&
-                        `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
-                      }
-                      alt={member.StafferFullName}
-                    />
-                  </Tooltip>
-                ))}
-              </AvatarGroup>
-            )}
-            <div className="flex flex-row items-center justify-between gap-3 w-full">
-              <Tooltip content="Scadenza task" showArrow placement="bottom">
-                <span className="flex flex-row gap-2 justify-center items-center font-semibold text-sm">
-                  <CalendarMonthRoundedIcon sx={{ fontSize: 20 }} />
-                  {formatDate(task.ProjectTaskExpiration)}
-                </span>
+
+          <CardFooter className="flex flex-col gap-3 px-4 pb-4 pt-2 border-t border-default-200">
+            <div className="flex justify-between items-center w-full">
+              {task.ProjectTaskMembers.length > 0 && (
+                <AvatarGroup
+                  isBordered
+                  max={3}
+                  size="sm"
+                  className="justify-start ml-3"
+                >
+                  {task.ProjectTaskMembers.map((member) => (
+                    <Tooltip
+                      key={member.StafferId}
+                      content={member.StafferFullName}
+                      showArrow
+                    >
+                      <Avatar
+                        src={
+                          member.StafferImageUrl &&
+                          `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
+                        }
+                        alt={member.StafferFullName}
+                      />
+                    </Tooltip>
+                  ))}
+                </AvatarGroup>
+              )}
+              <Tooltip content="Data di scadenza" showArrow>
+                <div className="flex items-center gap-1.5 text-sm text-default-500 bg-default-100 px-2.5 py-1 rounded-lg">
+                  <CalendarMonthRoundedIcon className="w-4 h-4" />
+                  <span>{formatDate(task.ProjectTaskExpiration)}</span>
+                </div>
               </Tooltip>
             </div>
           </CardFooter>
