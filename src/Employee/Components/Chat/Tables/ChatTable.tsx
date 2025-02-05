@@ -9,12 +9,10 @@ import {
   cn,
   useDisclosure,
 } from "@heroui/react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import RecentActorsRoundedIcon from "@mui/icons-material/RecentActorsRounded";
 import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
@@ -24,6 +22,7 @@ import AddConversationModal from "../Other/AddConversationModal";
 import { API_URL_IMG, API_WEBSOCKET_URL } from "../../../../API/API";
 import dayjs from "dayjs";
 import "dayjs/locale/it";
+import { Icon } from "@iconify/react";
 
 dayjs.locale("it");
 

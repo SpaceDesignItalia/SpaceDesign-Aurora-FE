@@ -341,8 +341,8 @@ export default function LeadTable() {
         <TableBody
           emptyContent={
             searchTerm == "" ? (
-              <div className="text-center p-10">
-                <EmailRoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col justify-center items-center p-10">
+                <Icon icon="solar:mailbox-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">
                   Nessun lead trovato!
                 </h3>
@@ -359,8 +359,8 @@ export default function LeadTable() {
                 </p>
               </div>
             ) : (
-              <div className="text-center p-10">
-                <EmailRoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col justify-center items-center p-10">
+                <Icon icon="solar:mailbox-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">
                   Nessun lead trovato!
                 </h3>
