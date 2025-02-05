@@ -6,7 +6,7 @@ interface AlertData {
   onClose: () => void;
   alertTitle: string;
   alertDescription: string;
-  alertColor: "green" | "red" | "yellow";
+  alertColor: "green" | "red" | "yellow" | "success" | "danger" | "warning";
 }
 
 export default function StatusAlert(props: { AlertData: AlertData }) {
@@ -32,7 +32,7 @@ export default function StatusAlert(props: { AlertData: AlertData }) {
       const timer = setTimeout(() => {
         setShow(false);
         AlertData.onClose();
-      }, 5000); // 3 secondi
+      }, 5000); // 5 secondi
 
       return () => clearTimeout(timer);
     }
