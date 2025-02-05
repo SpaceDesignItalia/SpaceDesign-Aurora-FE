@@ -457,7 +457,7 @@ export default function EmployeeTable() {
                     color="primary"
                     radius="full"
                     startContent={
-                      <Icon icon="solar:add-circle-linear" fontSize={24} />
+                      <Icon icon="mynaui:plus-solid" fontSize={24} />
                     }
                     href="./employee/add-employee"
                   >

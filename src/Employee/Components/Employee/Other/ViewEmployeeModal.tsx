@@ -155,7 +155,10 @@ export default function ViewEmployeeModal({
                         navigate("/administration/employee");
                       }}
                       startContent={
-                        <Icon icon="solar:close-circle-linear" fontSize={24} />
+                        <Icon
+                          icon="material-symbols:close-rounded"
+                          fontSize={24}
+                        />
                       }
                     />
                   </div>

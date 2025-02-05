@@ -328,7 +328,10 @@ export default function AddEventModal({
                     size="sm"
                     isIconOnly
                     startContent={
-                      <Icon icon="solar:close-circle-linear" fontSize={18} />
+                      <Icon
+                        icon="material-symbols:close-rounded"
+                        fontSize={18}
+                      />
                     }
                   />
                 </div>

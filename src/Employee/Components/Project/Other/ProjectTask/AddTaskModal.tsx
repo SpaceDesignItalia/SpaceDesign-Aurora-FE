@@ -416,7 +416,7 @@ export default function AddTaskModal({
                     isIconOnly
                     startContent={
                       <Icon
-                        icon="solar:close-circle-linear"
+                        icon="material-symbols:close-rounded"
                         fontSize={22}
                         className="text-gray-700"
                       />
@@ -445,7 +445,7 @@ export default function AddTaskModal({
                                   isIconOnly
                                 >
                                   <Icon
-                                    icon="solar:add-circle-linear"
+                                    icon="mynaui:plus-solid"
                                     fontSize={22}
                                   />
                                 </Button>
@@ -477,7 +477,7 @@ export default function AddTaskModal({
                                   isIconOnly
                                 >
                                   <Icon
-                                    icon="solar:add-circle-linear"
+                                    icon="mynaui:plus-solid"
                                     fontSize={22}
                                   />
                                 </Button>
@@ -509,7 +509,7 @@ export default function AddTaskModal({
                                   isIconOnly
                                 >
                                   <Icon
-                                    icon="solar:add-circle-linear"
+                                    icon="mynaui:plus-solid"
                                     fontSize={22}
                                   />
                                 </Button>
@@ -549,7 +549,7 @@ export default function AddTaskModal({
                                   isIconOnly
                                 >
                                   <Icon
-                                    icon="solar:add-circle-linear"
+                                    icon="mynaui:plus-solid"
                                     fontSize={22}
                                   />
                                 </Button>

@@ -777,7 +777,7 @@ END:VCALENDAR`;
                           isIconOnly
                           startContent={
                             <Icon
-                              icon="solar:close-circle-linear"
+                              icon="material-symbols:close-rounded"
                               fontSize={18}
                             />
                           }

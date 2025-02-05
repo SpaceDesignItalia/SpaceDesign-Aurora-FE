@@ -259,7 +259,7 @@ export default function SidebarLayout() {
                     >
                       <span className="sr-only">Close sidebar</span>
                       <Icon
-                        icon="solar:close-circle-linear"
+                        icon="material-symbols:close-rounded"
                         className="h-6 w-6 text-white"
                         aria-hidden="true"
                       />

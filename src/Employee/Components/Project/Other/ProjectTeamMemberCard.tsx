@@ -111,7 +111,7 @@ export default function ProjectTeamMemberCard({
               size="sm"
               onClick={handleMemberRemove}
               startContent={
-                <Icon icon="solar:close-circle-linear" fontSize={15} />
+                <Icon icon="material-symbols:close-rounded" fontSize={15} />
               }
               isIconOnly
             />

@@ -853,7 +853,7 @@ export default function ViewTaskModal({
                         isIconOnly
                         startContent={
                           <Icon
-                            icon="solar:close-circle-linear"
+                            icon="material-symbols:close-rounded"
                             fontSize={22}
                           />
                         }
@@ -884,7 +884,7 @@ export default function ViewTaskModal({
                                     isIconOnly
                                   >
                                     <Icon
-                                      icon="solar:add-circle-linear"
+                                      icon="mynaui:plus-solid"
                                       fontSize={22}
                                     />
                                   </Button>
@@ -916,7 +916,7 @@ export default function ViewTaskModal({
                                     isIconOnly
                                   >
                                     <Icon
-                                      icon="solar:add-circle-linear"
+                                      icon="mynaui:plus-solid"
                                       fontSize={22}
                                     />
                                   </Button>
@@ -965,7 +965,7 @@ export default function ViewTaskModal({
                                     isIconOnly
                                   >
                                     <Icon
-                                      icon="solar:add-circle-linear"
+                                      icon="mynaui:plus-solid"
                                       fontSize={22}
                                     />
                                   </Button>
@@ -1005,7 +1005,7 @@ export default function ViewTaskModal({
                                     isIconOnly
                                   >
                                     <Icon
-                                      icon="solar:add-circle-linear"
+                                      icon="mynaui:plus-solid"
                                       fontSize={22}
                                     />
                                   </Button>
@@ -1270,7 +1270,7 @@ export default function ViewTaskModal({
                                     variant="ghost"
                                     startContent={
                                       <Icon
-                                        icon="solar:add-circle-linear"
+                                        icon="mynaui:plus-solid"
                                         fontSize={22}
                                       />
                                     }
@@ -1310,7 +1310,7 @@ export default function ViewTaskModal({
                                           onClick={handleAddChecklist}
                                           startContent={
                                             <Icon
-                                              icon="solar:add-circle-linear"
+                                              icon="mynaui:plus-solid"
                                               fontSize={22}
                                             />
                                           }
@@ -1495,7 +1495,7 @@ export default function ViewTaskModal({
                                                 radius="full"
                                                 startContent={
                                                   <Icon
-                                                    icon="solar:add-circle-linear"
+                                                    icon="mynaui:plus-solid"
                                                     fontSize={22}
                                                   />
                                                 }
@@ -1550,7 +1550,7 @@ export default function ViewTaskModal({
                                                       }
                                                       startContent={
                                                         <Icon
-                                                          icon="solar:add-circle-linear"
+                                                          icon="mynaui:plus-solid"
                                                           fontSize={22}
                                                         />
                                                       }

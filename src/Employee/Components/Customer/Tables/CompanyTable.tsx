@@ -425,7 +425,7 @@ export default function CompanyTable() {
                     color="primary"
                     radius="full"
                     startContent={
-                      <Icon icon="solar:add-circle-linear" fontSize={24} />
+                      <Icon icon="mynaui:plus-solid" fontSize={24} />
                     }
                   >
                     Aggiungi azienda

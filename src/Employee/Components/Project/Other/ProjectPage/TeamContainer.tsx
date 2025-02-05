@@ -435,7 +435,7 @@ export default function TeamContainer({
                       }
                       isIconOnly
                     >
-                      <Icon icon="solar:add-circle-linear" fontSize={22} />
+                      <Icon icon="mynaui:plus-solid" fontSize={22} />
                     </Button>
                   )}
                   <Button

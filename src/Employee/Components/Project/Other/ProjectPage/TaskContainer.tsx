@@ -342,9 +342,7 @@ export default function TaskContainer({
               color="primary"
               radius="full"
               onClick={() => setModalAddData({ ...modalAddData, open: true })}
-              startContent={
-                <Icon icon="solar:add-circle-linear" fontSize={22} />
-              }
+              startContent={<Icon icon="mynaui:plus-solid" fontSize={22} />}
               className="hidden sm:flex"
             >
               Aggiungi Task
@@ -354,9 +352,7 @@ export default function TaskContainer({
               color="primary"
               radius="full"
               onClick={() => setModalAddData({ ...modalAddData, open: true })}
-              startContent={
-                <Icon icon="solar:add-circle-linear" fontSize={22} />
-              }
+              startContent={<Icon icon="mynaui:plus-solid" fontSize={22} />}
               isIconOnly
               className="sm:hidden"
             />
