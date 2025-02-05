@@ -10,10 +10,10 @@ import {
   cn,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import axios from "axios";
 import { API_URL_IMG } from "../../../../API/API";
 import { useNavigate } from "react-router-dom";
+import { Icon } from "@iconify/react";
 
 interface Customer {
   CustomerId: number;
@@ -120,7 +120,9 @@ export default function ViewCustomerModal({
                         isClosed();
                         navigate("/administration/customer");
                       }}
-                      startContent={<CloseRoundedIcon className="h-1 w-1" />}
+                      startContent={
+                        <Icon icon="solar:close-circle-linear" fontSize={24} />
+                      }
                     />
                   </div>
                 </CardHeader>

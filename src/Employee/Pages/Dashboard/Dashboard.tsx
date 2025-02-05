@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import UpcomingCalendarEvents from "../../Components/Dashboard/UpcomingCalendarEvents";
-import AttendanceWeekView from "../../Components/Dashboard/AttendanceWeekView";
-import AttendanceStats from "../../Components/Dashboard/AttendanceStats";
+import UpcomingCalendarEvents from "../../Components/Dashboard/Other/UpcomingCalendarEvents";
+import AttendanceWeekView from "../../Components/Dashboard/Other/AttendanceWeekView";
+import AttendanceStats from "../../Components/Dashboard/Other/AttendanceStats";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";

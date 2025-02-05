@@ -1,6 +1,6 @@
 import EmployeeTable from "../../Components/Employee/Tables/EmployeeTable";
 import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import { Icon } from "@iconify/react";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
 import EmployeeStats from "../../Components/Employee/Other/EmployeeStats";
@@ -27,7 +27,7 @@ export default function EmployeeDashboard() {
           </h1>
           <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/administration/employee">
               Dipendenti

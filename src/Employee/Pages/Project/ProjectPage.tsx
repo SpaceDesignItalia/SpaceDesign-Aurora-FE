@@ -1,24 +1,17 @@
-import { Tabs, Tab, Button, Tooltip, Link, Chip } from "@heroui/react";
-import { API_URL_IMG } from "../../../API/API";
-import FindInPageRoundedIcon from "@mui/icons-material/FindInPageRounded";
-import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
-import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
-import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
-import ConfirmationNumberRoundedIcon from "@mui/icons-material/ConfirmationNumberRounded";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
-import CodeIcon from "@mui/icons-material/Code";
-import { useEffect, useState, useCallback } from "react";
+import { Button, Chip, Link, Tab, Tabs, Tooltip } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import ChangeProjectTheme from "../../Components/Project/Other/ChangeProjectTheme";
-import OverviewContainer from "../../Components/Project/Other/ProjectPage/OverviewContainer";
-import TeamContainer from "../../Components/Project/Other/ProjectPage/TeamContainer";
-import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContainer";
+import { API_URL_IMG } from "../../../API/API";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
-import TicketContainer from "../../Components/Project/Other/ProjectPage/TicketContainer";
-import FolderContainer from "../../Components/Project/Other/ProjectPage/FolderContainer";
+import ChangeProjectTheme from "../../Components/Project/Other/ChangeProjectTheme";
 import CodeShareContainer from "../../Components/Project/Other/ProjectPage/CodeShareContainer";
+import FolderContainer from "../../Components/Project/Other/ProjectPage/FolderContainer";
+import OverviewContainer from "../../Components/Project/Other/ProjectPage/OverviewContainer";
+import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContainer";
+import TeamContainer from "../../Components/Project/Other/ProjectPage/TeamContainer";
+import TicketContainer from "../../Components/Project/Other/ProjectPage/TicketContainer";
 
 interface Project {
   ProjectId: number;
@@ -106,12 +99,32 @@ export default function ProjectPage() {
   const ESC_RESET_TIMEOUT = 2000; // Reset del contatore dopo 2 secondi
 
   const tabs = [
-    { title: "Panoramica", icon: FindInPageRoundedIcon },
-    { title: "Tasks", icon: AssignmentTurnedInRoundedIcon },
-    { title: "Team", icon: GroupsRoundedIcon },
-    { title: "Files", icon: FolderCopyRoundedIcon },
-    { title: "Code Share", icon: CodeIcon },
-    { title: "Ticket", icon: ConfirmationNumberRoundedIcon },
+    {
+      title: "Panoramica",
+      icon: (
+        <Icon icon="material-symbols:dashboard-outline-rounded" fontSize={24} />
+      ),
+    },
+    {
+      title: "Tasks",
+      icon: <Icon icon="solar:clipboard-check-linear" fontSize={24} />,
+    },
+    {
+      title: "Team",
+      icon: <Icon icon="solar:users-group-rounded-linear" fontSize={24} />,
+    },
+    {
+      title: "Files",
+      icon: <Icon icon="solar:folder-with-files-linear" fontSize={24} />,
+    },
+    {
+      title: "Code Share",
+      icon: <Icon icon="solar:code-linear" fontSize={24} />,
+    },
+    {
+      title: "Ticket",
+      icon: <Icon icon="solar:ticket-linear" fontSize={24} />,
+    },
   ];
 
   // Add keyboard navigation handler
@@ -248,7 +261,7 @@ export default function ProjectPage() {
                   href={"/projects/" + UniqueCode}
                   isIconOnly
                 >
-                  <TuneRoundedIcon />
+                  <Icon icon="solar:pen-linear" fontSize={22} />
                 </Button>
               </Tooltip>
             )}
@@ -271,7 +284,7 @@ export default function ProjectPage() {
                   color="primary"
                   radius="sm"
                   size="sm"
-                  startContent={<ModeOutlinedIcon />}
+                  startContent={<Icon icon="solar:pen-linear" fontSize={22} />}
                   isIconOnly
                   onClick={() => setModalData({ ...modalData, open: true })}
                 />
@@ -310,7 +323,7 @@ export default function ProjectPage() {
                             placement="bottom"
                           >
                             <div className="flex items-center space-x-2">
-                              <tab.icon />
+                              {tab.icon}
                               <span>{tab.title}</span>
                             </div>
                           </Tooltip>
@@ -341,7 +354,7 @@ export default function ProjectPage() {
                               placement="top"
                             >
                               <div className="flex items-center space-x-2">
-                                <tab.icon />
+                                {tab.icon}
                               </div>
                             </Tooltip>
                           }
@@ -371,7 +384,7 @@ export default function ProjectPage() {
                       className="hidden sm:flex"
                       isIconOnly
                     >
-                      <TuneRoundedIcon />
+                      <Icon icon="solar:pen-linear" fontSize={22} />
                     </Button>
                   </Tooltip>
                 )}

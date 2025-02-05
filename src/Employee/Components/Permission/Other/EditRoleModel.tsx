@@ -11,9 +11,9 @@ import {
   SelectItem,
   Spinner,
 } from "@heroui/react";
-import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
 import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
+import { Icon } from "@iconify/react";
 
 interface Role {
   RoleName: string;
@@ -296,8 +296,8 @@ const EditRoleModel: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <AutoFixHighRoundedIcon className="w-5 h-5" /> Genera
-                      descrizione per: {roleData.RoleName}
+                      <Icon icon="solar:magic-stick-3-linear" fontSize={24} />{" "}
+                      Genera descrizione per: {roleData.RoleName}
                     </>
                   )}
                 </Button>
@@ -318,8 +318,8 @@ const EditRoleModel: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <AutoFixHighRoundedIcon className="w-5 h-5" /> Riscrivi
-                      con AI
+                      <Icon icon="solar:magic-stick-3-linear" fontSize={24} />{" "}
+                      Riscrivi con AI
                     </>
                   )}
                 </Button>
@@ -439,7 +439,9 @@ const EditRoleModel: React.FC = () => {
             color="primary"
             className="text-white"
             radius="full"
-            startContent={!isAddingData && <SaveIcon />}
+            startContent={
+              !isAddingData && <Icon icon="basil:save-outline" fontSize={24} />
+            }
             isDisabled={checkAllDataCompiled()}
             isLoading={isAddingData}
             onClick={handleUpdateRole}

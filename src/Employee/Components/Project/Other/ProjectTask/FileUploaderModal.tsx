@@ -1,4 +1,3 @@
-import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import {
   Button,
   Modal,
@@ -12,6 +11,7 @@ import React, { useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import FileCard from "../ProjectFiles/FileCard";
+import { Icon } from "@iconify/react";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -122,7 +122,7 @@ export default function FileUploaderModal({
             ref={dropRef}
             onClick={() => fileInputRef.current?.click()} // Add this line
           >
-            <CloudUploadRoundedIcon />
+            <Icon icon="solar:cloud-upload-linear" fontSize={24} />
             <p className="text-xs font-medium text-gray-400 mt-2">
               Clicca o trascina i file per caricarli
             </p>

@@ -20,13 +20,7 @@ import {
   User,
   cn,
 } from "@heroui/react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import { API_URL_IMG } from "../../../../API/API";
 import ConfirmDeleteProjectModal from "../Other/ConfirmDeleteProjectModal";
@@ -230,7 +224,7 @@ export default function ProjectTable() {
                 variant="light"
                 size="sm"
                 color="primary"
-                startContent={<RemoveRedEyeOutlinedIcon />}
+                startContent={<Icon icon="solar:eye-linear" fontSize={24} />}
                 aria-label="View"
                 aria-labelledby="View"
                 isIconOnly
@@ -266,7 +260,13 @@ export default function ProjectTable() {
             <Input
               radius="full"
               variant="bordered"
-              startContent={<SearchOutlinedIcon className="text-gray-400" />}
+              startContent={
+                <Icon
+                  icon="solar:magnifer-linear"
+                  fontSize={24}
+                  color="gray-400"
+                />
+              }
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 if (e.target.value.trim() === "") {
@@ -280,7 +280,7 @@ export default function ProjectTable() {
             <Button
               color="primary"
               radius="full"
-              endContent={<SearchOutlinedIcon />}
+              endContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
               isDisabled={searchTerm == ""}
               onClick={SearchProject}
               className="hidden sm:flex"
@@ -295,7 +295,7 @@ export default function ProjectTable() {
               className="sm:hidden"
               isIconOnly
             >
-              <SearchOutlinedIcon />
+              <Icon icon="solar:magnifer-linear" fontSize={22} />
             </Button>
           </div>
         </div>
@@ -352,8 +352,8 @@ export default function ProjectTable() {
         <TableBody
           emptyContent={
             searchTerm == "" ? (
-              <div className="text-center p-10">
-                <CreateNewFolderRoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col items-center justify-center p-10">
+                <Icon icon="solar:add-folder-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun progetto trovato
                 </h3>
@@ -366,15 +366,17 @@ export default function ProjectTable() {
                     href="/projects/add-project"
                     color="primary"
                     radius="full"
-                    startContent={<CreateNewFolderRoundedIcon />}
+                    startContent={
+                      <Icon icon="solar:add-folder-linear" fontSize={24} />
+                    }
                   >
                     Crea progetto
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="text-center p-10">
-                <CreateNewFolderRoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col items-center justify-center p-10">
+                <Icon icon="solar:add-folder-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun progetto trovato!
                 </h3>

@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { Avatar, Button, Input } from "@heroui/react";
-import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 import axios from "axios";
 import { API_URL_IMG } from "../../../../API/API";
 import StatusAlert from "../../Layout/StatusAlert";
-
+import { Icon } from "@iconify/react";
 interface Staffer {
   StafferId: number;
   StafferName: string;
@@ -337,7 +336,9 @@ export default function SettingsModel() {
             <Button
               color="primary"
               radius="sm"
-              startContent={!isSaving && <SaveRoundedIcon />}
+              startContent={
+                !isSaving && <Icon icon="basil:save-outline" fontSize={22} />
+              }
               isDisabled={isDataUnchanged}
               isLoading={isSaving}
               onClick={handleSave}
@@ -420,7 +421,11 @@ export default function SettingsModel() {
             <Button
               color="primary"
               radius="full"
-              startContent={!isSavingNewPassword && <SaveRoundedIcon />}
+              startContent={
+                !isSavingNewPassword && (
+                  <Icon icon="basil:save-outline" fontSize={22} />
+                )
+              }
               isDisabled={isPasswordFieldsNotEmpty()}
               isLoading={isSavingNewPassword}
               onClick={handleSavePassword}

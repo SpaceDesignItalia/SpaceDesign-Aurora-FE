@@ -1,9 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import LibraryAddRoundedIcon from "@mui/icons-material/LibraryAddRounded";
-import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import { Icon } from "@iconify/react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { Button, Chip, DateValue, cn, Tabs, Tab } from "@heroui/react";
 import AddTaskModal from "../ProjectTask/AddTaskModal";
@@ -248,8 +246,14 @@ export default function TaskContainer({
   const [activeTab, setActiveTab] = useState("Attive");
 
   const tabs = [
-    { title: "Attive", icon: CheckRoundedIcon },
-    { title: "Archiviate", icon: Inventory2RoundedIcon },
+    {
+      title: "Attive",
+      icon: <Icon icon="solar:check-read-linear" fontSize={22} />,
+    },
+    {
+      title: "Archiviate",
+      icon: <Icon icon="solar:archive-linear" fontSize={22} />,
+    },
   ];
 
   const [archivedTasks, setArchivedTasks] = useState<Task[]>([]);
@@ -325,7 +329,7 @@ export default function TaskContainer({
               key={tab.title}
               title={
                 <div className="flex items-center space-x-2">
-                  <tab.icon />
+                  {tab.icon}
                   <span>{tab.title}</span>
                 </div>
               }
@@ -338,7 +342,9 @@ export default function TaskContainer({
               color="primary"
               radius="full"
               onClick={() => setModalAddData({ ...modalAddData, open: true })}
-              startContent={<LibraryAddRoundedIcon />}
+              startContent={
+                <Icon icon="solar:add-circle-linear" fontSize={22} />
+              }
               className="hidden sm:flex"
             >
               Aggiungi Task
@@ -348,7 +354,9 @@ export default function TaskContainer({
               color="primary"
               radius="full"
               onClick={() => setModalAddData({ ...modalAddData, open: true })}
-              startContent={<LibraryAddRoundedIcon />}
+              startContent={
+                <Icon icon="solar:add-circle-linear" fontSize={22} />
+              }
               isIconOnly
               className="sm:hidden"
             />

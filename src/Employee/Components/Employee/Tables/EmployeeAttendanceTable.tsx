@@ -1,6 +1,5 @@
 import { format, addMonths, subMonths, startOfMonth } from "date-fns";
 import { it } from "date-fns/locale";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { Icon } from "@iconify/react";
 import {
   Avatar,
@@ -227,7 +226,7 @@ export default function EmployeeAttendanceTable({
             onClick={() => onDateChange(subMonths(selectedDate, 1))}
             className="p-2 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-1 text-gray-600"
           >
-            <ChevronLeftIcon className="w-5 h-5" />
+            <Icon icon="solar:alt-arrow-left-linear" fontSize={24} />
             <span className="text-sm">
               {format(subMonths(selectedDate, 1), "MMMM", { locale: it })}
             </span>
@@ -242,7 +241,7 @@ export default function EmployeeAttendanceTable({
             <span className="text-sm">
               {format(addMonths(selectedDate, 1), "MMMM", { locale: it })}
             </span>
-            <ChevronRightIcon className="w-5 h-5" />
+            <Icon icon="solar:alt-arrow-right-linear" fontSize={24} />
           </button>
         </div>
       </div>

@@ -1,18 +1,13 @@
-import { Button, Progress, cn, User, Tooltip, Link, Card } from "@heroui/react";
-import TimerRoundedIcon from "@mui/icons-material/TimerRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import ModeEditRoundedIcon from "@mui/icons-material/ModeEditRounded";
-import ChecklistRoundedIcon from "@mui/icons-material/ChecklistRounded";
-import Groups2RoundedIcon from "@mui/icons-material/Groups2Rounded";
+import { Button, Card, cn, Link, Progress, Tooltip, User } from "@heroui/react";
+import { Icon } from "@iconify/react";
+import axios from "axios";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import AddProjectLink from "../AddProjectLink";
-import axios from "axios";
 import { API_URL_IMG } from "../../../../../API/API";
-import DeleteLinkModal from "../DeleteLinkModal";
 import { usePermissions } from "../../../Layout/PermissionProvider";
 import StatusAlert from "../../../Layout/StatusAlert";
-import { Icon } from "@iconify/react";
+import AddProjectLink from "../AddProjectLink";
+import DeleteLinkModal from "../DeleteLinkModal";
 
 interface Project {
   ProjectId: number;
@@ -352,7 +347,7 @@ export default function OverviewContainer({
                       }
                       isIconOnly
                     >
-                      <ModeEditRoundedIcon />
+                      <Icon icon="solar:pen-linear" fontSize={22} />
                     </Button>
                   )}
                 </div>
@@ -401,7 +396,7 @@ export default function OverviewContainer({
                         }
                         isIconOnly
                       >
-                        <AddRoundedIcon />
+                        <Icon icon="mynaui:plus-solid" fontSize={22} />
                       </Button>
                     </Tooltip>
                   )}

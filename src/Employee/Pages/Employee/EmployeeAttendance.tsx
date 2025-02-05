@@ -1,7 +1,7 @@
 import { useState } from "react";
 import EmployeeAttendanceTable from "../../Components/Employee/Tables/EmployeeAttendanceTable";
 import { Breadcrumbs, BreadcrumbItem, Spinner } from "@heroui/react";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import { Icon } from "@iconify/react";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
 import EmployeeAttendanceStats from "../../Components/Employee/Other/EmployeeAttendanceStats";
@@ -94,7 +94,7 @@ export default function EmployeeAttendance() {
           </h1>
           <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/administration/employee">
               Dipendenti

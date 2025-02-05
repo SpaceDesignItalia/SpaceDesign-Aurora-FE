@@ -1,7 +1,3 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { API_URL_IMG } from "../../../../../API/API";
-import ConfirmRemoveFilePopover from "../ConfirmRemoveFilePopover";
 import {
   Button,
   Dropdown,
@@ -9,10 +5,11 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import BorderColorRoundedIcon from "@mui/icons-material/BorderColorRounded";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
+import { Icon } from "@iconify/react";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { API_URL_IMG } from "../../../../../API/API";
+import ConfirmRemoveFilePopover from "../ConfirmRemoveFilePopover";
 
 interface FileCardProps {
   file: any;
@@ -157,8 +154,10 @@ export default function FileCard({
                   variant="light"
                   radius="full"
                   isIconOnly
-                  startContent={<MoreVertRoundedIcon />}
-                  className="cursor-pointer"
+                  startContent={
+                    <Icon icon="solar:menu-dots-bold" fontSize={22} />
+                  }
+                  className="cursor-pointer rotate-90"
                 />
               </DropdownTrigger>
               <DropdownMenu
@@ -167,14 +166,18 @@ export default function FileCard({
               >
                 <DropdownItem
                   key="download"
-                  startContent={<FileDownloadRoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:file-download-linear" fontSize={22} />
+                  }
                   onClick={downloadFile} // Scarica il file
                 >
                   Scarica file
                 </DropdownItem>
                 <DropdownItem
                   key="edit"
-                  startContent={<BorderColorRoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:pen-2-linear" fontSize={22} />
+                  }
                   onClick={() => setIsEditing(true)} // Entra in modalità di modifica
                 >
                   Rinomina file
@@ -183,7 +186,9 @@ export default function FileCard({
                   key="delete"
                   className="text-danger"
                   color="danger"
-                  startContent={<DeleteRoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:trash-bin-trash-linear" fontSize={24} />
+                  }
                   onClick={() => DeleteFile(file)}
                 >
                   Rimuovi file

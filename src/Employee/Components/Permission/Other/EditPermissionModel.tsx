@@ -7,9 +7,9 @@ import {
   Autocomplete,
   AutocompleteItem,
 } from "@heroui/react";
-import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
+import { Icon } from "@iconify/react";
 
 interface PermissionGroup {
   GroupName: string;
@@ -259,7 +259,11 @@ export default function EditPermissionModel() {
             color="primary"
             className="text-white"
             radius="full"
-            startContent={!isUpdatingData && <SaveIcon />}
+            startContent={
+              !isUpdatingData && (
+                <Icon icon="basil:save-outline" fontSize={24} />
+              )
+            }
             isDisabled={checkAllDataCompiled() || !hasChanges()}
             isLoading={isUpdatingData}
             onClick={handleUpdatePermission}

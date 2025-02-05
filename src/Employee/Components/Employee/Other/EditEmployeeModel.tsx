@@ -1,9 +1,9 @@
-import SaveIcon from "@mui/icons-material/Save";
 import { Autocomplete, AutocompleteItem, Button, Input } from "@heroui/react";
 import axios from "axios";
 import { useEffect, useState, ChangeEvent } from "react";
 import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
+import { Icon } from "@iconify/react";
 
 interface Employee {
   EmployeeId: number;
@@ -286,7 +286,7 @@ export default function EditEmployeeModel() {
               color="primary"
               className="text-white"
               radius="full"
-              startContent={<SaveIcon />}
+              startContent={<Icon icon="basil:save-outline" fontSize={24} />}
               isDisabled={checkAllDataCompiled()}
               isLoading={isAddingData}
               onClick={handleEditEmployee}

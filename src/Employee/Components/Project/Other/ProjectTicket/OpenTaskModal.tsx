@@ -5,7 +5,6 @@ import {
   Button,
   Chip,
   DatePicker,
-  DateValue,
   Input,
   Modal,
   ModalBody,
@@ -25,16 +24,7 @@ import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 import axios from "axios";
 import { I18nProvider } from "@react-aria/i18n";
-import {
-  CreditCardRounded as CreditCardRoundedIcon,
-  NotesRounded as NotesRoundedIcon,
-  LocalOfferRounded as LocalOfferRoundedIcon,
-  Groups2Rounded as Groups2RoundedIcon,
-  CalendarMonthRounded as CalendarMonthRoundedIcon,
-  AddRounded as AddRoundedIcon,
-  CloseRounded as CloseRoundedIcon,
-  SaveRounded as SaveRoundedIcon,
-} from "@mui/icons-material";
+import { Icon } from "@iconify/react";
 import StatusAlert from "../../../Layout/StatusAlert";
 
 interface Tag {
@@ -383,7 +373,10 @@ export default function OpenTaskModal({
             <>
               <ModalHeader className="flex flex-row justify-between items-center gap-2">
                 <div className="flex flex-row justify-between items-center gap-2 w-full">
-                  <CreditCardRoundedIcon />
+                  <Icon
+                    icon="solar:checklist-minimalistic-linear"
+                    fontSize={22}
+                  />
                   <Input
                     className="w-full"
                     variant="underlined"
@@ -411,8 +404,9 @@ export default function OpenTaskModal({
                     size="sm"
                     isIconOnly
                     startContent={
-                      <CloseRoundedIcon
-                        sx={{ fontSize: 17 }}
+                      <Icon
+                        icon="solar:close-circle-linear"
+                        fontSize={22}
                         className="text-gray-700"
                       />
                     }
@@ -424,7 +418,7 @@ export default function OpenTaskModal({
                   <dl>
                     <div className="px-4 flex flex-col sm:gap-4 sm:px-0">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <LocalOfferRoundedIcon />
+                        <Icon icon="solar:tag-linear" fontSize={22} />
                         Tag associati
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
@@ -439,7 +433,10 @@ export default function OpenTaskModal({
                                   radius="full"
                                   isIconOnly
                                 >
-                                  <AddRoundedIcon />
+                                  <Icon
+                                    icon="solar:add-circle-linear"
+                                    fontSize={22}
+                                  />
                                 </Button>
                               </PopoverTrigger>
                               {tagPopoverContent}
@@ -468,7 +465,10 @@ export default function OpenTaskModal({
                                   radius="full"
                                   isIconOnly
                                 >
-                                  <AddRoundedIcon />
+                                  <Icon
+                                    icon="solar:add-circle-linear"
+                                    fontSize={22}
+                                  />
                                 </Button>
                               </PopoverTrigger>
                               {tagPopoverContent}
@@ -479,7 +479,10 @@ export default function OpenTaskModal({
                     </div>
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <Groups2RoundedIcon />
+                        <Icon
+                          icon="solar:users-group-rounded-linear"
+                          fontSize={22}
+                        />
                         Membri
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
@@ -494,7 +497,10 @@ export default function OpenTaskModal({
                                   radius="full"
                                   isIconOnly
                                 >
-                                  <AddRoundedIcon />
+                                  <Icon
+                                    icon="solar:add-circle-linear"
+                                    fontSize={22}
+                                  />
                                 </Button>
                               </PopoverTrigger>
                               {memberPopoverContent}
@@ -531,7 +537,10 @@ export default function OpenTaskModal({
                                   radius="full"
                                   isIconOnly
                                 >
-                                  <AddRoundedIcon />
+                                  <Icon
+                                    icon="solar:add-circle-linear"
+                                    fontSize={22}
+                                  />
                                 </Button>
                               </PopoverTrigger>
                               {memberPopoverContent}
@@ -543,7 +552,7 @@ export default function OpenTaskModal({
 
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <CalendarMonthRoundedIcon />
+                        <Icon icon="solar:calendar-linear" fontSize={22} />
                         Durata task
                       </dt>
                       <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
@@ -604,7 +613,10 @@ export default function OpenTaskModal({
 
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <NotesRoundedIcon />
+                        <Icon
+                          icon="fluent:text-description-16-filled"
+                          fontSize={22}
+                        />
                         Descrizione
                       </dt>
                       <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -645,7 +657,11 @@ export default function OpenTaskModal({
                   color="primary"
                   onClick={handleAddTask}
                   radius="full"
-                  startContent={!isAddingData && <SaveRoundedIcon />}
+                  startContent={
+                    !isAddingData && (
+                      <Icon icon="basil:save-outline" fontSize={22} />
+                    )
+                  }
                   isLoading={isAddingData}
                   isDisabled={!isValidTask && !isAddingData}
                   variant={dateError ? "flat" : "solid"}

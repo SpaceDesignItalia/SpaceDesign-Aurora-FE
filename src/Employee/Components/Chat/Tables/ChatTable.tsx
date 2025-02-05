@@ -412,7 +412,9 @@ export default function ChatTable() {
               <Input
                 radius="full"
                 variant="bordered"
-                startContent={<SearchOutlinedIcon />}
+                startContent={
+                  <Icon icon="solar:magnifer-linear" fontSize={22} />
+                }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cerca conversazione"
@@ -513,7 +515,9 @@ export default function ChatTable() {
               <Input
                 radius="full"
                 variant="bordered"
-                startContent={<SearchOutlinedIcon />}
+                startContent={
+                  <Icon icon="solar:magnifer-linear" fontSize={22} />
+                }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cerca conversazione"
@@ -662,7 +666,7 @@ export default function ChatTable() {
                       handleDeleteConversation(selectedConversation);
                     }}
                   >
-                    <DeleteOutlinedIcon />
+                    <Icon icon="solar:trash-bin-trash-linear" fontSize={24} />
                   </Button>
                 </div>
 

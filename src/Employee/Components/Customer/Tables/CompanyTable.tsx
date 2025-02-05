@@ -1,8 +1,3 @@
-import AddBusinessRoundedIcon from "@mui/icons-material/AddBusinessRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import {
   Button,
   Input,
@@ -16,13 +11,14 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { usePermissions } from "../../Layout/PermissionProvider";
+import StatusAlert from "../../Layout/StatusAlert";
 import ConfirmDeleteCompanyModal from "../Other/ConfirmDeleteCompanyModal";
 import ViewCompanyModal from "../Other/ViewCompanyModal";
-import StatusAlert from "../../Layout/StatusAlert";
 
 interface Company {
   CompanyId: number;
@@ -230,7 +226,7 @@ export default function CompanyTable() {
                 variant="light"
                 size="sm"
                 color="primary"
-                startContent={<RemoveRedEyeOutlinedIcon />}
+                startContent={<Icon icon="solar:eye-linear" fontSize={24} />}
                 aria-label="View"
                 aria-labelledby="View"
                 isIconOnly
@@ -274,7 +270,13 @@ export default function CompanyTable() {
             <Input
               radius="full"
               variant="bordered"
-              startContent={<SearchOutlinedIcon className="text-gray-400" />}
+              startContent={
+                <Icon
+                  icon="solar:magnifer-linear"
+                  fontSize={24}
+                  color="gray-400"
+                />
+              }
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 if (e.target.value.trim() === "") {
@@ -288,7 +290,7 @@ export default function CompanyTable() {
             <Button
               color="primary"
               radius="full"
-              endContent={<SearchOutlinedIcon />}
+              endContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
               isDisabled={searchTerm == ""}
               onClick={SearchCompany}
               className="hidden sm:flex"
@@ -303,7 +305,7 @@ export default function CompanyTable() {
               className="sm:hidden"
               isIconOnly
             >
-              <SearchOutlinedIcon />
+              <Icon icon="solar:magnifer-linear" fontSize={22} />
             </Button>
           </div>
           <div className="flex gap-3">
@@ -314,7 +316,9 @@ export default function CompanyTable() {
                   href="./customer/add-company"
                   color="primary"
                   radius="full"
-                  startContent={<AddBusinessRoundedIcon />}
+                  startContent={
+                    <Icon icon="hugeicons:store-add-01" fontSize={24} />
+                  }
                   className="hidden sm:flex"
                 >
                   Aggiungi azienda
@@ -327,7 +331,7 @@ export default function CompanyTable() {
                   isIconOnly
                   className="sm:hidden"
                 >
-                  <AddBusinessRoundedIcon />
+                  <Icon icon="hugeicons:store-add-01" fontSize={24} />
                 </Button>
               </>
             )}
@@ -346,7 +350,9 @@ export default function CompanyTable() {
               color="primary"
               variant="ghost"
               radius="full"
-              startContent={<FileDownloadOutlinedIcon />}
+              startContent={
+                <Icon icon="solar:file-download-linear" fontSize={24} />
+              }
               onClick={exportCSV}
             >
               Esporta Tabella
@@ -406,8 +412,8 @@ export default function CompanyTable() {
         <TableBody
           emptyContent={
             searchTerm == "" ? (
-              <div className="text-center p-10">
-                <AddBusinessRoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col items-center justify-center p-10">
+                <Icon icon="solar:store-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun azienda trovata!
                 </h3>
@@ -418,15 +424,17 @@ export default function CompanyTable() {
                   <Button
                     color="primary"
                     radius="full"
-                    startContent={<AddRoundedIcon />}
+                    startContent={
+                      <Icon icon="solar:add-circle-linear" fontSize={24} />
+                    }
                   >
                     Aggiungi azienda
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="text-center p-10">
-                <AddBusinessRoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col items-center justify-center p-10">
+                <Icon icon="solar:store-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun azienda trovata!
                 </h3>

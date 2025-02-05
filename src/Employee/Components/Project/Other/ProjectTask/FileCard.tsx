@@ -1,9 +1,9 @@
 import axios from "axios";
 import ConfirmDeleteFileModal from "./ConfirmDeleteFileModal";
-import GetAppRoundedIcon from "@mui/icons-material/GetAppRounded";
 import { Button } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { API_URL_IMG } from "../../../../../API/API";
+import { Icon } from "@iconify/react";
 interface File {
   TaskFileId: number;
   FileName: string;
@@ -75,7 +75,7 @@ export default function FileCard({ file, DeleteFile }: FileCardProps) {
           variant="light"
           radius="full"
           size="sm"
-          startContent={<GetAppRoundedIcon />}
+          startContent={<Icon icon="solar:download-linear" fontSize={22} />}
           onClick={() => downloadFile(file.FilePath, file.FileName)}
           fullWidth
           isIconOnly

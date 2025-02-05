@@ -1,5 +1,3 @@
-"use client";
-
 import { Card } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import axios from "axios";

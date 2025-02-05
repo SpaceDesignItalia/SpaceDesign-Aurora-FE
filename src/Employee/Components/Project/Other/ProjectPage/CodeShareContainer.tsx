@@ -14,13 +14,13 @@ import {
   Avatar,
 } from "@heroui/react";
 
-import { AddRounded } from "@mui/icons-material";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import CodeShareEditor from "../ProjectCodeShare/CodeShareEditor";
 import { io, Socket } from "socket.io-client";
 import { API_URL_IMG, API_WEBSOCKET_URL } from "../../../../../API/API";
 import ConfirmDeleteCodeShareModal from "../ProjectCodeShare/ConfirmDeleteCodeShareModal";
+import { Icon } from "@iconify/react";
 
 const socket: Socket = io(API_WEBSOCKET_URL);
 
@@ -176,7 +176,7 @@ export default function CodeShareContainer({
                 className="mb-3"
                 isIconOnly
               >
-                <AddRounded sx={{ fontSize: 20 }} />
+                <Icon icon="mynaui:plus-solid" fontSize={20} />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="p-5 w-80">
@@ -207,7 +207,9 @@ export default function CodeShareContainer({
                       size="sm"
                       radius="full"
                       onPress={handleAddCodeShare}
-                      startContent={<AddRounded />}
+                      startContent={
+                        <Icon icon="mynaui:plus-solid" fontSize={20} />
+                      }
                       isDisabled={newCodeShareName === ""}
                     >
                       Aggiungi code share

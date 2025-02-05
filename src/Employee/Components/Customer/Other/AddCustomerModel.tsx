@@ -7,7 +7,7 @@ import {
   Button,
   Checkbox,
 } from "@heroui/react";
-import SaveIcon from "@mui/icons-material/Save";
+import { Icon } from "@iconify/react";
 import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
 
@@ -329,7 +329,7 @@ export default function EditCustomerModel() {
               color="primary"
               className="text-white"
               radius="full"
-              startContent={<SaveIcon />}
+              startContent={<Icon icon="basil:save-outline" fontSize={24} />}
               isDisabled={checkAllDataCompiled()}
               isLoading={isSaving}
               onClick={handleAddCustomer}

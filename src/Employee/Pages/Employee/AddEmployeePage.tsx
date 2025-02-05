@@ -1,8 +1,9 @@
 import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import AddEmployeeModel from "../../Components/Employee/Other/AddEmployeeModel";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
+import { Icon } from "@iconify/react";
+
 export default function AddEmployeePage() {
   const { hasPermission } = usePermissions();
 
@@ -25,7 +26,7 @@ export default function AddEmployeePage() {
           </h1>
           <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/administration/employee">
               Dipendenti

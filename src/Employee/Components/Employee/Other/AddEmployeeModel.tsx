@@ -1,13 +1,8 @@
 import { useEffect, useState, ChangeEvent } from "react";
 import axios from "axios";
-import {
-  Input,
-  Autocomplete,
-  AutocompleteItem,
-  Button,
-} from "@heroui/react";
-import SaveIcon from "@mui/icons-material/Save";
+import { Input, Autocomplete, AutocompleteItem, Button } from "@heroui/react";
 import StatusAlert from "../../Layout/StatusAlert";
+import { Icon } from "@iconify/react";
 
 interface Employee {
   EmployeeName: string;
@@ -291,7 +286,7 @@ export default function AddEmployeeModel() {
               color="primary"
               className="text-white"
               radius="full"
-              startContent={<SaveIcon />}
+              startContent={<Icon icon="basil:save-outline" fontSize={24} />}
               isDisabled={checkAllDataCompiled()}
               isLoading={isAddingData}
               onClick={handleCreateNewEmployee}

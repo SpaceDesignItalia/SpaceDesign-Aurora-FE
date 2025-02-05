@@ -1,8 +1,8 @@
 import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
 import EditProjectModel from "../../Components/Project/Other/EditProjectModel";
+import { Icon } from "@iconify/react";
 
 export default function EditProjectPage() {
   const { hasPermission } = usePermissions();
@@ -26,7 +26,7 @@ export default function EditProjectPage() {
           </h1>
           <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/projects">Progetti</BreadcrumbItem>
             <BreadcrumbItem>Modifica progetto</BreadcrumbItem>

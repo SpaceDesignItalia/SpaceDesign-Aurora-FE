@@ -2,10 +2,9 @@ import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import CompanyTable from "../../Components/Customer/Tables/CompanyTable";
 import CustomersTable from "../../Components/Customer/Tables/CustomersTable";
 import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { useState, useEffect } from "react";
 import CustomerStats from "../../Components/Customer/Other/CustomerStats";
-
+import { Icon } from "@iconify/react";
 export default function CustomerDashboard() {
   const { hasPermission } = usePermissions();
   const [permissions, setPermissions] = useState({
@@ -38,7 +37,7 @@ export default function CustomerDashboard() {
           </h1>
           <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/administration/customer">
               Clienti

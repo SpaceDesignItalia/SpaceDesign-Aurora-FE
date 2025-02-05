@@ -11,7 +11,7 @@ import { format, addDays } from "date-fns";
 import { it } from "date-fns/locale";
 import axios from "axios";
 import { io } from "socket.io-client";
-import { API_WEBSOCKET_URL } from "../../../API/API";
+import { API_WEBSOCKET_URL } from "../../../../API/API";
 
 const socket = io(API_WEBSOCKET_URL);
 

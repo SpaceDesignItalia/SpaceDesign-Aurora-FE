@@ -15,14 +15,13 @@ import {
   Spinner,
 } from "@heroui/react";
 import { I18nProvider } from "@react-aria/i18n";
-import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
 import { API_URL_IMG } from "../../../../API/API";
 import { getLocalTimeZone } from "@internationalized/date";
 import dayjs from "dayjs";
 import { useDateFormatter } from "@react-aria/i18n";
 import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
-
+import { Icon } from "@iconify/react";
 interface Project {
   ProjectName: string;
   ProjectDescription: string;
@@ -386,8 +385,11 @@ export default function AddProjectModel() {
                   ) : (
                     <>
                       {" "}
-                      <AutoFixHighRoundedIcon className="w-5 h-5" /> Riscrivi
-                      con AI{" "}
+                      <Icon
+                        icon="solar:magic-stick-3-linear"
+                        fontSize={24}
+                      />{" "}
+                      Riscrivi con AI{" "}
                     </>
                   )}
                 </Button>
@@ -477,7 +479,9 @@ export default function AddProjectModel() {
           <Button
             color="primary"
             radius="full"
-            startContent={!isAddingData && <SaveIcon />}
+            startContent={
+              !isAddingData && <Icon icon="basil:save-outline" fontSize={24} />
+            }
             isDisabled={checkAllDataCompiled()}
             isLoading={isAddingData}
             onPress={handleCreateNewCompany}

@@ -483,7 +483,10 @@ END:VCALENDAR`;
 
                         <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                           <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                            <Icon icon="solar:notes-linear" fontSize={18} />
+                            <Icon
+                              icon="fluent:text-description-16-filled"
+                              fontSize={18}
+                            />
                             Descrizione
                           </dt>
                           <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -858,7 +861,10 @@ END:VCALENDAR`;
 
                           <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                             <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                              <Icon icon="solar:notes-linear" fontSize={18} />
+                              <Icon
+                                icon="fluent:text-description-16-filled"
+                                fontSize={18}
+                              />
                               Descrizione
                             </dt>
                             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">

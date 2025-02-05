@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Input, Button } from "@heroui/react";
-import SaveIcon from "@mui/icons-material/Save";
 import StatusAlert from "../../Layout/StatusAlert";
+import { Icon } from "@iconify/react";
 
 // Interfacce per i dati dell'azienda e per i dati dell'alert
 interface Company {
@@ -220,7 +220,9 @@ const AddCompanyModel: React.FC = () => {
             color="primary"
             className="text-white"
             radius="full"
-            startContent={!isAddingData && <SaveIcon />}
+            startContent={
+              !isAddingData && <Icon icon="basil:save-outline" fontSize={24} />
+            }
             isDisabled={checkAllDataCompiled()} // Disabilita se i campi obbligatori sono vuoti
             isLoading={isAddingData}
             onClick={handleCreateNewCompany}

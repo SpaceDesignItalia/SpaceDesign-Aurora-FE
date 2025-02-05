@@ -75,7 +75,7 @@ export default function ProjectTable() {
           <Input
             radius="sm"
             variant="bordered"
-            startContent={<SearchOutlinedIcon />}
+            startContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
             isClearable
             onClear={clearSearchInput}
             className="md:w-1/4"
@@ -84,7 +84,7 @@ export default function ProjectTable() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <Button
-            startContent={<SearchOutlinedIcon />}
+            startContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
             isDisabled={searchQuery == ""}
             color="primary"
             radius="sm"
@@ -101,7 +101,7 @@ export default function ProjectTable() {
             isDisabled={searchQuery == ""}
             className="flex sm:hidden"
           >
-            <SearchOutlinedIcon />
+            <Icon icon="solar:magnifer-linear" fontSize={22} />
           </Button>
         </div>
       </div>

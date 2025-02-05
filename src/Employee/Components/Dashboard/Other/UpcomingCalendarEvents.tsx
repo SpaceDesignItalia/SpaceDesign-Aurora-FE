@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Card, CardBody, CardHeader, Divider } from "@heroui/react";
+import { Card, CardBody, CardHeader } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import dayjs from "dayjs";
 import axios from "axios";
-import ViewEventModal from "../../Components/Calendar/ViewEventModal";
+import ViewEventModal from "../../../Components/Calendar/ViewEventModal";
 
 interface CalendarEvent {
   EventId: number;
