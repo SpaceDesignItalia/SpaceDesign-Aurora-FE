@@ -240,11 +240,13 @@ export default function ViewTaskModal({
   }
 
   const handleRefine = async () => {
-    if (!TaskData.ProjectTaskDescription) return;
+    if (!newTask!.ProjectTaskDescription) return;
     setLoading(true);
     try {
       const refinedText = await axios.post("/Project/POST/RefineText", {
-        text: `Riscrivi in modo più formale e completo il seguente testo: ${TaskData.ProjectTaskDescription}`,
+        text: `Riscrivi in modo più formale e completo il seguente testo: ${
+          newTask!.ProjectTaskDescription
+        }`,
       });
 
       // Assicuriamoci di mantenere tutte le proprietà esistenti quando aggiorniamo newTask
@@ -1114,7 +1116,6 @@ export default function ViewTaskModal({
                         )}
                       </dd>
                     </div>
-
                     {((newTask!.ProjectTaskDescription &&
                       hasValidDescription(newTask!.ProjectTaskDescription)) ||
                       editing) && (
@@ -1126,7 +1127,6 @@ export default function ViewTaskModal({
                         <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                           {editing ? (
                             <>
-                              <></>
                               <ReactQuill
                                 className="sm:col-span-2 sm:mt-0 h-fit"
                                 theme="snow"
@@ -1138,33 +1138,38 @@ export default function ViewTaskModal({
                                   })
                                 }
                               />
-                              {TaskData.ProjectTaskDescription ? (
-                                <Button
-                                  variant="bordered"
-                                  className="w-max-1/2 mx-auto gap-3 my-5 mt-2 py-2"
-                                  radius="full"
-                                  onClick={handleRefine}
-                                  isDisabled={
-                                    loading || !TaskData.ProjectTaskDescription
-                                  }
-                                >
-                                  {loading ? (
-                                    <>
-                                      {" "}
-                                      <Spinner
-                                        size="sm"
-                                        className="text-black"
-                                      />{" "}
-                                      Riscrittura in corso...{" "}
-                                    </>
-                                  ) : (
-                                    <>
-                                      {" "}
-                                      <AutoFixHighRoundedIcon className="w-5 h-5" />{" "}
-                                      Riscrivi con AI{" "}
-                                    </>
-                                  )}
-                                </Button>
+                              {hasValidDescription(
+                                newTask!.ProjectTaskDescription
+                              ) ? (
+                                <div className="flex justify-center items-center">
+                                  <Button
+                                    variant="bordered"
+                                    className="w-max-1/2 gap-3 my-2 py-2"
+                                    radius="full"
+                                    onClick={handleRefine}
+                                    isDisabled={
+                                      loading ||
+                                      !newTask!.ProjectTaskDescription
+                                    }
+                                  >
+                                    {loading ? (
+                                      <>
+                                        {" "}
+                                        <Spinner
+                                          size="sm"
+                                          className="text-black"
+                                        />{" "}
+                                        Riscrittura in corso...{" "}
+                                      </>
+                                    ) : (
+                                      <>
+                                        {" "}
+                                        <AutoFixHighRoundedIcon className="w-5 h-5" />{" "}
+                                        Riscrivi con AI{" "}
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
                               ) : null}
                             </>
                           ) : (
