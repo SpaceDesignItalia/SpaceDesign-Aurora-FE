@@ -284,10 +284,9 @@ export default function ViewEventModal({
           type: "success",
           message: "Evento modificato con successo!",
         });
-        handleCloseModal();
         setTimeout(() => {
-          setStatusAlert((prev) => ({ ...prev, show: false }));
-        }, 5000);
+          handleCloseModal();
+        }, 1000);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -296,9 +295,6 @@ export default function ViewEventModal({
           type: "error",
           message: "Errore durante la modifica dell'evento",
         });
-        setTimeout(() => {
-          setStatusAlert((prev) => ({ ...prev, show: false }));
-        }, 5000);
       }
     } finally {
       setIsAddingData(false);
@@ -306,22 +302,41 @@ export default function ViewEventModal({
   }
 
   async function DeleteEvent() {
-    const res = await axios.delete(`/Calendar/DELETE/DeleteEvent`, {
-      params: {
-        EventId: eventId,
-      },
-    });
+    try {
+      const res = await axios.delete(`/Calendar/DELETE/DeleteEvent`, {
+        params: {
+          EventId: eventId,
+        },
+      });
 
-    if (res.status === 200) {
-      socket.emit("calendar-update");
-      handleCloseModal();
+      if (res.status === 200) {
+        socket.emit("calendar-update");
+        setStatusAlert({
+          show: true,
+          type: "success",
+          message: "Evento eliminato con successo!",
+        });
+        setTimeout(() => {
+          handleCloseModal();
+        }, 1000);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setStatusAlert({
+          show: true,
+          type: "error",
+          message: "Errore durante l'eliminazione dell'evento",
+        });
+      }
     }
   }
 
   function handleCloseModal() {
     setIsEditing(false);
     setNewEvent(INITIAL_EVENT_DATA);
-    isClosed();
+    if (!statusAlert.show) {
+      isClosed();
+    }
   }
 
   function handleExportEvent() {
@@ -394,15 +409,37 @@ END:VCALENDAR`;
   }
 
   async function DeleteFile(index: number) {
-    const res = await axios.delete(`/Calendar/DELETE/DeleteEventAttachment`, {
-      params: {
-        EventAttachmentId: newEvent.EventAttachments[index].EventAttachmentId,
-        EventAttachmentUrl: newEvent.EventAttachments[index].EventAttachmentUrl,
-      },
-    });
+    try {
+      const res = await axios.delete(`/Calendar/DELETE/DeleteEventAttachment`, {
+        params: {
+          EventAttachmentId: newEvent.EventAttachments[index].EventAttachmentId,
+          EventAttachmentUrl:
+            newEvent.EventAttachments[index].EventAttachmentUrl,
+        },
+      });
 
-    if (res.status === 200) {
-      socket.emit("event-update", eventId);
+      if (res.status === 200) {
+        socket.emit("event-update", eventId);
+        setStatusAlert({
+          show: true,
+          type: "success",
+          message: "File eliminato con successo!",
+        });
+        setTimeout(() => {
+          setStatusAlert((prev) => ({ ...prev, show: false }));
+        }, 5000);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setStatusAlert({
+          show: true,
+          type: "error",
+          message: "Errore durante l'eliminazione del file",
+        });
+        setTimeout(() => {
+          setStatusAlert((prev) => ({ ...prev, show: false }));
+        }, 5000);
+      }
     }
   }
 
@@ -420,9 +457,23 @@ END:VCALENDAR`;
         ...newEvent,
         EventDescription: refinedText.data,
       });
+      setStatusAlert({
+        show: true,
+        type: "success",
+        message: "Testo rielaborato con successo!",
+      });
+      setTimeout(() => {
+        setStatusAlert((prev) => ({ ...prev, show: false }));
+      }, 5000);
     } catch (error) {
-      console.error("Errore:", error);
-      alert("Si è verificato un errore.");
+      setStatusAlert({
+        show: true,
+        type: "error",
+        message: "Errore durante la rielaborazione del testo",
+      });
+      setTimeout(() => {
+        setStatusAlert((prev) => ({ ...prev, show: false }));
+      }, 5000);
     } finally {
       setLoading(false);
     }
@@ -440,7 +491,10 @@ END:VCALENDAR`;
       <StatusAlert
         AlertData={{
           isOpen: statusAlert.show,
-          onClose: () => setStatusAlert({ ...statusAlert, show: false }),
+          onClose: () => {
+            setStatusAlert((prev) => ({ ...prev, show: false }));
+            isClosed();
+          },
           alertTitle: "",
           alertDescription: statusAlert.message,
           alertColor: statusAlert.type === "success" ? "green" : "red",
