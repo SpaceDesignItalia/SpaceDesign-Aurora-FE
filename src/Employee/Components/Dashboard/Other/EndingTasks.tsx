@@ -45,8 +45,6 @@ export default function EndingTasks({ projects }: EndingTasksProps) {
     return "grid-cols-3";
   };
 
-  console.log(projects);
-
   return (
     <div className={`overflow-x-auto`}>
       <div

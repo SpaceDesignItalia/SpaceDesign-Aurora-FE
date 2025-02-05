@@ -18,7 +18,6 @@ const socket = io(API_WEBSOCKET_URL);
 interface AttendanceWeekViewProps {
   stafferId: number;
   attendances: any[];
-  onUpdate: () => void;
 }
 
 export default function AttendanceWeekView({

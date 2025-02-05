@@ -7,13 +7,23 @@ import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
 import EndingTasks from "../../Components/Dashboard/Other/EndingTasks";
 import dayjs from "dayjs";
+import { Spinner } from "@heroui/react";
 
 const socket = io(API_WEBSOCKET_URL);
 
+interface Attendances {
+  current: any[];
+  previous: any[];
+}
+
 export default function Dashboard() {
   const [stafferId, setStafferId] = useState<number>(0);
-  const [attendances, setAttendances] = useState<any[]>([]);
+  const [attendances, setAttendances] = useState<Attendances>({
+    current: [],
+    previous: [],
+  });
   const [endingTasks, setEndingTasks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const selectedDate = new Date();
 
   const fetchAttendances = async () => {
@@ -21,20 +31,42 @@ export default function Dashboard() {
       const sessionData = await axios.get("/Authentication/GET/GetSessionData");
       setStafferId(sessionData.data.StafferId);
 
-      const res = await axios.get("/Staffer/GET/GetAttendanceByStafferId", {
-        params: {
-          month: selectedDate.getMonth() + 1,
-          year: selectedDate.getFullYear(),
-          stafferId: sessionData.data.StafferId,
-        },
+      // Fetch del mese corrente
+      const currentMonth = await axios.get(
+        "/Staffer/GET/GetAttendanceByStafferId",
+        {
+          params: {
+            month: selectedDate.getMonth() + 1,
+            year: selectedDate.getFullYear(),
+            stafferId: sessionData.data.StafferId,
+          },
+        }
+      );
+
+      // Fetch del mese precedente
+      const previousDate = dayjs(selectedDate).subtract(1, "month").toDate();
+      const previousMonth = await axios.get(
+        "/Staffer/GET/GetAttendanceByStafferId",
+        {
+          params: {
+            month: previousDate.getMonth() + 1,
+            year: previousDate.getFullYear(),
+            stafferId: sessionData.data.StafferId,
+          },
+        }
+      );
+
+      setAttendances({
+        current: currentMonth.data,
+        previous: previousMonth.data,
       });
-      setAttendances(res.data);
     } catch (error) {
       console.error(error);
     }
   };
 
   const fetchTasks = async () => {
+    setIsLoading(true);
     try {
       const res = await axios.get("/Project/GET/GetProjectInTeam");
       const projectsWithTasks = [];
@@ -60,8 +92,6 @@ export default function Dashboard() {
           const isUserAssigned = resTaskMember.data.some(
             (member: any) => member.StafferId === stafferId
           );
-
-          console.log(resTaskMember.data, daysUntilExpiration, isUserAssigned);
 
           if (
             daysUntilExpiration <= 5 &&
@@ -89,18 +119,22 @@ export default function Dashboard() {
       }
 
       setEndingTasks(projectsWithTasks);
+      setIsLoading(false);
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
-    fetchAttendances();
     fetchTasks();
+  }, [stafferId]);
+
+  useEffect(() => {
+    fetchAttendances();
     socket.on("employee-attendance-update", () => {
       fetchAttendances();
     });
-  }, [stafferId]);
+  }, []);
 
   return (
     <div className="py-10 m-0 lg:ml-72">
@@ -118,8 +152,7 @@ export default function Dashboard() {
               <h2 className="text-xl font-semibold mb-6">Le tue presenze</h2>
               <AttendanceWeekView
                 stafferId={stafferId}
-                attendances={attendances}
-                onUpdate={fetchAttendances}
+                attendances={attendances.current}
               />
             </div>
 
@@ -133,7 +166,13 @@ export default function Dashboard() {
             <div className="col-span-4">
               <div className="border-2 rounded-xl p-6 bg-white">
                 <h2 className="text-xl font-semibold mb-6">Task In Scadenza</h2>
-                <EndingTasks projects={endingTasks} />
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-full">
+                    <Spinner />
+                  </div>
+                ) : (
+                  <EndingTasks projects={endingTasks} />
+                )}
               </div>
             </div>
           </div>

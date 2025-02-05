@@ -77,7 +77,6 @@ export default function EditCustomerModel() {
       .then((res) => {
         setNewCustomerData(res.data[0]);
         setInitialCustomerData(res.data[0]);
-        console.log(res.data[0]);
       });
     axios.get("/Company/GET/GetAllCompany").then((res) => {
       setCompany(res.data);

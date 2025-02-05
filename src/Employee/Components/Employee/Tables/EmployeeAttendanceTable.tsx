@@ -31,6 +31,7 @@ interface Employee {
 
 interface Props {
   employees: Employee[];
+  previousMonthEmployees: Employee[];
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   loggedStafferId: number;
@@ -38,6 +39,7 @@ interface Props {
 
 export default function EmployeeAttendanceTable({
   employees,
+  previousMonthEmployees,
   selectedDate,
   onDateChange,
   loggedStafferId,
@@ -104,18 +106,6 @@ export default function EmployeeAttendanceTable({
           width: `${streak.count * 64 - 8}px`,
           margin: "0 4px",
         }}
-        onClick={() =>
-          console.log(
-            "Employee ID:",
-            employee.id,
-            "Date:",
-            formatInTimeZone(
-              streak.startDate,
-              "Europe/Rome",
-              "yyyy-MM-dd HH:mm:ss"
-            )
-          )
-        }
         title={statusConfig[streak.status as keyof typeof statusConfig].label}
       >
         <Icon
@@ -203,7 +193,6 @@ export default function EmployeeAttendanceTable({
   };
 
   async function handleStatusChange(status: string, date: string) {
-    console.log(status, loggedStafferId, date);
     const res = await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
       Status: status,
       StafferId: loggedStafferId,
