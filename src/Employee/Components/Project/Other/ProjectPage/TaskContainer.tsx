@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { Icon } from "@iconify/react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { Button, Chip, DateValue, cn, Tabs, Tab } from "@heroui/react";
+import { Button, Chip, DateValue, cn, Tabs, Tab, Spinner } from "@heroui/react";
 import AddTaskModal from "../ProjectTask/AddTaskModal";
 import TaskCard from "../ProjectTask/TaskCard";
 import { io } from "socket.io-client";
@@ -83,6 +83,7 @@ export default function TaskContainer({
   const [columns, setColumns] = useState<Status[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [update, setUpdate] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const projectId = projectData.ProjectId;
 
   const [modalAddData, setModalAddData] = useState<ModalAddData>({
@@ -168,9 +169,11 @@ export default function TaskContainer({
           })
         );
         setTasks(updatedTasks);
+        setIsLoading(false);
       }
     } catch (error) {
       console.error(error);
+      setIsLoading(false);
     }
   }
 
@@ -180,6 +183,7 @@ export default function TaskContainer({
     destination: any;
     draggableId: any;
   }) => {
+    setIsLoading(true);
     const { source, destination } = result;
 
     if (!destination) {
@@ -307,164 +311,187 @@ export default function TaskContainer({
 
   return (
     <>
-      <AddTaskModal
-        isOpen={modalAddData.open}
-        isClosed={() => setModalAddData({ ...modalAddData, open: false })}
-        fetchData={fetchData}
-        ProjectId={projectId}
-      />
+      <DragDropContext onDragEnd={onDragEnd}>
+        <AddTaskModal
+          isOpen={modalAddData.open}
+          isClosed={() => setModalAddData({ ...modalAddData, open: false })}
+          fetchData={fetchData}
+          ProjectId={projectId}
+        />
 
-      <div className="w-full flex justify-between">
-        <Tabs
-          aria-label="Options"
-          color="primary"
-          radius="full"
-          variant="bordered"
-          selectedKey={activeTab}
-          className="hidden sm:flex"
-          onSelectionChange={(key) => setActiveTab(key as string)}
-        >
-          {tabs.map((tab) => (
-            <Tab
-              key={tab.title}
-              title={
-                <div className="flex items-center space-x-2">
-                  {tab.icon}
-                  <span>{tab.title}</span>
-                </div>
-              }
-            />
-          ))}
-        </Tabs>
-        {permissions.assignActivity && (
+        {isLoading ? (
+          <div className="w-full flex justify-center items-center h-screen">
+            <Spinner />
+          </div>
+        ) : (
           <>
-            <Button
-              color="primary"
-              radius="full"
-              onClick={() => setModalAddData({ ...modalAddData, open: true })}
-              startContent={<Icon icon="mynaui:plus-solid" fontSize={22} />}
-              className="hidden sm:flex"
-            >
-              Aggiungi Task
-            </Button>
+            <div className="w-full flex justify-between">
+              <Tabs
+                aria-label="Options"
+                color="primary"
+                radius="full"
+                variant="bordered"
+                selectedKey={activeTab}
+                className="hidden sm:flex"
+                onSelectionChange={(key) => setActiveTab(key as string)}
+              >
+                {tabs.map((tab) => (
+                  <Tab
+                    key={tab.title}
+                    title={
+                      <div className="flex items-center space-x-2">
+                        {tab.icon}
+                        <span>{tab.title}</span>
+                      </div>
+                    }
+                  />
+                ))}
+              </Tabs>
+              {permissions.assignActivity && (
+                <>
+                  <Button
+                    color="primary"
+                    radius="full"
+                    onClick={() =>
+                      setModalAddData({ ...modalAddData, open: true })
+                    }
+                    startContent={
+                      <Icon icon="mynaui:plus-solid" fontSize={22} />
+                    }
+                    className="hidden sm:flex"
+                  >
+                    Aggiungi Task
+                  </Button>
 
-            <Button
-              color="primary"
-              radius="full"
-              onClick={() => setModalAddData({ ...modalAddData, open: true })}
-              startContent={<Icon icon="mynaui:plus-solid" fontSize={22} />}
-              isIconOnly
-              className="sm:hidden"
-            />
-          </>
-        )}
-      </div>
+                  <Button
+                    color="primary"
+                    radius="full"
+                    onClick={() =>
+                      setModalAddData({ ...modalAddData, open: true })
+                    }
+                    startContent={
+                      <Icon icon="mynaui:plus-solid" fontSize={22} />
+                    }
+                    isIconOnly
+                    className="sm:hidden"
+                  />
+                </>
+              )}
+            </div>
 
-      {activeTab === "Attive" ? (
-        <DragDropContext onDragEnd={onDragEnd}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 justify-between py-5 gap-5 mb-14">
-            {columns.map((column) => {
-              const columnTaskList =
-                columnTasks[column.ProjectTaskStatusId] || [];
-              return (
+            {activeTab === "Attive" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 justify-between py-5 gap-5 mb-14">
+                {columns.map((column) => {
+                  const columnTaskList =
+                    columnTasks[column.ProjectTaskStatusId] || [];
+                  return (
+                    <div
+                      key={column.ProjectTaskStatusId}
+                      className={`flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center h-fit transition-height duration-300 ${
+                        columnTaskList.length === 0
+                          ? "min-h-[100px]"
+                          : "min-h-[200px]"
+                      }`}
+                    >
+                      <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
+                        {column.ProjectTaskStatusName}
+                        <Chip
+                          radius="full"
+                          color="primary"
+                          variant="faded"
+                          size="sm"
+                        >
+                          {taskCounts[column.ProjectTaskStatusId]}
+                        </Chip>
+                      </h2>
+                      <Droppable
+                        droppableId={column.ProjectTaskStatusId.toString()}
+                        direction="vertical"
+                        type="TASK"
+                      >
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                            className={cn(
+                              "w-full p-2 flex flex-col gap-5 h-auto",
+                              snapshot.isDraggingOver
+                                ? "bg-gray-200 opacity-35 rounded-b-lg border-2 border-dashed border-gray-500"
+                                : "bg-lightgrey"
+                            )}
+                          >
+                            {columnTaskList.map((task, index) => (
+                              <Draggable
+                                key={task.ProjectTaskId}
+                                draggableId={task.ProjectTaskId.toString()}
+                                index={index}
+                              >
+                                {(provided) => (
+                                  <TaskCard
+                                    provided={provided}
+                                    task={task}
+                                    setUpdate={setUpdate}
+                                    update={update}
+                                    socket={socket}
+                                    projectId={projectId}
+                                    updateTaskStatus={updateTaskStatus}
+                                    columnCount={columns.length}
+                                  />
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 justify-between py-5 gap-5 mb-14">
                 <div
-                  key={column.ProjectTaskStatusId}
+                  key={"Archiviate"}
                   className={`flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center h-fit transition-height duration-300 ${
-                    columnTaskList.length === 0
+                    archivedTasks.length === 0
                       ? "min-h-[100px]"
                       : "min-h-[200px]"
                   }`}
                 >
                   <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
-                    {column.ProjectTaskStatusName}
+                    Archiviate
                     <Chip
                       radius="full"
                       color="primary"
                       variant="faded"
                       size="sm"
                     >
-                      {taskCounts[column.ProjectTaskStatusId]}
+                      {archivedTasks.length}
                     </Chip>
                   </h2>
-                  <Droppable
-                    droppableId={column.ProjectTaskStatusId.toString()}
-                    direction="vertical"
-                    type="TASK"
-                  >
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                        className={cn(
-                          "w-full p-2 flex flex-col gap-5 h-auto",
-                          snapshot.isDraggingOver
-                            ? "bg-gray-200 opacity-35 rounded-b-lg border-2 border-dashed border-gray-500"
-                            : "bg-lightgrey"
-                        )}
-                      >
-                        {columnTaskList.map((task, index) => (
-                          <Draggable
-                            key={task.ProjectTaskId}
-                            draggableId={task.ProjectTaskId.toString()}
-                            index={index}
-                          >
-                            {(provided) => (
-                              <TaskCard
-                                provided={provided}
-                                task={task}
-                                setUpdate={setUpdate}
-                                update={update}
-                                socket={socket}
-                                projectId={projectId}
-                                updateTaskStatus={updateTaskStatus}
-                                columnCount={columns.length}
-                              />
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                      </div>
+                  <div
+                    className={cn(
+                      "w-full p-2 grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-5 h-auto bg-lightgrey"
                     )}
-                  </Droppable>
+                  >
+                    {archivedTasks.map((task) => (
+                      <ArchivedTaskCard
+                        key={task.ProjectTaskId}
+                        task={task}
+                        setUpdate={setUpdate}
+                        update={update}
+                        socket={socket}
+                        projectId={projectId}
+                        columnCount={columns.length}
+                      />
+                    ))}
+                  </div>
                 </div>
-              );
-            })}
-          </div>
-        </DragDropContext>
-      ) : (
-        <div className="grid grid-cols-1 justify-between py-5 gap-5 mb-14">
-          <div
-            key={"Archiviate"}
-            className={`flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center h-fit transition-height duration-300 ${
-              archivedTasks.length === 0 ? "min-h-[100px]" : "min-h-[200px]"
-            }`}
-          >
-            <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
-              Archiviate
-              <Chip radius="full" color="primary" variant="faded" size="sm">
-                {archivedTasks.length}
-              </Chip>
-            </h2>
-            <div
-              className={cn(
-                "w-full p-2 grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-5 h-auto bg-lightgrey"
-              )}
-            >
-              {archivedTasks.map((task) => (
-                <ArchivedTaskCard
-                  key={task.ProjectTaskId}
-                  task={task}
-                  setUpdate={setUpdate}
-                  update={update}
-                  socket={socket}
-                  projectId={projectId}
-                  columnCount={columns.length}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+              </div>
+            )}
+          </>
+        )}
+      </DragDropContext>
     </>
   );
 }
