@@ -128,7 +128,6 @@ export default function AddProjectModel() {
           text: `Riscrivi in modo più formale e completo il seguente testo: ${newProjectData.ProjectDescription}`,
         }
       );
-      console.log("Testo raffinato:", refinedText.data);
       setNewProjectData({
         ...newProjectData,
         ProjectDescription: refinedText.data,

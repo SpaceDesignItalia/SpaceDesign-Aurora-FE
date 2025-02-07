@@ -28,6 +28,37 @@ export default function EmployeeAttendance() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loggedStafferId, setLoggedStafferId] = useState<number>(0);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [previousMonthEmployees, setPreviousMonthEmployees] = useState<
+    Employee[]
+  >([]);
+
+  const fetchEmployeeData = async (date: Date, setPrevious = false) => {
+    const staffers = await axios.get("/Staffer/GET/GetAllStaffers");
+    const employeesData: Employee[] = [];
+
+    for (const staffer of staffers.data) {
+      const res = await axios.get("/Staffer/GET/GetAttendanceByStafferId", {
+        params: {
+          month: date.getMonth() + 1,
+          year: date.getFullYear(),
+          stafferId: staffer.EmployeeId,
+        },
+      });
+
+      employeesData.push({
+        id: staffer.EmployeeId,
+        name: staffer.EmployeeFullName,
+        avatar: API_URL_IMG + "/profileIcons/" + staffer.EmployeeImageUrl,
+        attendances: res.data,
+      });
+    }
+
+    if (setPrevious) {
+      setPreviousMonthEmployees(employeesData);
+    } else {
+      setEmployees(employeesData);
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -40,39 +71,14 @@ export default function EmployeeAttendance() {
       const sessionData = await axios.get("/Authentication/GET/GetSessionData");
       setLoggedStafferId(sessionData.data.StafferId);
 
-      const staffers = await axios.get("/Staffer/GET/GetAllStaffers");
+      // Fetch current month
+      await fetchEmployeeData(selectedDate);
 
-      // Reset employees all'inizio di ogni fetch
-      setEmployees([]);
+      // Fetch previous month
+      const previousDate = new Date(selectedDate);
+      previousDate.setMonth(previousDate.getMonth() - 1);
+      await fetchEmployeeData(previousDate, true);
 
-      for (const staffer of staffers.data) {
-        const res = await axios.get("/Staffer/GET/GetAttendanceByStafferId", {
-          params: {
-            month: selectedDate.getMonth() + 1,
-            year: selectedDate.getFullYear(),
-            stafferId: staffer.EmployeeId,
-          },
-        });
-
-        console.log(res.data);
-
-        setEmployees((prev) => {
-          // Controlla se esiste già un employee con lo stesso ID
-          const exists = prev.some((emp) => emp.id === staffer.EmployeeId);
-          if (exists) return prev;
-
-          // Se non esiste, aggiungilo
-          return [
-            ...prev,
-            {
-              id: staffer.EmployeeId,
-              name: staffer.EmployeeFullName,
-              avatar: API_URL_IMG + "/profileIcons/" + staffer.EmployeeImageUrl,
-              attendances: res.data,
-            },
-          ];
-        });
-      }
       setIsLoading(false);
     }
 
@@ -82,8 +88,6 @@ export default function EmployeeAttendance() {
       fetchData();
     });
   }, [hasPermission, selectedDate]);
-
-  console.log(isLoading);
 
   return (
     <div className="py-10 m-0 lg:ml-72">
@@ -114,15 +118,17 @@ export default function EmployeeAttendance() {
           <>
             <EmployeeAttendanceStats
               employees={employees}
+              previousMonthEmployees={previousMonthEmployees}
               selectedDate={selectedDate}
             />
             <div className="py-6 lg:py-8">
               <EmployeeAttendanceTable
                 employees={employees}
+                previousMonthEmployees={previousMonthEmployees}
                 selectedDate={selectedDate}
                 onDateChange={setSelectedDate}
                 loggedStafferId={loggedStafferId}
-              />{" "}
+              />
             </div>
           </>
         )}

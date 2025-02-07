@@ -130,7 +130,6 @@ const AddRoleModel: React.FC = () => {
           text: `Riscrivi in modo più formale e completo il seguente testo: ${newRole.RoleDescription}`,
         }
       );
-      console.log("Testo raffinato:", refinedText.data);
       setNewRole({
         ...newRole,
         RoleDescription: refinedText.data,
@@ -150,7 +149,6 @@ const AddRoleModel: React.FC = () => {
         "/Project/POST/GenerateRoleDescriptionFromName",
         { roleName: newRole.RoleName } // Passa direttamente il nome del ruolo
       );
-      console.log("Testo generato:", response.data);
       setNewRole({
         ...newRole,
         RoleDescription: response.data,

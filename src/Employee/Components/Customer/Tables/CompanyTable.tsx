@@ -396,7 +396,7 @@ export default function CompanyTable() {
         topContentPlacement="inside"
         onSortChange={setSortDescriptor}
         classNames={{
-          wrapper: "border rounded-lg shadow-none",
+          wrapper: "border-2 rounded-2xl shadow-none",
         }}
       >
         <TableHeader columns={columns}>

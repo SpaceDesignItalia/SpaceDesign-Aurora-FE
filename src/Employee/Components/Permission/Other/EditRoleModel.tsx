@@ -144,7 +144,6 @@ const EditRoleModel: React.FC = () => {
           text: `Riscrivi in modo più formale e completo il seguente testo: ${roleData.RoleDescription}`,
         }
       );
-      console.log("Testo raffinato:", refinedText.data);
       setRoleData({
         ...roleData,
         RoleDescription: refinedText.data,
@@ -164,7 +163,6 @@ const EditRoleModel: React.FC = () => {
         "/Project/POST/GenerateRoleDescriptionFromName",
         { roleName: roleData.RoleName }
       );
-      console.log("Testo generato:", response.data);
       setRoleData({
         ...roleData,
         RoleDescription: response.data,

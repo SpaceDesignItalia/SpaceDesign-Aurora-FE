@@ -427,7 +427,7 @@ export default function EmployeeTable() {
         onSortChange={setSortDescriptor}
         radius="lg"
         classNames={{
-          wrapper: "border rounded-lg shadow-none",
+          wrapper: "border-2 rounded-2xl shadow-none",
         }}
       >
         <TableHeader columns={columns}>
@@ -443,7 +443,7 @@ export default function EmployeeTable() {
         <TableBody
           emptyContent={
             searchTerm == "" ? (
-              <div className="text-center p-10">
+              <div className="flex flex-col justify-center items-center p-10">
                 <Icon icon="solar:user-plus-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun dipendente trovato!
@@ -466,7 +466,7 @@ export default function EmployeeTable() {
                 </div>
               </div>
             ) : (
-              <div className="text-center p-10">
+              <div className="flex flex-col justify-center items-center p-10">
                 <Icon icon="solar:user-plus-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun dipendente trovato!

@@ -31,6 +31,7 @@ interface Employee {
 
 interface Props {
   employees: Employee[];
+  previousMonthEmployees: Employee[];
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   loggedStafferId: number;
@@ -38,6 +39,7 @@ interface Props {
 
 export default function EmployeeAttendanceTable({
   employees,
+  previousMonthEmployees,
   selectedDate,
   onDateChange,
   loggedStafferId,
@@ -104,18 +106,6 @@ export default function EmployeeAttendanceTable({
           width: `${streak.count * 64 - 8}px`,
           margin: "0 4px",
         }}
-        onClick={() =>
-          console.log(
-            "Employee ID:",
-            employee.id,
-            "Date:",
-            formatInTimeZone(
-              streak.startDate,
-              "Europe/Rome",
-              "yyyy-MM-dd HH:mm:ss"
-            )
-          )
-        }
         title={statusConfig[streak.status as keyof typeof statusConfig].label}
       >
         <Icon
@@ -203,7 +193,6 @@ export default function EmployeeAttendanceTable({
   };
 
   async function handleStatusChange(status: string, date: string) {
-    console.log(status, loggedStafferId, date);
     const res = await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
       Status: status,
       StafferId: loggedStafferId,
@@ -214,6 +203,50 @@ export default function EmployeeAttendanceTable({
       socket.emit("employee-attendance-update");
     }
   }
+
+  const exportCSV = () => {
+    const days = getDaysInMonth();
+    const headers = ["Nome", ...days.map((date) => format(date, "dd"))];
+
+    const statusInitials = {
+      present: "P",
+      absent: "A",
+      vacation: "F",
+      smartworking: "S",
+    };
+
+    const csvData = employees.map((employee) => {
+      const row = [employee.name];
+      days.forEach((date) => {
+        const attendance = employee.attendances.find(
+          (a) => new Date(a.date).toDateString() === date.toDateString()
+        );
+        row.push(
+          attendance
+            ? statusInitials[attendance.status as keyof typeof statusInitials]
+            : ""
+        );
+      });
+      return row;
+    });
+
+    const csvContent = [headers, ...csvData]
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `presenze_${format(selectedDate, "MMMM_yyyy", { locale: it })}.csv`
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="rounded-2xl shadow-sm border-2">
@@ -401,21 +434,36 @@ export default function EmployeeAttendanceTable({
         </div>
       </div>
 
-      <div className="mt-6 px-2 py-4 flex gap-6 text-sm text-gray-600 border-t border-gray-100 pt-4">
-        {Object.entries(statusConfig).map(([key, config]) => (
-          <div key={key} className="flex items-center gap-2">
-            <div
-              className={`w-10 h-10 ${config.color} rounded-xl border-2 flex items-center justify-center`}
-            >
-              <Icon
-                icon={config.icon}
-                className="w-6 h-6 text-gray-700"
-                style={{ strokeWidth: 1.5 }}
-              />
-            </div>
-            <span className="font-medium">{config.label}</span>
+      <div className="mt-6 px-2 py-4 flex items-center justify-between border-t border-gray-100 pt-4">
+        <div className="flex items-center gap-4">
+          <Button
+            color="primary"
+            variant="ghost"
+            radius="full"
+            startContent={
+              <Icon icon="solar:file-download-linear" fontSize={24} />
+            }
+            onClick={exportCSV}
+          >
+            Esporta Tabella
+          </Button>
+          <div className="flex gap-6 text-sm text-gray-600">
+            {Object.entries(statusConfig).map(([key, config]) => (
+              <div key={key} className="flex items-center gap-2">
+                <div
+                  className={`w-10 h-10 ${config.color} rounded-xl border-2 flex items-center justify-center`}
+                >
+                  <Icon
+                    icon={config.icon}
+                    className="w-6 h-6 text-gray-700"
+                    style={{ strokeWidth: 1.5 }}
+                  />
+                </div>
+                <span className="font-medium">{config.label}</span>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );

@@ -1,11 +1,18 @@
 import { Card, cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
-import { format, subMonths } from "date-fns";
+import { Area, AreaChart, ResponsiveContainer, YAxis, Tooltip } from "recharts";
+import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import dayjs from "dayjs";
+import weekOfYear from "dayjs/plugin/weekOfYear";
+
+dayjs.extend(weekOfYear);
 
 interface AttendanceStatsProps {
-  attendances: any[];
+  attendances: {
+    current: any[];
+    previous: any[];
+  };
   selectedDate: Date;
 }
 
@@ -13,71 +20,118 @@ export default function AttendanceStats({
   attendances,
   selectedDate,
 }: AttendanceStatsProps) {
-  // Calcola le statistiche mensili per il confronto
-  const calculateMonthStats = (monthDate: Date) => {
-    const year = monthDate.getFullYear();
-    const month = monthDate.getMonth();
-    const totalDays = new Date(year, month + 1, 0).getDate();
+  const calculateMonthStats = (monthAttendances: any[]) => {
     let presentDays = 0;
     let smartworkingDays = 0;
     let absentDays = 0;
+    let totalRecordedDays = 0;
 
-    attendances.forEach((att) => {
-      const attDate = new Date(att.date);
-      if (attDate.getMonth() === month && attDate.getFullYear() === year) {
-        if (att.status === "present") presentDays++;
-        else if (att.status === "smartworking") smartworkingDays++;
-        else if (att.status === "absent" || att.status === "vacation")
-          absentDays++;
-      }
+    monthAttendances.forEach((att) => {
+      totalRecordedDays++;
+      if (att.status === "present") presentDays++;
+      else if (att.status === "smartworking") smartworkingDays++;
+      else if (att.status === "absent" || att.status === "vacation")
+        absentDays++;
     });
 
+    if (totalRecordedDays === 0) {
+      return {
+        present: 0,
+        smartworking: 0,
+        absent: 0,
+      };
+    }
+
     return {
-      present: (presentDays / totalDays) * 100,
-      smartworking: (smartworkingDays / totalDays) * 100,
-      absent: (absentDays / totalDays) * 100,
+      present: (presentDays / totalRecordedDays) * 100,
+      smartworking: (smartworkingDays / totalRecordedDays) * 100,
+      absent: (absentDays / totalRecordedDays) * 100,
     };
   };
 
   // Calcola le statistiche settimanali per il grafico
   const calculateWeekStats = () => {
     const weeklyStats = [];
-    const lastDayOfMonth = new Date(
-      selectedDate.getFullYear(),
-      selectedDate.getMonth() + 1,
-      0
-    );
+    const today = dayjs(selectedDate);
+    const endOfWeek = today.endOf("week");
 
-    for (let i = 6; i >= 0; i--) {
-      const currentDate = new Date(lastDayOfMonth);
-      currentDate.setDate(currentDate.getDate() - i);
+    for (let week = 0; week < 4; week++) {
+      const weekStart = endOfWeek.subtract(week * 7, "day");
+      const weekEnd = weekStart.subtract(6, "day"); // Il primo giorno della settimana
 
-      const dayAttendance = attendances.find(
-        (att) =>
-          new Date(att.date).toDateString() === currentDate.toDateString()
-      );
+      const weekStats = {
+        week: `${format(weekStart.toDate(), "'Settimana' w", {
+          locale: it,
+        })}`,
+        dateRange: `${weekEnd.format("DD/MM")} - ${weekStart.format("DD/MM")}`,
+        date: weekStart.format("YYYY-MM-DD"),
+        present: 0,
+        smartworking: 0,
+        absent: 0,
+        total: 0,
+      };
 
-      weeklyStats.push({
-        date: format(currentDate, "EEE", { locale: it }),
-        present: dayAttendance?.status === "present" ? 100 : 0,
-        smartworking: dayAttendance?.status === "smartworking" ? 100 : 0,
-        absent:
-          dayAttendance?.status === "absent" ||
-          dayAttendance?.status === "vacation"
-            ? 100
-            : 0,
+      // Per ogni giorno della settimana
+      for (let day = 0; day < 7; day++) {
+        const currentDate = weekStart.subtract(day, "day");
+
+        // Cerca nei dati del mese corrente e precedente
+        let dayAttendance = attendances.current.find(
+          (att) =>
+            dayjs(att.date).format("YYYY-MM-DD") ===
+            currentDate.format("YYYY-MM-DD")
+        );
+
+        if (!dayAttendance) {
+          dayAttendance = attendances.previous.find(
+            (att) =>
+              dayjs(att.date).format("YYYY-MM-DD") ===
+              currentDate.format("YYYY-MM-DD")
+          );
+        }
+
+        if (dayAttendance) {
+          weekStats.total++;
+          if (dayAttendance.status === "present") weekStats.present++;
+          else if (dayAttendance.status === "smartworking")
+            weekStats.smartworking++;
+          else if (
+            dayAttendance.status === "absent" ||
+            dayAttendance.status === "vacation"
+          )
+            weekStats.absent++;
+        }
+      }
+
+      // Aggiungi la settimana all'inizio dell'array
+      weeklyStats.unshift({
+        ...weekStats,
+        present: weekStats.total
+          ? (weekStats.present / weekStats.total) * 100
+          : 0,
+        smartworking: weekStats.total
+          ? (weekStats.smartworking / weekStats.total) * 100
+          : 0,
+        absent: weekStats.total
+          ? (weekStats.absent / weekStats.total) * 100
+          : 0,
       });
     }
+
     return weeklyStats;
   };
 
-  const currentMonthStats = calculateMonthStats(selectedDate);
-  const lastMonthStats = calculateMonthStats(subMonths(selectedDate, 1));
+  // Calcola le statistiche usando i dati corretti
+  const currentMonthStats = calculateMonthStats(attendances.current);
+  const lastMonthStats = calculateMonthStats(attendances.previous);
   const weeklyStats = calculateWeekStats();
 
   const getChangePercentage = (current: number, previous: number) => {
-    if (previous === 0) return current > 0 ? "100.0" : "0.0";
-    const change = ((current - previous) / previous) * 100;
+    // Se entrambi sono 0, non c'è variazione
+    if (current === 0 && previous === 0) return "0.0";
+
+    // Calcola la differenza assoluta tra le percentuali
+    const change = current - previous;
     return change.toFixed(1);
   };
 
@@ -217,6 +271,23 @@ export default function AttendanceStats({
                     </linearGradient>
                   </defs>
                   <YAxis domain={[0, 100]} hide />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload?.[0]?.value !== undefined) {
+                        return (
+                          <div className="flex flex-col bg-white gap-y-1 justify-center items-center p-2 border rounded shadow">
+                            <p className="text-sm text-gray-500">
+                              {payload[0].payload.dateRange}
+                            </p>
+                            <p className="mt-1 font-semibold">
+                              {`${Math.round(payload[0].value as number)}%`}
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
                   <Area
                     dataKey={item.dataKey}
                     fill={`url(#colorUv${index})`}
