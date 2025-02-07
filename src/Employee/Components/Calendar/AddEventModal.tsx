@@ -15,6 +15,7 @@ import {
   ModalFooter,
   ModalHeader,
   Spinner,
+  TimeInput,
 } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
 import { Icon } from "@iconify/react";
@@ -68,6 +69,14 @@ interface AddEventModalProps {
   prefilledData: any | null;
 }
 
+const colors = [
+  { color: "#EF4444", name: "Rosso" },
+  { color: "#F59E0B", name: "Arancione" },
+  { color: "#10B981", name: "Verde" },
+  { color: "#3B82F6", name: "Blu" },
+  { color: "#6366F1", name: "Viola" },
+];
+
 const INITIAL_EVENT_DATA: CalendarEvent = {
   EventId: 0,
   EventTitle: "",
@@ -75,7 +84,7 @@ const INITIAL_EVENT_DATA: CalendarEvent = {
   EventEndDate: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
   EventStartTime: "",
   EventEndTime: "",
-  EventColor: "",
+  EventColor: colors[0].color,
   EventDescription: "",
   EventLocation: "",
   EventTagId: 0,
@@ -83,7 +92,10 @@ const INITIAL_EVENT_DATA: CalendarEvent = {
   EventPartecipants: [],
 };
 
-const colors = ["#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#6366F1"];
+function stringToTimeValue(timeString: string): any {
+  const [hour, minute] = timeString.split(":").map(Number);
+  return { hour, minute, second: 0, millisecond: 0 }; // Adjust as necessary
+}
 
 export default function AddEventModal({
   isOpen,
@@ -184,6 +196,22 @@ export default function AddEventModal({
       newEvent.EventTagId = newTag.EventTagId;
       newEvent.EventPartecipants = Partecipants;
 
+      if (newEvent.EventStartTime.split(":")[1].length == 1) {
+        newEvent.EventStartTime =
+          newEvent.EventStartTime.split(":")[0] +
+          ":" +
+          newEvent.EventStartTime.split(":")[1] +
+          "0";
+      }
+
+      if (newEvent.EventEndTime.split(":")[1].length == 1) {
+        newEvent.EventEndTime =
+          newEvent.EventEndTime.split(":")[0] +
+          ":" +
+          newEvent.EventEndTime.split(":")[1] +
+          "0";
+      }
+
       const res = await axios.post("/Calendar/POST/AddEvent", {
         EventData: {
           ...newEvent,
@@ -193,6 +221,11 @@ export default function AddEventModal({
       });
       if (res.status === 200) {
         socket.emit("calendar-update");
+        setPartecipants([]);
+        setNewTag({
+          EventTagId: 0,
+          EventTagName: "",
+        });
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -218,6 +251,11 @@ export default function AddEventModal({
 
   function handleCloseModal() {
     setNewEvent(INITIAL_EVENT_DATA);
+    setPartecipants([]);
+    setNewTag({
+      EventTagId: 0,
+      EventTagName: "",
+    });
     isClosed();
     if (Action) {
       navigate(`/comunications/calendar/`);
@@ -289,33 +327,33 @@ export default function AddEventModal({
                       </div>
                     }
                   />
-                  <Dropdown className="w-2">
-                    <DropdownTrigger className="w-2 h-2">
-                      <Button
-                        className="h-5 w-2"
-                        size="sm"
-                        radius="full"
+                  <Dropdown className="w-[100px]">
+                    <DropdownTrigger className="w-6 h-5">
+                      <div
+                        className="w-6 h-5 rounded-full cursor-pointer"
                         style={{
                           backgroundColor: newEvent.EventColor,
                         }}
                       />
                     </DropdownTrigger>
-                    <DropdownMenu>
+                    <DropdownMenu selectedKeys={newEvent.EventColor}>
                       {colors.map((color) => (
                         <DropdownItem
-                          startContent
-                          key={color}
+                          startContent={
+                            <div
+                              className="w-4 h-4 rounded-full"
+                              style={{ backgroundColor: color.color }}
+                            />
+                          }
+                          key={color.name}
                           onPress={() => {
                             setNewEvent((prev) => ({
                               ...prev,
-                              EventColor: color,
+                              EventColor: color.color,
                             }));
                           }}
                         >
-                          <div
-                            className="w-4 h-4 rounded-full"
-                            style={{ backgroundColor: color }}
-                          ></div>
+                          {color.name}
                         </DropdownItem>
                       ))}
                     </DropdownMenu>
@@ -337,8 +375,8 @@ export default function AddEventModal({
                 </div>
               </ModalHeader>
               <ModalBody>
-                <div className="mt-4">
-                  <dl>
+                <div className="mt-4 grid md:grid-cols-2 grid-cols-1 gap-4">
+                  <dl className="col-span-1">
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
                         <Icon icon="solar:calendar-linear" fontSize={18} />
@@ -361,17 +399,21 @@ export default function AddEventModal({
                                 }))
                               }
                             />
-                            <Input
-                              type="time"
-                              label="Ora inizio"
+                            <TimeInput
+                              variant="bordered"
+                              radius="full"
                               className="w-1/2"
-                              value={newEvent.EventStartTime}
-                              onChange={(e) =>
-                                setNewEvent((prev) => ({
-                                  ...prev,
-                                  EventStartTime: e.target.value,
-                                }))
-                              }
+                              label="Ora inizio"
+                              labelPlacement="outside"
+                              value={stringToTimeValue(newEvent.EventStartTime)}
+                              onChange={(e) => {
+                                if (e) {
+                                  setNewEvent((prev) => ({
+                                    ...prev,
+                                    EventStartTime: `${e.hour}:${e.minute}`,
+                                  }));
+                                }
+                              }}
                             />
                           </I18nProvider>
                         </div>
@@ -391,23 +433,28 @@ export default function AddEventModal({
                                 }))
                               }
                             />
-                            <Input
-                              type="time"
-                              label="Ora fine"
+                            <TimeInput
+                              variant="bordered"
+                              radius="full"
                               className="w-1/2"
-                              value={newEvent.EventEndTime}
-                              onChange={(e) =>
-                                setNewEvent((prev) => ({
-                                  ...prev,
-                                  EventEndTime: e.target.value,
-                                }))
-                              }
+                              label="Ora fine"
+                              labelPlacement="outside"
+                              value={stringToTimeValue(newEvent.EventEndTime)}
+                              onChange={(e) => {
+                                if (e) {
+                                  setNewEvent((prev) => ({
+                                    ...prev,
+                                    EventEndTime: `${e.hour}:${e.minute}`,
+                                  }));
+                                }
+                              }}
                             />
                           </I18nProvider>
                         </div>
                       </dd>
                     </div>
-
+                  </dl>
+                  <div className="col-span-1">
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
                         <Icon
@@ -459,192 +506,197 @@ export default function AddEventModal({
                         </Button>
                       ) : null}
                     </div>
+                  </div>
+                </div>
 
-                    <div className="flex flex-row w-full gap-4">
-                      <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
-                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                          <Icon
-                            icon="solar:users-group-rounded-linear"
-                            fontSize={18}
-                          />
-                          Partecipanti
-                        </dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          <div className="flex flex-col gap-2">
-                            <Autocomplete
-                              defaultItems={users}
-                              onSelectionChange={(e) => {
-                                e &&
-                                  e.toString() &&
-                                  addPartecipant(
-                                    e?.toString() || "",
-                                    users.find(
-                                      (u) => u.EventPartecipantEmail === e
-                                    )?.EventPartecipantRole || "esterno"
-                                  );
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  const input = e.currentTarget.value;
-                                  if (
-                                    input &&
-                                    input.includes("@") &&
-                                    !users.some(
-                                      (u) => u.EventPartecipantEmail === input
-                                    )
-                                  ) {
-                                    addPartecipant(input, "esterno");
-                                    e.currentTarget.value = "";
-                                  }
-                                }
-                              }}
-                              placeholder="Seleziona partecipanti"
+                <div className="flex flex-row w-full gap-4 col-span-2">
+                  <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
+                    <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                      <Icon
+                        icon="solar:users-group-rounded-linear"
+                        fontSize={18}
+                      />
+                      Partecipanti
+                    </dt>
+                    <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                      <div className="flex flex-col gap-2">
+                        <Autocomplete
+                          variant="bordered"
+                          radius="full"
+                          defaultItems={users}
+                          onSelectionChange={(e) => {
+                            e &&
+                              e.toString() &&
+                              addPartecipant(
+                                e?.toString() || "",
+                                users.find((u) => u.EventPartecipantEmail === e)
+                                  ?.EventPartecipantRole || "esterno"
+                              );
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              const input = e.currentTarget.value;
+                              if (
+                                input &&
+                                input.includes("@") &&
+                                !users.some(
+                                  (u) => u.EventPartecipantEmail === input
+                                )
+                              ) {
+                                addPartecipant(input, "esterno");
+                                e.currentTarget.value = "";
+                              }
+                            }
+                          }}
+                          placeholder="Seleziona partecipanti"
+                        >
+                          {users.map((user) => (
+                            <AutocompleteItem
+                              startContent={
+                                <div
+                                  className="w-2 h-2 rounded-full"
+                                  style={{
+                                    backgroundColor:
+                                      user.EventPartecipantRole === "dipendente"
+                                        ? "#EF4444"
+                                        : "#3B82F6",
+                                  }}
+                                />
+                              }
+                              key={user.EventPartecipantEmail}
+                              value={user.EventPartecipantEmail}
                             >
-                              {users.map((user) => (
-                                <AutocompleteItem
-                                  startContent={
-                                    <div
-                                      className="w-2 h-2 rounded-full"
-                                      style={{
-                                        backgroundColor:
-                                          user.EventPartecipantRole ===
-                                          "dipendente"
-                                            ? "#EF4444"
-                                            : "#3B82F6",
-                                      }}
-                                    />
-                                  }
-                                  key={user.EventPartecipantEmail}
-                                  value={user.EventPartecipantEmail}
-                                >
-                                  {user.EventPartecipantEmail}
-                                </AutocompleteItem>
-                              ))}
-                            </Autocomplete>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {Partecipants.map((Partecipant) => (
-                              <Chip
-                                key={Partecipant.EventPartecipantEmail}
-                                size="lg"
-                                variant="flat"
-                                onClose={() =>
-                                  deletePartecipant(
-                                    Partecipant.EventPartecipantEmail
-                                  )
-                                }
-                                startContent={
-                                  <div
-                                    className="w-2 h-2 rounded-full"
-                                    style={{
-                                      backgroundColor:
-                                        Partecipant.EventPartecipantRole ===
-                                        "dipendente"
-                                          ? "#EF4444"
-                                          : Partecipant.EventPartecipantRole ===
-                                            "cliente"
-                                          ? "#3B82F6"
-                                          : "#10B981", // Green for external participants
-                                    }}
-                                  />
-                                }
-                              >
-                                {Partecipant.EventPartecipantEmail}
-                              </Chip>
-                            ))}
-                          </div>
-                        </dd>
+                              {user.EventPartecipantEmail}
+                            </AutocompleteItem>
+                          ))}
+                        </Autocomplete>
                       </div>
 
-                      <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
-                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                          <Icon icon="solar:tag-linear" fontSize={18} />
-                          Tag
-                        </dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          <div className="flex flex-row gap-2">
-                            <Autocomplete
-                              defaultItems={tags}
-                              onSelectionChange={(e) => {
-                                e &&
-                                  e.toString() &&
-                                  setNewTag({
-                                    EventTagId:
-                                      tags.find((t) => t.EventTagName === e)
-                                        ?.EventTagId || 0,
-                                    EventTagName: e?.toString() || "",
-                                  });
-                              }}
-                              placeholder="Tag"
-                            >
-                              {tags.map((tag) => (
-                                <AutocompleteItem
-                                  startContent={
-                                    <div
-                                      className="w-2 h-2 rounded-full"
-                                      style={{
-                                        backgroundColor: newEvent.EventColor,
-                                      }}
-                                    />
-                                  }
-                                  key={tag.EventTagName}
-                                  value={tag.EventTagName}
-                                >
-                                  {tag.EventTagName}
-                                </AutocompleteItem>
-                              ))}
-                            </Autocomplete>
-                          </div>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {newTag.EventTagName && (
-                              <Chip
-                                key={newTag.EventTagName}
-                                size="lg"
-                                variant="flat"
-                                onClose={() =>
-                                  setNewTag({
-                                    EventTagId: 0,
-                                    EventTagName: "",
-                                  })
-                                }
-                                startContent={
-                                  <div
-                                    className="w-2 h-2 rounded-full"
-                                    style={{
-                                      backgroundColor: newEvent.EventColor,
-                                    }}
-                                  />
-                                }
-                              >
-                                {newTag.EventTagName}
-                              </Chip>
-                            )}
-                          </div>
-                        </dd>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {Partecipants.map((Partecipant) => (
+                          <Chip
+                            key={Partecipant.EventPartecipantEmail}
+                            size="lg"
+                            variant="flat"
+                            onClose={() =>
+                              deletePartecipant(
+                                Partecipant.EventPartecipantEmail
+                              )
+                            }
+                            startContent={
+                              <div
+                                className="w-2 h-2 rounded-full"
+                                style={{
+                                  backgroundColor:
+                                    Partecipant.EventPartecipantRole ===
+                                    "dipendente"
+                                      ? "#EF4444"
+                                      : Partecipant.EventPartecipantRole ===
+                                        "cliente"
+                                      ? "#3B82F6"
+                                      : "#10B981", // Green for external participants
+                                }}
+                              />
+                            }
+                          >
+                            {Partecipant.EventPartecipantEmail}
+                          </Chip>
+                        ))}
                       </div>
-                    </div>
-                    <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <Icon icon="solar:location-linear" fontSize={18} />
-                        Location
-                      </dt>
-                      <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        <Input
-                          type="text"
-                          placeholder="Location"
-                          className="w-full"
-                          value={newEvent.EventLocation}
-                          onChange={(e) =>
-                            setNewEvent((prev) => ({
-                              ...prev,
-                              EventLocation: e.target.value,
-                            }))
-                          }
-                        />
-                      </dd>
-                    </div>
-                  </dl>
+                    </dd>
+                  </div>
+
+                  <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
+                    <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                      <Icon icon="solar:tag-linear" fontSize={18} />
+                      Tag
+                    </dt>
+                    <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                      <div className="flex flex-row gap-2">
+                        <Autocomplete
+                          variant="bordered"
+                          radius="full"
+                          defaultItems={tags}
+                          onSelectionChange={(e) => {
+                            e &&
+                              e.toString() &&
+                              setNewTag({
+                                EventTagId:
+                                  tags.find((t) => t.EventTagName === e)
+                                    ?.EventTagId || 0,
+                                EventTagName: e?.toString() || "",
+                              });
+                          }}
+                          placeholder="Tag"
+                        >
+                          {tags.map((tag) => (
+                            <AutocompleteItem
+                              startContent={
+                                <div
+                                  className="w-2 h-2 rounded-full"
+                                  style={{
+                                    backgroundColor: newEvent.EventColor,
+                                  }}
+                                />
+                              }
+                              key={tag.EventTagName}
+                              value={tag.EventTagName}
+                            >
+                              {tag.EventTagName}
+                            </AutocompleteItem>
+                          ))}
+                        </Autocomplete>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {newTag.EventTagName && (
+                          <Chip
+                            key={newTag.EventTagName}
+                            size="lg"
+                            variant="flat"
+                            onClose={() =>
+                              setNewTag({
+                                EventTagId: 0,
+                                EventTagName: "",
+                              })
+                            }
+                            startContent={
+                              <div
+                                className="w-2 h-2 rounded-full"
+                                style={{
+                                  backgroundColor: newEvent.EventColor,
+                                }}
+                              />
+                            }
+                          >
+                            {newTag.EventTagName}
+                          </Chip>
+                        )}
+                      </div>
+                    </dd>
+                  </div>
+                </div>
+
+                <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
+                  <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                    <Icon icon="basil:location-outline" fontSize={18} />
+                    Location
+                  </dt>
+                  <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                    <Input
+                      variant="bordered"
+                      radius="full"
+                      type="text"
+                      placeholder="Location"
+                      className="w-full"
+                      value={newEvent.EventLocation}
+                      onChange={(e) =>
+                        setNewEvent((prev) => ({
+                          ...prev,
+                          EventLocation: e.target.value,
+                        }))
+                      }
+                    />
+                  </dd>
                 </div>
               </ModalBody>
               <ModalFooter>
@@ -663,8 +715,7 @@ export default function AddEventModal({
                     !newEvent.EventStartTime ||
                     !newEvent.EventEndDate ||
                     !newEvent.EventEndTime ||
-                    !newEvent.EventColor ||
-                    !newTag.EventTagName
+                    !newEvent.EventColor
                   }
                   color="primary"
                   onClick={handleAddEvent}

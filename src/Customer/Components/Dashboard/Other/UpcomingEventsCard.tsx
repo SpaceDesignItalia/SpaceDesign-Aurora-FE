@@ -72,7 +72,10 @@ export default function UpcomingEventsCard() {
                   {event.time} | {dayjs(event.date).format("DD MMMM YYYY")}
                 </p>
                 <p className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 italic">
-                  <Icon icon="solar:location-linear" className="text-primary" />
+                  <Icon
+                    icon="basil:location-outline"
+                    className="text-primary"
+                  />
                   {event.location}
                 </p>
               </div>
@@ -102,7 +105,7 @@ export default function UpcomingEventsCard() {
                           </p>
                           <p className="flex items-center gap-2 text-sm italic">
                             <Icon
-                              icon="solar:location-linear"
+                              icon="basil:location-outline"
                               className="text-primary"
                             />
                             {event.location}
