@@ -448,36 +448,37 @@ END:VEVENT`;
                   <DropdownItem
                     key="day"
                     onClick={() => setView("day")}
-                    endContent={
-                      <Kbd keys={[isMac ? "command" : "ctrl"]}>1</Kbd>
-                    }
+                    {...(isMac
+                      ? { endContent: <Kbd keys={["command"]}>+ 1</Kbd> }
+                      : { shortcut: "CTRL + 1" })}
                   >
                     Giorno
                   </DropdownItem>
+
                   <DropdownItem
                     key="week"
                     onClick={() => setView("week")}
-                    endContent={
-                      <Kbd keys={[isMac ? "command" : "ctrl"]}>2</Kbd>
-                    }
+                    {...(isMac
+                      ? { endContent: <Kbd keys={["command"]}>+ 2</Kbd> }
+                      : { shortcut: "CTRL + 2" })}
                   >
                     Settimana
                   </DropdownItem>
                   <DropdownItem
                     key="month"
                     onClick={() => setView("month")}
-                    endContent={
-                      <Kbd keys={[isMac ? "command" : "ctrl"]}>3</Kbd>
-                    }
+                    {...(isMac
+                      ? { endContent: <Kbd keys={["command"]}>+ 3</Kbd> }
+                      : { shortcut: "CTRL + 3" })}
                   >
                     Mese
                   </DropdownItem>
                   <DropdownItem
                     key="year"
                     onClick={() => setView("year")}
-                    endContent={
-                      <Kbd keys={[isMac ? "command" : "ctrl"]}>4</Kbd>
-                    }
+                    {...(isMac
+                      ? { endContent: <Kbd keys={["command"]}>+ 4</Kbd> }
+                      : { shortcut: "CTRL + 4" })}
                   >
                     Anno
                   </DropdownItem>

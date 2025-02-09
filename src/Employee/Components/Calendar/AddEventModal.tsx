@@ -376,7 +376,7 @@ export default function AddEventModal({
               </ModalHeader>
               <ModalBody>
                 <div className="mt-4 grid md:grid-cols-2 grid-cols-1 gap-4">
-                  <dl className="col-span-1">
+                  <dl className="col-span-2">
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
                         <Icon icon="solar:calendar-linear" fontSize={18} />
@@ -454,7 +454,7 @@ export default function AddEventModal({
                       </dd>
                     </div>
                   </dl>
-                  <div className="col-span-1">
+                  <div className="col-span-2">
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
                         <Icon
@@ -549,6 +549,10 @@ export default function AddEventModal({
                             }
                           }}
                           placeholder="Seleziona partecipanti"
+                          listboxProps={{
+                            emptyContent:
+                              "Inserisci l'indirizzo email se il partecipante non è presente in lista",
+                          }}
                         >
                           {users.map((user) => (
                             <AutocompleteItem
