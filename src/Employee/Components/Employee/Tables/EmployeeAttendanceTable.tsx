@@ -31,7 +31,6 @@ interface Employee {
 
 interface Props {
   employees: Employee[];
-  previousMonthEmployees: Employee[];
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   loggedStafferId: number;
@@ -39,7 +38,6 @@ interface Props {
 
 export default function EmployeeAttendanceTable({
   employees,
-  previousMonthEmployees,
   selectedDate,
   onDateChange,
   loggedStafferId,
@@ -93,8 +91,7 @@ export default function EmployeeAttendanceTable({
       isFirst: boolean;
       startDate: Date;
     },
-    key: string,
-    employee: Employee
+    key: string
   ) => {
     return (
       <div
@@ -135,7 +132,7 @@ export default function EmployeeAttendanceTable({
       if (!attendance) {
         if (currentStreak) {
           attendanceBlocks.push(
-            renderStreak(currentStreak, `${date.toISOString()}-end`, employee)
+            renderStreak(currentStreak, `${date.toISOString()}-end`)
           );
           currentStreak = null;
         }
@@ -165,7 +162,7 @@ export default function EmployeeAttendanceTable({
         currentStreak.count++;
       } else {
         attendanceBlocks.push(
-          renderStreak(currentStreak, `${date.toISOString()}-streak`, employee)
+          renderStreak(currentStreak, `${date.toISOString()}-streak`)
         );
         currentStreak = {
           status: attendance.status,
@@ -177,7 +174,7 @@ export default function EmployeeAttendanceTable({
 
       if (index === days.length - 1 && currentStreak) {
         attendanceBlocks.push(
-          renderStreak(currentStreak, `${date.toISOString()}-last`, employee)
+          renderStreak(currentStreak, `${date.toISOString()}-last`)
         );
       }
     });
@@ -261,18 +258,32 @@ export default function EmployeeAttendanceTable({
           >
             <Icon icon="solar:alt-arrow-left-linear" fontSize={24} />
             <span className="text-sm">
-              {format(subMonths(selectedDate, 1), "MMMM", { locale: it })}
+              {format(subMonths(selectedDate, 1), "MMMM", { locale: it })
+                .charAt(0)
+                .toUpperCase() +
+                format(subMonths(selectedDate, 1), "MMMM", {
+                  locale: it,
+                }).slice(1)}
             </span>
           </button>
           <span className="px-4 py-2 bg-gray-50 rounded-lg font-medium">
-            {format(selectedDate, "MMMM yyyy", { locale: it })}
+            {format(selectedDate, "MMMM", { locale: it })
+              .charAt(0)
+              .toUpperCase() +
+              format(selectedDate, "MMMM", { locale: it }).slice(1)}{" "}
+            {format(selectedDate, "yyyy")}
           </span>
           <button
             onClick={() => onDateChange(addMonths(selectedDate, 1))}
             className="p-2 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-1 text-gray-600"
           >
             <span className="text-sm">
-              {format(addMonths(selectedDate, 1), "MMMM", { locale: it })}
+              {format(addMonths(selectedDate, 1), "MMMM", { locale: it })
+                .charAt(0)
+                .toUpperCase() +
+                format(addMonths(selectedDate, 1), "MMMM", {
+                  locale: it,
+                }).slice(1)}
             </span>
             <Icon icon="solar:alt-arrow-right-linear" fontSize={24} />
           </button>
@@ -310,11 +321,13 @@ export default function EmployeeAttendanceTable({
           </div>
 
           {/* Area scrollabile */}
-          <div
-            className="overflow-x-auto scrollbar-hide"
-            style={{ width: "calc(100% - 16rem)" }}
-          >
-            <div className="min-w-max">
+          <div className="flex-1 overflow-x-auto">
+            <div
+              style={{
+                minWidth: `${getDaysInMonth().length * 64}px`,
+                width: "100%",
+              }}
+            >
               {/* Header giorni */}
               <div className="h-12 bg-gray-50 border-b border-gray-200 flex divide-x divide-gray-200">
                 {getDaysInMonth().map((date) => {

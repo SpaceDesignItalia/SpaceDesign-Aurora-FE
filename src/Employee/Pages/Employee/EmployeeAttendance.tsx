@@ -83,10 +83,35 @@ export default function EmployeeAttendance() {
     }
 
     fetchData();
+  }, [hasPermission, selectedDate]);
 
-    socket.on("employee-attendance-update", () => {
-      fetchData();
-    });
+  useEffect(() => {
+    async function fetchData() {
+      const permission = await hasPermission("VIEW_EMPLOYEE");
+      if (!permission) {
+        return (window.location.href = "/");
+      }
+
+      const sessionData = await axios.get("/Authentication/GET/GetSessionData");
+      setLoggedStafferId(sessionData.data.StafferId);
+
+      // Fetch current month
+      await fetchEmployeeData(selectedDate);
+
+      // Fetch previous month
+      const previousDate = new Date(selectedDate);
+      previousDate.setMonth(previousDate.getMonth() - 1);
+      await fetchEmployeeData(previousDate, true);
+    }
+
+    fetchData();
+    // Set up WebSocket listener
+    socket.on("employee-attendance-update", fetchData);
+
+    // Cleanup function to remove the WebSocket listener when component unmounts
+    return () => {
+      socket.off("employee-attendance-update");
+    };
   }, [hasPermission, selectedDate]);
 
   return (
@@ -124,7 +149,6 @@ export default function EmployeeAttendance() {
             <div className="py-6 lg:py-8">
               <EmployeeAttendanceTable
                 employees={employees}
-                previousMonthEmployees={previousMonthEmployees}
                 selectedDate={selectedDate}
                 onDateChange={setSelectedDate}
                 loggedStafferId={loggedStafferId}
