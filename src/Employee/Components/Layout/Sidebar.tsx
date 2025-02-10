@@ -131,23 +131,37 @@ export default function SidebarLayout() {
 
     if (hasProjectPermission && projects.length > 0) {
       const currentPath = window.location.pathname;
-      const projectSubItems = projects.map((project) => ({
-        key: `project-${project.ProjectId}`,
-        href: `/projects/${project.UniqueCode}`,
-        title: project.ProjectName,
-        startContent: (
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-gray-700 group-hover:text-gray-700">
-            {project.ProjectName.charAt(0)}
-          </span>
-        ),
-        endContent:
-          project.NotificationCount > 0 ? (
-            <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
-              {project.NotificationCount}
+
+      // Aggiunta del pulsante "Tutti i Progetti" senza bordo
+      const projectSubItems = [
+        {
+          key: "all-projects",
+          href: "/projects",
+          title: "Tutti i Progetti",
+          startContent: (
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center text-gray-500 hover:text-gray-700 group-hover:border-gray-700">
+              <Icon icon="solar:move-to-folder-linear" className="h-6 w-6" />
             </span>
-          ) : undefined,
-        selected: currentPath === `/projects/${project.UniqueCode}`,
-      }));
+          ),
+        },
+        ...projects.map((project) => ({
+          key: `project-${project.ProjectId}`,
+          href: `/projects/${project.UniqueCode}`,
+          title: project.ProjectName,
+          startContent: (
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-gray-700 group-hover:text-gray-700">
+              {project.ProjectName.charAt(0)}
+            </span>
+          ),
+          endContent:
+            project.NotificationCount > 0 ? (
+              <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                {project.NotificationCount}
+              </span>
+            ) : undefined,
+          selected: currentPath === `/projects/${project.UniqueCode}`,
+        })),
+      ];
 
       const projectItems = projectManagementItems.map((section) => ({
         ...section,
