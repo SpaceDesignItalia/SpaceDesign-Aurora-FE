@@ -164,10 +164,7 @@ export default function UpcomingCalendarEvents() {
               ))
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-                <Icon
-                  icon="material-symbols:event-busy"
-                  className="h-12 w-12 mb-2"
-                />
+                <Icon icon="solar:calendar-linear" className="h-12 w-12 mb-2" />
                 <p>Nessun evento in programma</p>
               </div>
             )}
