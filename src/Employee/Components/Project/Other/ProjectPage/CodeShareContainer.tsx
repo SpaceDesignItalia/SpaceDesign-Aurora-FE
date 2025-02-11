@@ -180,36 +180,11 @@ export default function CodeShareContainer({
                     Crea code share
                   </p>
                   <div className="mt-2 flex flex-col gap-2 w-full">
-                    <Input
-                      autoFocus
-                      variant="underlined"
-                      color="primary"
-                      placeholder="Titolo del code share"
-                      value={newCodeShareName}
-                      onChange={(e) => setNewCodeShareName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleAddCodeShare(); // Chiama la funzione quando premi "Enter"
-                        }
-                      }}
-                    />
-                    <Button
-                      color="primary"
-                      size="sm"
-                      radius="full"
-                      onPress={handleAddCodeShare}
-                      startContent={
-                        <Icon icon="mynaui:plus-solid" fontSize={20} />
-                      }
-                      isDisabled={newCodeShareName === ""}
-                    >
-                      Nome della stanza
-                    </Button>
                     <div className="flex flex-col gap-4 w-full">
                       <Input
                         size="sm"
                         autoFocus
-                        variant="bordered"
+                        variant="underlined"
                         color="primary"
                         label="Nome della stanza"
                         placeholder="Es. Notifiche.tsx"
