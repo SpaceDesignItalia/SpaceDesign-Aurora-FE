@@ -717,8 +717,8 @@ export default function ViewTaskModal({
                         }
                       />
                       <ConfirmDeleteTaskModal
-                        TaskData={TaskData}
-                        DeleteTask={DeleteTask}
+                        TaskData={[TaskData]}
+                        DeleteTasks={(tasks) => DeleteTask(tasks[0])}
                       />
                       <Button
                         color="primary"
