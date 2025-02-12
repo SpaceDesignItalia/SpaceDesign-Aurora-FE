@@ -2,6 +2,8 @@ import { format, addMonths, subMonths, startOfMonth } from "date-fns";
 import { it } from "date-fns/locale";
 import { Icon } from "@iconify/react";
 import {
+  Autocomplete,
+  AutocompleteItem,
   Avatar,
   Button,
   Dropdown,
@@ -263,10 +265,10 @@ export default function EmployeeAttendanceTable({
         <div className="flex items-center gap-4">
           <button
             onClick={() => onDateChange(subMonths(selectedDate, 1))}
-            className="p-2 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-1 text-gray-600"
+            className="p-2.5 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-2 text-gray-600"
           >
-            <Icon icon="solar:alt-arrow-left-linear" fontSize={24} />
-            <span className="text-sm">
+            <Icon icon="solar:alt-arrow-left-linear" className="w-5 h-5" />
+            <span className="text-sm font-medium">
               {format(subMonths(selectedDate, 1), "MMMM", { locale: it })
                 .charAt(0)
                 .toUpperCase() +
@@ -275,18 +277,18 @@ export default function EmployeeAttendanceTable({
                 }).slice(1)}
             </span>
           </button>
-          <span className="px-4 py-2 bg-gray-50 rounded-lg font-medium">
+          <div className="px-4 py-2.5 bg-gray-50 rounded-xl font-medium text-gray-900">
             {format(selectedDate, "MMMM", { locale: it })
               .charAt(0)
               .toUpperCase() +
               format(selectedDate, "MMMM", { locale: it }).slice(1)}{" "}
             {format(selectedDate, "yyyy")}
-          </span>
+          </div>
           <button
             onClick={() => onDateChange(addMonths(selectedDate, 1))}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-1 text-gray-600"
+            className="p-2.5 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-2 text-gray-600"
           >
-            <span className="text-sm">
+            <span className="text-sm font-medium">
               {format(addMonths(selectedDate, 1), "MMMM", { locale: it })
                 .charAt(0)
                 .toUpperCase() +
@@ -294,7 +296,7 @@ export default function EmployeeAttendanceTable({
                   locale: it,
                 }).slice(1)}
             </span>
-            <Icon icon="solar:alt-arrow-right-linear" fontSize={24} />
+            <Icon icon="solar:alt-arrow-right-linear" className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -302,15 +304,15 @@ export default function EmployeeAttendanceTable({
       <div className="relative">
         <div className="flex">
           {/* Colonna nomi fissa */}
-          <div className="w-64 pl-2 flex-shrink-0 sticky left-0 bg-white z-10 border-r border-gray-200">
-            <div className="flex items-center h-12 bg-gray-50 border-1 rounded-l-lg border-gray-200 p-4 font-medium text-gray-600 text-sm shadow-md">
+          <div className="w-64 border-r-2 flex-shrink-0 sticky left-0 bg-white z-10">
+            <div className="flex items-center h-12 p-4 font-medium text-gray-600 text-sm">
               Nome
             </div>
             {employees.map((employee, index) => (
               <div
                 key={employee.id}
-                className={`h-12 flex items-center gap-2 p-4 border-b border-gray-100 rounded-l-lg ${
-                  index % 2 === 0 ? "bg-gray-200" : ""
+                className={`h-12 flex items-center gap-2 p-4 border-b border-gray-100 ${
+                  index % 2 === 0 ? "bg-gray-100" : ""
                 }`}
               >
                 {employee.avatar ? (
@@ -320,7 +322,7 @@ export default function EmployeeAttendanceTable({
                     alt={employee.name}
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
                     {employee.name.charAt(0)}
                   </div>
                 )}
@@ -434,7 +436,7 @@ export default function EmployeeAttendanceTable({
                     <div
                       key={employeeIndex}
                       className={`h-12 flex divide-x divide-gray-200 ${
-                        employeeIndex % 2 === 0 ? "bg-gray-200" : ""
+                        employeeIndex % 2 === 0 ? "bg-gray-100" : ""
                       }`}
                     >
                       {getDaysInMonth().map((date) => (
