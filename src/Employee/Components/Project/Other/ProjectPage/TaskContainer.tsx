@@ -249,18 +249,22 @@ export default function TaskContainer({
 
   const [activeTab, setActiveTab] = useState("Attive");
 
+  const [archivedTasks, setArchivedTasks] = useState<Task[]>([]);
+
   const tabs = [
     {
       title: "Attive",
       icon: <Icon icon="solar:check-read-linear" fontSize={22} />,
+      number: columns
+        .map((column) => taskCounts[column.ProjectTaskStatusId])
+        .reduce((a, b) => a + b, 0),
     },
     {
       title: "Archiviate",
       icon: <Icon icon="solar:archive-linear" fontSize={22} />,
+      number: archivedTasks.length,
     },
   ];
-
-  const [archivedTasks, setArchivedTasks] = useState<Task[]>([]);
 
   useEffect(() => {
     async function fetchArchivedTasks() {
@@ -342,6 +346,16 @@ export default function TaskContainer({
                       <div className="flex items-center space-x-2">
                         {tab.icon}
                         <span>{tab.title}</span>
+                        {tab.number && (
+                          <Chip
+                            radius="full"
+                            color="primary"
+                            variant="faded"
+                            size="sm"
+                          >
+                            {tab.number}
+                          </Chip>
+                        )}
                       </div>
                     }
                   />
@@ -469,6 +483,7 @@ export default function TaskContainer({
                       {archivedTasks.length}
                     </Chip>
                   </h2>
+
                   <div
                     className={cn(
                       "w-full p-2 grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-5 h-auto bg-lightgrey"
