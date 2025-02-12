@@ -9,6 +9,7 @@ import axios from "axios";
 import { API_URL_IMG } from "../../../API/API";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
+import AttendanceReciverModal from "../../Components/Employee/Other/AttendanceReciverModal";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -121,17 +122,20 @@ export default function EmployeeAttendance() {
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
             Tabella presenze
           </h1>
-          <Breadcrumbs variant="bordered" radius="full">
-            <BreadcrumbItem href="/">
-              <Icon icon="solar:home-2-linear" fontSize={18} />
-            </BreadcrumbItem>
-            <BreadcrumbItem href="/administration/employee">
-              Dipendenti
-            </BreadcrumbItem>
-            <BreadcrumbItem href="/administration/employee/attendance">
-              Tabella presenze
-            </BreadcrumbItem>
-          </Breadcrumbs>
+          <div className="flex flex-row justify-between">
+            <Breadcrumbs variant="bordered" radius="full">
+              <BreadcrumbItem href="/">
+                <Icon icon="solar:home-2-linear" fontSize={18} />
+              </BreadcrumbItem>
+              <BreadcrumbItem href="/administration/employee">
+                Dipendenti
+              </BreadcrumbItem>
+              <BreadcrumbItem href="/administration/employee/attendance">
+                Tabella presenze
+              </BreadcrumbItem>
+            </Breadcrumbs>
+            <AttendanceReciverModal />
+          </div>
         </div>
       </header>
       <main className="px-4 sm:px-6 lg:px-8">
