@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from "react";
 import UpcomingCalendarEvents from "../../Components/Dashboard/Other/UpcomingCalendarEvents";
 import AttendanceWeekView from "../../Components/Dashboard/Other/AttendanceWeekView";
@@ -109,9 +111,7 @@ export default function Dashboard() {
             ProjectId: project.ProjectId,
             ProjectName: project.ProjectName,
             Tasks: tasks.sort((a, b) =>
-              dayjs(a.ProjectTaskExpiration).diff(
-                dayjs(b.ProjectTaskExpiration)
-              )
+              dayjs(a.ProjectTaskExpiration).diff(dayjs(b.ProjectTaskExpiration))
             ),
           });
         }
@@ -135,7 +135,11 @@ export default function Dashboard() {
     socket.on("employee-attendance-update", () => {
       fetchAttendances();
     });
-  }, []);
+
+    return () => {
+      socket.off("employee-attendance-update");
+    };
+  }, [stafferId]);
 
   return (
     <div className="py-10 m-0 lg:ml-72">
@@ -152,15 +156,21 @@ export default function Dashboard() {
             <Spinner />
           </div>
         ) : (
-          <div className="grid grid-cols-6 gap-5">
-            <div className="col-span-4 flex flex-col gap-5 h-screen">
-              <div className="border-2 rounded-xl p-6 bg-white">
-                <h2 className="text-xl font-semibold mb-6">Le tue presenze</h2>
-
+          <div className="grid grid-cols-1 lg:grid-cols-6 gap-5">
+            <div className="lg:col-span-4 flex flex-col gap-5">
+              <div className="border-2 rounded-xl p-4 sm:p-6 bg-white">
+                <h2 className="text-xl font-semibold mb-6">
+                  Le tue presenze
+                </h2>
                 <AttendanceWeekView
                   stafferId={stafferId}
                   attendances={attendances.current}
                 />
+              </div>
+
+              {/* Versione mobile di UpcomingCalendarEvents (visualizzata solo su mobile) */}
+              <div className="block lg:hidden">
+                <UpcomingCalendarEvents />
               </div>
 
               <div>
@@ -170,22 +180,18 @@ export default function Dashboard() {
                 />
               </div>
 
-              <div className="col-span-4">
-                <div className="border-2 rounded-xl p-6 bg-white">
+              <div>
+                <div className="border-2 rounded-xl p-4 sm:p-6 bg-white">
                   <h2 className="text-xl font-semibold mb-6">
                     Task In Scadenza
                   </h2>
-                  {isLoading ? (
-                    <div className="flex justify-center items-center h-full">
-                      <Spinner />
-                    </div>
-                  ) : (
-                    <EndingTasks projects={endingTasks} />
-                  )}
+                  <EndingTasks projects={endingTasks} />
                 </div>
               </div>
             </div>
-            <div className="col-span-2">
+
+            {/* Versione desktop di UpcomingCalendarEvents (visualizzata solo su desktop) */}
+            <div className="lg:col-span-2 hidden lg:block">
               <UpcomingCalendarEvents />
             </div>
           </div>

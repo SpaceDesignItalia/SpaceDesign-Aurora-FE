@@ -70,14 +70,25 @@ export default function SidebarLayout() {
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
 
   useEffect(() => {
-    axios
-      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
-      .then((res) => {
-        setUserData(res.data);
-        socket.emit("join-notifications", res.data.StafferId);
-      });
-    fetchProjects();
-  }, [currentUrl, notificationUpdate]);
+    const fetchData = async () => {
+      try {
+        const sessionData = await axios.get("/Authentication/GET/GetSessionData");
+        setUserData(sessionData.data);
+        socket.emit("join-notifications", sessionData.data.StafferId);
+        await fetchProjects(); // Assicurati che questa funzione non aggiorni uno stato che causa un nuovo rendering
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchData();
+
+    // Cleanup function
+    return () => {
+      socket.off("delete-notifications");
+      socket.off("newNotification");
+    };
+  }, []); // Assicurati che le dipendenze siano corrette
 
   useEffect(() => {
     getAllSidebarItems().then((items) => {
@@ -87,18 +98,18 @@ export default function SidebarLayout() {
 
   useEffect(() => {
     socket.on("delete-notifications", () => {
-      setNotificationUpdate(!notificationUpdate);
+      setNotificationUpdate((prev) => !prev);
     });
 
     socket.on("newNotification", () => {
-      setNotificationUpdate(!notificationUpdate);
+      setNotificationUpdate((prev) => !prev);
     });
 
     return () => {
       socket.off("delete-notifications");
       socket.off("newNotification");
     };
-  }, [notificationUpdate]);
+  }, []);
 
   function fetchProjects() {
     axios
