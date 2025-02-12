@@ -245,6 +245,15 @@ export default function EmployeeAttendanceTable({
     document.body.removeChild(link);
   };
 
+  async function sendAttendance() {
+    await axios.post("/Staffer/POST/SendAttendanceReport", {
+      month:
+        format(selectedDate, "MMMM", { locale: it }).charAt(0).toUpperCase() +
+        format(selectedDate, "MMMM", { locale: it }).slice(1),
+      year: format(selectedDate, "yyyy"),
+    });
+  }
+
   return (
     <div className="rounded-2xl shadow-sm border-2">
       <div className="mb-6 flex justify-between items-center border-b border-gray-100 pb-4">
@@ -476,6 +485,20 @@ export default function EmployeeAttendanceTable({
               </div>
             ))}
           </div>
+
+          <Button
+            color="primary"
+            variant="ghost"
+            radius="full"
+            startContent={<Icon icon="solar:letter-linear" fontSize={24} />}
+            onPress={sendAttendance}
+          >
+            Invia presenze di{" "}
+            {format(selectedDate, "MMMM", { locale: it })
+              .charAt(0)
+              .toUpperCase() +
+              format(selectedDate, "MMMM", { locale: it }).slice(1)}
+          </Button>
         </div>
       </div>
     </div>
