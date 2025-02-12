@@ -457,7 +457,7 @@ export default function TaskContainer({
                       color="primary"
                       radius="full"
                       className="w-fit"
-                      onClick={toggleMultiSelect}
+                      onPress={toggleMultiSelect}
                     >
                       {isMultiSelect
                         ? "Disabilita Selezione Multipla"
@@ -467,7 +467,7 @@ export default function TaskContainer({
                   <Button
                     color="primary"
                     radius="full"
-                    onClick={() =>
+                    onPress={() =>
                       setModalAddData({ ...modalAddData, open: true })
                     }
                     startContent={
@@ -481,7 +481,7 @@ export default function TaskContainer({
                   <Button
                     color="primary"
                     radius="full"
-                    onClick={() =>
+                    onPress={() =>
                       setModalAddData({ ...modalAddData, open: true })
                     }
                     startContent={
