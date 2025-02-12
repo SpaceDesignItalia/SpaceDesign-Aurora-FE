@@ -57,12 +57,13 @@ interface Checklist {
 }
 
 interface ConfirmDeleteTaskModalProps {
-  TaskData: Task;
-  DeleteTask: (Task: Task) => void;
+  TaskData: Task[];
+  DeleteTasks: (tasks: Task[]) => void;
 }
+
 export default function ConfirmDeleteTaskModal({
   TaskData,
-  DeleteTask,
+  DeleteTasks,
 }: ConfirmDeleteTaskModalProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   return (
@@ -99,7 +100,7 @@ export default function ConfirmDeleteTaskModal({
               className="text-warning"
               fontSize={20}
             />
-            Sei sicuro?
+            Sei sicuro di voler eliminare {TaskData.length} task?
           </div>
           <div className="flex flex-row gap-2">
             <Button
@@ -114,7 +115,7 @@ export default function ConfirmDeleteTaskModal({
               color="danger"
               variant="ghost"
               onClick={() => {
-                DeleteTask(TaskData);
+                DeleteTasks(TaskData);
               }}
               radius="sm"
               size="sm"
