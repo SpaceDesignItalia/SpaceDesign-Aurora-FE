@@ -2,8 +2,6 @@ import { format, addMonths, subMonths, startOfMonth } from "date-fns";
 import { it } from "date-fns/locale";
 import { Icon } from "@iconify/react";
 import {
-  Autocomplete,
-  AutocompleteItem,
   Avatar,
   Button,
   Dropdown,
@@ -18,6 +16,8 @@ import { formatInTimeZone } from "date-fns-tz";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../API/API";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver"; // npm install file-saver
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -203,50 +203,6 @@ export default function EmployeeAttendanceTable({
     }
   }
 
-  const exportCSV = () => {
-    const days = getDaysInMonth();
-    const headers = ["Nome", ...days.map((date) => format(date, "dd"))];
-
-    const statusInitials = {
-      present: "P",
-      absent: "A",
-      vacation: "F",
-      smartworking: "S",
-    };
-
-    const csvData = employees.map((employee) => {
-      const row = [employee.name];
-      days.forEach((date) => {
-        const attendance = employee.attendances.find(
-          (a) => new Date(a.date).toDateString() === date.toDateString()
-        );
-        row.push(
-          attendance
-            ? statusInitials[attendance.status as keyof typeof statusInitials]
-            : ""
-        );
-      });
-      return row;
-    });
-
-    const csvContent = [headers, ...csvData]
-      .map((row) => row.join(","))
-      .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `presenze_${format(selectedDate, "MMMM_yyyy", { locale: it })}.csv`
-    );
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   async function sendAttendance() {
     await axios.post("/Staffer/POST/SendAttendanceReport", {
       month:
@@ -254,6 +210,140 @@ export default function EmployeeAttendanceTable({
         format(selectedDate, "MMMM", { locale: it }).slice(1),
       year: format(selectedDate, "yyyy"),
     });
+  }
+
+  async function exportAttendanceToExcel(employees, selectedDate) {
+    // Creazione del workbook e del foglio
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Presenze");
+
+    // Titolo della tabella
+    worksheet.getCell("A1").value = `Nome completo`;
+    worksheet.getCell("A1").font = { size: 16, bold: true };
+
+    // Intestazione della tabella
+    worksheet.columns = [
+      { header: "Nome", key: "name", width: 30 },
+      ...Array.from(
+        {
+          length: new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth() + 1,
+            0
+          ).getDate(),
+        },
+        (_, i) => ({
+          header: (i + 1).toString(),
+          key: `day_${i + 1}`,
+          width: 10,
+        })
+      ),
+    ];
+
+    // Definizione dei colori e delle iniziali per ciascuno stato
+    const statusColors = {
+      P: "FFCCFFCC", // Verde chiaro
+      SW: "FFCCCCFF", // Viola chiaro
+      A: "FFFFCCCC", // Giallo chiaro
+      ML: "FFFF9999", // Rosso chiaro
+    };
+
+    // Riempimento dei dati
+    employees.forEach((employee: Employee) => {
+      const row = {
+        name: employee.name,
+      };
+
+      employee.attendances.forEach((attendance: any) => {
+        const date: any = new Date(attendance.date);
+        if (
+          date.getMonth() === selectedDate.getMonth() &&
+          date.getFullYear() === selectedDate.getFullYear()
+        ) {
+          console.log(attendance.status);
+          // Imposta solo l'iniziale nello stato
+          const initial =
+            attendance.status === "present"
+              ? "P"
+              : attendance.status === "smartworking"
+              ? "SW"
+              : attendance.status === "absent"
+              ? "A"
+              : attendance.status === "vacation"
+              ? "F"
+              : "";
+
+          row[`day_${date.getDate()}`] = initial;
+        }
+      });
+
+      // Aggiungi la riga al foglio
+      const newRow = worksheet.addRow(row);
+
+      // Colora ogni cella basata sullo stato
+      newRow.eachCell((cell, colNumber) => {
+        if (colNumber > 1) {
+          // Escludi la colonna del nome
+          const initial = cell.value;
+          if (statusColors[initial]) {
+            cell.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: statusColors[initial] },
+            };
+          }
+        }
+      });
+    });
+
+    // Formattazione delle celle
+    worksheet.eachRow((row, rowNumber) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+        cell.alignment = { vertical: "middle", horizontal: "center" };
+      });
+      if (rowNumber === 1) {
+        row.font = { bold: true };
+      }
+    });
+
+    // Aggiunta della legenda
+    const legendRow = worksheet.addRow([]);
+    legendRow.getCell(1).value = "Legenda:";
+    legendRow.getCell(1).font = { bold: true };
+
+    const statuses = [
+      { label: "Presente", initial: "P", color: statusColors.P },
+      { label: "SmartWorking", initial: "SW", color: statusColors.SW },
+      { label: "Assente", initial: "A", color: statusColors.A },
+      { label: "Malattia", initial: "ML", color: statusColors.ML },
+    ];
+
+    statuses.forEach((status, index) => {
+      const cell = legendRow.getCell(index + 2);
+      cell.value = `${status.initial} - ${status.label}`;
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: status.color },
+      };
+    });
+
+    // Salva il file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/octet-stream" });
+    saveAs(
+      blob,
+      `Presenze_${selectedDate.toLocaleString("it-IT", {
+        month: "long",
+        year: "numeric",
+      })}.xlsx`
+    );
   }
 
   return (
@@ -467,7 +557,7 @@ export default function EmployeeAttendanceTable({
             startContent={
               <Icon icon="solar:file-download-linear" fontSize={24} />
             }
-            onClick={exportCSV}
+            onPress={() => exportAttendanceToExcel(employees, selectedDate)}
           >
             Esporta Tabella
           </Button>
