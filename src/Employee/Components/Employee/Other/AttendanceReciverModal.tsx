@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Input,
@@ -15,32 +15,45 @@ import {
   Divider,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import axios from "axios";
 
 export default function AttendanceReciverModal() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [email, setEmail] = React.useState<string>("");
-  const [userEmails, setUserEmails] = useState<string[]>([]);
+  const [userEmails, setUserEmails] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  // Memoize the user list to avoid re-rendering when changing the selected keys
+  useEffect(() => {
+    fetchUserEmails();
+  }, [email]);
+
+  async function fetchUserEmails() {
+    axios.get("/Staffer/GET/GetAttendanceEmails").then((res) => {
+      setUserEmails(res.data);
+    });
+  }
+
   const userList = useMemo(
     () => (
       <div className="mt-2 flex flex-col gap-2 max-h-[300px] overflow-y-auto">
         {userEmails.length > 0 ? (
           userEmails.map((userEmail, index) => (
-            <>
-              <div key={index} className="flex justify-between items-center">
-                <span>{userEmail}</span>
+            <div key={index}>
+              <div className="flex justify-between items-center">
+                <span>{userEmail.AttendanceReportEmail}</span>
                 <Button
                   variant="light"
                   color="danger"
                   size="sm"
-                  onPress={() => handleRemoveUser(userEmail)}
+                  onPress={() =>
+                    handleRemoveUser(userEmail.AttendanceReportEmail)
+                  }
                 >
                   <Icon icon="solar:trash-bin-trash-linear" fontSize={20} />
                 </Button>
               </div>
               <Divider />
-            </>
+            </div>
           ))
         ) : (
           <div className="flex flex-col items-center justify-center gap-2">
@@ -59,18 +72,32 @@ export default function AttendanceReciverModal() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    console.log("handleSubmit");
+    handleAddUser(); // Permettiamo sempre l'invio, anche con errori
   };
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
+    setError(null); // Reset dell'errore al cambiamento dell'email
   };
 
   const handleAddUser = () => {
     if (email) {
-      setUserEmails((prevEmails) => [...prevEmails, email]);
-      setEmail("");
+      axios
+        .post("/Staffer/POST/AddAttendanceEmail", {
+          AttendanceEmail: email,
+        })
+        .then(() => {
+          setEmail("");
+          setError(null);
+          fetchUserEmails();
+        })
+        .catch((err) => {
+          if (err.response && err.response.status === 409) {
+            setError("Questa email è già stata aggiunta.");
+          } else {
+            setError("Errore nell'aggiunta dell'email.");
+          }
+        });
     }
   };
 
@@ -81,10 +108,13 @@ export default function AttendanceReciverModal() {
     }
   };
 
-  const handleRemoveUser = (emailToRemove: string) => {
-    setUserEmails((prevEmails) =>
-      prevEmails.filter((email) => email !== emailToRemove)
-    );
+  const handleRemoveUser = async (emailToRemove: string) => {
+    const res = await axios.delete("/Staffer/DELETE/DeleteAttendanceEmail", {
+      params: { AttendanceEmail: emailToRemove },
+    });
+    if (res.status === 200) {
+      fetchUserEmails();
+    }
   };
 
   return (
@@ -113,12 +143,11 @@ export default function AttendanceReciverModal() {
               <ModalBody>
                 <div className="flex items-end gap-2">
                   <Form
-                    className="w-full flex-row flex-nowrap items-end"
+                    className="w-full flex-row flex-nowrap justify-center items-start"
                     validationBehavior="native"
                     onSubmit={handleSubmit}
                   >
                     <Input
-                      isRequired
                       variant="bordered"
                       radius="full"
                       name="email"
@@ -127,6 +156,8 @@ export default function AttendanceReciverModal() {
                       value={email}
                       onChange={handleEmailChange}
                       onKeyDown={handleKeyDown}
+                      errorMessage={error} // Mostra il messaggio di errore
+                      isInvalid={!!error}
                     />
                     <Button
                       radius="full"
@@ -144,9 +175,6 @@ export default function AttendanceReciverModal() {
               <ModalFooter className="justify-end gap-2">
                 <Button color="danger" variant="light" onPress={onClose}>
                   Chiudi
-                </Button>
-                <Button color="primary" onPress={onClose}>
-                  Salva
                 </Button>
               </ModalFooter>
             </>
