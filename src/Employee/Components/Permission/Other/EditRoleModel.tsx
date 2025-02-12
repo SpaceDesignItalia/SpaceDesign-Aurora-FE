@@ -1,19 +1,18 @@
-import React, { useEffect, useState, ChangeEvent } from "react";
-import axios from "axios";
-import { useParams } from "react-router-dom";
 import {
-  Input,
   Button,
-  Textarea,
-  CheckboxGroup,
   Checkbox,
+  CheckboxGroup,
+  Input,
   Select,
   SelectItem,
   Spinner,
+  Textarea,
 } from "@heroui/react";
-import StatusAlert from "../../Layout/StatusAlert";
-import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
 import { Icon } from "@iconify/react";
+import axios from "axios";
+import React, { ChangeEvent, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import StatusAlert from "../../Layout/StatusAlert";
 
 interface Role {
   RoleName: string;

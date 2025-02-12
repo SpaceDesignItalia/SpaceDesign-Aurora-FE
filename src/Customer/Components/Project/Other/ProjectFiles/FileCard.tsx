@@ -1,7 +1,3 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { API_URL_IMG } from "../../../../../API/API";
-import ConfirmRemoveFilePopover from "../ConfirmRemoveFilePopover";
 import {
   Button,
   Dropdown,
@@ -9,11 +5,13 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import BorderColorRoundedIcon from "@mui/icons-material/BorderColorRounded";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
-
+import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { API_URL_IMG } from "../../../../../API/API";
+import ConfirmRemoveFilePopover from "../ConfirmRemoveFilePopover";
+import { Icon } from "@iconify/react";
 interface FileCardProps {
   file: any;
   index: number;

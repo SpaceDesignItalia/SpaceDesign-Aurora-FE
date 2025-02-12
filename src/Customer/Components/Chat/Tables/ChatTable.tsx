@@ -1,11 +1,10 @@
 import { Avatar, Button, Input, ScrollShadow, cn } from "@heroui/react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import ChatMessage from "../Other/ChatMessage";
+import { Icon } from "@iconify/react";
 
 const socket = io("http://localhost:3000");
 

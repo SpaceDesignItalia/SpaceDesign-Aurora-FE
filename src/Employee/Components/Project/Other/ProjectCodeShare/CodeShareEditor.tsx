@@ -1,13 +1,14 @@
-import { useEffect, useState, useRef } from "react";
-import axios from "axios";
 import { Button } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import Editor from "@monaco-editor/react";
-import { io, Socket } from "socket.io-client";
-import { API_URL_IMG, API_WEBSOCKET_URL } from "../../../../../API/API";
+import axios from "axios";
 import { toPng } from "html-to-image"; // Importa la libreria per gli screenshot
 import "monaco-editor/min/vs/editor/editor.main.css"; // Importa lo stile di Monaco localmente
-import { Icon } from "@iconify/react";
+import { useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
+import { API_WEBSOCKET_URL } from "../../../../../API/API";
 const socket: Socket = io(API_WEBSOCKET_URL);
+import { Spinner } from "@heroui/react";
 
 interface CodeShareTab {
   ProjectCodeShareId: number;
@@ -50,49 +51,11 @@ export default function CodeShareContainer({
   const editorRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [onlineCodeShareUsers, setOnlineCodeShareUsers] = useState<Employee[]>(
-    []
-  );
+  const [, setOnlineCodeShareUsers] = useState<Employee[]>([]);
 
-  const programmingLanguages = [
-    { label: "JavaScript", value: "javascript" },
-    { label: "TypeScript", value: "typescript" },
-    { label: "HTML", value: "html" },
-    { label: "CSS", value: "css" },
-    { label: "SCSS", value: "scss" },
-    { label: "Python", value: "python" },
-    { label: "Java", value: "java" },
-    { label: "C#", value: "csharp" },
-    { label: "C++", value: "cpp" },
-    { label: "C", value: "c" },
-    { label: "Ruby", value: "ruby" },
-    { label: "PHP", value: "php" },
-    { label: "Swift", value: "swift" },
-    { label: "Kotlin", value: "kotlin" },
-    { label: "Go", value: "go" },
-    { label: "Rust", value: "rust" },
-    { label: "SQL", value: "sql" },
-    { label: "Shell", value: "shell" },
-    { label: "Markdown", value: "markdown" },
-    { label: "JSON", value: "json" },
-    { label: "XML", value: "xml" },
-    { label: "YAML", value: "yaml" },
-    { label: "GraphQL", value: "graphql" },
-    { label: "R", value: "r" },
-    { label: "Dart", value: "dart" },
-    { label: "Scala", value: "scala" },
-    { label: "Haskell", value: "haskell" },
-    { label: "Lua", value: "lua" },
-    { label: "MATLAB", value: "matlab" },
-    { label: "Perl", value: "perl" },
-  ];
-
-  const fontSizeOptions = [
-    { label: "Piccolo", value: 12 },
-    { label: "Normale", value: 14 },
-    { label: "Grande", value: 16 },
-  ];
-
+  setFontSize(14);
+  setTheme("light");
+  setLanguage("javascript");
   async function handleEditorChange(value: string | undefined) {
     setCode(value || "");
 
@@ -286,10 +249,6 @@ export default function CodeShareContainer({
       setConnectedUsers(users);
     });
   }, []);
-
-  const handleLanguageChange = (key: string | null) => {
-    setLanguage(key || "javascript"); // Se key è null, usa 'javascript' come fallback
-  };
 
   return (
     <div className="flex flex-col gap-3">

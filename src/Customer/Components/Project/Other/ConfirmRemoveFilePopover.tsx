@@ -3,8 +3,7 @@
 import { Button, Popover, PopoverContent, PopoverTrigger } from "@heroui/react";
 import { useState } from "react";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
-
+import { Icon } from "@iconify/react";
 interface ConfirmDeleteTaskFileModalProps {
   index: number;
   DeleteFile: (index: number) => void;

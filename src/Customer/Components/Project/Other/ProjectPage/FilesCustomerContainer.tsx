@@ -1,9 +1,3 @@
-import BorderColorRoundedIcon from "@mui/icons-material/BorderColorRounded";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import FolderRoundedIcon from "@mui/icons-material/FolderRounded";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
-import PermMediaIcon from "@mui/icons-material/PermMedia";
 import {
   BreadcrumbItem,
   Breadcrumbs,
@@ -13,6 +7,9 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
+import FolderRoundedIcon from "@mui/icons-material/FolderRounded";
+import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
+import PermMediaIcon from "@mui/icons-material/PermMedia";
 import axios from "axios";
 import { Folder } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -29,6 +26,7 @@ import {
 import FileCard from "../ProjectFiles/FileCard";
 import FileUploaderModal from "../ProjectFiles/FileUploaderModal";
 import FolderSettingsModal from "../ProjectFiles/FolderSettingsModal";
+import { Icon } from "@iconify/react";
 
 const socket = io(API_WEBSOCKET_URL);
 
