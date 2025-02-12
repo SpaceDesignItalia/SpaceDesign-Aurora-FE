@@ -641,12 +641,12 @@ export default function ViewTaskModal({
     setCommentEditingId(0);
   }
 
-  async function DeleteTask(Task: Task) {
+  async function DeleteTask(Task: Task[]) {
     try {
       await axios.delete("/Project/DELETE/DeleteTask", {
-        params: { ProjectTaskId: Task.ProjectTaskId },
+        params: { ProjectTaskId: Task[0].ProjectTaskId },
       });
-      socket.emit("task-news", Task.ProjectId);
+      socket.emit("task-news", Task[0].ProjectId);
 
       setUpdate(!update);
       setAlertData({
@@ -846,8 +846,8 @@ export default function ViewTaskModal({
                         }
                       />
                       <ConfirmDeleteTaskModal
-                        TaskData={TaskData}
-                        DeleteTask={DeleteTask}
+                        TaskData={[TaskData]}
+                        DeleteTasks={DeleteTask}
                       />
                       <Button
                         color="primary"
@@ -1454,10 +1454,10 @@ export default function ViewTaskModal({
                                                       radius="full"
                                                       variant="light"
                                                       onClick={() => {
-                                                        setCommentEditingId(
+                                                        setEditingCheckbox(
                                                           checkbox.CheckboxId
                                                         );
-                                                        setUpdateComment(
+                                                        setCheckboxText(
                                                           checkbox.Text
                                                         );
                                                       }}

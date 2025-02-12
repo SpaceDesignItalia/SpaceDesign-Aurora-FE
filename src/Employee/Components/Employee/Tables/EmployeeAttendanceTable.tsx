@@ -11,11 +11,14 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Select,
+  SelectItem,
 } from "@heroui/react";
 import { formatInTimeZone } from "date-fns-tz";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../API/API";
+import { useState } from "react";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -245,13 +248,90 @@ export default function EmployeeAttendanceTable({
     document.body.removeChild(link);
   };
 
+  const [isMultiSelect, setIsMultiSelect] = useState(false);
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+
+  const handleDaySelect = (date: Date) => {
+    const dateString = date.toDateString();
+    setSelectedDays((prev) =>
+      prev.includes(dateString)
+        ? prev.filter((d) => d !== dateString)
+        : [...prev, dateString]
+    );
+  };
+
+  const changeSelectedDaysStatus = (newStatus: string) => {
+    console.log(selectedDays);
+    console.log(newStatus);
+    selectedDays.forEach((date) => {
+      handleStatusChange(newStatus, date);
+    });
+    setSelectedDays([]);
+    setIsMultiSelect(false);
+  };
+
+  const toggleMultiSelect = () => {
+    if (isMultiSelect) {
+      setSelectedDays([]);
+    }
+    setIsMultiSelect(!isMultiSelect);
+  };
+
   return (
     <div className="rounded-2xl shadow-sm border-2">
       <div className="mb-6 flex justify-between items-center border-b border-gray-100 pb-4">
-        <h2 className="text-xl font-semibold text-gray-900 px-2 py-4">
+        <h2 className="text-xl font-semibold text-gray-900 px-2 py-4 w-1/3">
           Presenze e assenze
         </h2>
-        <div className="flex items-center gap-4">
+
+        <div className="flex items-center gap-4 w-full justify-end">
+          {isMultiSelect && (
+            <Select
+              onChange={(e) =>
+                changeSelectedDaysStatus(e.target.value as string)
+              }
+              placeholder="Seleziona Stato"
+              className="w-48"
+              color="primary"
+              variant="bordered"
+              radius="full"
+            >
+              <>
+                {Object.entries(statusConfig).map(([key, config]) => (
+                  <SelectItem
+                    value={key}
+                    key={key}
+                    startContent={
+                      <div
+                        className={`w-6 h-6 ${config.color} rounded-lg flex items-center justify-center`}
+                      >
+                        <Icon
+                          icon={config.icon}
+                          className="w-4 h-4 text-gray-700"
+                        />
+                      </div>
+                    }
+                  >
+                    {config.label}
+                  </SelectItem>
+                ))}
+                <SelectItem
+                  value="delete"
+                  key="delete"
+                  startContent={
+                    <div className="w-6 h-6 bg-zinc-300 rounded-lg flex items-center justify-center">
+                      <Icon
+                        icon="material-symbols-light:delete-outline"
+                        className="w-4 h-4 text-gray-700"
+                      />
+                    </div>
+                  }
+                >
+                  Elimina
+                </SelectItem>
+              </>
+            </Select>
+          )}
           <button
             onClick={() => onDateChange(subMonths(selectedDate, 1))}
             className="p-2 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-1 text-gray-600"
@@ -329,93 +409,122 @@ export default function EmployeeAttendanceTable({
               }}
             >
               {/* Header giorni */}
-              <div className="h-12 bg-gray-50 border-b border-gray-200 flex divide-x divide-gray-200">
-                {getDaysInMonth().map((date) => {
-                  return (
-                    <Popover showArrow>
-                      <PopoverTrigger>
-                        <div
-                          key={date.toISOString()}
-                          className="w-16 flex-shrink-0 flex flex-col justify-center items-center py-2 text-sm text-gray-600 font-medium border-r-1 border-t-1 hover:cursor-pointer"
-                        >
-                          <div className="text-xs text-gray-500">
-                            {format(date, "EEE", { locale: it })
-                              .toLowerCase()
-                              .slice(0, 3)}
+              {!isMultiSelect ? (
+                <div className="h-12 bg-gray-50 border-b border-gray-200 flex divide-x divide-gray-200">
+                  {getDaysInMonth().map((date) => {
+                    return (
+                      <Popover showArrow>
+                        <PopoverTrigger>
+                          <div
+                            key={date.toISOString()}
+                            className="w-16 flex-shrink-0 flex flex-col justify-center items-center py-2 text-sm text-gray-600 font-medium border-r-1 border-t-1 hover:cursor-pointer"
+                          >
+                            <div className="text-xs text-gray-500">
+                              {format(date, "EEE", { locale: it })
+                                .toLowerCase()
+                                .slice(0, 3)}
+                            </div>
+                            <div>{date.getDate()}</div>
                           </div>
-                          <div>{date.getDate()}</div>
-                        </div>
-                      </PopoverTrigger>
-                      <PopoverContent>
-                        <div className="flex flex-col items-center gap-2 p-2">
-                          {formatInTimeZone(date, "Europe/Rome", "dd/MM/yyyy")}
-                          <Dropdown>
-                            <DropdownTrigger>
-                              <Button color="primary">Presenze</Button>
-                            </DropdownTrigger>
-                            <DropdownMenu>
-                              <>
-                                {Object.entries(statusConfig).map(
-                                  ([key, config]) => (
-                                    <DropdownItem
-                                      onPress={() =>
-                                        handleStatusChange(
-                                          key,
-                                          formatInTimeZone(
-                                            date,
-                                            "Europe/Rome",
-                                            "yyyy-MM-dd"
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <div className="flex flex-col items-center gap-2 p-2">
+                            {formatInTimeZone(
+                              date,
+                              "Europe/Rome",
+                              "dd/MM/yyyy"
+                            )}
+                            <Dropdown>
+                              <DropdownTrigger>
+                                <Button color="primary">Presenze</Button>
+                              </DropdownTrigger>
+                              <DropdownMenu>
+                                <>
+                                  {Object.entries(statusConfig).map(
+                                    ([key, config]) => (
+                                      <DropdownItem
+                                        onPress={() =>
+                                          handleStatusChange(
+                                            key,
+                                            formatInTimeZone(
+                                              date,
+                                              "Europe/Rome",
+                                              "yyyy-MM-dd"
+                                            )
                                           )
-                                        )
-                                      }
-                                      key={key}
-                                      startContent={
-                                        <div
-                                          className={`w-6 h-6 ${config.color} rounded-lg flex items-center justify-center`}
-                                        >
-                                          <Icon
-                                            icon={config.icon}
-                                            className="w-4 h-4 text-gray-700"
-                                          />
-                                        </div>
-                                      }
-                                    >
-                                      {config.label}
-                                    </DropdownItem>
-                                  )
-                                )}
-                                <DropdownItem
-                                  onPress={() =>
-                                    handleStatusChange(
-                                      "delete",
-                                      formatInTimeZone(
-                                        date,
-                                        "Europe/Rome",
-                                        "yyyy-MM-dd"
-                                      )
+                                        }
+                                        key={key}
+                                        startContent={
+                                          <div
+                                            className={`w-6 h-6 ${config.color} rounded-lg flex items-center justify-center`}
+                                          >
+                                            <Icon
+                                              icon={config.icon}
+                                              className="w-4 h-4 text-gray-700"
+                                            />
+                                          </div>
+                                        }
+                                      >
+                                        {config.label}
+                                      </DropdownItem>
                                     )
-                                  }
-                                  key="delete"
-                                  startContent={
-                                    <div className="w-6 h-6 bg-zinc-300 rounded-lg flex items-center justify-center">
-                                      <Icon
-                                        icon="material-symbols-light:delete-outline"
-                                        className="w-4 h-4 text-gray-700"
-                                      />
-                                    </div>
-                                  }
-                                >
-                                  Elimina
-                                </DropdownItem>
-                              </>
-                            </DropdownMenu>
-                          </Dropdown>
+                                  )}
+                                  <DropdownItem
+                                    onPress={() =>
+                                      handleStatusChange(
+                                        "delete",
+                                        formatInTimeZone(
+                                          date,
+                                          "Europe/Rome",
+                                          "yyyy-MM-dd"
+                                        )
+                                      )
+                                    }
+                                    key="delete"
+                                    startContent={
+                                      <div className="w-6 h-6 bg-zinc-300 rounded-lg flex items-center justify-center">
+                                        <Icon
+                                          icon="material-symbols-light:delete-outline"
+                                          className="w-4 h-4 text-gray-700"
+                                        />
+                                      </div>
+                                    }
+                                  >
+                                    Elimina
+                                  </DropdownItem>
+                                </>
+                              </DropdownMenu>
+                            </Dropdown>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="h-12 bg-gray-50 flex divide-x divide-gray-200">
+                  {getDaysInMonth().map((date) => {
+                    return (
+                      <div
+                        key={date.toISOString()}
+                        onClick={() => handleDaySelect(date)}
+                        className={`w-16 flex-shrink-0 flex flex-col justify-center items-center py-2 text-sm text-gray-600 font-medium  hover:cursor-pointer ${
+                          selectedDays.includes(date.toDateString())
+                            ? "bg-primary text-primary-foreground"
+                            : ""
+                        }`}
+                      >
+                        <div className="text-xs text-gray-400">
+                          {format(date, "EEE", { locale: it })
+                            .toLowerCase()
+                            .slice(0, 3)}
                         </div>
-                      </PopoverContent>
-                    </Popover>
-                  );
-                })}
-              </div>
+                        <div>{date.getDate()}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Griglia presenze */}
               <div className="relative">
@@ -456,7 +565,7 @@ export default function EmployeeAttendanceTable({
             startContent={
               <Icon icon="solar:file-download-linear" fontSize={24} />
             }
-            onClick={exportCSV}
+            onPress={exportCSV}
           >
             Esporta Tabella
           </Button>
@@ -476,6 +585,17 @@ export default function EmployeeAttendanceTable({
               </div>
             ))}
           </div>
+          <Button
+            variant={isMultiSelect ? "solid" : "bordered"}
+            color="primary"
+            radius="full"
+            className="w-fit"
+            onPress={toggleMultiSelect}
+          >
+            {isMultiSelect
+              ? "Disabilita Selezione Multipla"
+              : "Abilita Selezione Multipla"}
+          </Button>
         </div>
       </div>
     </div>
