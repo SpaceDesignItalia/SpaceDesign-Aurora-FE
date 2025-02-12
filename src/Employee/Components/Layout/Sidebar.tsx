@@ -191,7 +191,7 @@ export default function SidebarLayout() {
         ),
       }));
 
-      baseItems.push(...projectItems);
+      baseItems.push(...(projectItems as SidebarItem[]));
     }
 
     return baseItems;
