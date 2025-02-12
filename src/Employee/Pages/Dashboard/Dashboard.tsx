@@ -66,7 +66,6 @@ export default function Dashboard() {
   };
 
   const fetchTasks = async () => {
-    setIsLoading(true);
     try {
       const res = await axios.get("/Project/GET/GetProjectInTeam");
       const projectsWithTasks = [];
@@ -119,18 +118,20 @@ export default function Dashboard() {
       }
 
       setEndingTasks(projectsWithTasks);
-      setIsLoading(false);
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
-    fetchTasks();
-  }, [stafferId]);
+    async function fetchData() {
+      setIsLoading(true);
+      await fetchAttendances();
+      await fetchTasks();
+      setIsLoading(false);
+    }
+    fetchData();
 
-  useEffect(() => {
-    fetchAttendances();
     socket.on("employee-attendance-update", () => {
       fetchAttendances();
     });
@@ -146,40 +147,49 @@ export default function Dashboard() {
         </div>
       </header>
       <main className="mt-5 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-6 gap-5">
-          <div className="col-span-4 flex flex-col gap-5 h-screen">
-            <div className="border-2 rounded-xl p-6 bg-white">
-              <h2 className="text-xl font-semibold mb-6">Le tue presenze</h2>
-              <AttendanceWeekView
-                stafferId={stafferId}
-                attendances={attendances.current}
-              />
-            </div>
-
-            <div>
-              <AttendanceStats
-                attendances={attendances}
-                selectedDate={selectedDate}
-              />
-            </div>
-
-            <div className="col-span-4">
+        {isLoading ? (
+          <div className="flex justify-center items-center h-96">
+            <Spinner />
+          </div>
+        ) : (
+          <div className="grid grid-cols-6 gap-5">
+            <div className="col-span-4 flex flex-col gap-5 h-screen">
               <div className="border-2 rounded-xl p-6 bg-white">
-                <h2 className="text-xl font-semibold mb-6">Task In Scadenza</h2>
-                {isLoading ? (
-                  <div className="flex justify-center items-center h-full">
-                    <Spinner />
-                  </div>
-                ) : (
-                  <EndingTasks projects={endingTasks} />
-                )}
+                <h2 className="text-xl font-semibold mb-6">Le tue presenze</h2>
+
+                <AttendanceWeekView
+                  stafferId={stafferId}
+                  attendances={attendances.current}
+                />
+              </div>
+
+              <div>
+                <AttendanceStats
+                  attendances={attendances}
+                  selectedDate={selectedDate}
+                />
+              </div>
+
+              <div className="col-span-4">
+                <div className="border-2 rounded-xl p-6 bg-white">
+                  <h2 className="text-xl font-semibold mb-6">
+                    Task In Scadenza
+                  </h2>
+                  {isLoading ? (
+                    <div className="flex justify-center items-center h-full">
+                      <Spinner />
+                    </div>
+                  ) : (
+                    <EndingTasks projects={endingTasks} />
+                  )}
+                </div>
               </div>
             </div>
+            <div className="col-span-2">
+              <UpcomingCalendarEvents />
+            </div>
           </div>
-          <div className="col-span-2">
-            <UpcomingCalendarEvents />
-          </div>
-        </div>
+        )}
       </main>
     </div>
   );
