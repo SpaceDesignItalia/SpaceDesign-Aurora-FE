@@ -420,22 +420,23 @@ END:VCALENDAR`;
       <Modal
         isOpen={isOpen}
         onOpenChange={handleCloseModal}
+        // Utilizziamo una dimensione di default che su dispositivi piccoli occupa tutta la larghezza e su schermi medi/grandi è limitata
         size="3xl"
         scrollBehavior="outside"
         placement="center"
         backdrop="blur"
         hideCloseButton
       >
-        <ModalContent>
+        <ModalContent className="w-full sm:max-w-3xl mx-auto">
           {() => (
             <>
               {!isEditing ? (
                 <>
-                  <ModalHeader className="flex flex-row justify-between items-center gap-2">
-                    <div className="flex flex-row justify-between items-center gap-2 w-full">
+                  <ModalHeader className="flex flex-col sm:flex-row justify-between items-center gap-2">
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-2 w-full">
                       <Icon icon="solar:calendar-linear" fontSize={18} />
-                      <div className="flex flex-row justify-between items-center gap-2 w-full">
-                        <p>{newEvent.EventTitle}</p>
+                      <div className="flex flex-col sm:flex-row justify-between items-center gap-2 w-full">
+                        <p className="text-lg font-medium">{newEvent.EventTitle}</p>
                         <div
                           className="h-5 w-5 rounded-full"
                           style={{
@@ -444,31 +445,33 @@ END:VCALENDAR`;
                         />
                       </div>
                     </div>
-                    <Button
-                      isIconOnly
-                      color="warning"
-                      variant="light"
-                      radius="full"
-                      startContent={
-                        <Icon icon="solar:pen-linear" fontSize={18} />
-                      }
-                      onPress={() => setIsEditing(true)}
-                      size="sm"
-                    />
-                    <Button
-                      color="primary"
-                      variant="light"
-                      radius="full"
-                      onPress={handleExportEvent}
-                      isIconOnly
-                      startContent={
-                        <Icon icon="solar:download-linear" fontSize={18} />
-                      }
-                    />
-                    <ConfirmDeleteEventModal
-                      EventData={newEvent}
-                      DeleteEvent={DeleteEvent}
-                    />
+                    <div className="flex gap-2">
+                      <Button
+                        isIconOnly
+                        color="warning"
+                        variant="light"
+                        radius="full"
+                        startContent={
+                          <Icon icon="solar:pen-linear" fontSize={18} />
+                        }
+                        onPress={() => setIsEditing(true)}
+                        size="sm"
+                      />
+                      <Button
+                        color="primary"
+                        variant="light"
+                        radius="full"
+                        onPress={handleExportEvent}
+                        isIconOnly
+                        startContent={
+                          <Icon icon="solar:download-linear" fontSize={18} />
+                        }
+                      />
+                      <ConfirmDeleteEventModal
+                        EventData={newEvent}
+                        DeleteEvent={DeleteEvent}
+                      />
+                    </div>
                   </ModalHeader>
                   <ModalBody>
                     <div className="mt-4">
@@ -479,13 +482,13 @@ END:VCALENDAR`;
                             Data e ora
                           </dt>
                           <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
-                            <div className="flex flex-row justify-between w-full gap-4">
+                            <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
                               <I18nProvider locale="it">
                                 <p>{formatDate(newEvent.EventStartDate)}</p>
                                 <p>{newEvent.EventStartTime}</p>
                               </I18nProvider>
                             </div>
-                            <div className="flex flex-row justify-between w-full gap-4">
+                            <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
                               <I18nProvider locale="it">
                                 <p>{formatDate(newEvent.EventEndDate)}</p>
                                 <p>{newEvent.EventEndTime}</p>
@@ -506,7 +509,7 @@ END:VCALENDAR`;
                             <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                               <ReactQuill
                                 readOnly
-                                className="sm:col-span-2 sm:mt-0 h-fit"
+                                className="h-fit"
                                 theme="bubble"
                                 value={newEvent.EventDescription}
                               />
@@ -573,7 +576,7 @@ END:VCALENDAR`;
                                       fontSize={18}
                                     />
                                   }
-                                  className="w-1/3 sm:w-1/4"
+                                  className="w-full sm:w-1/3 sm:w-1/4"
                                   variant="solid"
                                   onClick={() =>
                                     setModalUploadFile({
@@ -590,8 +593,8 @@ END:VCALENDAR`;
                           </Accordion>
                         </div>
 
-                        <div className="flex flex-row w-full gap-4">
-                          <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
+                        <div className="flex flex-col sm:flex-row w-full gap-4">
+                          <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full sm:w-1/2">
                             <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
                               <Icon
                                 icon="solar:users-group-rounded-linear"
@@ -623,7 +626,7 @@ END:VCALENDAR`;
                             </dd>
                           </div>
                           {newTag.EventTagName && (
-                            <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
+                            <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full sm:w-1/2">
                               <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
                                 <Icon icon="solar:tag-linear" fontSize={18} />
                                 Tag
@@ -665,7 +668,7 @@ END:VCALENDAR`;
                               />
                               Location
                             </dt>
-                            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                            <dd className="mt-1 text-sm leading-6 text-gray-700">
                               <label>{newEvent.EventLocation}</label>
                             </dd>
                           </div>
@@ -673,7 +676,7 @@ END:VCALENDAR`;
                       </dl>
                     </div>
                   </ModalBody>
-                  <ModalFooter>
+                  <ModalFooter className="flex justify-end gap-2">
                     <Button
                       color="primary"
                       variant="light"
@@ -686,357 +689,307 @@ END:VCALENDAR`;
                 </>
               ) : (
                 <>
-                  <>
-                    <ModalHeader className="flex flex-row justify-between items-center gap-2">
-                      <div className="flex flex-row justify-between items-center gap-2 w-full">
-                        <Icon icon="solar:calendar-linear" fontSize={18} />
-                        <Input
-                          className="w-full"
-                          variant="underlined"
-                          color="primary"
-                          placeholder="Titolo dell'evento"
-                          value={newEvent.EventTitle}
-                          maxLength={50}
-                          onChange={(e) => {
-                            setNewEvent({
-                              ...newEvent,
-                              EventTitle: e.target.value,
-                            });
-                          }}
-                          endContent={
-                            <div className="text-sm">
-                              {newEvent.EventTitle.length}/50
-                            </div>
-                          }
-                        />
-                        <Dropdown className="w-[100px]">
-                          <DropdownTrigger className="w-6 h-5">
-                            <div
-                              className="w-6 h-5 rounded-full cursor-pointer"
-                              style={{
-                                backgroundColor: newEvent.EventColor,
+                  <ModalHeader className="flex flex-col sm:flex-row justify-between items-center gap-2">
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-2 w-full">
+                      <Icon icon="solar:calendar-linear" fontSize={18} />
+                      <Input
+                        className="w-full"
+                        variant="underlined"
+                        color="primary"
+                        placeholder="Titolo dell'evento"
+                        value={newEvent.EventTitle}
+                        maxLength={50}
+                        onChange={(e) => {
+                          setNewEvent({
+                            ...newEvent,
+                            EventTitle: e.target.value,
+                          });
+                        }}
+                        endContent={
+                          <div className="text-sm">
+                            {newEvent.EventTitle.length}/50
+                          </div>
+                        }
+                      />
+                      <Dropdown className="w-[100px]">
+                        <DropdownTrigger className="w-6 h-5">
+                          <div
+                            className="w-6 h-5 rounded-full cursor-pointer"
+                            style={{
+                              backgroundColor: newEvent.EventColor,
+                            }}
+                          />
+                        </DropdownTrigger>
+                        <DropdownMenu selectedKeys={newEvent.EventColor}>
+                          {colors.map((color) => (
+                            <DropdownItem
+                              startContent={
+                                <div
+                                  className="w-4 h-4 rounded-full"
+                                  style={{ backgroundColor: color.color }}
+                                />
+                              }
+                              key={color.name}
+                              onPress={() => {
+                                setNewEvent((prev) => ({
+                                  ...prev,
+                                  EventColor: color.color,
+                                }));
                               }}
-                            />
-                          </DropdownTrigger>
-                          <DropdownMenu selectedKeys={newEvent.EventColor}>
-                            {colors.map((color) => (
-                              <DropdownItem
-                                startContent={
-                                  <div
-                                    className="w-4 h-4 rounded-full"
-                                    style={{ backgroundColor: color.color }}
-                                  />
-                                }
-                                key={color.name}
-                                onPress={() => {
-                                  setNewEvent((prev) => ({
-                                    ...prev,
-                                    EventColor: color.color,
-                                  }));
-                                }}
-                              >
-                                {color.name}
-                              </DropdownItem>
-                            ))}
-                          </DropdownMenu>
-                        </Dropdown>
-                        <Button
-                          color="primary"
-                          variant="light"
-                          onClick={handleCloseModal}
-                          radius="full"
-                          size="sm"
-                          isIconOnly
-                          startContent={
-                            <Icon
-                              icon="material-symbols:close-rounded"
-                              fontSize={18}
-                            />
-                          }
-                        />
-                      </div>
-                    </ModalHeader>
-                    <ModalBody>
-                      <div className="mt-4 grid md:grid-cols-2 grid-cols-1 gap-4">
-                        <dl className="col-span-1">
-                          <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
-                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                              <Icon
-                                icon="solar:calendar-linear"
-                                fontSize={18}
-                              />
-                              Data e ora
-                            </dt>
-                            <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
-                              <div className="flex flex-row justify-between w-full gap-4">
-                                <I18nProvider locale="it">
-                                  <DatePicker
-                                    labelPlacement="outside"
-                                    label="Data inizio"
-                                    className="w-1/2"
-                                    radius="full"
-                                    variant="bordered"
-                                    value={newEvent.EventStartDate}
-                                    onChange={(date) =>
+                            >
+                              {color.name}
+                            </DropdownItem>
+                          ))}
+                        </DropdownMenu>
+                      </Dropdown>
+                      <Button
+                        color="primary"
+                        variant="light"
+                        onClick={handleCloseModal}
+                        radius="full"
+                        size="sm"
+                        isIconOnly
+                        startContent={
+                          <Icon
+                            icon="material-symbols:close-rounded"
+                            fontSize={18}
+                          />
+                        }
+                      />
+                    </div>
+                  </ModalHeader>
+                  <ModalBody>
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <dl className="col-span-1">
+                        <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
+                          <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                            <Icon icon="solar:calendar-linear" fontSize={18} />
+                            Data e ora
+                          </dt>
+                          <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 w-full">
+                            <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
+                              <I18nProvider locale="it">
+                                <DatePicker
+                                  labelPlacement="outside"
+                                  label="Data inizio"
+                                  className="w-full sm:w-1/2"
+                                  radius="full"
+                                  variant="bordered"
+                                  value={newEvent.EventStartDate}
+                                  onChange={(date) =>
+                                    setNewEvent((prev) => ({
+                                      ...prev,
+                                      EventStartDate: date,
+                                    }))
+                                  }
+                                />
+                                <TimeInput
+                                  variant="bordered"
+                                  radius="full"
+                                  className="w-full sm:w-1/2"
+                                  label="Ora inizio"
+                                  labelPlacement="outside"
+                                  value={stringToTimeValue(
+                                    newEvent.EventStartTime
+                                  )}
+                                  onChange={(e) => {
+                                    if (e) {
                                       setNewEvent((prev) => ({
                                         ...prev,
-                                        EventStartDate: date,
-                                      }))
+                                        EventStartTime: `${e.hour}:${e.minute}`,
+                                      }));
                                     }
-                                  />
-                                  <TimeInput
-                                    variant="bordered"
-                                    radius="full"
-                                    className="w-1/2"
-                                    label="Ora inizio"
-                                    labelPlacement="outside"
-                                    value={stringToTimeValue(
-                                      newEvent.EventStartTime
-                                    )}
-                                    onChange={(e) => {
-                                      if (e) {
-                                        setNewEvent((prev) => ({
-                                          ...prev,
-                                          EventStartTime: `${e.hour}:${e.minute}`,
-                                        }));
-                                      }
-                                    }}
-                                  />
-                                </I18nProvider>
-                              </div>
-                              <div className="flex flex-row justify-between w-full gap-4">
-                                <I18nProvider locale="it">
-                                  <DatePicker
-                                    labelPlacement="outside"
-                                    label="Data fine"
-                                    className="w-1/2"
-                                    radius="full"
-                                    variant="bordered"
-                                    value={newEvent.EventEndDate}
-                                    onChange={(date) =>
+                                  }}
+                                />
+                              </I18nProvider>
+                            </div>
+                            <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
+                              <I18nProvider locale="it">
+                                <DatePicker
+                                  labelPlacement="outside"
+                                  label="Data fine"
+                                  className="w-full sm:w-1/2"
+                                  radius="full"
+                                  variant="bordered"
+                                  value={newEvent.EventEndDate}
+                                  onChange={(date) =>
+                                    setNewEvent((prev) => ({
+                                      ...prev,
+                                      EventEndDate: date,
+                                    }))
+                                  }
+                                />
+                                <TimeInput
+                                  variant="bordered"
+                                  radius="full"
+                                  className="w-full sm:w-1/2"
+                                  label="Ora fine"
+                                  labelPlacement="outside"
+                                  value={stringToTimeValue(
+                                    newEvent.EventEndTime
+                                  )}
+                                  onChange={(e) => {
+                                    if (e) {
                                       setNewEvent((prev) => ({
                                         ...prev,
-                                        EventEndDate: date,
-                                      }))
+                                        EventEndTime: `${e.hour}:${e.minute}`,
+                                      }));
                                     }
-                                  />
-                                  <TimeInput
-                                    variant="bordered"
-                                    radius="full"
-                                    className="w-1/2"
-                                    label="Ora fine"
-                                    labelPlacement="outside"
-                                    value={stringToTimeValue(
-                                      newEvent.EventEndTime
-                                    )}
-                                    onChange={(e) => {
-                                      if (e) {
-                                        setNewEvent((prev) => ({
-                                          ...prev,
-                                          EventEndTime: `${e.hour}:${e.minute}`,
-                                        }));
-                                      }
-                                    }}
-                                  />
-                                </I18nProvider>
-                              </div>
-                            </dd>
-                          </div>
-                        </dl>
+                                  }}
+                                />
+                              </I18nProvider>
+                            </div>
+                          </dd>
+                        </div>
+                      </dl>
 
-                        <div className="col-span-1">
-                          <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                            <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                              <Icon
-                                icon="fluent:text-description-16-filled"
-                                fontSize={18}
-                              />
-                              Descrizione
-                            </dt>
-                            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                              <ReactQuill
-                                className="sm:col-span-2 sm:mt-0 h-fit"
-                                theme="snow"
-                                value={newEvent.EventDescription}
-                                onChange={(content) =>
-                                  setNewEvent((prev) => ({
-                                    ...prev,
-                                    EventDescription: content,
-                                  }))
-                                }
-                              />
-                            </dd>
-                            {newEvent.EventDescription &&
-                            hasContent(newEvent.EventDescription) ? (
-                              <Button
-                                variant="bordered"
-                                className="w-max-1/2 mx-auto gap-3 my-5 sm:my-0 py-2"
-                                radius="full"
-                                onClick={handleRefine}
-                                isDisabled={
-                                  loading ||
-                                  !hasContent(newEvent.EventDescription)
-                                }
-                              >
-                                {loading ? (
-                                  <>
-                                    {" "}
-                                    <Spinner
-                                      size="sm"
-                                      className="text-black"
-                                    />{" "}
-                                    Riscrittura in corso...{" "}
-                                  </>
-                                ) : (
-                                  <>
-                                    {" "}
-                                    <Icon
-                                      icon="solar:magic-stick-3-linear"
-                                      fontSize={18}
-                                    />{" "}
-                                    Riscrivi con AI{" "}
-                                  </>
-                                )}
-                              </Button>
-                            ) : null}
-                          </div>
+                      <div className="col-span-1">
+                        <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
+                          <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                            <Icon icon="fluent:text-description-16-filled" fontSize={18} />
+                            Descrizione
+                          </dt>
+                          <dd className="mt-1 text-sm leading-6 text-gray-700">
+                            <ReactQuill
+                              className="h-fit"
+                              theme="snow"
+                              value={newEvent.EventDescription}
+                              onChange={(content) =>
+                                setNewEvent((prev) => ({
+                                  ...prev,
+                                  EventDescription: content,
+                                }))
+                              }
+                            />
+                          </dd>
+                          {newEvent.EventDescription &&
+                          hasContent(newEvent.EventDescription) ? (
+                            <Button
+                              variant="bordered"
+                              className="w-full mx-auto gap-3 my-5 py-2"
+                              radius="full"
+                              onClick={handleRefine}
+                              isDisabled={
+                                loading ||
+                                !hasContent(newEvent.EventDescription)
+                              }
+                            >
+                              {loading ? (
+                                <>
+                                  <Spinner size="sm" className="text-black" /> Riscrittura in corso...
+                                </>
+                              ) : (
+                                <>
+                                  <Icon icon="solar:magic-stick-3-linear" fontSize={18} /> Riscrivi con AI
+                                </>
+                              )}
+                            </Button>
+                          ) : null}
                         </div>
                       </div>
+                    </div>
 
-                      <div className="flex flex-row w-full gap-4 col-span-2">
-                        <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
-                          <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                            <Icon
-                              icon="solar:users-group-rounded-linear"
-                              fontSize={18}
-                            />
-                            Partecipanti
-                          </dt>
-                          <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                            <div className="flex flex-col gap-2">
-                              <Autocomplete
-                                variant="bordered"
-                                radius="full"
-                                defaultItems={users}
-                                onSelectionChange={(e) => {
-                                  e &&
-                                    e.toString() &&
-                                    addPartecipant(
-                                      e?.toString() || "",
-                                      users.find(
-                                        (u) => u.EventPartecipantEmail === e
-                                      )?.EventPartecipantRole || "esterno"
-                                    );
-                                }}
-                                placeholder="Seleziona partecipanti"
-                              >
-                                {users.map((user) => (
-                                  <AutocompleteItem
-                                    startContent={
-                                      <div
-                                        className="w-2 h-2 rounded-full"
-                                        style={{
-                                          backgroundColor:
-                                            user.EventPartecipantRole ===
-                                            "dipendente"
-                                              ? "#EF4444"
-                                              : "#3B82F6",
-                                        }}
-                                      />
-                                    }
-                                    key={user.EventPartecipantEmail}
-                                    value={user.EventPartecipantEmail}
-                                  >
-                                    {user.EventPartecipantEmail}
-                                  </AutocompleteItem>
-                                ))}
-                              </Autocomplete>
-                            </div>
-
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              {Partecipants.map((Partecipant) => (
-                                <Chip
-                                  key={Partecipant.EventPartecipantEmail}
-                                  size="lg"
-                                  variant="flat"
-                                  onClose={() =>
-                                    deletePartecipant(
-                                      Partecipant.EventPartecipantEmail
-                                    )
-                                  }
+                    <div className="flex flex-col sm:flex-row w-full gap-4">
+                      <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full sm:w-1/2">
+                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                          <Icon icon="solar:users-group-rounded-linear" fontSize={18} />
+                          Partecipanti
+                        </dt>
+                        <dd className="mt-1 text-sm leading-6 text-gray-700">
+                          <div className="flex flex-col gap-2">
+                            <Autocomplete
+                              variant="bordered"
+                              radius="full"
+                              defaultItems={users}
+                              onSelectionChange={(e) => {
+                                e &&
+                                  e.toString() &&
+                                  addPartecipant(
+                                    e?.toString() || "",
+                                    users.find(
+                                      (u) => u.EventPartecipantEmail === e
+                                    )?.EventPartecipantRole || "esterno"
+                                  );
+                              }}
+                              placeholder="Seleziona partecipanti"
+                            >
+                              {users.map((user) => (
+                                <AutocompleteItem
                                   startContent={
                                     <div
                                       className="w-2 h-2 rounded-full"
                                       style={{
                                         backgroundColor:
-                                          Partecipant.EventPartecipantRole ===
-                                          "dipendente"
+                                          user.EventPartecipantRole === "dipendente"
                                             ? "#EF4444"
                                             : "#3B82F6",
                                       }}
                                     />
                                   }
+                                  key={user.EventPartecipantEmail}
+                                  value={user.EventPartecipantEmail}
                                 >
-                                  {Partecipant.EventPartecipantEmail}
-                                </Chip>
+                                  {user.EventPartecipantEmail}
+                                </AutocompleteItem>
                               ))}
-                            </div>
-                          </dd>
-                        </div>
+                            </Autocomplete>
+                          </div>
 
-                        <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-1/2">
-                          <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                            <Icon icon="solar:tag-linear" fontSize={18} />
-                            Tag
-                          </dt>
-                          <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                            <div className="flex flex-row gap-2">
-                              <Autocomplete
-                                variant="bordered"
-                                radius="full"
-                                defaultItems={tags}
-                                onSelectionChange={(e) => {
-                                  e &&
-                                    e.toString() &&
-                                    setNewTag({
-                                      EventTagId:
-                                        tags.find((t) => t.EventTagName === e)
-                                          ?.EventTagId || 0,
-                                      EventTagName: e?.toString() || "",
-                                    });
-                                }}
-                                placeholder="Tag"
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {Partecipants.map((Partecipant) => (
+                              <Chip
+                                key={Partecipant.EventPartecipantEmail}
+                                size="lg"
+                                variant="flat"
+                                onClose={() =>
+                                  deletePartecipant(
+                                    Partecipant.EventPartecipantEmail
+                                  )
+                                }
+                                startContent={
+                                  <div
+                                    className="w-2 h-2 rounded-full"
+                                    style={{
+                                      backgroundColor:
+                                        Partecipant.EventPartecipantRole === "dipendente"
+                                          ? "#EF4444"
+                                          : "#3B82F6",
+                                    }}
+                                  />
+                                }
                               >
-                                {tags.map((tag) => (
-                                  <AutocompleteItem
-                                    startContent={
-                                      <div
-                                        className="w-2 h-2 rounded-full"
-                                        style={{
-                                          backgroundColor: newEvent.EventColor,
-                                        }}
-                                      />
-                                    }
-                                    key={tag.EventTagName}
-                                    value={tag.EventTagName}
-                                  >
-                                    {tag.EventTagName}
-                                  </AutocompleteItem>
-                                ))}
-                              </Autocomplete>
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              {newTag.EventTagName && (
-                                <Chip
-                                  key={newTag.EventTagName}
-                                  size="lg"
-                                  variant="flat"
-                                  onClose={() =>
-                                    setNewTag({
-                                      EventTagId: 0,
-                                      EventTagName: "",
-                                    })
-                                  }
+                                {Partecipant.EventPartecipantEmail}
+                              </Chip>
+                            ))}
+                          </div>
+                        </dd>
+                      </div>
+
+                      <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full sm:w-1/2">
+                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                          <Icon icon="solar:tag-linear" fontSize={18} />
+                          Tag
+                        </dt>
+                        <dd className="mt-1 text-sm leading-6 text-gray-700">
+                          <div className="flex flex-row gap-2">
+                            <Autocomplete
+                              variant="bordered"
+                              radius="full"
+                              defaultItems={tags}
+                              onSelectionChange={(e) => {
+                                e &&
+                                  e.toString() &&
+                                  setNewTag({
+                                    EventTagId:
+                                      tags.find((t) => t.EventTagName === e)
+                                        ?.EventTagId || 0,
+                                    EventTagName: e?.toString() || "",
+                                  });
+                              }}
+                              placeholder="Tag"
+                            >
+                              {tags.map((tag) => (
+                                <AutocompleteItem
                                   startContent={
                                     <div
                                       className="w-2 h-2 rounded-full"
@@ -1045,72 +998,99 @@ END:VCALENDAR`;
                                       }}
                                     />
                                   }
+                                  key={tag.EventTagName}
+                                  value={tag.EventTagName}
                                 >
-                                  {newTag.EventTagName}
-                                </Chip>
-                              )}
-                            </div>
-                          </dd>
-                        </div>
-                      </div>
-
-                      <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
-                        <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                          <Icon icon="basil:location-outline" fontSize={18} />
-                          Location
-                        </dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                          <Input
-                            variant="bordered"
-                            radius="full"
-                            type="text"
-                            placeholder="Location"
-                            className="w-full"
-                            value={newEvent.EventLocation}
-                            onChange={(e) =>
-                              setNewEvent((prev) => ({
-                                ...prev,
-                                EventLocation: e.target.value,
-                              }))
-                            }
-                          />
+                                  {tag.EventTagName}
+                                </AutocompleteItem>
+                              ))}
+                            </Autocomplete>
+                          </div>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {newTag.EventTagName && (
+                              <Chip
+                                key={newTag.EventTagName}
+                                size="lg"
+                                variant="flat"
+                                onClose={() =>
+                                  setNewTag({
+                                    EventTagId: 0,
+                                    EventTagName: "",
+                                  })
+                                }
+                                startContent={
+                                  <div
+                                    className="w-2 h-2 rounded-full"
+                                    style={{
+                                      backgroundColor: newEvent.EventColor,
+                                    }}
+                                  />
+                                }
+                              >
+                                {newTag.EventTagName}
+                              </Chip>
+                            )}
+                          </div>
                         </dd>
                       </div>
-                    </ModalBody>
-                    <ModalFooter>
-                      <Button
-                        color="primary"
-                        variant="light"
-                        onClick={handleCloseModal}
-                        radius="full"
-                      >
-                        Chiudi
-                      </Button>
-                      <Button
-                        disabled={
-                          !newEvent.EventTitle ||
-                          !newEvent.EventStartDate ||
-                          !newEvent.EventStartTime ||
-                          !newEvent.EventEndDate ||
-                          !newEvent.EventEndTime ||
-                          !newEvent.EventColor ||
-                          !newTag.EventTagName
-                        }
-                        color="primary"
-                        onClick={handleUpdateEvent}
-                        radius="full"
-                        startContent={
-                          !isAddingData && (
-                            <Icon icon="basil:save-outline" fontSize={24} />
-                          )
-                        }
-                        isLoading={isAddingData}
-                        variant="solid"
-                      >
-                        Salva
-                      </Button>
-                    </ModalFooter>
-                  </>
+                    </div>
+
+                    <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
+                      <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
+                        <Icon icon="basil:location-outline" fontSize={18} />
+                        Location
+                      </dt>
+                      <dd className="mt-1 text-sm leading-6 text-gray-700">
+                        <Input
+                          variant="bordered"
+                          radius="full"
+                          type="text"
+                          placeholder="Location"
+                          className="w-full"
+                          value={newEvent.EventLocation}
+                          onChange={(e) =>
+                            setNewEvent((prev) => ({
+                              ...prev,
+                              EventLocation: e.target.value,
+                            }))
+                          }
+                        />
+                      </dd>
+                    </div>
+                  </ModalBody>
+                  <ModalFooter className="flex justify-end gap-2">
+                    <Button
+                      color="primary"
+                      variant="light"
+                      onClick={handleCloseModal}
+                      radius="full"
+                    >
+                      Chiudi
+                    </Button>
+                    <Button
+                      disabled={
+                        !newEvent.EventTitle ||
+                        !newEvent.EventStartDate ||
+                        !newEvent.EventStartTime ||
+                        !newEvent.EventEndDate ||
+                        !newEvent.EventEndTime ||
+                        !newEvent.EventColor ||
+                        !newTag.EventTagName
+                      }
+                      color="primary"
+                      onClick={handleUpdateEvent}
+                      radius="full"
+                      startContent={
+                        !isAddingData && (
+                          <Icon icon="basil:save-outline" fontSize={24} />
+                        )
+                      }
+                      isLoading={isAddingData}
+                      variant="solid"
+                    >
+                      Salva
+                    </Button>
+                  </ModalFooter>
                 </>
               )}
             </>
