@@ -21,7 +21,7 @@ interface Project {
   ProjectName: string;
   ProjectDescription: string;
   ProjectCreationDate: any;
-  ProjectEndDate: any;
+  ProjectEndDate?: any;
   ProjectManagerId: number;
   CompanyId: number;
   ProjectBannerId: number;
@@ -119,9 +119,9 @@ export default function EditProjectModel() {
         let projectData = projectResponse.data;
         projectData = {
           ...projectData,
-          ProjectEndDate: parseDate(
-            dayjs(projectData.ProjectEndDate).format("YYYY-MM-DD")
-          ),
+          ProjectEndDate: projectData.ProjectEndDate
+            ? parseDate(dayjs(projectData.ProjectEndDate).format("YYYY-MM-DD"))
+            : null,
           ProjectCreationDate: parseDate(
             dayjs(projectData.ProjectCreationDate).format("YYYY-MM-DD")
           ),
@@ -152,7 +152,7 @@ export default function EditProjectModel() {
       .catch((error) => {
         console.error("Errore durante il recupero del progetto:", error);
       });
-  }, [ProjectId, ProjectName]);
+  }, [ProjectId, ProjectName, UniqueCode]);
 
   function handleProjectNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.value.length <= 200) {
@@ -203,6 +203,7 @@ export default function EditProjectModel() {
       dayjs(newProjectData.ProjectCreationDate.toString()).isSame(
         dayjs(initialProjectData.ProjectCreationDate.toString())
       ) &&
+      newProjectData.ProjectEndDate &&
       dayjs(newProjectData.ProjectEndDate.toString()).isSame(
         dayjs(initialProjectData.ProjectEndDate.toString())
       ) &&

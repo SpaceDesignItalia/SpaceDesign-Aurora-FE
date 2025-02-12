@@ -14,6 +14,7 @@ import {
   CardFooter,
   Chip,
   Tooltip,
+  Checkbox,
 } from "@heroui/react";
 
 import { API_URL_IMG } from "../../../../../API/API";
@@ -87,6 +88,9 @@ export default function TaskCard({
   projectId,
   updateTaskStatus,
   columnCount,
+  isMultiSelect,
+  handleTaskSelect,
+  isSelected,
 }: {
   provided: any;
   task: Task;
@@ -96,6 +100,9 @@ export default function TaskCard({
   projectId: number;
   updateTaskStatus: any;
   columnCount: number;
+  isMultiSelect: boolean;
+  handleTaskSelect: (taskId: number) => void;
+  isSelected: boolean;
 }) {
   const [modalData, setModalData] = useState<ModalData>({
     Task: {
@@ -211,19 +218,23 @@ export default function TaskCard({
 
       <div
         onClick={(e) =>
-          setModalData({
-            ...modalData,
-            open: true,
-            Task: task,
-          })
+          isMultiSelect
+            ? handleTaskSelect(task.ProjectTaskId)
+            : setModalData({
+                ...modalData,
+                open: true,
+                Task: task,
+              })
         }
         ref={provided.innerRef}
         {...provided.draggableProps}
         {...provided.dragHandleProps}
-        className="w-full cursor-pointer"
+        className="w-full cursor-pointer relative"
       >
         <Card
-          className="w-full hover:shadow-lg transition-shadow duration-200"
+          className={`w-full hover:shadow-lg transition-shadow duration-200 ${
+            isSelected ? "border-3 border-primary" : ""
+          }`}
           radius="sm"
         >
           <CardHeader className="flex justify-between items-start gap-3 px-4 pt-4 pb-2">

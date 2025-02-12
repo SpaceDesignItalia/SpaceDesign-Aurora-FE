@@ -1,15 +1,26 @@
-import { useState, useEffect, useMemo } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
+import {
+  Button,
+  Chip,
+  cn,
+  DateValue,
+  Select,
+  SelectItem,
+  Spinner,
+  Tab,
+  Tabs,
+} from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { Button, Chip, DateValue, cn, Tabs, Tab, Spinner } from "@heroui/react";
-import AddTaskModal from "../ProjectTask/AddTaskModal";
-import TaskCard from "../ProjectTask/TaskCard";
+import axios from "axios";
+import { useEffect, useMemo, useState } from "react";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import { usePermissions } from "../../../Layout/PermissionProvider";
+import AddTaskModal from "../ProjectTask/AddTaskModal";
 import ArchivedTaskCard from "../ProjectTask/ArchivedTaskCard";
+import TaskCard from "../ProjectTask/TaskCard";
+import ConfirmDeleteTaskModal from "../ProjectTask/ConfirmDeleteTaskModal";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -44,13 +55,27 @@ interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
-  ProjectTaskExpiration: DateValue;
+  ProjectTaskExpiration?: DateValue | null | undefined;
   ProjectTaskCreation: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
   ProjectTaskComments: Comment[];
   ProjectId: number;
+  ProjectTaskChecklists: Checklist[];
+}
+
+interface Checkbox {
+  CheckboxId: number;
+  Text: string;
+  IsSelected: boolean;
+  ChecklistId: number;
+}
+
+interface Checklist {
+  ChecklistId: number;
+  Text: string;
+  Checkboxes: Checkbox[];
 }
 
 interface Project {
@@ -309,6 +334,52 @@ export default function TaskContainer({
     fetchArchivedTasks();
   }, [projectId, update]);
 
+  const [isMultiSelect, setIsMultiSelect] = useState(false);
+  const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
+
+  const handleTaskSelect = (taskId: number) => {
+    setSelectedTasks((prev) =>
+      prev.includes(taskId)
+        ? prev.filter((id) => id !== taskId)
+        : [...prev, taskId]
+    );
+  };
+
+  const changeSelectedTasksStatus = (newStatusId: number) => {
+    selectedTasks.forEach((taskId) => {
+      updateTaskStatus(taskId, newStatusId);
+    });
+    setSelectedTasks([]);
+    setIsMultiSelect(false);
+  };
+
+  const toggleMultiSelect = () => {
+    if (isMultiSelect) {
+      setSelectedTasks([]);
+    }
+    setIsMultiSelect(!isMultiSelect);
+  };
+
+  console.log(selectedTasks);
+
+  const deleteSelectedTasks = (tasks: Task[]) => {
+    tasks.forEach((task) => {
+      axios
+        .delete("/Project/DELETE/DeleteTask", {
+          params: { ProjectTaskId: task.ProjectTaskId },
+        })
+        .then(() => {
+          socket.emit("task-news", projectId);
+          setUpdate((prev) => !prev);
+          setSelectedTasks([]);
+          setIsMultiSelect(false);
+        })
+        .catch((error) => {
+          console.error("Error deleting task:", error);
+        });
+    });
+  };
+
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
@@ -348,7 +419,51 @@ export default function TaskContainer({
                 ))}
               </Tabs>
               {permissions.assignActivity && (
-                <>
+                <div className="flex justify-end flex-row gap-2 w-full">
+                  <div className="flex justify-end items-center w-full gap-2">
+                    {isMultiSelect && selectedTasks.length > 0 && (
+                      <>
+                        <Select
+                          onChange={(e) =>
+                            changeSelectedTasksStatus(Number(e.target.value))
+                          }
+                          placeholder="Seleziona Stato"
+                          className="w-48"
+                          color="primary"
+                          variant="bordered"
+                          radius="full"
+                        >
+                          {columns.map((column) => (
+                            <SelectItem
+                              key={column.ProjectTaskStatusId}
+                              value={column.ProjectTaskStatusId}
+                            >
+                              {column.ProjectTaskStatusName}
+                            </SelectItem>
+                          ))}
+                        </Select>
+                        <ConfirmDeleteTaskModal
+                          TaskData={selectedTasks
+                            .map((id) =>
+                              tasks.find((task) => task.ProjectTaskId === id)
+                            )
+                            .filter((task): task is Task => task !== undefined)}
+                          DeleteTasks={deleteSelectedTasks}
+                        />
+                      </>
+                    )}
+                    <Button
+                      variant={isMultiSelect ? "solid" : "bordered"}
+                      color="primary"
+                      radius="full"
+                      className="w-fit"
+                      onClick={toggleMultiSelect}
+                    >
+                      {isMultiSelect
+                        ? "Disabilita Selezione Multipla"
+                        : "Abilita Selezione Multipla"}
+                    </Button>
+                  </div>
                   <Button
                     color="primary"
                     radius="full"
@@ -358,7 +473,7 @@ export default function TaskContainer({
                     startContent={
                       <Icon icon="mynaui:plus-solid" fontSize={22} />
                     }
-                    className="hidden sm:flex"
+                    className="hidden sm:flex w-44"
                   >
                     Aggiungi Task
                   </Button>
@@ -375,7 +490,7 @@ export default function TaskContainer({
                     isIconOnly
                     className="sm:hidden"
                   />
-                </>
+                </div>
               )}
             </div>
 
@@ -436,6 +551,11 @@ export default function TaskContainer({
                                     projectId={projectId}
                                     updateTaskStatus={updateTaskStatus}
                                     columnCount={columns.length}
+                                    isMultiSelect={isMultiSelect}
+                                    handleTaskSelect={handleTaskSelect}
+                                    isSelected={selectedTasks.includes(
+                                      task.ProjectTaskId
+                                    )}
                                   />
                                 )}
                               </Draggable>
