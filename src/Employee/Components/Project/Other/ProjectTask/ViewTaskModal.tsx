@@ -1454,10 +1454,10 @@ export default function ViewTaskModal({
                                                       radius="full"
                                                       variant="light"
                                                       onClick={() => {
-                                                        setCommentEditingId(
+                                                        setEditingCheckbox(
                                                           checkbox.CheckboxId
                                                         );
-                                                        setUpdateComment(
+                                                        setCheckboxText(
                                                           checkbox.Text
                                                         );
                                                       }}
