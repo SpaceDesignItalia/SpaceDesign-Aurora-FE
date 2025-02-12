@@ -5,7 +5,6 @@ import {
   Button,
   Chip,
   DatePicker,
-  DateValue,
   Input,
   Modal,
   ModalBody,
@@ -16,26 +15,20 @@ import {
   PopoverContent,
   PopoverTrigger,
   Progress,
-} from "@nextui-org/react";
+  Spinner,
+} from "@heroui/react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import styles
 import { API_URL_IMG } from "../../../../../API/API";
 import { useState, useEffect } from "react";
-import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 import axios from "axios";
 import { I18nProvider } from "@react-aria/i18n";
-import {
-  CreditCardRounded as CreditCardRoundedIcon,
-  NotesRounded as NotesRoundedIcon,
-  LocalOfferRounded as LocalOfferRoundedIcon,
-  Groups2Rounded as Groups2RoundedIcon,
-  CalendarMonthRounded as CalendarMonthRoundedIcon,
-  AddRounded as AddRoundedIcon,
-  CloseRounded as CloseRoundedIcon,
-  SaveRounded as SaveRoundedIcon,
-} from "@mui/icons-material";
 import StatusAlert from "../../../Layout/StatusAlert";
+import { DateValue } from "@heroui/react";
+import { parseDate } from "@internationalized/date";
+import { useParams, useNavigate } from "react-router-dom";
+import { Icon } from "@iconify/react";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -53,8 +46,8 @@ interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
-  ProjectTaskExpiration: DateValue;
-  ProjectTaskCreation: DateValue;
+  ProjectTaskExpiration?: any;
+  ProjectTaskCreation: any;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
@@ -80,8 +73,8 @@ const INITIAL_TASK_DATA: Task = {
   ProjectTaskId: 0,
   ProjectTaskName: "",
   ProjectTaskDescription: "",
-  ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
-  ProjectTaskCreation: parseDate(dayjs().format("YYYY-MM-DD")),
+  ProjectTaskExpiration: null,
+  ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
   ProjectTaskStatusId: 0,
   ProjectTaskTags: [],
   ProjectTaskMembers: [],
@@ -102,6 +95,11 @@ export default function AddTaskModal({
   fetchData,
   ProjectId,
 }: AddTaskModalProps) {
+  const { UniqueCode, Action } = useParams<{
+    UniqueCode: string;
+    Action: string;
+  }>();
+  const navigate = useNavigate();
   const [newTask, setNewTask] = useState<Task>(INITIAL_TASK_DATA);
   const [members, setMembers] = useState<Member[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -139,7 +137,10 @@ export default function AddTaskModal({
     <PopoverContent className="w-[350px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
-          <h2 className="text-small font-bold text-foreground" {...titleProps}>
+          <h2
+            className="text-small font-semibold text-foreground"
+            {...titleProps}
+          >
             Dipendente
           </h2>
           <div className="mt-2 flex flex-col gap-2 w-full">
@@ -180,7 +181,10 @@ export default function AddTaskModal({
     <PopoverContent className="w-[350px]">
       {(titleProps) => (
         <div className="px-1 py-2 w-full">
-          <h2 className="text-small font-bold text-foreground" {...titleProps}>
+          <h2
+            className="text-small font-semibold text-foreground"
+            {...titleProps}
+          >
             Tag
           </h2>
           <div className="mt-2 flex flex-col gap-2 w-full">
@@ -211,9 +215,13 @@ export default function AddTaskModal({
   async function handleAddTask() {
     try {
       setIsAddingData(true);
-      const formattedDate = new Date(newTask.ProjectTaskExpiration.toString());
+      const formattedDate = newTask.ProjectTaskExpiration
+        ? new Date(newTask.ProjectTaskExpiration.toString())
+        : null;
       const formattedCreationDate = new Date(
-        newTask.ProjectTaskCreation.toString()
+        newTask.ProjectTaskCreation
+          ? newTask.ProjectTaskCreation.toString()
+          : ""
       );
       const res = await axios.post("/Project/POST/AddTask", {
         FormattedDate: formattedDate,
@@ -247,6 +255,10 @@ export default function AddTaskModal({
       setIsAddingData(false);
       setUpdate(!update);
       handleCloseModal();
+      // Remove action from URL
+      if (Action) {
+        navigate(`/projects/${UniqueCode}`);
+      }
     }
   }
 
@@ -290,15 +302,20 @@ export default function AddTaskModal({
       const end = new Date(newTask.ProjectTaskExpiration.toString());
 
       setDateError(start > end); // If start is after end, show error
+    } else {
+      setDateError(false);
     }
   }, [newTask]);
 
   const [isValidTask, setIsValidTask] = useState(false);
   useEffect(() => {
+    if (!newTask.ProjectTaskCreation || !newTask.ProjectTaskExpiration) {
+      setIsValidTask(true);
+      return;
+    }
     setIsValidTask(
       newTask.ProjectTaskName.length > 0 &&
         newTask.ProjectTaskCreation.toString().length > 0 &&
-        newTask.ProjectTaskExpiration.toString().length > 0 &&
         dateError === false
     );
   }, [newTask]);
@@ -307,6 +324,7 @@ export default function AddTaskModal({
     startDate: DateValue,
     endDate: DateValue
   ): number => {
+    if (!startDate || !endDate) return 0;
     const totalDuration = dayjs(endDate.toString()).diff(
       dayjs(startDate.toString()),
       "day"
@@ -321,14 +339,18 @@ export default function AddTaskModal({
       ProjectTaskId: 0,
       ProjectTaskName: "",
       ProjectTaskDescription: "",
-      ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
-      ProjectTaskCreation: parseDate(dayjs().format("YYYY-MM-DD")),
+      ProjectTaskExpiration: null,
+      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
       ProjectId: ProjectId,
     });
     isClosed();
+    // Remove action from URL
+    if (Action) {
+      navigate(`/projects/${ProjectId}`);
+    }
   }
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -339,7 +361,6 @@ export default function AddTaskModal({
       const refinedText = await axios.post("/Project/POST/RefineText", {
         text: `Riscrivi in modo più formale e completo il seguente testo: ${newTask.ProjectTaskDescription}`,
       });
-      console.log("Testo raffinato:", refinedText.data);
       setNewTask({
         ...newTask,
         ProjectTaskDescription: refinedText.data,
@@ -369,7 +390,10 @@ export default function AddTaskModal({
             <>
               <ModalHeader className="flex flex-row justify-between items-center gap-2">
                 <div className="flex flex-row justify-between items-center gap-2 w-full">
-                  <CreditCardRoundedIcon />
+                  <Icon
+                    icon="solar:checklist-minimalistic-linear"
+                    fontSize={22}
+                  />
                   <Input
                     className="w-full"
                     variant="underlined"
@@ -397,8 +421,9 @@ export default function AddTaskModal({
                     size="sm"
                     isIconOnly
                     startContent={
-                      <CloseRoundedIcon
-                        sx={{ fontSize: 17 }}
+                      <Icon
+                        icon="material-symbols:close-rounded"
+                        fontSize={22}
                         className="text-gray-700"
                       />
                     }
@@ -410,7 +435,7 @@ export default function AddTaskModal({
                   <dl>
                     <div className="px-4 flex flex-col sm:gap-4 sm:px-0">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <LocalOfferRoundedIcon />
+                        <Icon icon="solar:tag-linear" fontSize={22} />
                         Tag associati
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
@@ -425,7 +450,10 @@ export default function AddTaskModal({
                                   radius="full"
                                   isIconOnly
                                 >
-                                  <AddRoundedIcon />
+                                  <Icon
+                                    icon="mynaui:plus-solid"
+                                    fontSize={22}
+                                  />
                                 </Button>
                               </PopoverTrigger>
                               {tagPopoverContent}
@@ -454,7 +482,10 @@ export default function AddTaskModal({
                                   radius="full"
                                   isIconOnly
                                 >
-                                  <AddRoundedIcon />
+                                  <Icon
+                                    icon="mynaui:plus-solid"
+                                    fontSize={22}
+                                  />
                                 </Button>
                               </PopoverTrigger>
                               {tagPopoverContent}
@@ -465,7 +496,10 @@ export default function AddTaskModal({
                     </div>
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <Groups2RoundedIcon />
+                        <Icon
+                          icon="solar:users-group-rounded-linear"
+                          fontSize={22}
+                        />
                         Membri
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
@@ -480,7 +514,10 @@ export default function AddTaskModal({
                                   radius="full"
                                   isIconOnly
                                 >
-                                  <AddRoundedIcon />
+                                  <Icon
+                                    icon="mynaui:plus-solid"
+                                    fontSize={22}
+                                  />
                                 </Button>
                               </PopoverTrigger>
                               {memberPopoverContent}
@@ -517,7 +554,10 @@ export default function AddTaskModal({
                                   radius="full"
                                   isIconOnly
                                 >
-                                  <AddRoundedIcon />
+                                  <Icon
+                                    icon="mynaui:plus-solid"
+                                    fontSize={22}
+                                  />
                                 </Button>
                               </PopoverTrigger>
                               {memberPopoverContent}
@@ -529,7 +569,7 @@ export default function AddTaskModal({
 
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <CalendarMonthRoundedIcon />
+                        <Icon icon="solar:calendar-linear" fontSize={22} />
                         Durata task
                       </dt>
                       <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
@@ -548,7 +588,7 @@ export default function AddTaskModal({
                                   onChange={(date) =>
                                     setNewTask((prevTask) => ({
                                       ...prevTask!,
-                                      ProjectTaskCreation: date,
+                                      ProjectTaskCreation: date!,
                                     }))
                                   }
                                 />
@@ -561,7 +601,8 @@ export default function AddTaskModal({
                                   radius="full"
                                   color={dateError ? "danger" : "default"}
                                   variant="bordered"
-                                  value={newTask!.ProjectTaskExpiration}
+                                  defaultValue={null}
+                                  value={newTask?.ProjectTaskExpiration}
                                   onChange={(date) =>
                                     setNewTask((prevTask) => ({
                                       ...prevTask!,
@@ -579,18 +620,24 @@ export default function AddTaskModal({
                             )}
                           </div>
                         </div>
-                        <Progress
-                          value={calculateProgress(
-                            newTask!.ProjectTaskCreation,
-                            newTask!.ProjectTaskExpiration
+                        {newTask.ProjectTaskExpiration &&
+                          newTask.ProjectTaskCreation && (
+                            <Progress
+                              value={calculateProgress(
+                                newTask!.ProjectTaskCreation,
+                                newTask!.ProjectTaskExpiration
+                              )}
+                            />
                           )}
-                        />
                       </dd>
                     </div>
 
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <NotesRoundedIcon />
+                        <Icon
+                          icon="fluent:text-description-16-filled"
+                          fontSize={22}
+                        />
                         Descrizione
                       </dt>
                       <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
@@ -606,14 +653,34 @@ export default function AddTaskModal({
                           }
                         />
                       </dd>
-                      <button
-                        onClick={handleRefine}
-                        disabled={loading || !newTask.ProjectTaskDescription}
-                      >
-                        {loading
-                          ? "Riscrittura in corso..."
-                          : "Riscrivi in modo formale"}
-                      </button>
+                      {newTask.ProjectTaskDescription ? (
+                        <Button
+                          variant="bordered"
+                          className="w-max-1/2 mx-auto gap-3 my-5 sm:my-0 py-2"
+                          radius="full"
+                          onClick={handleRefine}
+                          isDisabled={
+                            loading || !newTask.ProjectTaskDescription
+                          }
+                        >
+                          {loading ? (
+                            <>
+                              {" "}
+                              <Spinner size="sm" className="text-black" />{" "}
+                              Riscrittura in corso...{" "}
+                            </>
+                          ) : (
+                            <>
+                              {" "}
+                              <Icon
+                                icon="solar:magic-stick-3-linear"
+                                fontSize={24}
+                              />{" "}
+                              Riscrivi con AI{" "}
+                            </>
+                          )}
+                        </Button>
+                      ) : null}
                     </div>
                   </dl>
                 </div>
@@ -631,7 +698,11 @@ export default function AddTaskModal({
                   color="primary"
                   onClick={handleAddTask}
                   radius="full"
-                  startContent={!isAddingData && <SaveRoundedIcon />}
+                  startContent={
+                    !isAddingData && (
+                      <Icon icon="basil:save-outline" fontSize={22} />
+                    )
+                  }
                   isLoading={isAddingData}
                   isDisabled={!isValidTask && !isAddingData}
                   variant={dateError ? "flat" : "solid"}

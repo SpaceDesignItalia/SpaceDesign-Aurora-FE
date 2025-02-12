@@ -1,13 +1,8 @@
 import { useEffect, useState, ChangeEvent } from "react";
 import axios from "axios";
-import {
-  Input,
-  Autocomplete,
-  AutocompleteItem,
-  Button,
-} from "@nextui-org/react";
-import SaveIcon from "@mui/icons-material/Save";
+import { Input, Autocomplete, AutocompleteItem, Button } from "@heroui/react";
 import StatusAlert from "../../Layout/StatusAlert";
+import { Icon } from "@iconify/react";
 
 interface Employee {
   EmployeeName: string;
@@ -161,13 +156,13 @@ export default function AddEmployeeModel() {
         <form>
           <div className="space-y-6 bg-white py-6">
             <div>
-              <h3 className="text-base font-semibold leading-6 text-gray-900">
+              <h3 className="text-base font-medium leading-6 text-gray-900">
                 Dipendente
               </h3>
               <p className="mt-1 text-sm text-gray-500 w-1/3">
                 In questo pannello potrai aggiungere un nuovo dipendente al
                 database. I campi contrassegnati con un asterisco (
-                <span className="text-danger font-bold">*</span>) sono
+                <span className="text-danger font-semibold">*</span>) sono
                 obbligatori.
               </p>
             </div>
@@ -177,7 +172,7 @@ export default function AddEmployeeModel() {
                   htmlFor="EmployeeName"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Nome <span className="text-danger font-bold">*</span>
+                  Nome <span className="text-danger font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -196,7 +191,7 @@ export default function AddEmployeeModel() {
                   htmlFor="EmployeeSurname"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Cognome <span className="text-danger font-bold">*</span>
+                  Cognome <span className="text-danger font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -215,7 +210,7 @@ export default function AddEmployeeModel() {
                   htmlFor="EmployeeEmail"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Email <span className="text-danger font-bold">*</span>
+                  Email <span className="text-danger font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -253,7 +248,7 @@ export default function AddEmployeeModel() {
                   htmlFor="role"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Ruolo <span className="text-danger font-bold">*</span>
+                  Ruolo <span className="text-danger font-semibold">*</span>
                 </label>
                 <Autocomplete
                   placeholder="Seleziona ruolo"
@@ -291,7 +286,7 @@ export default function AddEmployeeModel() {
               color="primary"
               className="text-white"
               radius="full"
-              startContent={<SaveIcon />}
+              startContent={<Icon icon="basil:save-outline" fontSize={24} />}
               isDisabled={checkAllDataCompiled()}
               isLoading={isAddingData}
               onClick={handleCreateNewEmployee}

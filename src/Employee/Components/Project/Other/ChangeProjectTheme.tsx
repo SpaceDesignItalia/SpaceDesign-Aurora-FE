@@ -9,7 +9,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { API_URL_IMG } from "../../../../API/API";
@@ -93,7 +93,7 @@ export default function ChangeProjectTheme({
         {(isClosed) => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">Seleziona un tema</h3>
+              <h3 className="text-xl font-medium">Seleziona un tema</h3>
             </ModalHeader>
             <ModalBody>
               <RadioGroup

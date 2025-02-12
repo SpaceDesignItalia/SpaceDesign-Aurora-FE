@@ -6,7 +6,7 @@ import {
   ModalFooter,
   Button,
   Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";

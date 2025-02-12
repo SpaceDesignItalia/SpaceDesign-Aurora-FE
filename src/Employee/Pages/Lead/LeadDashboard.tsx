@@ -1,10 +1,10 @@
 import LeadTable from "../../Components/Lead/Tables/LeadTable";
-import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
 import LeadStats from "../../Components/Lead/Other/LeadStats";
 import LeadGraph from "../../Components/Lead/Other/LeadGraph";
+import { Icon } from "@iconify/react";
 
 export default function LeadDashboard() {
   const { hasPermission } = usePermissions();
@@ -23,12 +23,12 @@ export default function LeadDashboard() {
     <div className="py-10 m-0 lg:ml-72">
       <header>
         <div className="flex flex-col gap-3 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900">
             Lead
           </h1>
           <Breadcrumbs variant="bordered" radius="sm">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/administration/lead">Lead</BreadcrumbItem>
           </Breadcrumbs>

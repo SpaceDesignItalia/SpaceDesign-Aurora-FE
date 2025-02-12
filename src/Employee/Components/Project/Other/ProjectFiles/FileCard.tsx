@@ -1,18 +1,15 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { API_URL_IMG } from "../../../../../API/API";
-import ConfirmRemoveFilePopover from "../ConfirmRemoveFilePopover";
 import {
   Button,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-} from "@nextui-org/react";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import BorderColorRoundedIcon from "@mui/icons-material/BorderColorRounded";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
+} from "@heroui/react";
+import { Icon } from "@iconify/react";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { API_URL_IMG } from "../../../../../API/API";
+import ConfirmRemoveFilePopover from "../ConfirmRemoveFilePopover";
 
 interface FileCardProps {
   file: any;
@@ -31,7 +28,8 @@ export default function FileCard({
   const [isEditing, setIsEditing] = useState(false);
 
   // Ottieni nome del file e la sua estensione separatamente
-  const initialFileName = file.FileName || file.file.name;
+  const initialFileName =
+    file.FileName || file.EventAttachmentName || file.file.name;
   const extension = initialFileName.substring(initialFileName.lastIndexOf("."));
   const [newFileName, setNewFileName] = useState("");
 
@@ -58,7 +56,10 @@ export default function FileCard({
 
   async function fetchFileIcon() {
     try {
-      const fileName = variant === "default" ? file.FileName : file.file.name;
+      const fileName =
+        variant === "default"
+          ? file.FileName
+          : file.EventAttachmentName || file.file.name;
       const res = await axios.get(`/Fileicon/GET/GetFileIconByExtension`, {
         params: { fileName },
       });
@@ -153,8 +154,10 @@ export default function FileCard({
                   variant="light"
                   radius="full"
                   isIconOnly
-                  startContent={<MoreVertRoundedIcon />}
-                  className="cursor-pointer"
+                  startContent={
+                    <Icon icon="solar:menu-dots-bold" fontSize={22} />
+                  }
+                  className="cursor-pointer rotate-90"
                 />
               </DropdownTrigger>
               <DropdownMenu
@@ -163,14 +166,18 @@ export default function FileCard({
               >
                 <DropdownItem
                   key="download"
-                  startContent={<FileDownloadRoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:file-download-linear" fontSize={22} />
+                  }
                   onClick={downloadFile} // Scarica il file
                 >
                   Scarica file
                 </DropdownItem>
                 <DropdownItem
                   key="edit"
-                  startContent={<BorderColorRoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:pen-2-linear" fontSize={22} />
+                  }
                   onClick={() => setIsEditing(true)} // Entra in modalità di modifica
                 >
                   Rinomina file
@@ -179,7 +186,9 @@ export default function FileCard({
                   key="delete"
                   className="text-danger"
                   color="danger"
-                  startContent={<DeleteRoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:trash-bin-trash-linear" fontSize={24} />
+                  }
                   onClick={() => DeleteFile(file)}
                 >
                   Rimuovi file
@@ -196,7 +205,9 @@ export default function FileCard({
             <div className="border rounded-xl h-12 w-12 p-2 bg-white">
               <img src={API_URL_IMG + fileIcon} alt={fileIcon} />
             </div>
-            <h4 className="text-sm truncate w-3/4">{file.file.name}</h4>
+            <h4 className="text-sm truncate w-3/4">
+              {file.EventAttachmentName || file.file.name}
+            </h4>
           </div>
           <div className="flex flex-row gap-3 items-center">
             <ConfirmRemoveFilePopover index={index} DeleteFile={DeleteFile} />

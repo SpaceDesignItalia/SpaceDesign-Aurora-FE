@@ -1,4 +1,3 @@
-import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import {
   Button,
   Modal,
@@ -6,12 +5,13 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import axios from "axios";
 import React, { useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import FileCard from "../ProjectFiles/FileCard";
+import { Icon } from "@iconify/react";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -100,7 +100,7 @@ export default function FileUploaderModal({
     >
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">
-          <h3 className="text-xl font-semibold">
+          <h3 className="text-xl font-medium">
             Aggiungi un nuovo file alla Task
           </h3>
         </ModalHeader>
@@ -116,20 +116,20 @@ export default function FileUploaderModal({
           />
 
           <div
-            className="rounded-xl bg-white text-gray-500 font-semibold text-base w-full h-52 flex flex-col items-center justify-center cursor-pointer border-2 border-gray-300 border-dashed mx-auto font-[sans-serif]"
+            className="rounded-xl bg-white text-gray-500 font-medium text-base w-full h-52 flex flex-col items-center justify-center cursor-pointer border-2 border-gray-300 border-dashed mx-auto font-[sans-serif]"
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             ref={dropRef}
             onClick={() => fileInputRef.current?.click()} // Add this line
           >
-            <CloudUploadRoundedIcon />
+            <Icon icon="solar:cloud-upload-linear" fontSize={24} />
             <p className="text-xs font-medium text-gray-400 mt-2">
               Clicca o trascina i file per caricarli
             </p>
           </div>
           {files.length > 0 && (
             <section className="mt-4 text-left">
-              <h4 className="font-semibold">File selezionati</h4>
+              <h4 className="font-medium">File selezionati</h4>
               <ul className="flex flex-col list-disc mt-3 gap-2">
                 {files.map((file, index) => (
                   <FileCard

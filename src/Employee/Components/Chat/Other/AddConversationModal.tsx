@@ -8,10 +8,11 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { useState, useEffect } from "react";
 import { API_URL_IMG } from "../../../../API/API";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
 interface Member {
   StafferId: number;
@@ -30,6 +31,7 @@ export default function AddConversationModal({
   loggedStafferId: number;
   handleOpenChat: (conversationId: number) => void;
 }) {
+  const { Action } = useParams();
   const [member, setMember] = useState<Member>({
     StafferId: 0,
     StafferFullName: "",
@@ -51,7 +53,10 @@ export default function AddConversationModal({
     axios
       .post("/Chat/POST/CreateConversation", {
         Staffer1Id: loggedStafferId,
-        Staffer2Id: member.StafferId,
+        Staffer2Id:
+          member.StafferId === 0
+            ? parseInt(Action?.split("-")[1] || "0")
+            : member.StafferId,
       })
       .then((res) => {
         window.location.reload();
@@ -79,6 +84,7 @@ export default function AddConversationModal({
               <div className="grid grid-cols-6 gap-6">
                 <div className="col-span-6 sm:col-span-6">
                   <Autocomplete
+                    defaultSelectedKey={Action?.split("-")[1] || ""}
                     defaultItems={members}
                     placeholder="Cerca per nome..."
                     variant="bordered"

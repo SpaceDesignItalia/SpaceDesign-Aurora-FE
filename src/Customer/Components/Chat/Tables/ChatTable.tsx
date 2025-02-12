@@ -1,11 +1,10 @@
-import { Avatar, Button, Input, ScrollShadow, cn } from "@nextui-org/react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import { Avatar, Button, Input, ScrollShadow, cn } from "@heroui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import ChatMessage from "../Other/ChatMessage";
+import { Icon } from "@iconify/react";
 
 const socket = io("http://localhost:3000");
 
@@ -286,7 +285,7 @@ export default function ChatTable() {
           <Input
             radius="sm"
             variant="bordered"
-            startContent={<SearchOutlinedIcon />}
+            startContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
             value={searchQuery}
             onChange={SearchEmployee}
             placeholder="Cerca dipendente per email..."
@@ -302,7 +301,9 @@ export default function ChatTable() {
                 >
                   <Avatar src="https://miro.medium.com/v2/resize:fit:1224/1*XKpA4-JcY06QcMOiPB1zaQ.jpeg" />
                   <div className="flex flex-col justify-start col-span-3">
-                    <h2 className="font-bold">{employee.EmployeeFullName}</h2>
+                    <h2 className="font-semibold">
+                      {employee.EmployeeFullName}
+                    </h2>
                   </div>
                 </div>
               ))
@@ -318,7 +319,7 @@ export default function ChatTable() {
                 >
                   <Avatar src="https://miro.medium.com/v2/resize:fit:1224/1*XKpA4-JcY06QcMOiPB1zaQ.jpeg" />
                   <div className="flex flex-col justify-start col-span-3">
-                    <h2 className="font-bold">
+                    <h2 className="font-semibold">
                       {conversation.Staffer1Id === loggedStafferId
                         ? conversation.Staffer2FullName
                         : conversation.Staffer1FullName}
@@ -331,7 +332,7 @@ export default function ChatTable() {
                       color="danger"
                       onClick={() => handleDeleteConversation(conversation)}
                     >
-                      <DeleteOutlinedIcon />
+                      <Icon icon="solar:trash-bin-trash-linear" fontSize={24} />
                     </Button>
                     <p className="flex justify-end text-sm">
                       {conversation.lastMessageDate &&

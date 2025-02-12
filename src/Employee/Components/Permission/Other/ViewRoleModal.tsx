@@ -5,7 +5,7 @@ import {
   ModalBody,
   ModalFooter,
   Button,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { CheckCircleIcon } from "@heroicons/react/20/solid";

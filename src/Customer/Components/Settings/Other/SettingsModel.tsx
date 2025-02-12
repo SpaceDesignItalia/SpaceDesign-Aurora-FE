@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Avatar, Button, Input } from "@nextui-org/react";
+import { Avatar, Button, Input } from "@heroui/react";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 import axios from "axios";
 import { API_URL_IMG } from "../../../../API/API";
@@ -74,7 +74,6 @@ export default function SettingsModel() {
     axios
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then((res) => {
-        console.log(res.data);
         setUserEditedData(res.data);
         setUserData(res.data);
         setProfileImagePreview(
@@ -264,7 +263,7 @@ export default function SettingsModel() {
       <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
         <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8 border-b-2 border-gray-200">
           <div>
-            <h2 className="text-base font-semibold leading-7">
+            <h2 className="text-base font-medium leading-7">
               Informazioni personali
             </h2>
             <p className="mt-1 text-sm leading-6 text-gray-400">
@@ -399,9 +398,7 @@ export default function SettingsModel() {
 
         <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
           <div>
-            <h2 className="text-base font-semibold leading-7">
-              Cambia password
-            </h2>
+            <h2 className="text-base font-medium leading-7">Cambia password</h2>
             <p className="mt-1 text-sm leading-6 text-gray-400">
               Aggiorna la password del tuo account.
             </p>

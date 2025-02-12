@@ -1,14 +1,9 @@
-import SaveIcon from "@mui/icons-material/Save";
-import {
-  Autocomplete,
-  AutocompleteItem,
-  Button,
-  Input,
-} from "@nextui-org/react";
+import { Autocomplete, AutocompleteItem, Button, Input } from "@heroui/react";
 import axios from "axios";
 import { useEffect, useState, ChangeEvent } from "react";
 import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
+import { Icon } from "@iconify/react";
 
 interface Employee {
   EmployeeId: number;
@@ -66,7 +61,7 @@ export default function EditEmployeeModel() {
     axios
       .get("/Staffer/GET/GetStafferById", { params: { EmployeeId } })
       .then((res) => {
-        const employee = res.data[0];
+        const employee = res.data;
         setInitialEmployeeData(employee);
         setNewEmployeeData(employee);
       });
@@ -175,7 +170,7 @@ export default function EditEmployeeModel() {
         <form>
           <div className="space-y-6 bg-white py-6">
             <div>
-              <h3 className="text-base font-semibold leading-6 text-gray-900">
+              <h3 className="text-base font-medium leading-6 text-gray-900">
                 Dipendente
               </h3>
               <p className="mt-1 text-sm text-gray-500">
@@ -189,7 +184,7 @@ export default function EditEmployeeModel() {
                   htmlFor="EmployeeName"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Nome <span className="text-danger font-bold">*</span>
+                  Nome <span className="text-danger font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -206,7 +201,7 @@ export default function EditEmployeeModel() {
                   htmlFor="EmployeeSurname"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Cognome <span className="text-danger font-bold">*</span>
+                  Cognome <span className="text-danger font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -223,7 +218,7 @@ export default function EditEmployeeModel() {
                   htmlFor="EmployeeEmail"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Email <span className="text-danger font-bold">*</span>
+                  Email <span className="text-danger font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -259,7 +254,7 @@ export default function EditEmployeeModel() {
                   htmlFor="role"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Ruolo <span className="text-danger font-bold">*</span>
+                  Ruolo <span className="text-danger font-semibold">*</span>
                 </label>
                 <Autocomplete
                   placeholder="Seleziona ruolo"
@@ -291,7 +286,7 @@ export default function EditEmployeeModel() {
               color="primary"
               className="text-white"
               radius="full"
-              startContent={<SaveIcon />}
+              startContent={<Icon icon="basil:save-outline" fontSize={24} />}
               isDisabled={checkAllDataCompiled()}
               isLoading={isAddingData}
               onClick={handleEditEmployee}

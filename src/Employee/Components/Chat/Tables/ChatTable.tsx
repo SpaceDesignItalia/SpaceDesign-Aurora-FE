@@ -8,12 +8,11 @@ import {
   ScrollShadow,
   cn,
   useDisclosure,
-} from "@nextui-org/react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+} from "@heroui/react";
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import RecentActorsRoundedIcon from "@mui/icons-material/RecentActorsRounded";
 import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
@@ -23,6 +22,7 @@ import AddConversationModal from "../Other/AddConversationModal";
 import { API_URL_IMG, API_WEBSOCKET_URL } from "../../../../API/API";
 import dayjs from "dayjs";
 import "dayjs/locale/it";
+import { Icon } from "@iconify/react";
 
 dayjs.locale("it");
 
@@ -62,6 +62,7 @@ interface onlineUser {
 }
 
 export default function ChatTable() {
+  const { Action } = useParams();
   const { isOpen, onOpenChange } = useDisclosure();
   const [modalAddData, setModalAddData] = useState<ModalAddData>({
     loggedStafferId: 0,
@@ -87,6 +88,8 @@ export default function ChatTable() {
       ).scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {}, [Action]);
 
   // Connect to socket and handle message updates
   useEffect(() => {
@@ -122,6 +125,13 @@ export default function ChatTable() {
         setLoggedStafferId(stafferId);
         setModalAddData({ ...modalAddData, loggedStafferId: stafferId });
 
+        if (Action?.includes("create")) {
+          setModalAddData({
+            ...modalAddData,
+            loggedStafferId: res.data.StafferId,
+            open: true,
+          });
+        }
         const response = await axios.get(
           "/Chat/GET/getConversationByStafferId",
           {
@@ -132,6 +142,18 @@ export default function ChatTable() {
 
         const convData = response.data;
         if (convData.length > 0) {
+          if (Action?.includes("send")) {
+            response.data.forEach((conv: Conversation) => {
+              if (
+                conv.Staffer1Id == parseInt(Action?.split("-")[1] || "0") ||
+                conv.Staffer2Id == parseInt(Action?.split("-")[1] || "0")
+              ) {
+                setSelectedConversationId(conv.ConversationId);
+                handleOpenChat(conv.ConversationId);
+                setSelectedConversation(conv);
+              }
+            });
+          }
           setConversations(convData);
         }
       })
@@ -368,7 +390,7 @@ export default function ChatTable() {
       />
 
       <div className="w-full lg:hidden flex justify-between items-center p-3">
-        <h1 className="text-2xl font-semibold">Chat</h1>
+        <h1 className="text-2xl font-medium">Chat</h1>
         <Button
           size="lg"
           color="primary"
@@ -389,7 +411,9 @@ export default function ChatTable() {
               <Input
                 radius="full"
                 variant="bordered"
-                startContent={<SearchOutlinedIcon />}
+                startContent={
+                  <Icon icon="solar:magnifer-linear" fontSize={22} />
+                }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cerca conversazione"
@@ -443,7 +467,7 @@ export default function ChatTable() {
                     </div>
                     <div className="ml-4 flex flex-col w-5/6">
                       <div className="flex items-center justify-between">
-                        <h2 className="font-bold text-lg">
+                        <h2 className="font-semibold text-lg">
                           {conversation.Staffer1Id === loggedStafferId
                             ? conversation.Staffer2FullName
                             : conversation.Staffer1FullName}
@@ -490,7 +514,9 @@ export default function ChatTable() {
               <Input
                 radius="full"
                 variant="bordered"
-                startContent={<SearchOutlinedIcon />}
+                startContent={
+                  <Icon icon="solar:magnifer-linear" fontSize={22} />
+                }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cerca conversazione"
@@ -541,7 +567,7 @@ export default function ChatTable() {
                     </div>
                     <div className="ml-4 flex flex-col w-5/6">
                       <div className="flex items-center justify-between">
-                        <h2 className="font-bold text-lg">
+                        <h2 className="font-semibold text-lg">
                           {conversation.Staffer1Id === loggedStafferId
                             ? conversation.Staffer2FullName
                             : conversation.Staffer1FullName}
@@ -559,7 +585,7 @@ export default function ChatTable() {
                       )}
                     </div>
                     {conversation.notificationCount > 0 && (
-                      <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+                      <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-semibold leading-none text-white bg-primary rounded-full self-center">
                         {conversation.notificationCount}
                       </span>
                     )}
@@ -604,7 +630,7 @@ export default function ChatTable() {
                       size="lg"
                     />
                     <div className="flex flex-col">
-                      <h2 className="ml-2 font-bold">
+                      <h2 className="ml-2 font-semibold">
                         {selectedConversation.Staffer1Id === loggedStafferId
                           ? selectedConversation.Staffer2FullName
                           : selectedConversation.Staffer1FullName}
@@ -639,7 +665,7 @@ export default function ChatTable() {
                       handleDeleteConversation(selectedConversation);
                     }}
                   >
-                    <DeleteOutlinedIcon />
+                    <Icon icon="solar:trash-bin-trash-linear" fontSize={24} />
                   </Button>
                 </div>
 
@@ -704,7 +730,7 @@ export default function ChatTable() {
             ) : (
               <div className="flex flex-col h-screen justify-center items-center p-2">
                 <Groups2RoundedIcon sx={{ fontSize: 50 }} />
-                <h3 className="mt-2 text-base font-semibold text-gray-900">
+                <h3 className="mt-2 text-base font-medium text-gray-900">
                   Nessuna conversazione selezionata
                 </h3>
                 <p className="mt-1 text-base text-gray-500 text-center">
@@ -730,7 +756,7 @@ export default function ChatTable() {
       ) : (
         <div className="w-full flex flex-col h-screen justify-center items-center">
           <Groups2RoundedIcon sx={{ fontSize: 50 }} />
-          <h3 className="mt-2 text-base font-semibold text-gray-900">
+          <h3 className="mt-2 text-base font-medium text-gray-900">
             Nessuna conversazione trovata!
           </h3>
           <p className="mt-1 text-base text-gray-500">

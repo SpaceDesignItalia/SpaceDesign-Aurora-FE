@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ContextMenuPrimitive from "@radix-ui/react-context-menu";
 import { Check, ChevronRight, Circle } from "lucide-react";
-import { cn } from "@nextui-org/react";
+import { cn } from "@heroui/react";
 
 const ContextMenu = ContextMenuPrimitive.Root;
 
@@ -141,7 +141,7 @@ const ContextMenuLabel = React.forwardRef<
   <ContextMenuPrimitive.Label
     ref={ref}
     className={cn(
-      "px-2 py-1.5 text-sm font-semibold text-foreground",
+      "px-2 py-1.5 text-sm font-medium text-foreground",
       inset && "pl-8",
       className
     )}

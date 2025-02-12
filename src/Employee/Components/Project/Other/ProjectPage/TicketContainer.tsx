@@ -1,13 +1,11 @@
-import { Button, Input, ScrollShadow } from "@nextui-org/react";
-import SendRoundedIcon from "@mui/icons-material/SendRounded";
+import { Button, Input, ScrollShadow } from "@heroui/react";
 import ChatMessage from "../ProjectTicket/ChatMessage";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import ResponseTicket from "../ProjectTicket/ResponseTicket";
-import ProjectCalendar from "./ProjectCalendar/ProjectCalendar";
-
+import { Icon } from "@iconify/react";
 const socket = io(API_WEBSOCKET_URL);
 
 interface Message {
@@ -125,7 +123,7 @@ export default function TicketContainer({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 my-5">
         <div className="col-span-1 flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
           <div className="flex flex-col gap-5">
-            <h1 className="font-bold">Customer chat</h1>
+            <h1 className="font-semibold">Customer chat</h1>
             <ScrollShadow
               className="w-full h-[500px]"
               ref={scrollRef}
@@ -168,7 +166,7 @@ export default function TicketContainer({
                 isIconOnly
                 isDisabled={newMessage.trim() === ""}
               >
-                <SendRoundedIcon />
+                <Icon icon="prime:send" fontSize={22} />
               </Button>
             </div>
           </div>
@@ -176,9 +174,6 @@ export default function TicketContainer({
         <div className="col-span-2">
           <ResponseTicket />
         </div>
-      </div>
-      <div className="flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center min-h-[700px] overflow-y-auto transition-all duration-300">
-        <ProjectCalendar />
       </div>
     </div>
   );

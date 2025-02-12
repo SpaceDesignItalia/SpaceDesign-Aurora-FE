@@ -1,8 +1,8 @@
-import { Button, Input } from "@nextui-org/react";
-import TableCard from "../Other/TableCard";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import { useEffect, useState } from "react";
+import { Button, Input } from "@heroui/react";
 import axios from "axios";
+import { useEffect, useState } from "react";
+import TableCard from "../Other/TableCard";
+import { Icon } from "@iconify/react";
 
 interface Project {
   ProjectId: number;
@@ -75,7 +75,7 @@ export default function ProjectTable() {
           <Input
             radius="sm"
             variant="bordered"
-            startContent={<SearchOutlinedIcon />}
+            startContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
             isClearable
             onClear={clearSearchInput}
             className="md:w-1/4"
@@ -84,7 +84,7 @@ export default function ProjectTable() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <Button
-            startContent={<SearchOutlinedIcon />}
+            startContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
             isDisabled={searchQuery == ""}
             color="primary"
             radius="sm"
@@ -101,13 +101,13 @@ export default function ProjectTable() {
             isDisabled={searchQuery == ""}
             className="flex sm:hidden"
           >
-            <SearchOutlinedIcon />
+            <Icon icon="solar:magnifer-linear" fontSize={22} />
           </Button>
         </div>
       </div>
       {Object.keys(groupedProjects).map((companyName, index) => (
         <div key={index} className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">{companyName}</h2>
+          <h2 className="text-2xl font-semibold mb-4">{companyName}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {groupedProjects[companyName].map((project: Project) => (
               <TableCard key={project.ProjectId} project={project} />

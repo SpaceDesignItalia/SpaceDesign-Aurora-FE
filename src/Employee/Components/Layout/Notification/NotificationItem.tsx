@@ -1,12 +1,11 @@
 import React from "react";
-import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
-import Person2RoundedIcon from "@mui/icons-material/Person2Rounded";
-import CloseIcon from "@mui/icons-material/Close"; // Importa l'icona della X
-import { Link } from "@nextui-org/react";
+import { Icon } from "@iconify/react";
+import { Link, Badge, Avatar, cn } from "@heroui/react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/it";
 import axios from "axios";
+import Notification from "./Notification";
 
 dayjs.extend(relativeTime);
 dayjs.locale("it");
@@ -23,6 +22,11 @@ interface Notification {
   NotificationCreationDate: Date;
   IsRead: boolean;
   UniqueCode: string;
+}
+
+interface NotificationItemProps {
+  NotificationInfo: Notification;
+  NotificationUpdate: () => void;
 }
 
 function formatNotificationDate(date: Date): string {
@@ -43,17 +47,16 @@ function formatNotificationDate(date: Date): string {
 export default function NotificationItem({
   NotificationInfo,
   NotificationUpdate,
-}: {
-  NotificationInfo: Notification;
-  NotificationUpdate: () => void;
-}) {
+}: NotificationItemProps): JSX.Element {
   const formattedDate = formatNotificationDate(
     new Date(NotificationInfo.NotificationCreationDate)
   );
 
-  const handleRemoveNotification = (event: React.MouseEvent) => {
-    event.stopPropagation(); // Previene la propagazione dell'evento
-    event.preventDefault(); // Previene il comportamento predefinito del link
+  const handleRemoveNotification = (
+    event: React.MouseEvent<HTMLSpanElement>
+  ) => {
+    event.stopPropagation();
+    event.preventDefault();
     axios
       .delete("/Notification/DELETE/DeleteNotification", {
         params: {
@@ -90,84 +93,81 @@ export default function NotificationItem({
     location.href = "/comunications/chat/";
   };
 
-  return (
-    <>
-      {NotificationInfo.NotificationTypeName === "Progetto" && (
-        <Link
-          className="w-full"
-          color="foreground"
-          onClick={handleReadProjectNotification}
-        >
-          <div className="relative h-fit w-full p-3 border-t-2 hover:bg-gray-100">
-            {/* X per chiudere la notifica */}
-            <span
-              onClick={handleRemoveNotification}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 cursor-pointer"
-              role="button"
-              aria-label="Close notification"
-            >
-              <CloseIcon className="hover:text-red-600" />
-            </span>
-            <div className="w-full flex justify-between items-center gap-3">
-              <div className="flex w-full items-center gap-2 mr-4">
-                <div className="bg-primary rounded-lg p-1 text-white">
-                  <FolderCopyRoundedIcon />
-                </div>{" "}
-                Progetto:{" "}
-                {NotificationInfo.userfullname !== " " ? (
-                  <strong>
-                    {NotificationInfo.ProjectName} -{" "}
-                    {NotificationInfo.userfullname}
-                  </strong>
-                ) : (
-                  <strong>{NotificationInfo.ProjectName}</strong>
-                )}
-              </div>
-            </div>
-            <div
-              dangerouslySetInnerHTML={{
-                __html: NotificationInfo.NotificationMessage,
-              }}
-            />
-            <p>{formattedDate}</p>
-          </div>
-        </Link>
-      )}
+  const contentByType: Record<string, JSX.Element | null> = {
+    Progetto: (
+      <div className="flex items-center gap-2">
+        <Icon icon="solar:folder-linear" fontSize={24} />
+        <strong>{NotificationInfo.ProjectName}</strong>
+      </div>
+    ),
+    Dipendente: (
+      <div className="flex items-center gap-2">
+        <Icon icon="solar:user-rounded-linear" fontSize={24} />
+        <strong>{NotificationInfo.userfullname}</strong>
+      </div>
+    ),
+    default: null,
+  };
 
-      {NotificationInfo.NotificationTypeName === "Dipendente" && (
-        <Link
-          className="w-full"
-          color="foreground"
-          onClick={handleReadMessageNotification}
-          href={"/comunications/chat/"}
+  return (
+    <Link
+      className="w-full"
+      color="foreground"
+      onClick={
+        NotificationInfo.NotificationTypeName === "Progetto"
+          ? handleReadProjectNotification
+          : handleReadMessageNotification
+      }
+    >
+      <div
+        className={cn(
+          "relative h-fit w-full p-4 border-t-2 hover:bg-gray-100",
+          {
+            "bg-slate-100": !NotificationInfo.IsRead,
+          }
+        )}
+      >
+        <span
+          onClick={handleRemoveNotification}
+          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 cursor-pointer"
+          role="button"
+          aria-label="Close notification"
         >
-          <div className="relative h-fit w-full p-3 border-t-2 hover:bg-gray-100">
-            {/* X per chiudere la notifica */}
-            <span
-              onClick={handleRemoveNotification}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 cursor-pointer"
-              role="button"
-              aria-label="Close notification"
-            >
-              <CloseIcon className="hover:text-red-600" />
-            </span>
-            <div className="w-full flex justify-between items-center gap-3">
-              <div className="flex w-full items-center gap-2 mr-4">
-                <div className="bg-primary rounded-lg p-1 text-white">
-                  <Person2RoundedIcon />
-                </div>{" "}
-                Messaggio: <strong>{NotificationInfo.userfullname}</strong>
-              </div>
-            </div>
-            <div
+          <Icon icon="material-symbols:close-rounded" fontSize={24} />
+        </span>
+        <div className="w-full flex gap-3 items-center">
+          {NotificationInfo.NotificationTypeName === "Dipendente" && (
+            <Badge color="primary" isInvisible={NotificationInfo.IsRead}>
+              <Avatar
+                src={
+                  NotificationInfo.NotificationTypeName === "Dipendente"
+                    ? "/path/to/avatar.jpg"
+                    : "/path/to/project-icon.jpg"
+                }
+              />
+            </Badge>
+          )}
+          <div className="flex flex-col">
+            {contentByType[NotificationInfo.NotificationTypeName]}
+            <p
               dangerouslySetInnerHTML={{
                 __html: NotificationInfo.NotificationMessage,
               }}
             />
-            <p>{formattedDate}</p>
+            <time className="text-tiny text-default-400">{formattedDate}</time>
           </div>
-        </Link>
-      )}
-    </>
+        </div>
+        {/*  {NotificationInfo.NotificationTypeName === "Progetto" && (
+          <div className="flex gap-2 pt-2">
+            <Button color="primary" size="sm">
+              Accept
+            </Button>
+            <Button size="sm" variant="flat">
+              Decline
+            </Button>
+          </div>
+        )} */}
+      </div>
+    </Link>
   );
 }

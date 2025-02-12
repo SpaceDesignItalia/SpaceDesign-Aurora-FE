@@ -9,10 +9,10 @@ import {
   Autocomplete,
   AutocompleteItem,
   Input,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import SaveIcon from "@mui/icons-material/Save";
+import { Icon } from "@iconify/react";
 import { API_URL_IMG } from "../../../../API/API";
 import StatusAlert from "../../Layout/StatusAlert";
 
@@ -172,7 +172,7 @@ export default function AddProjectLink({
           {(isClosed) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                <h3 className="text-xl font-semibold">
+                <h3 className="text-xl font-medium">
                   Aggiungi un nuovo collegamento:
                 </h3>
               </ModalHeader>
@@ -265,7 +265,11 @@ export default function AddProjectLink({
                   color="primary"
                   className="text-white"
                   radius="full"
-                  startContent={!isAddingData && <SaveIcon />}
+                  startContent={
+                    !isAddingData && (
+                      <Icon icon="basil:save-outline" fontSize={24} />
+                    )
+                  }
                   isDisabled={checkAllDataCompiled()}
                   isLoading={isAddingData}
                   onClick={handleCreateNewLink}

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Avatar, AvatarGroup, Tooltip } from "@nextui-org/react";
+import { Avatar, AvatarGroup, Tooltip } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { API_URL_IMG } from "../../../../API/API";
 
@@ -152,7 +152,7 @@ export default function TableCard({
                 isBordered
                 isGrid
                 className={
-                  teamMembers.length > 4
+                  teamMembers.length > 3
                     ? `grid-cols-4`
                     : `grid-cols-${teamMembers.length}`
                 }

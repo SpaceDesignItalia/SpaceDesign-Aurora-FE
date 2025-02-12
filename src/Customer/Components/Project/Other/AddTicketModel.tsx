@@ -6,8 +6,8 @@ import {
   Textarea,
   Autocomplete,
   AutocompleteItem,
-} from "@nextui-org/react";
-import SaveIcon from "@mui/icons-material/Save";
+} from "@heroui/react";
+import { Icon } from "@iconify/react";
 import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
 import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded";
@@ -137,7 +137,7 @@ export default function AddTicketModal() {
           <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
             <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
               <div>
-                <h3 className="text-base font-semibold leading-6 text-gray-900">
+                <h3 className="text-base font-medium leading-6 text-gray-900">
                   Apri ticket
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
@@ -173,7 +173,7 @@ export default function AddTicketModal() {
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Titolo ticket{" "}
-                    <span className="text-red-600 font-bold">*</span>
+                    <span className="text-red-600 font-semibold">*</span>
                   </label>
                   <Input
                     variant="bordered"
@@ -192,7 +192,7 @@ export default function AddTicketModal() {
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Descrizione ticket{" "}
-                    <span className="text-red-600 font-bold">*</span>
+                    <span className="text-red-600 font-semibold">*</span>
                   </label>
                   <Textarea
                     variant="bordered"
@@ -211,7 +211,7 @@ export default function AddTicketModal() {
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Tipo di ticket{" "}
-                    <span className="text-red-600 font-bold">*</span>
+                    <span className="text-red-600 font-semibold">*</span>
                   </label>
                   <Autocomplete
                     defaultItems={ticketType}
@@ -236,7 +236,7 @@ export default function AddTicketModal() {
                 color="success"
                 className="text-white"
                 radius="sm"
-                startContent={<SaveIcon />}
+                startContent={<Icon icon="basil:save-outline" fontSize={24} />}
                 isDisabled={checkAllDataCompiled()}
                 isLoading={isSaving}
                 onClick={handleUpdateCustomer}

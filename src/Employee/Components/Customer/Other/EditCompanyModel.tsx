@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Input, Button } from "@nextui-org/react";
-import SaveIcon from "@mui/icons-material/Save";
+import { Input, Button } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
 
@@ -110,7 +110,6 @@ const EditCompanyModel: React.FC = () => {
         setTimeout(() => {
           window.location.href = "/administration/customer";
         }, 2000);
-        console.log("Successo:", res.data);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -155,13 +154,13 @@ const EditCompanyModel: React.FC = () => {
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
         <div className="space-y-6 bg-white px-4 py-6 sm:p-6">
           <div>
-            <h3 className="text-base font-semibold leading-6 text-gray-900">
+            <h3 className="text-base font-medium leading-6 text-gray-900">
               Modifica azienda
             </h3>
             <p className="mt-1 text-sm text-gray-500 sm:w-1/3">
               In questo pannello potrai modificare un'azienda dal database. I
               campi contrassegnati con un asterisco (
-              <span className="text-danger font-bold">*</span>) sono
+              <span className="text-danger font-semibold">*</span>) sono
               obbligatori.
             </p>
           </div>
@@ -172,7 +171,8 @@ const EditCompanyModel: React.FC = () => {
                 htmlFor="CompanyName"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Nome azienda <span className="text-red-600 font-bold">*</span>
+                Nome azienda{" "}
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <Input
                 variant="bordered"
@@ -190,7 +190,7 @@ const EditCompanyModel: React.FC = () => {
                 htmlFor="CompanyAddress"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Indirizzo <span className="text-red-600 font-bold">*</span>
+                Indirizzo <span className="text-red-600 font-semibold">*</span>
               </label>
               <Input
                 variant="bordered"
@@ -208,7 +208,8 @@ const EditCompanyModel: React.FC = () => {
                 htmlFor="CompanyEmail"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Email azienda <span className="text-red-600 font-bold">*</span>
+                Email azienda{" "}
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <Input
                 variant="bordered"
@@ -245,7 +246,9 @@ const EditCompanyModel: React.FC = () => {
             color="primary"
             className="text-white"
             radius="full"
-            startContent={!isAddingData && <SaveIcon />}
+            startContent={
+              !isAddingData && <Icon icon="basil:save-outline" fontSize={24} />
+            }
             isDisabled={checkAllDataCompiled()}
             isLoading={isAddingData}
             onClick={handleUpdateCompany}

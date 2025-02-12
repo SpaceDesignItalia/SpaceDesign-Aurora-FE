@@ -1,34 +1,29 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
 import {
-  Input,
-  Button,
-  Textarea,
   Autocomplete,
   AutocompleteItem,
-  DatePicker,
   Avatar,
-  RadioGroup,
-  Radio,
+  Button,
   cn,
+  DatePicker,
+  Input,
+  Radio,
+  RadioGroup,
+  Spinner,
+  Textarea,
   User,
-} from "@nextui-org/react";
-import { I18nProvider } from "@react-aria/i18n";
-import SaveIcon from "@mui/icons-material/Save";
-import StatusAlert from "../../Layout/StatusAlert";
-import { API_URL_IMG } from "../../../../API/API";
-import {
-  DateValue,
-  parseDate,
-  getLocalTimeZone,
-} from "@internationalized/date";
+} from "@heroui/react";
+import { Icon } from "@iconify/react";
+import { getLocalTimeZone } from "@internationalized/date";
+import { I18nProvider, useDateFormatter } from "@react-aria/i18n";
+import axios from "axios";
 import dayjs from "dayjs";
-import { useDateFormatter } from "@react-aria/i18n";
-
+import React, { useEffect, useState } from "react";
+import { API_URL_IMG } from "../../../../API/API";
+import StatusAlert from "../../Layout/StatusAlert";
 interface Project {
   ProjectName: string;
   ProjectDescription: string;
-  ProjectEndDate: DateValue;
+  ProjectEndDate: any;
   ProjectManagerId: number;
   CompanyId: number;
   ProjectBannerId: number;
@@ -99,7 +94,7 @@ export default function AddProjectModel() {
   const [newProjectData, setNewProjectData] = useState<Project>({
     ProjectName: "",
     ProjectDescription: "",
-    ProjectEndDate: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+    ProjectEndDate: null,
     ProjectManagerId: 0,
     CompanyId: 0,
     ProjectBannerId: 0,
@@ -109,6 +104,7 @@ export default function AddProjectModel() {
   const [managers, setManagers] = useState<Manager[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     axios.get("/Project/GET/GetAllBanners").then((res) => {
@@ -121,6 +117,28 @@ export default function AddProjectModel() {
       setManagers(res.data);
     });
   }, []);
+
+  const handleRefine = async () => {
+    if (!newProjectData.ProjectDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post(
+        "/Project/POST/RefineProjectDescription",
+        {
+          text: `Riscrivi in modo più formale e completo il seguente testo: ${newProjectData.ProjectDescription}`,
+        }
+      );
+      setNewProjectData({
+        ...newProjectData,
+        ProjectDescription: refinedText.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   function handleProjectBannerChange(e: React.ChangeEvent<HTMLInputElement>) {
     setNewProjectData({
@@ -146,7 +164,7 @@ export default function AddProjectModel() {
     }
   }
 
-  function handleProjectEndDateChange(date: DateValue) {
+  function handleProjectEndDateChange(date: any) {
     setNewProjectData({
       ...newProjectData,
       ProjectEndDate: date,
@@ -165,7 +183,6 @@ export default function AddProjectModel() {
     if (
       newProjectData.ProjectName !== "" &&
       newProjectData.ProjectDescription !== "" &&
-      newProjectData.ProjectEndDate !== null &&
       newProjectData.ProjectManagerId !== 0 &&
       newProjectData.ProjectBannerId !== 0
     ) {
@@ -179,11 +196,14 @@ export default function AddProjectModel() {
       setIsAddingData(true);
 
       // Formatta la data di fine progetto
-      const formattedDate = dayjs(
-        formatter.format(
-          newProjectData.ProjectEndDate.toDate(getLocalTimeZone())
-        )
-      ).format("YYYY-MM-DD");
+      let formattedDate = null;
+      if (newProjectData.ProjectEndDate) {
+        formattedDate = dayjs(
+          formatter.format(
+            newProjectData.ProjectEndDate.toDate(getLocalTimeZone())
+          )
+        ).format("YYYY-MM-DD");
+      }
 
       // Crea una copia dei dati del progetto con la data formattata
       const formattedProjectData = {
@@ -207,7 +227,6 @@ export default function AddProjectModel() {
         setTimeout(() => {
           window.location.href = "/projects";
         }, 2000);
-        console.log("Successo:", res.data);
       }
       // Esegui altre azioni dopo la creazione del progetto, se necessario
     } catch (error) {
@@ -250,16 +269,16 @@ export default function AddProjectModel() {
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
         <div className="space-y-6 bg-white py-6">
           <div>
-            <h3 className="text-base font-semibold leading-6 text-gray-900">
+            <h3 className="text-base font-medium leading-6 text-gray-900">
               Progetto
             </h3>
             <p className="mt-1 text-sm text-gray-500 sm:w-1/3">
               In questo pannello potrai creare un nuovo progetto nel database. I
               campi contrassegnati con un asterisco (
-              <span className="text-danger font-bold">*</span>) sono obbligatori
-              e devono essere compilati per completare la registrazione.
-              Assicurati di fornire tutte le informazioni necessarie per
-              garantire un inserimento corretto.
+              <span className="text-danger font-semibold">*</span>) sono
+              obbligatori e devono essere compilati per completare la
+              registrazione. Assicurati di fornire tutte le informazioni
+              necessarie per garantire un inserimento corretto.
             </p>
           </div>
 
@@ -269,7 +288,7 @@ export default function AddProjectModel() {
                 htmlFor="last-name"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Banner <span className="text-red-600 font-bold">*</span>
+                Banner <span className="text-red-600 font-semibold">*</span>
               </label>
               <div className="flex flex-wrap gap-5 mt-3">
                 <RadioGroup
@@ -299,7 +318,8 @@ export default function AddProjectModel() {
                 htmlFor="project-name"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Nome progetto <span className="text-red-600 font-bold">*</span>
+                Nome progetto{" "}
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <Input
                 variant="bordered"
@@ -317,7 +337,8 @@ export default function AddProjectModel() {
                 htmlFor="project-end-date"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Fine Progetto <span className="text-red-600 font-bold">*</span>
+                Fine Progetto{" "}
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <I18nProvider locale="it-GB">
                 <DatePicker
@@ -334,7 +355,8 @@ export default function AddProjectModel() {
                 htmlFor="project-description"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Descrizione <span className="text-red-600 font-bold">*</span>
+                Descrizione{" "}
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <Textarea
                 variant="bordered"
@@ -344,7 +366,34 @@ export default function AddProjectModel() {
                 value={newProjectData.ProjectDescription}
                 onChange={handleProjectDescriptionChange}
                 fullWidth
+                className="mb-2"
               />
+              {newProjectData.ProjectDescription ? (
+                <Button
+                  variant="bordered"
+                  className="w-max-1/2 mx-auto  gap-3 my-5 sm:my-0 py-2"
+                  radius="full"
+                  onClick={handleRefine}
+                  isDisabled={loading || !newProjectData.ProjectDescription}
+                >
+                  {loading ? (
+                    <>
+                      {" "}
+                      <Spinner size="sm" className="text-black" /> Riscrittura
+                      in corso...{" "}
+                    </>
+                  ) : (
+                    <>
+                      {" "}
+                      <Icon
+                        icon="solar:magic-stick-3-linear"
+                        fontSize={24}
+                      />{" "}
+                      Riscrivi con AI{" "}
+                    </>
+                  )}
+                </Button>
+              ) : null}
             </div>
 
             <div className="col-span-6 sm:col-span-3">
@@ -353,7 +402,7 @@ export default function AddProjectModel() {
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
                 Project Manager{" "}
-                <span className="text-red-600 font-bold">*</span>
+                <span className="text-red-600 font-semibold">*</span>
               </label>
 
               <Autocomplete
@@ -430,10 +479,12 @@ export default function AddProjectModel() {
           <Button
             color="primary"
             radius="full"
-            startContent={!isAddingData && <SaveIcon />}
+            startContent={
+              !isAddingData && <Icon icon="basil:save-outline" fontSize={24} />
+            }
             isDisabled={checkAllDataCompiled()}
             isLoading={isAddingData}
-            onClick={handleCreateNewCompany}
+            onPress={handleCreateNewCompany}
           >
             {isAddingData ? "Salvando il progetto..." : "Salva progetto"}
           </Button>

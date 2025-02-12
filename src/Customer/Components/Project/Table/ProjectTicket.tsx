@@ -10,7 +10,7 @@ import {
   Pagination,
   SortDescriptor,
   Link,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
@@ -57,7 +57,6 @@ export default function ProjectTicket() {
         params: { ProjectId: ProjectId },
       })
       .then((res) => {
-        console.log(res.data);
         setTickets(res.data);
       });
   }

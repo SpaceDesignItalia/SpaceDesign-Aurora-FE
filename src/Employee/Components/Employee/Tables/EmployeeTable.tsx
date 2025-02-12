@@ -1,28 +1,24 @@
-import React, { useEffect, useState } from "react";
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Input,
   Button,
+  Input,
+  Link,
   Pagination,
   SortDescriptor,
-  Link,
-} from "@nextui-org/react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from "@heroui/react";
 import axios from "axios";
-import ViewEmployeeModal from "../Other/ViewEmployeeModal";
-import ConfirmDeleteModal from "../Other/ConfirmDeleteModal";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { usePermissions } from "../../Layout/PermissionProvider";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import StatusAlert from "../../Layout/StatusAlert";
+import ConfirmDeleteModal from "../Other/ConfirmDeleteModal";
+import ViewEmployeeModal from "../Other/ViewEmployeeModal";
+import { Icon } from "@iconify/react";
 
 interface Employee {
   EmployeeId: number;
@@ -30,6 +26,7 @@ interface Employee {
   EmployeeEmail: string;
   EmployeePhone: string;
   RoleName: string;
+  EmployeeImageUrl?: string;
 }
 
 interface AlertData {
@@ -62,6 +59,9 @@ const columns = [
 ];
 
 export default function EmployeeTable() {
+  const employeeId = !isNaN(Number(useParams().EmployeeId))
+    ? useParams().EmployeeId
+    : null;
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -89,12 +89,6 @@ export default function EmployeeTable() {
     fetchData();
   }, []);
 
-  function fetchData() {
-    axios.get("/Staffer/GET/GetAllStaffers").then((res) => {
-      setEmployees(res.data);
-    });
-  }
-
   const [page, setPage] = useState(1);
   const [modalData, setModalData] = useState<ModalData>({
     Employee: {
@@ -106,6 +100,21 @@ export default function EmployeeTable() {
     },
     open: false,
   });
+
+  function fetchData() {
+    axios.get("/Staffer/GET/GetAllStaffers").then((res) => {
+      setEmployees(res.data);
+      if (employeeId) {
+        setModalData({
+          ...modalData,
+          open: true,
+          Employee: res.data.find(
+            (employee: Employee) => employee.EmployeeId == parseInt(employeeId)
+          ),
+        });
+      }
+    });
+  }
 
   async function SearchEmployee() {
     try {
@@ -244,7 +253,7 @@ export default function EmployeeTable() {
                 variant="light"
                 size="sm"
                 color="primary"
-                startContent={<RemoveRedEyeOutlinedIcon />}
+                startContent={<Icon icon="solar:eye-linear" fontSize={24} />}
                 aria-label="View"
                 aria-labelledby="View"
                 isIconOnly
@@ -256,23 +265,6 @@ export default function EmployeeTable() {
                   })
                 }
               />
-
-              {adminEmployeePermission.editEmployeePermission && (
-                <Button
-                  as={Link}
-                  variant="light"
-                  size="sm"
-                  color="warning"
-                  startContent={<ModeOutlinedIcon />}
-                  aria-label="Edit"
-                  aria-labelledby="Edit"
-                  isIconOnly
-                  href={
-                    "/administration/employee/edit-employee/" +
-                    employee.EmployeeId
-                  }
-                />
-              )}
 
               {adminEmployeePermission.deleteEmployeePermission && (
                 <ConfirmDeleteModal
@@ -305,7 +297,13 @@ export default function EmployeeTable() {
             <Input
               radius="full"
               variant="bordered"
-              startContent={<SearchOutlinedIcon className="text-gray-400" />}
+              startContent={
+                <Icon
+                  icon="solar:magnifer-linear"
+                  fontSize={24}
+                  color="gray-400"
+                />
+              }
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 if (e.target.value.trim() === "") {
@@ -320,7 +318,7 @@ export default function EmployeeTable() {
             <Button
               color="primary"
               radius="full"
-              endContent={<SearchOutlinedIcon />}
+              endContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
               isDisabled={searchTerm == ""}
               onClick={SearchEmployee}
               className="hidden sm:flex"
@@ -335,7 +333,7 @@ export default function EmployeeTable() {
               className="sm:hidden"
               isIconOnly
             >
-              <SearchOutlinedIcon />
+              <Icon icon="solar:magnifer-linear" fontSize={22} />
             </Button>
           </div>
           <div className="flex gap-3">
@@ -346,7 +344,9 @@ export default function EmployeeTable() {
                   href="./employee/add-employee"
                   color="primary"
                   radius="full"
-                  startContent={<PersonAddAlt1RoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:user-plus-linear" fontSize={24} />
+                  }
                   className="hidden sm:flex"
                 >
                   Aggiungi dipendente
@@ -360,7 +360,7 @@ export default function EmployeeTable() {
                   isIconOnly
                   className="sm:hidden"
                 >
-                  <PersonAddAlt1RoundedIcon />
+                  <Icon icon="solar:user-plus-linear" fontSize={24} />
                 </Button>
               </>
             )}
@@ -379,7 +379,9 @@ export default function EmployeeTable() {
               color="primary"
               variant="ghost"
               radius="full"
-              startContent={<FileDownloadOutlinedIcon />}
+              startContent={
+                <Icon icon="solar:file-download-linear" fontSize={24} />
+              }
               onClick={exportCSV}
             >
               Esporta Tabella
@@ -425,7 +427,7 @@ export default function EmployeeTable() {
         onSortChange={setSortDescriptor}
         radius="lg"
         classNames={{
-          wrapper: "border rounded-lg shadow-none",
+          wrapper: "border-2 rounded-2xl shadow-none",
         }}
       >
         <TableHeader columns={columns}>
@@ -441,8 +443,8 @@ export default function EmployeeTable() {
         <TableBody
           emptyContent={
             searchTerm == "" ? (
-              <div className="text-center p-10">
-                <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col justify-center items-center p-10">
+                <Icon icon="solar:user-plus-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun dipendente trovato!
                 </h3>
@@ -454,7 +456,9 @@ export default function EmployeeTable() {
                     as={Link}
                     color="primary"
                     radius="full"
-                    startContent={<AddRoundedIcon />}
+                    startContent={
+                      <Icon icon="mynaui:plus-solid" fontSize={24} />
+                    }
                     href="./employee/add-employee"
                   >
                     Aggiungi dipendente
@@ -462,14 +466,14 @@ export default function EmployeeTable() {
                 </div>
               </div>
             ) : (
-              <div className="text-center p-10">
-                <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col justify-center items-center p-10">
+                <Icon icon="solar:user-plus-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun dipendente trovato!
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Nessun risultato corrisponde alla tua ricerca:{" "}
-                  <span className="font-semibold italic">{searchTerm}</span>
+                  <span className="font-medium italic">{searchTerm}</span>
                 </p>
               </div>
             )

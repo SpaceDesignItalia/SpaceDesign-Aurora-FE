@@ -1,4 +1,4 @@
-import { Button, Link } from "@nextui-org/react";
+import { Button, Link } from "@heroui/react";
 
 export default function Error404() {
   return (
@@ -10,7 +10,7 @@ export default function Error404() {
               <h2 className="mb-8 font-extrabold text-9xl dark:text-gray-400">
                 <span className="sr-only">Errore</span>404
               </h2>
-              <p className="text-2xl font-semibold md:text-3xl">
+              <p className="text-2xl font-medium md:text-3xl">
                 Siamo spiacenti, non siamo riusciti a trovare questa pagina.
               </p>
               <p className="mt-4 mb-8 dark:text-gray-600">

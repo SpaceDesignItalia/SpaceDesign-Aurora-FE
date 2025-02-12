@@ -1,11 +1,10 @@
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import CompanyTable from "../../Components/Customer/Tables/CompanyTable";
 import CustomersTable from "../../Components/Customer/Tables/CustomersTable";
-import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
 import { useState, useEffect } from "react";
 import CustomerStats from "../../Components/Customer/Other/CustomerStats";
-
+import { Icon } from "@iconify/react";
 export default function CustomerDashboard() {
   const { hasPermission } = usePermissions();
   const [permissions, setPermissions] = useState({
@@ -33,12 +32,12 @@ export default function CustomerDashboard() {
     <div className="py-10 m-0 lg:ml-72">
       <header>
         <div className="flex flex-col gap-3 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900">
             Clienti
           </h1>
           <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/administration/customer">
               Clienti
@@ -53,7 +52,7 @@ export default function CustomerDashboard() {
         </div>
         {permissions.company && (
           <>
-            <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+            <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900">
               Aziende
             </h1>
             <div className="py-6 lg:py-8">

@@ -9,8 +9,8 @@ import {
   Button,
   Pagination,
   SortDescriptor,
-} from "@nextui-org/react";
-import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
+} from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import TicketModal from "./TicketModal"; // Import the TicketModal component
@@ -43,7 +43,8 @@ const columns = [
 ];
 
 export default function ResponseTicket() {
-  const { ProjectId } = useParams();
+  const { UniqueCode } = useParams();
+  const [ProjectId, setProjectId] = useState<number>(0);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
@@ -67,6 +68,16 @@ export default function ResponseTicket() {
     },
     open: false,
   });
+
+  useEffect(() => {
+    axios
+      .get("/Project/GET/GetProjectByUniqueCode", {
+        params: { UniqueCode: UniqueCode },
+      })
+      .then((res) => {
+        setProjectId(res.data.ProjectId);
+      });
+  }, [UniqueCode]);
 
   useEffect(() => {
     fetchData();
@@ -99,15 +110,14 @@ export default function ResponseTicket() {
             <div className="relative flex justify-left items-center gap-2">
               <Button
                 size="sm"
-                color="primary"
+                variant="light"
                 radius="sm"
                 isIconOnly
                 onClick={() =>
                   setModalData({ ...modalData, open: true, Ticket: ticket })
                 }
-              >
-                <OpenInNewRoundedIcon />
-              </Button>
+                startContent={<Icon icon="solar:eye-linear" fontSize={22} />}
+              />
             </div>
           );
         default:
@@ -170,7 +180,7 @@ export default function ResponseTicket() {
         onSortChange={setSortDescriptor}
         radius="lg"
         classNames={{
-          wrapper: "border rounded-lg shadow-none",
+          wrapper: "border-2 rounded-2xl shadow-none",
         }}
       >
         <TableHeader columns={columns}>
@@ -183,7 +193,17 @@ export default function ResponseTicket() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Nessun ticket trovato!"} items={items}>
+        <TableBody
+          emptyContent={
+            <div className="flex flex-col justify-center items-center p-10">
+              <Icon icon="solar:ticket-linear" fontSize={50} />
+              <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                Nessun ticket trovato!
+              </h3>
+            </div>
+          }
+          items={items}
+        >
           {(item) => (
             <TableRow key={item.ProjectTicketId}>
               {(columnKey) => (

@@ -1,4 +1,4 @@
-import { Avatar } from "@nextui-org/react";
+import { Avatar } from "@heroui/react";
 import { API_URL_IMG } from "../../../../API/API";
 import dayjs from "dayjs";
 

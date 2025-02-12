@@ -1,9 +1,3 @@
-import BorderColorRoundedIcon from "@mui/icons-material/BorderColorRounded";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import FolderRoundedIcon from "@mui/icons-material/FolderRounded";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
-import PermMediaIcon from "@mui/icons-material/PermMedia";
 import {
   BreadcrumbItem,
   Breadcrumbs,
@@ -12,7 +6,10 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-} from "@nextui-org/react";
+} from "@heroui/react";
+import FolderRoundedIcon from "@mui/icons-material/FolderRounded";
+import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
+import PermMediaIcon from "@mui/icons-material/PermMedia";
 import axios from "axios";
 import { Folder } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -29,6 +26,7 @@ import {
 import FileCard from "../ProjectFiles/FileCard";
 import FileUploaderModal from "../ProjectFiles/FileUploaderModal";
 import FolderSettingsModal from "../ProjectFiles/FolderSettingsModal";
+import { Icon } from "@iconify/react";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -325,7 +323,7 @@ export default function FilesCustomerContainer({
           {folders.length > 0 || files.length > 0 ? (
             <>
               <div>
-                <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
+                <h2 className="font-medium text-lg flex flex-row gap-2 items-center">
                   Cartelle
                 </h2>
 
@@ -351,8 +349,10 @@ export default function FilesCustomerContainer({
                             variant="light"
                             radius="full"
                             isIconOnly
-                            startContent={<MoreVertRoundedIcon />}
-                            className="cursor-pointer"
+                            startContent={
+                              <Icon icon="solar:menu-dots-bold" fontSize={24} />
+                            }
+                            className="cursor-pointer rotate-90"
                           />
                         </DropdownTrigger>
                         <DropdownMenu
@@ -361,7 +361,9 @@ export default function FilesCustomerContainer({
                         >
                           <DropdownItem
                             key="edit"
-                            startContent={<BorderColorRoundedIcon />}
+                            startContent={
+                              <Icon icon="solar:pen-2-linear" fontSize={22} />
+                            }
                             onClick={() =>
                               setFolderModalData({
                                 isOpen: true,
@@ -376,7 +378,12 @@ export default function FilesCustomerContainer({
                             key="delete"
                             className="text-danger"
                             color="danger"
-                            startContent={<DeleteRoundedIcon />}
+                            startContent={
+                              <Icon
+                                icon="solar:trash-bin-trash-linear"
+                                fontSize={24}
+                              />
+                            }
                             onClick={() => DeleteFolder(folder)}
                           >
                             Rimuovi cartella
@@ -391,7 +398,7 @@ export default function FilesCustomerContainer({
               <div className="flex flex-col flex-wrap gap-3 mt-5 items-start justify-start">
                 {files.length > 0 && (
                   <>
-                    <h2 className="font-semibold text-lg flex flex-row gap-2 items-center">
+                    <h2 className="font-medium text-lg flex flex-row gap-2 items-center">
                       File
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full">
@@ -412,7 +419,7 @@ export default function FilesCustomerContainer({
           ) : (
             <div className="text-center">
               <PermMediaIcon />
-              <h3 className="mt-2 text-sm font-semibold text-gray-900">
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
                 Nessun documento o cartella presente!
               </h3>
               <p className="mt-1 text-sm text-gray-500">

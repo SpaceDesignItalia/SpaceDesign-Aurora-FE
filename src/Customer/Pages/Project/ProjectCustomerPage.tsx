@@ -1,4 +1,4 @@
-import { Tabs, Tab, Chip } from "@nextui-org/react";
+import { Tabs, Tab, Chip } from "@heroui/react";
 import { API_URL_IMG } from "../../../API/API";
 import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
 import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
@@ -64,7 +64,6 @@ export default function ProjectCustomerPage() {
       })
       .then((res) => {
         setProjectData(res.data);
-        console.log(res.data);
       });
   }, [UniqueCode]);
 
@@ -86,58 +85,58 @@ export default function ProjectCustomerPage() {
                 <Chip color="primary" radius="sm">
                   {projectData.StatusName}
                 </Chip>
-                <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+                <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900">
                   {projectData.ProjectName}
                 </h1>
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-5">
-                <Tabs
-                  aria-label="Options"
-                  aria-labelledby="Navbar"
-                  color="primary"
-                  radius="sm"
-                  variant="bordered"
-                  className="hidden sm:flex"
-                  selectedKey={activeTab}
-                  onSelectionChange={(key) => setActiveTab(key as string)}
-                >
-                  {tabs.map((tab) => (
-                    <Tab
-                      key={tab.title}
-                      aria-labelledby={tab.title}
-                      title={
-                        <div className="flex items-center space-x-2">
-                          <tab.icon />
-                          <span>{tab.title}</span>
-                        </div>
-                      }
-                    />
-                  ))}
-                </Tabs>
-
-                <Tabs
-                  aria-label="Options"
-                  aria-labelledby="Navbar"
-                  color="primary"
-                  radius="sm"
-                  variant="bordered"
-                  className="flex sm:hidden"
-                  selectedKey={activeTab}
-                  onSelectionChange={(key) => setActiveTab(key as string)}
-                >
-                  {tabs.map((tab) => (
-                    <Tab
-                      key={tab.title}
-                      aria-labelledby={tab.title}
-                      title={
-                        <div className="flex items-center space-x-2">
-                          <tab.icon />
-                        </div>
-                      }
-                    />
-                  ))}
-                </Tabs>
+              <div className="flex flex-row items-center justify-between sm:justify-end gap-5">
+                <div>
+                  <Tabs
+                    aria-label="Options"
+                    color="primary"
+                    radius="full"
+                    variant="bordered"
+                    selectedKey={activeTab}
+                    className="hidden sm:flex"
+                    onSelectionChange={(key) => setActiveTab(key as string)}
+                  >
+                    {tabs.map((tab) => (
+                      <Tab
+                        key={tab.title}
+                        title={
+                          <div className="flex items-center space-x-2">
+                            <tab.icon />
+                            <span>{tab.title}</span>
+                          </div>
+                        }
+                      />
+                    ))}
+                  </Tabs>
+                  <div className="sm:hidden bg-white p-4 fixed bottom-0 z-50 w-full left-0 border-t-1 shadow-large rounded-tr-xl rounded-tl-xl">
+                    <Tabs
+                      aria-label="Options"
+                      color="primary"
+                      size="lg"
+                      variant="light"
+                      selectedKey={activeTab}
+                      className="sm:hidden"
+                      fullWidth
+                      onSelectionChange={(key) => setActiveTab(key as string)}
+                    >
+                      {tabs.map((tab) => (
+                        <Tab
+                          key={tab.title}
+                          title={
+                            <div className="flex items-center space-x-2">
+                              <tab.icon />
+                            </div>
+                          }
+                        />
+                      ))}
+                    </Tabs>
+                  </div>
+                </div>
               </div>
             </header>
             {activeTab === "Panoramica" && (

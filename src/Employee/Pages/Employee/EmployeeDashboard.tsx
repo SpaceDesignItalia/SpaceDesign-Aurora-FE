@@ -1,6 +1,6 @@
 import EmployeeTable from "../../Components/Employee/Tables/EmployeeTable";
-import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import { useEffect } from "react";
 import EmployeeStats from "../../Components/Employee/Other/EmployeeStats";
@@ -22,12 +22,12 @@ export default function EmployeeDashboard() {
     <div className="py-10 m-0 lg:ml-72">
       <header>
         <div className="flex flex-col gap-3 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900">
             Dipendenti
           </h1>
           <Breadcrumbs variant="bordered" radius="full">
             <BreadcrumbItem href="/">
-              <DashboardOutlinedIcon />
+              <Icon icon="solar:home-2-linear" fontSize={18} />
             </BreadcrumbItem>
             <BreadcrumbItem href="/administration/employee">
               Dipendenti

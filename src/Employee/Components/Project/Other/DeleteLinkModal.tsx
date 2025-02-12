@@ -7,10 +7,10 @@ import {
   ModalHeader,
   Radio,
   RadioGroup,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { API_URL_IMG } from "../../../../API/API";
 import { useState } from "react";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import { Icon } from "@iconify/react";
 
 interface Link {
   ProjectId: number;
@@ -48,7 +48,7 @@ export default function DeleteLinkModal({
         {(isClosed) => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">Rimuovi collegamento:</h3>
+              <h3 className="text-xl font-medium">Rimuovi collegamento:</h3>
             </ModalHeader>
             <ModalBody>
               <RadioGroup
@@ -87,7 +87,9 @@ export default function DeleteLinkModal({
                   isClosed();
                 }}
                 isDisabled={selected === ""}
-                startContent={<DeleteRoundedIcon />}
+                startContent={
+                  <Icon icon="solar:trash-bin-trash-linear" fontSize={24} />
+                }
                 radius="full"
               >
                 Conferma eliminazione

@@ -1,10 +1,3 @@
-import AddModeratorRoundedIcon from "@mui/icons-material/AddModeratorRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import {
   Button,
   Input,
@@ -17,14 +10,14 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from "@nextui-org/react";
+} from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { usePermissions } from "../../Layout/PermissionProvider";
+import StatusAlert from "../../Layout/StatusAlert";
 import ConfirmDeleteRoleModal from "../Other/ConfirmDeleteRoleModal";
 import ViewRoleModal from "../Other/ViewRoleModal";
-import StatusAlert from "../../Layout/StatusAlert";
-
 interface Role {
   RoleId: number;
   RoleName: string;
@@ -215,7 +208,7 @@ export default function RoleTable() {
                 variant="light"
                 size="sm"
                 color="primary"
-                startContent={<RemoveRedEyeOutlinedIcon />}
+                startContent={<Icon icon="solar:eye-linear" fontSize={24} />}
                 aria-label="View"
                 aria-labelledby="View"
                 onClick={() =>
@@ -234,7 +227,7 @@ export default function RoleTable() {
                   variant="light"
                   size="sm"
                   color="warning"
-                  startContent={<ModeOutlinedIcon />}
+                  startContent={<Icon icon="solar:pen-linear" fontSize={22} />}
                   aria-label="Edit"
                   aria-labelledby="Edit"
                   href={"/administration/permission/edit-role/" + role.RoleId}
@@ -272,7 +265,7 @@ export default function RoleTable() {
             <Input
               radius="full"
               variant="bordered"
-              startContent={<SearchOutlinedIcon />}
+              startContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 if (e.target.value.trim() === "") {
@@ -285,7 +278,7 @@ export default function RoleTable() {
             <Button
               color="primary"
               radius="full"
-              endContent={<SearchOutlinedIcon />}
+              endContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
               isDisabled={searchTerm == ""}
               onClick={SearchRole}
               className="hidden sm:flex"
@@ -300,7 +293,7 @@ export default function RoleTable() {
               className="sm:hidden"
               isIconOnly
             >
-              <SearchOutlinedIcon />
+              <Icon icon="solar:magnifer-linear" fontSize={22} />
             </Button>
           </div>
           <div className="flex gap-3">
@@ -311,7 +304,9 @@ export default function RoleTable() {
                   href="./permission/add-role"
                   color="primary"
                   radius="full"
-                  startContent={<AddModeratorRoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:shield-plus-linear" fontSize={24} />
+                  }
                   className="hidden sm:flex"
                 >
                   Aggiungi ruolo
@@ -325,7 +320,7 @@ export default function RoleTable() {
                   isIconOnly
                   className="sm:hidden"
                 >
-                  <AddModeratorRoundedIcon />
+                  <Icon icon="solar:shield-plus-linear" fontSize={24} />
                 </Button>
               </>
             )}
@@ -344,7 +339,9 @@ export default function RoleTable() {
               color="primary"
               variant="ghost"
               radius="full"
-              startContent={<FileDownloadOutlinedIcon />}
+              startContent={
+                <Icon icon="solar:file-download-linear" fontSize={24} />
+              }
               onClick={exportCSV}
             >
               Esporta Tabella
@@ -387,7 +384,7 @@ export default function RoleTable() {
         topContentPlacement="inside"
         onSortChange={setSortDescriptor}
         classNames={{
-          wrapper: "border rounded-lg shadow-none",
+          wrapper: "border-2 rounded-2xl shadow-none",
         }}
       >
         <TableHeader columns={columns}>
@@ -403,8 +400,8 @@ export default function RoleTable() {
         <TableBody
           emptyContent={
             searchTerm == "" ? (
-              <div className="text-center p-10">
-                <BadgeRoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col items-center justify-center p-10">
+                <Icon icon="solar:card-2-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun ruolo trovato!
                 </h3>
@@ -416,7 +413,9 @@ export default function RoleTable() {
                     as={Link}
                     color="primary"
                     radius="full"
-                    startContent={<AddRoundedIcon />}
+                    startContent={
+                      <Icon icon="solar:shield-plus-linear" fontSize={24} />
+                    }
                     href="./permission/add-role"
                   >
                     Aggiungi ruolo
@@ -424,14 +423,14 @@ export default function RoleTable() {
                 </div>
               </div>
             ) : (
-              <div className="text-center p-10">
-                <BadgeRoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col items-center justify-center p-10">
+                <Icon icon="solar:card-2-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun ruolo trovato!
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Nessun risultato corrisponde alla tua ricerca:{" "}
-                  <span className="font-semibold italic">{searchTerm}</span>
+                  <span className="font-medium italic">{searchTerm}</span>
                 </p>
               </div>
             )

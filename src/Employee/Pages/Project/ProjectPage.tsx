@@ -1,22 +1,17 @@
-import { Tabs, Tab, Button, Tooltip, Link, Chip } from "@nextui-org/react";
-import { API_URL_IMG } from "../../../API/API";
-import FindInPageRoundedIcon from "@mui/icons-material/FindInPageRounded";
-import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
-import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
-import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
-import ConfirmationNumberRoundedIcon from "@mui/icons-material/ConfirmationNumberRounded";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
-import { useEffect, useState } from "react";
+import { Button, Chip, Link, Tab, Tabs } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import ChangeProjectTheme from "../../Components/Project/Other/ChangeProjectTheme";
-import OverviewContainer from "../../Components/Project/Other/ProjectPage/OverviewContainer";
-import TeamContainer from "../../Components/Project/Other/ProjectPage/TeamContainer";
-import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContainer";
+import { API_URL_IMG } from "../../../API/API";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
-import TicketContainer from "../../Components/Project/Other/ProjectPage/TicketContainer";
+import ChangeProjectTheme from "../../Components/Project/Other/ChangeProjectTheme";
+import CodeShareContainer from "../../Components/Project/Other/ProjectPage/CodeShareContainer";
 import FolderContainer from "../../Components/Project/Other/ProjectPage/FolderContainer";
+import OverviewContainer from "../../Components/Project/Other/ProjectPage/OverviewContainer";
+import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContainer";
+import TeamContainer from "../../Components/Project/Other/ProjectPage/TeamContainer";
+import TicketContainer from "../../Components/Project/Other/ProjectPage/TicketContainer";
 
 interface Project {
   ProjectId: number;
@@ -66,11 +61,11 @@ function getCookie(name: string): string | undefined {
 }
 
 export default function ProjectPage() {
-  const { UniqueCode } = useParams<{
+  const { UniqueCode, Action } = useParams<{
     UniqueCode: string;
+    Action: string;
   }>();
   const [ProjectId, setProjectId] = useState("");
-  const [ProjectName, setProjectName] = useState("");
   const [projectData, setProjectData] = useState<Project>({
     ProjectId: 0,
     ProjectName: "",
@@ -101,19 +96,48 @@ export default function ProjectPage() {
   const { hasPermission } = usePermissions();
 
   const tabs = [
-    { title: "Panoramica", icon: FindInPageRoundedIcon },
-    { title: "Tasks", icon: AssignmentTurnedInRoundedIcon },
-    { title: "Team", icon: GroupsRoundedIcon },
-    { title: "Files", icon: FolderCopyRoundedIcon },
-    { title: "Ticket", icon: ConfirmationNumberRoundedIcon },
+    {
+      title: "Panoramica",
+      icon: (
+        <Icon icon="material-symbols:dashboard-outline-rounded" fontSize={24} />
+      ),
+    },
+    {
+      title: "Tasks",
+      icon: <Icon icon="solar:clipboard-check-linear" fontSize={24} />,
+    },
+    {
+      title: "Team",
+      icon: <Icon icon="solar:users-group-rounded-linear" fontSize={24} />,
+    },
+    {
+      title: "Files",
+      icon: <Icon icon="solar:folder-with-files-linear" fontSize={24} />,
+    },
+    {
+      title: "Code Share",
+      icon: <Icon icon="solar:code-linear" fontSize={24} />,
+    },
+    {
+      title: "Ticket",
+      icon: <Icon icon="solar:ticket-linear" fontSize={24} />,
+    },
   ];
+
+  // Add effect to handle Action parameter
+  useEffect(() => {
+    if (Action === "add-task") {
+      setActiveTab("Tasks");
+    } else if (Action === "upload-file") {
+      setActiveTab("Files");
+    }
+  }, [Action]);
 
   useEffect(() => {
     axios
       .get("/Project/GET/GetProjectByUniqueCode", { params: { UniqueCode } })
       .then((res) => {
         setProjectId(res.data.ProjectId);
-        setProjectName(res.data.ProjectName);
 
         return axios
           .get("/Project/GET/GetProjectByIdAndName", {
@@ -134,44 +158,34 @@ export default function ProjectPage() {
         }
         checkPermissions();
       });
-  }, [UniqueCode, ProjectId, ProjectName]);
+  }, [UniqueCode, hasPermission]); // Added hasPermission to dependencies
 
   // Aggiorna il cookie ogni volta che cambia la scheda
   useEffect(() => {
     setCookie("activeProjectTab", activeTab, 7); // Salva per 7 giorni
   }, [activeTab]);
 
-  console.log(projectData.ProjectId);
-
   return (
     <>
       <ChangeProjectTheme
         isOpen={modalData.open}
         isClosed={() => setModalData({ ...modalData, open: false })}
-        ProjectId={ProjectId ? parseInt(ProjectId) : 0}
+        ProjectId={ProjectId ? Number.parseInt(ProjectId) : 0}
         ProjectBannerId={projectData.ProjectBannerId}
       />
-      <div className="py-10 m-0 lg:ml-72 h-screen flex flex-col items-start px-4 sm:px-6 lg:px-8">
+      <div className="py-10 m-0 lg:ml-72 h-full flex flex-col items-start px-4 sm:px-6 lg:px-8">
         <main className="w-full flex flex-col gap-3">
           <div className="flex flex-row justify-between items-center sm:hidden">
             {adminPermission.editProject && (
-              <Tooltip
-                content="Impostazioni progetto"
+              <Button
+                as={Link}
                 color="primary"
-                placement="bottom"
                 radius="full"
-                closeDelay={0}
+                href={"/projects/" + UniqueCode}
+                isIconOnly
               >
-                <Button
-                  as={Link}
-                  color="primary"
-                  radius="full"
-                  href={"/projects/" + UniqueCode}
-                  isIconOnly
-                >
-                  <TuneRoundedIcon />
-                </Button>
-              </Tooltip>
+                <Icon icon="solar:pen-linear" fontSize={22} />
+              </Button>
             )}
             <Chip color="primary" radius="full">
               {projectData.StatusName}
@@ -179,7 +193,10 @@ export default function ProjectPage() {
           </div>
           <div className="w-full sm:h-60 overflow-hidden rounded-xl relative">
             <img
-              src={API_URL_IMG + "/banners/" + projectData.ProjectBannerPath}
+              src={
+                API_URL_IMG + "/banners/" + projectData.ProjectBannerPath ||
+                "/placeholder.svg"
+              }
               className="w-full h-auto object-cover rotate-180"
               alt="Banner del progetto"
             />
@@ -189,7 +206,7 @@ export default function ProjectPage() {
                   color="primary"
                   radius="sm"
                   size="sm"
-                  startContent={<ModeOutlinedIcon />}
+                  startContent={<Icon icon="solar:pen-linear" fontSize={22} />}
                   isIconOnly
                   onClick={() => setModalData({ ...modalData, open: true })}
                 />
@@ -203,7 +220,7 @@ export default function ProjectPage() {
                 <Chip color="primary" radius="full" className="hidden sm:flex">
                   {projectData.StatusName}
                 </Chip>
-                <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900 w-full text-wrap">
+                <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900 w-full text-wrap">
                   {projectData.ProjectName}
                 </h1>
               </div>
@@ -224,7 +241,7 @@ export default function ProjectPage() {
                         key={tab.title}
                         title={
                           <div className="flex items-center space-x-2">
-                            <tab.icon />
+                            {tab.icon}
                             <span>{tab.title}</span>
                           </div>
                         }
@@ -247,7 +264,7 @@ export default function ProjectPage() {
                           key={tab.title}
                           title={
                             <div className="flex items-center space-x-2">
-                              <tab.icon />
+                              {tab.icon}
                             </div>
                           }
                         />
@@ -257,24 +274,16 @@ export default function ProjectPage() {
                 </div>
 
                 {adminPermission.editProject && (
-                  <Tooltip
-                    content="Impostazioni progetto"
+                  <Button
+                    as={Link}
                     color="primary"
-                    placement="bottom"
                     radius="full"
-                    closeDelay={0}
+                    href={"/projects/" + UniqueCode + "/edit-project"}
+                    className="hidden sm:flex"
+                    isIconOnly
                   >
-                    <Button
-                      as={Link}
-                      color="primary"
-                      radius="full"
-                      href={"/projects/" + UniqueCode + "/edit-project"}
-                      className="hidden sm:flex"
-                      isIconOnly
-                    >
-                      <TuneRoundedIcon />
-                    </Button>
-                  </Tooltip>
+                    <Icon icon="solar:pen-linear" fontSize={22} />
+                  </Button>
                 )}
               </div>
             </header>
@@ -294,6 +303,11 @@ export default function ProjectPage() {
             {activeTab === "Files" && (
               <div>
                 <FolderContainer projectData={projectData} />
+              </div>
+            )}
+            {activeTab === "Code Share" && (
+              <div>
+                <CodeShareContainer projectData={projectData} />
               </div>
             )}
             {activeTab === "Ticket" && (

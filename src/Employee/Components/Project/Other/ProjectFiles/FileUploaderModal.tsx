@@ -9,10 +9,10 @@ import {
   ModalBody,
   ModalContent,
   Button,
-} from "@nextui-org/react";
-import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
+} from "@heroui/react";
 import FileCard from "./FileCard";
-
+import { useParams, useNavigate } from "react-router-dom";
+import { Icon } from "@iconify/react";
 const socket = io(API_WEBSOCKET_URL);
 
 export default function FileUploaderModal({
@@ -26,6 +26,8 @@ export default function FileUploaderModal({
   isClosed: () => void;
   FolderId: number;
 }) {
+  const { UniqueCode, Action } = useParams();
+  const navigate = useNavigate();
   const [files, setFiles] = useState<{ file: File; forClient: boolean }[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const dropRef = useRef<HTMLDivElement | null>(null);
@@ -79,9 +81,12 @@ export default function FileUploaderModal({
         }
         setFiles([]);
         socket.emit("file-update", ProjectId);
-        window.location.reload();
       } catch (error) {
         console.error(error);
+      } finally {
+        if (Action) {
+          navigate(`/projects/${UniqueCode}`);
+        }
       }
     }
   };
@@ -103,7 +108,7 @@ export default function FileUploaderModal({
     >
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">
-          <h3 className="text-xl font-semibold">
+          <h3 className="text-xl font-medium">
             Aggiungi un nuovo file al progetto
           </h3>
         </ModalHeader>
@@ -119,20 +124,20 @@ export default function FileUploaderModal({
           />
 
           <div
-            className="rounded-xl bg-white text-gray-500 font-semibold text-base w-full h-52 flex flex-col items-center justify-center cursor-pointer border-2 border-gray-300 border-dashed mx-auto font-[sans-serif]"
+            className="rounded-xl bg-white text-gray-500 font-medium text-base w-full h-52 flex flex-col items-center justify-center cursor-pointer border-2 border-gray-300 border-dashed mx-auto font-[sans-serif]"
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             ref={dropRef}
             onClick={() => fileInputRef.current?.click()} // Add this line
           >
-            <CloudUploadRoundedIcon />
+            <Icon icon="solar:cloud-upload-linear" fontSize={24} />
             <p className="text-xs font-medium text-gray-400 mt-2">
               Clicca o trascina i file per caricarli
             </p>
           </div>
           {files.length > 0 && (
             <section className="mt-4 text-left">
-              <h4 className="font-semibold">File selezionati</h4>
+              <h4 className="font-medium">File selezionati</h4>
               <ul className="flex flex-col list-disc mt-3 gap-2">
                 {files.map((file, index) => (
                   <FileCard

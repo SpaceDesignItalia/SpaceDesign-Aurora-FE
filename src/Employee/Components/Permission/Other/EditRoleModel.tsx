@@ -1,16 +1,17 @@
-import React, { useEffect, useState, ChangeEvent } from "react";
-import axios from "axios";
-import { useParams } from "react-router-dom";
 import {
-  Input,
   Button,
-  Textarea,
-  CheckboxGroup,
   Checkbox,
+  CheckboxGroup,
+  Input,
   Select,
   SelectItem,
-} from "@nextui-org/react";
-import SaveIcon from "@mui/icons-material/Save";
+  Spinner,
+  Textarea,
+} from "@heroui/react";
+import { Icon } from "@iconify/react";
+import axios from "axios";
+import React, { ChangeEvent, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import StatusAlert from "../../Layout/StatusAlert";
 
 interface Role {
@@ -34,7 +35,7 @@ interface AlertData {
   onClose: () => void;
   alertTitle: string;
   alertDescription: string;
-  alertColor: "green" | "red" | "yellow";
+  alertColor: "success" | "danger" | "warning";
 }
 
 const initialRoleDataStruct: Role = {
@@ -48,7 +49,7 @@ const INITIAL_ALERT_DATA: AlertData = {
   onClose: () => {},
   alertTitle: "",
   alertDescription: "",
-  alertColor: "red",
+  alertColor: "danger",
 };
 const EditRoleModel: React.FC = () => {
   const { RoleId } = useParams<{ RoleId: string }>();
@@ -64,6 +65,8 @@ const EditRoleModel: React.FC = () => {
   >([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [generateLoading, setGenerateLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -130,6 +133,47 @@ const EditRoleModel: React.FC = () => {
     );
   };
 
+  const handleRefine = async () => {
+    if (!roleData.RoleDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post(
+        "/Project/POST/RefineRoleDescription",
+        {
+          text: `Riscrivi in modo più formale e completo il seguente testo: ${roleData.RoleDescription}`,
+        }
+      );
+      setRoleData({
+        ...roleData,
+        RoleDescription: refinedText.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleGenerate = async () => {
+    if (!roleData.RoleName) return;
+    setGenerateLoading(true);
+    try {
+      const response = await axios.post(
+        "/Project/POST/GenerateRoleDescriptionFromName",
+        { roleName: roleData.RoleName }
+      );
+      setRoleData({
+        ...roleData,
+        RoleDescription: response.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setGenerateLoading(false);
+    }
+  };
+
   const handleUpdateRole = async () => {
     try {
       setIsAddingData(true);
@@ -145,7 +189,7 @@ const EditRoleModel: React.FC = () => {
           onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
           alertTitle: "Operazione completata",
           alertDescription: "Il ruolo è stato aggiornato con successo.",
-          alertColor: "green",
+          alertColor: "success",
         });
         setTimeout(() => {
           window.location.href = "/administration/permission";
@@ -162,7 +206,7 @@ const EditRoleModel: React.FC = () => {
             alertTitle: "Conflitto durante l'operazione",
             alertDescription:
               "Un altro ruolo ha già lo stesso nome. Scegli un nome diverso.",
-            alertColor: "yellow",
+            alertColor: "warning",
           });
         } else {
           // General error handling
@@ -172,7 +216,7 @@ const EditRoleModel: React.FC = () => {
             alertTitle: "Errore durante l'operazione",
             alertDescription:
               "Si è verificato un errore durante l'aggiornamento del ruolo. Per favore, riprova più tardi.",
-            alertColor: "red",
+            alertColor: "danger",
           });
         }
       }
@@ -187,13 +231,13 @@ const EditRoleModel: React.FC = () => {
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
         <div className="space-y-6 bg-white px-4 py-6">
           <div>
-            <h3 className="text-base font-semibold leading-6 text-gray-900">
+            <h3 className="text-base font-medium leading-6 text-gray-900">
               Modifica ruolo
             </h3>
             <p className="mt-1 text-sm text-gray-500 w-1/3">
               In questo pannello potrai modificare il ruolo esistente nel
               database. I campi contrassegnati con un asterisco (
-              <span className="text-danger font-bold">*</span>) sono
+              <span className="text-danger font-semibold">*</span>) sono
               obbligatori. Assicurati di aggiornare tutte le informazioni
               necessarie prima di procedere.
             </p>
@@ -232,7 +276,51 @@ const EditRoleModel: React.FC = () => {
                 value={roleData.RoleDescription}
                 onChange={handleRoleChange("RoleDescription")}
                 fullWidth
+                className="mb-2"
               />
+              {roleData.RoleName && !roleData.RoleDescription ? (
+                <Button
+                  variant="bordered"
+                  className="w-max-1/2 mx-auto gap-3 my-5 sm:my-0 py-2 mr-2"
+                  radius="full"
+                  onClick={handleGenerate}
+                  isDisabled={generateLoading}
+                >
+                  {generateLoading ? (
+                    <>
+                      <Spinner size="sm" className="text-black" /> Generazione
+                      in corso...
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon="solar:magic-stick-3-linear" fontSize={24} />{" "}
+                      Genera descrizione per: {roleData.RoleName}
+                    </>
+                  )}
+                </Button>
+              ) : null}
+
+              {roleData.RoleDescription ? (
+                <Button
+                  variant="bordered"
+                  className="w-max-1/2 gap-3 my-5 sm:my-0 py-2"
+                  radius="full"
+                  onClick={handleRefine}
+                  isDisabled={loading || !roleData.RoleDescription}
+                >
+                  {loading ? (
+                    <>
+                      <Spinner size="sm" className="text-black" /> Riscrittura
+                      in corso...
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon="solar:magic-stick-3-linear" fontSize={24} />{" "}
+                      Riscrivi con AI
+                    </>
+                  )}
+                </Button>
+              ) : null}
             </div>
 
             <div className="col-span-6 sm:col-span-2">
@@ -348,7 +436,9 @@ const EditRoleModel: React.FC = () => {
             color="primary"
             className="text-white"
             radius="full"
-            startContent={!isAddingData && <SaveIcon />}
+            startContent={
+              !isAddingData && <Icon icon="basil:save-outline" fontSize={24} />
+            }
             isDisabled={checkAllDataCompiled()}
             isLoading={isAddingData}
             onClick={handleUpdateRole}

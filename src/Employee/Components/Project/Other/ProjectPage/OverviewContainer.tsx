@@ -1,17 +1,13 @@
-import { Button, Progress, cn, User, Tooltip, Link } from "@nextui-org/react";
-import TimerRoundedIcon from "@mui/icons-material/TimerRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import ModeEditRoundedIcon from "@mui/icons-material/ModeEditRounded";
-import ChecklistRoundedIcon from "@mui/icons-material/ChecklistRounded";
-import Groups2RoundedIcon from "@mui/icons-material/Groups2Rounded";
+import { Button, Card, cn, Link, Progress, Tooltip, User } from "@heroui/react";
+import { Icon } from "@iconify/react";
+import axios from "axios";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import AddProjectLink from "../AddProjectLink";
-import axios from "axios";
 import { API_URL_IMG } from "../../../../../API/API";
-import DeleteLinkModal from "../DeleteLinkModal";
 import { usePermissions } from "../../../Layout/PermissionProvider";
 import StatusAlert from "../../../Layout/StatusAlert";
+import AddProjectLink from "../AddProjectLink";
+import DeleteLinkModal from "../DeleteLinkModal";
 
 interface Project {
   ProjectId: number;
@@ -89,16 +85,18 @@ export default function OverviewContainer({
   });
   const { hasPermission } = usePermissions();
 
-  const daysUntilDeadline =
-    dayjs(projectData.ProjectEndDate).diff(dayjs(), "day") + 1;
+  const daysUntilDeadline = projectData.ProjectEndDate
+    ? dayjs(projectData.ProjectEndDate).diff(dayjs(), "day") + 1
+    : null;
+
   const totalDays =
     dayjs(projectData.ProjectEndDate).diff(
       dayjs(projectData.ProjectCreationDate),
       "day"
     ) + 1;
-  const progressPercent = Math.floor(
-    ((totalDays - daysUntilDeadline) / totalDays) * 100
-  );
+  const progressPercent = daysUntilDeadline
+    ? Math.floor(((totalDays - daysUntilDeadline) / totalDays) * 100)
+    : null;
 
   const [links, setLinks] = useState<Link[]>([]);
 
@@ -139,6 +137,9 @@ export default function OverviewContainer({
   }
 
   function calculateDeadline() {
+    if (!daysUntilDeadline) {
+      return <p className="text-gray-500">N/A</p>;
+    }
     if (daysUntilDeadline < 0) {
       return <p className="text-red-500">Scaduto</p>;
     }
@@ -197,67 +198,140 @@ export default function OverviewContainer({
         DeleteLink={DeleteLink}
       />
       <StatusAlert AlertData={alertData} />
+
+      {/* Stats Cards */}
+      <dl className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-1">
+        <Card className="mt-5 border-2 dark:border-default-100 shadow-none">
+          <section className="flex flex-nowrap justify-between p-4">
+            <div className="flex flex-col justify-between gap-y-2">
+              <div className="flex flex-col gap-y-4">
+                <dt className="text-sm font-medium text-gray-500 flex items-center gap-2">
+                  <Icon
+                    icon="material-symbols:groups-2-rounded"
+                    className="w-5 h-5"
+                  />
+                  Membri del team
+                </dt>
+                <dd className="text-3xl font-semibold text-gray-900">
+                  {totalTeamMembers || "Dati non disponibili"}
+                </dd>
+              </div>
+            </div>
+          </section>
+        </Card>
+
+        <Card className="mt-5 border-2 dark:border-default-100 shadow-none">
+          <section className="flex flex-nowrap justify-between p-4">
+            <div className="flex flex-col justify-between gap-y-2">
+              <div className="flex flex-col gap-y-4">
+                <dt className="text-sm font-medium text-gray-500 flex items-center gap-2">
+                  <Icon
+                    icon="material-symbols:checklist-rounded"
+                    className="w-5 h-5"
+                  />
+                  Task totali
+                </dt>
+                <dd className="text-3xl font-semibold text-gray-900">
+                  {totalTasks || "Dati non disponibili"}
+                </dd>
+              </div>
+            </div>
+          </section>
+        </Card>
+
+        <Card className="mt-5 border-2 dark:border-default-100 shadow-none">
+          <section className="flex flex-nowrap justify-between p-4">
+            <div className="flex flex-col justify-between gap-y-2">
+              <div className="flex flex-col gap-y-4">
+                <dt className="text-sm font-medium text-gray-500 flex items-center gap-2">
+                  <Icon
+                    icon="material-symbols:timer-outline"
+                    className="w-5 h-5"
+                  />
+                  Tempo rimanente
+                </dt>
+                <dd
+                  className={cn(
+                    "text-3xl font-semibold",
+                    progressPercent && {
+                      "text-warning-500":
+                        progressPercent >= 70 && progressPercent < 85,
+                      "text-danger-500": progressPercent >= 85,
+                      "text-gray-900": progressPercent < 70,
+                    }
+                  )}
+                >
+                  {calculateDeadline()}
+                </dd>
+              </div>
+            </div>
+          </section>
+        </Card>
+      </dl>
+
       <div className="grid grid-cols-1 sm:grid-cols-6 gap-5 h-fit">
-        <div className="grid grid-cols-1 sm:grid-cols-6 gap-6 col-span-6 md:col-span-4 h-fit">
-          <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6 h-fit">
-            <h1 className="text-xl font-bold mb-4">Dettagli progetto</h1>
+        {/* Dettagli progetto */}
+        <div className="col-span-6 md:col-span-4">
+          <Card className="border-2 dark:border-default-100 shadow-none">
+            <section className="p-6">
+              <h1 className="text-xl font-semibold mb-4">Dettagli progetto</h1>
+              <p className="text-gray-600 mb-6">
+                {projectData.ProjectDescription}
+              </p>
 
-            <p className="text-gray-600 mb-4">
-              {projectData.ProjectDescription}
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <h1 className="text-sm font-semibold">Data di creazione</h1>
-                <p className="text-gray-600">
-                  {dayjs(projectData.ProjectCreationDate).format("DD/MM/YYYY")}
-                </p>
+              <div className="grid grid-cols-2 gap-6 mb-6">
+                <div className="flex flex-col gap-2">
+                  <dt className="text-sm font-medium text-gray-500">
+                    Data di creazione
+                  </dt>
+                  <dd className="text-base font-semibold">
+                    {dayjs(projectData.ProjectCreationDate).format(
+                      "DD/MM/YYYY"
+                    )}
+                  </dd>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <dt className="text-sm font-medium text-gray-500">
+                    Deadline
+                  </dt>
+                  <dd className="text-base font-semibold">
+                    {dayjs(projectData.ProjectEndDate).format("DD/MM/YYYY")}
+                  </dd>
+                </div>
               </div>
-              <div>
-                <h1 className="text-sm font-semibold">Deadline</h1>
-                <p className="text-gray-600">
-                  {dayjs(projectData.ProjectEndDate).format("DD/MM/YYYY")}
-                </p>
+
+              <div className="flex flex-col gap-2">
+                <dt className="text-sm font-medium text-gray-500">
+                  Project manager
+                </dt>
+                <dd>
+                  <User
+                    name={projectData.ProjectManagerFullName}
+                    description={projectData.RoleName}
+                    avatarProps={{
+                      src:
+                        projectData.StafferImageUrl &&
+                        API_URL_IMG +
+                          "/profileIcons/" +
+                          projectData.StafferImageUrl,
+                    }}
+                  />
+                </dd>
               </div>
-            </div>
-            <div className="mt-4 flex flex-col gap-2 items-start">
-              <h1 className="text-sm font-semibold">Project manager</h1>
-              <User
-                name={projectData.ProjectManagerFullName}
-                description={projectData.RoleName}
-                avatarProps={{
-                  src:
-                    projectData.StafferImageUrl &&
-                    API_URL_IMG +
-                      "/profileIcons/" +
-                      projectData.StafferImageUrl,
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6 sm:col-span-3">
-            <div className="flex flex-col items-start">
-              <h1 className="font-bold">Membri del team</h1>
-              <span>{totalTeamMembers}</span>
-            </div>
-            <Groups2RoundedIcon className="text-gray-500" />
-          </div>
-
-          <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6 sm:col-span-3">
-            <div className="flex flex-col items-start">
-              <h1 className="font-bold">Task totali</h1>
-              <span>{totalTasks}</span>
-            </div>
-            <ChecklistRoundedIcon className="text-gray-500" />
-          </div>
+            </section>
+          </Card>
         </div>
 
-        <div className="flex flex-col gap-5 col-span-6  md:col-span-2">
-          <div className="grid grid-cols-1 2xl:grid-cols-1 gap-4">
-            <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 col-span-6">
-              <div className="flex flex-col gap-3 items-start w-full">
-                <div className="flex flex-row justify-between w-full">
-                  <h1 className="font-bold">Collegamenti esterni</h1>
+        {/* Colonna destra */}
+        <div className="flex flex-col gap-5 col-span-6 md:col-span-2">
+          {/* Collegamenti esterni */}
+          <Card className="border-2 dark:border-default-100 shadow-none">
+            <section className="p-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-between items-center">
+                  <dt className="text-sm font-medium text-gray-500">
+                    Collegamenti esterni
+                  </dt>
                   {adminPermission.editProject && links.length > 0 && (
                     <Button
                       size="sm"
@@ -273,39 +347,38 @@ export default function OverviewContainer({
                       }
                       isIconOnly
                     >
-                      <ModeEditRoundedIcon />
+                      <Icon icon="solar:pen-linear" fontSize={22} />
                     </Button>
                   )}
                 </div>
-                <div className="flex flex-row flex-wrap gap-3 items-center">
-                  {links.map((link, index) => {
-                    return (
-                      <Tooltip
-                        content={link.ProjectLinkTitle}
-                        closeDelay={0}
-                        key={index}
+
+                <dd className="flex flex-wrap gap-2">
+                  {links.map((link, index) => (
+                    <Tooltip
+                      content={link.ProjectLinkTitle}
+                      closeDelay={0}
+                      key={index}
+                    >
+                      <Button
+                        as={Link}
+                        href={link.ProjectLinkUrl}
+                        target="blank"
+                        size="sm"
+                        radius="full"
+                        variant="faded"
+                        isIconOnly
                       >
-                        <Button
-                          as={Link}
-                          href={link.ProjectLinkUrl}
-                          target="blank"
-                          size="sm"
-                          radius="full"
-                          variant="faded"
-                          isIconOnly
-                        >
-                          <img
-                            src={
-                              API_URL_IMG +
-                              "/linkIcons/" +
-                              link.ProjectLinkTypeImage
-                            }
-                            className="h-5 w-5"
-                          />
-                        </Button>
-                      </Tooltip>
-                    );
-                  })}
+                        <img
+                          src={
+                            API_URL_IMG +
+                            "/linkIcons/" +
+                            link.ProjectLinkTypeImage
+                          }
+                          className="h-5 w-5"
+                        />
+                      </Button>
+                    </Tooltip>
+                  ))}
 
                   {adminPermission.editProject && (
                     <Tooltip content="Aggiungi un nuovo link" closeDelay={0}>
@@ -323,47 +396,37 @@ export default function OverviewContainer({
                         }
                         isIconOnly
                       >
-                        <AddRoundedIcon />
+                        <Icon icon="mynaui:plus-solid" fontSize={22} />
                       </Button>
                     </Tooltip>
                   )}
-                </div>
+                </dd>
               </div>
-            </div>
-          </div>
+            </section>
+          </Card>
 
-          <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
-            <div className="flex justify-between items-center">
-              <h1 className="text-xl font-bold mb-4">Completato</h1>
-              <span className="font-bold">
-                {progressPercent >= 100 ? 100 : progressPercent}%
-              </span>
-            </div>
-            <Progress
-              value={progressPercent >= 100 ? 100 : progressPercent}
-              color="primary"
-              size="sm"
-            />
-          </div>
-          <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
-            <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
-              <div className="flex flex-col items-start">
-                <h1 className="font-bold">Tempo rimanente</h1>
-                <span
-                  className={cn(
-                    "font-semibold text-gray-500",
-                    progressPercent >= 70 &&
-                      progressPercent < 85 &&
-                      "text-orange-500",
-                    progressPercent >= 85 && "text-red-500"
-                  )}
-                >
-                  {calculateDeadline()}
-                </span>
-              </div>
-              <TimerRoundedIcon className="text-gray-500" />
-            </div>
-          </div>
+          {/* Progress bar */}
+          {progressPercent && (
+            <Card className="border-2 dark:border-default-100 shadow-none">
+              <section className="p-4">
+                <div className="flex flex-col gap-4">
+                  <div className="flex justify-between items-center">
+                    <dt className="text-sm font-medium text-gray-500">
+                      Completamento
+                    </dt>
+                    <dd className="text-base font-semibold">
+                      {progressPercent >= 100 ? 100 : progressPercent}%
+                    </dd>
+                  </div>
+                  <Progress
+                    value={progressPercent >= 100 ? 100 : progressPercent}
+                    color="primary"
+                    size="sm"
+                  />
+                </div>
+              </section>
+            </Card>
+          )}
         </div>
       </div>
     </>

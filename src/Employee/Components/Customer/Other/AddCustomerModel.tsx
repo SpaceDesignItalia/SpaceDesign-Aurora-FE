@@ -5,8 +5,9 @@ import {
   Autocomplete,
   AutocompleteItem,
   Button,
-} from "@nextui-org/react";
-import SaveIcon from "@mui/icons-material/Save";
+  Checkbox,
+} from "@heroui/react";
+import { Icon } from "@iconify/react";
 import StatusAlert from "../../Layout/StatusAlert";
 import { useParams } from "react-router-dom";
 
@@ -17,6 +18,7 @@ interface Customer {
   CustomerEmail: string;
   CustomerPhone: string | null;
   CompanyId: number;
+  IsActive: boolean;
 }
 
 interface Company {
@@ -40,6 +42,7 @@ const initialCustomerData: Customer = {
   CustomerEmail: "",
   CustomerPhone: null,
   CompanyId: 0,
+  IsActive: false,
 };
 
 const INITIAL_ALERT_DATA: AlertData = {
@@ -121,7 +124,7 @@ export default function EditCustomerModel() {
       const res = await axios.post("/Customer/POST/AddCustomer", {
         CustomerData: {
           ...customerData,
-          CustomerPassword: generatePassword(), // Assign the generated password
+          CustomerPassword: generatePassword(),
         },
       });
 
@@ -166,6 +169,10 @@ export default function EditCustomerModel() {
     }
   };
 
+  const handleCheckboxChange = (isSelected: boolean) => {
+    setCustomerData((prevData) => ({ ...prevData, IsActive: isSelected }));
+  };
+
   return (
     <>
       <StatusAlert AlertData={alertData} />
@@ -173,13 +180,13 @@ export default function EditCustomerModel() {
         <form>
           <div className="space-y-6 bg-white py-6">
             <div>
-              <h3 className="text-base font-semibold leading-6 text-gray-900">
+              <h3 className="text-base font-medium leading-6 text-gray-900">
                 Modifica Cliente
               </h3>
               <p className="mt-1 text-sm text-gray-500 sm:w-1/3">
                 In questo pannello potrai aggiungere un nuovo cliente al
                 database. I campi contrassegnati con un asterisco (
-                <span className="text-danger font-bold">*</span>) sono
+                <span className="text-danger font-semibold">*</span>) sono
                 obbligatori.
               </p>
             </div>
@@ -189,7 +196,7 @@ export default function EditCustomerModel() {
                   htmlFor="CustomerName"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Nome <span className="text-red-600 font-bold">*</span>
+                  Nome <span className="text-red-600 font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -208,7 +215,7 @@ export default function EditCustomerModel() {
                   htmlFor="CustomerSurname"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Cognome <span className="text-red-600 font-bold">*</span>
+                  Cognome <span className="text-red-600 font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -227,7 +234,7 @@ export default function EditCustomerModel() {
                   htmlFor="CustomerEmail"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Email <span className="text-red-600 font-bold">*</span>
+                  Email <span className="text-red-600 font-semibold">*</span>
                 </label>
                 <Input
                   variant="bordered"
@@ -265,7 +272,7 @@ export default function EditCustomerModel() {
                   htmlFor="company"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Azienda <span className="text-red-600 font-bold">*</span>
+                  Azienda <span className="text-red-600 font-semibold">*</span>
                 </label>
                 <div className="flex flex-col md:flex-row gap-4">
                   <Autocomplete
@@ -298,6 +305,23 @@ export default function EditCustomerModel() {
                   </Autocomplete>
                 </div>
               </div>
+              <div className="col-span-6 sm:col-span-3">
+                <label className="block text-sm font-medium leading-6 text-gray-900 mb-2">
+                  Stato utente
+                </label>
+                <Checkbox
+                  isSelected={customerData.IsActive}
+                  onValueChange={handleCheckboxChange}
+                  color="primary"
+                  className="text-sm"
+                >
+                  Utente attivo sulla piattaforma
+                </Checkbox>
+                <p className="mt-1 text-sm text-gray-500">
+                  Se selezionato, l'utente potrà accedere alla piattaforma,
+                  verrà quindi inviata la mail di attivazione account.
+                </p>
+              </div>
             </div>
           </div>
           <div className="px-4 py-3 text-right sm:px-6">
@@ -305,7 +329,7 @@ export default function EditCustomerModel() {
               color="primary"
               className="text-white"
               radius="full"
-              startContent={<SaveIcon />}
+              startContent={<Icon icon="basil:save-outline" fontSize={24} />}
               isDisabled={checkAllDataCompiled()}
               isLoading={isSaving}
               onClick={handleAddCustomer}

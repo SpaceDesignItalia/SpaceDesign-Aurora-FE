@@ -1,17 +1,13 @@
-import { useEffect, useState } from "react";
-import { usePermissions } from "../../Components/Layout/PermissionProvider";
-import ProjectGrid from "../../Components/Project/Table/ProjectGrid";
-import ProjectChart from "../../Components/Project/Other/ProjectChart";
-import { Tab, Tabs, Button, Link } from "@nextui-org/react";
-import GridViewRoundedIcon from "@mui/icons-material/GridViewRounded";
-import VerticalSplitRoundedIcon from "@mui/icons-material/VerticalSplitRounded";
-import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
-import ViewListRoundedIcon from "@mui/icons-material/ViewListRounded";
-import ProjectTable from "../../Components/Project/Table/ProjectTable";
-import ProjectList from "../../Components/Project/Table/ProjectList";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import { Button, Link, Tab, Tabs } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
+import { usePermissions } from "../../Components/Layout/PermissionProvider";
+import ProjectChart from "../../Components/Project/Other/ProjectChart";
+import ProjectGrid from "../../Components/Project/Table/ProjectGrid";
+import ProjectList from "../../Components/Project/Table/ProjectList";
+import ProjectTable from "../../Components/Project/Table/ProjectTable";
 
 interface Project {
   ProjectId: number;
@@ -114,9 +110,9 @@ export default function ProjectDashboard() {
   });
 
   const tabs = [
-    { title: "Griglia", icon: GridViewRoundedIcon },
-    { title: "Tabella", icon: VerticalSplitRoundedIcon },
-    { title: "Lista", icon: ViewListRoundedIcon },
+    { title: "Griglia", icon: "mingcute:grid-fill" },
+    { title: "Tabella", icon: "mynaui:table" },
+    { title: "Lista", icon: "ion:list" },
   ];
 
   useEffect(() => {
@@ -140,7 +136,7 @@ export default function ProjectDashboard() {
     <div className="py-10 m-0 lg:ml-72">
       <header>
         <div className="px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900">
             Progetti
           </h1>
         </div>
@@ -158,7 +154,7 @@ export default function ProjectDashboard() {
             <div className="w-full border-t border-gray-300" />
           </div>
           <div className="relative flex justify-center">
-            <span className="bg-white px-3 text-base font-semibold leading-6 text-gray-900">
+            <span className="bg-white px-3 text-base font-medium leading-6 text-gray-900">
               Progetti
             </span>
           </div>
@@ -178,7 +174,7 @@ export default function ProjectDashboard() {
                   key={tab.title}
                   title={
                     <div className="flex items-center space-x-2">
-                      <tab.icon />
+                      <Icon icon={tab.icon} fontSize={24} />
                       <span>{tab.title}</span>
                     </div>
                   }
@@ -191,7 +187,9 @@ export default function ProjectDashboard() {
                   color="primary"
                   variant="ghost"
                   radius="full"
-                  startContent={<FileDownloadOutlinedIcon />}
+                  startContent={
+                    <Icon icon="solar:file-download-linear" fontSize={24} />
+                  }
                   className="hidden sm:flex"
                   onClick={exportCSV}
                 >
@@ -203,7 +201,7 @@ export default function ProjectDashboard() {
                   radius="full"
                   size="sm"
                   startContent={
-                    <FileDownloadOutlinedIcon sx={{ fontSize: 18 }} />
+                    <Icon icon="solar:file-download-linear" fontSize={24} />
                   }
                   className="flex sm:hidden"
                   onClick={exportCSV}
@@ -214,7 +212,9 @@ export default function ProjectDashboard() {
                   as={Link}
                   color="primary"
                   radius="full"
-                  startContent={<CreateNewFolderIcon />}
+                  startContent={
+                    <Icon icon="solar:add-folder-linear" fontSize={24} />
+                  }
                   href="/projects/add-project"
                   className="hidden sm:flex"
                 >
@@ -229,7 +229,7 @@ export default function ProjectDashboard() {
                   className="sm:hidden"
                   isIconOnly
                 >
-                  <CreateNewFolderIcon sx={{ fontSize: 18 }} />
+                  <Icon icon="solar:add-folder-linear" fontSize={24} />
                 </Button>
               </div>
             )}

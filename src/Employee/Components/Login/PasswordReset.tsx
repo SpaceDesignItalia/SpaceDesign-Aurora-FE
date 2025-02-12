@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Input } from "@nextui-org/react";
+import { Button, Input } from "@heroui/react";
 import axios from "axios";
 
 export default function PasswordReset({ email }: { email: string }) {
@@ -45,7 +45,7 @@ export default function PasswordReset({ email }: { email: string }) {
         <div className="border border-gray-300 rounded-md p-6 max-w-md shadow-lg">
           <form className="space-y-6" onSubmit={handlePasswordReset}>
             <div className="mb-10">
-              <h3 className="text-3xl font-bold">Reset Password</h3>
+              <h3 className="text-3xl font-semibold">Reset Password</h3>
               <p className="text-sm mt-4">
                 Enter the code sent to your email and your new password.
               </p>

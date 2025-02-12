@@ -7,17 +7,8 @@ import {
   DropdownMenu,
   Avatar,
   Skeleton,
-} from "@nextui-org/react";
-import {
-  Bars3Icon,
-  BellIcon,
-  XMarkIcon,
-  Cog6ToothIcon,
-} from "@heroicons/react/24/outline";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import FolderCopyOutlinedIcon from "@mui/icons-material/FolderCopyOutlined";
-import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
+} from "@heroui/react";
+import { Icon } from "@iconify/react";
 import Logo from "../../../assets/SpaceDesignLogo.png";
 import axios from "axios";
 import { API_URL_IMG } from "../../../API/API";
@@ -25,7 +16,7 @@ import { API_URL_IMG } from "../../../API/API";
 interface NavigationItem {
   name: string;
   href: string;
-  icon: React.ElementType;
+  icon: string;
   requiredCondition: boolean;
   current: boolean;
 }
@@ -83,7 +74,7 @@ export default function Navbar() {
     {
       name: "Dashboard",
       href: "/",
-      icon: DashboardOutlinedIcon,
+      icon: "solar:home-2-linear",
       requiredCondition: true,
       current: isSubRoute({
         currentUrl,
@@ -93,7 +84,7 @@ export default function Navbar() {
     {
       name: "Progetti",
       href: "/projects",
-      icon: FolderCopyOutlinedIcon,
+      icon: "solar:folder-linear",
       requiredCondition: true,
       current: isSubRoute({
         currentUrl,
@@ -154,7 +145,7 @@ export default function Navbar() {
               className="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
               <span className="sr-only">View notifications</span>
-              <BellIcon aria-hidden="true" className="h-6 w-6" />
+              <Icon icon="solar:bell-linear" fontSize={18} />
             </button>
             {/* Separator */}
             <div
@@ -176,7 +167,7 @@ export default function Navbar() {
                   />
                   <span className="hidden lg:flex lg:items-center">
                     <span
-                      className="ml-4 text-sm font-semibold leading-6 text-gray-900"
+                      className="ml-4 text-sm font-medium leading-6 text-gray-900"
                       aria-hidden="true"
                     >
                       {userData.CustomerId !== 0 ? (
@@ -185,7 +176,8 @@ export default function Navbar() {
                         <Skeleton className="h-3 rounded-lg" />
                       )}
                     </span>
-                    <ChevronDownIcon
+                    <Icon
+                      icon="solar:alt-arrow-down-linear"
                       className="ml-2 h-5 w-5 text-gray-400"
                       aria-hidden="true"
                     />
@@ -195,7 +187,8 @@ export default function Navbar() {
               <DropdownMenu aria-label="User Actions" variant="flat">
                 <DropdownItem key="settings" href="/settings">
                   <div className="flex flex-row gap-2">
-                    <Cog6ToothIcon
+                    <Icon
+                      icon="solar:settings-linear"
                       className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-primary"
                       aria-hidden="true"
                     />
@@ -204,7 +197,11 @@ export default function Navbar() {
                 </DropdownItem>
                 <DropdownItem key="logout" color="danger" onClick={logout}>
                   <div className="flex flex-row gap-2 ">
-                    <LogoutRoundedIcon className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-danger" />
+                    <Icon
+                      icon="solar:logout-linear"
+                      className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-danger"
+                      aria-hidden="true"
+                    />
                     Logout
                   </div>
                 </DropdownItem>
@@ -220,9 +217,9 @@ export default function Navbar() {
             >
               <span className="sr-only">Open main menu</span>
               {isOpen ? (
-                <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+                <Icon icon="solar:close-circle-linear" fontSize={18} />
               ) : (
-                <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+                <Icon icon="solar:hamburger-menu-linear" fontSize={18} />
               )}
             </button>
           </div>
@@ -278,7 +275,7 @@ export default function Navbar() {
                   className="relative ml-auto flex-shrink-0 rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 >
                   <span className="sr-only">View notifications</span>
-                  <BellIcon aria-hidden="true" className="h-6 w-6" />
+                  <Icon icon="solar:bell-linear" fontSize={18} />
                 </button>
               </div>
               <div className="mt-3 space-y-1">

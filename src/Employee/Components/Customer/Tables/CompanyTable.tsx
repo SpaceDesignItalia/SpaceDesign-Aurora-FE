@@ -1,9 +1,3 @@
-import AddBusinessRoundedIcon from "@mui/icons-material/AddBusinessRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import {
   Button,
   Input,
@@ -16,13 +10,15 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from "@nextui-org/react";
+} from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { usePermissions } from "../../Layout/PermissionProvider";
+import StatusAlert from "../../Layout/StatusAlert";
 import ConfirmDeleteCompanyModal from "../Other/ConfirmDeleteCompanyModal";
 import ViewCompanyModal from "../Other/ViewCompanyModal";
-import StatusAlert from "../../Layout/StatusAlert";
 
 interface Company {
   CompanyId: number;
@@ -30,6 +26,7 @@ interface Company {
   CompanyAddress: string;
   CompanyEmail: string;
   CompanyPhone: string;
+  CompanyImageUrl: string;
 }
 
 interface AlertData {
@@ -62,6 +59,10 @@ const columns = [
 ];
 
 export default function CompanyTable() {
+  const companyId =
+    parseInt(useParams().CustomerId!) < 0
+      ? useParams().CustomerId?.slice(1)
+      : null;
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [companies, setCompanies] = useState<Company[]>([]);
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
@@ -89,12 +90,6 @@ export default function CompanyTable() {
     fetchData();
   }, []);
 
-  function fetchData() {
-    axios.get("/Company/GET/GetAllCompany").then((res) => {
-      setCompanies(res.data);
-    });
-  }
-
   const [page, setPage] = useState(1);
   const [modalData, setModalData] = useState<ModalData>({
     Company: {
@@ -103,9 +98,25 @@ export default function CompanyTable() {
       CompanyAddress: "",
       CompanyEmail: "",
       CompanyPhone: "",
+      CompanyImageUrl: "",
     },
     open: false,
   });
+
+  function fetchData() {
+    axios.get("/Company/GET/GetAllCompany").then((res) => {
+      setCompanies(res.data);
+      if (companyId) {
+        setModalData({
+          ...modalData,
+          open: true,
+          Company: res.data.find(
+            (company: Company) => company.CompanyId == parseInt(companyId)
+          ),
+        });
+      }
+    });
+  }
 
   async function SearchCompany() {
     try {
@@ -169,7 +180,6 @@ export default function CompanyTable() {
       wrapInQuotes(company.CompanyEmail),
       wrapInQuotes(company.CompanyPhone),
     ]);
-    console.log(rows);
 
     let csvContent =
       "data:text/csv;charset=utf-8," +
@@ -216,7 +226,7 @@ export default function CompanyTable() {
                 variant="light"
                 size="sm"
                 color="primary"
-                startContent={<RemoveRedEyeOutlinedIcon />}
+                startContent={<Icon icon="solar:eye-linear" fontSize={24} />}
                 aria-label="View"
                 aria-labelledby="View"
                 isIconOnly
@@ -228,25 +238,6 @@ export default function CompanyTable() {
                   })
                 }
               />
-
-              {adminCompanyPermission.editCompanyermission && (
-                <Button
-                  as={Link}
-                  variant="light"
-                  size="sm"
-                  color="warning"
-                  startContent={<ModeOutlinedIcon />}
-                  aria-label="Edit"
-                  aria-labelledby="Edit"
-                  href={
-                    "/administration/customer/edit-company/" +
-                    company.CompanyId +
-                    "/" +
-                    company.CompanyName
-                  }
-                  isIconOnly
-                />
-              )}
 
               {adminCompanyPermission.deleteCompanyPermission && (
                 <ConfirmDeleteCompanyModal
@@ -279,7 +270,13 @@ export default function CompanyTable() {
             <Input
               radius="full"
               variant="bordered"
-              startContent={<SearchOutlinedIcon className="text-gray-400" />}
+              startContent={
+                <Icon
+                  icon="solar:magnifer-linear"
+                  fontSize={24}
+                  color="gray-400"
+                />
+              }
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 if (e.target.value.trim() === "") {
@@ -293,7 +290,7 @@ export default function CompanyTable() {
             <Button
               color="primary"
               radius="full"
-              endContent={<SearchOutlinedIcon />}
+              endContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
               isDisabled={searchTerm == ""}
               onClick={SearchCompany}
               className="hidden sm:flex"
@@ -308,7 +305,7 @@ export default function CompanyTable() {
               className="sm:hidden"
               isIconOnly
             >
-              <SearchOutlinedIcon />
+              <Icon icon="solar:magnifer-linear" fontSize={22} />
             </Button>
           </div>
           <div className="flex gap-3">
@@ -319,7 +316,9 @@ export default function CompanyTable() {
                   href="./customer/add-company"
                   color="primary"
                   radius="full"
-                  startContent={<AddBusinessRoundedIcon />}
+                  startContent={
+                    <Icon icon="hugeicons:store-add-01" fontSize={24} />
+                  }
                   className="hidden sm:flex"
                 >
                   Aggiungi azienda
@@ -332,7 +331,7 @@ export default function CompanyTable() {
                   isIconOnly
                   className="sm:hidden"
                 >
-                  <AddBusinessRoundedIcon />
+                  <Icon icon="hugeicons:store-add-01" fontSize={24} />
                 </Button>
               </>
             )}
@@ -351,7 +350,9 @@ export default function CompanyTable() {
               color="primary"
               variant="ghost"
               radius="full"
-              startContent={<FileDownloadOutlinedIcon />}
+              startContent={
+                <Icon icon="solar:file-download-linear" fontSize={24} />
+              }
               onClick={exportCSV}
             >
               Esporta Tabella
@@ -395,7 +396,7 @@ export default function CompanyTable() {
         topContentPlacement="inside"
         onSortChange={setSortDescriptor}
         classNames={{
-          wrapper: "border rounded-lg shadow-none",
+          wrapper: "border-2 rounded-2xl shadow-none",
         }}
       >
         <TableHeader columns={columns}>
@@ -411,8 +412,8 @@ export default function CompanyTable() {
         <TableBody
           emptyContent={
             searchTerm == "" ? (
-              <div className="text-center p-10">
-                <AddBusinessRoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col items-center justify-center p-10">
+                <Icon icon="solar:store-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun azienda trovata!
                 </h3>
@@ -423,21 +424,23 @@ export default function CompanyTable() {
                   <Button
                     color="primary"
                     radius="full"
-                    startContent={<AddRoundedIcon />}
+                    startContent={
+                      <Icon icon="mynaui:plus-solid" fontSize={24} />
+                    }
                   >
                     Aggiungi azienda
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="text-center p-10">
-                <AddBusinessRoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col items-center justify-center p-10">
+                <Icon icon="solar:store-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun azienda trovata!
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Nessun risultato corrisponde alla tua ricerca:{" "}
-                  <span className="font-semibold italic">{searchTerm}</span>
+                  <span className="font-medium italic">{searchTerm}</span>
                 </p>
               </div>
             )

@@ -9,8 +9,8 @@ import {
   ModalFooter,
   ModalHeader,
   Switch,
-} from "@nextui-org/react";
-import CreateNewFolderRoundedIcon from "@mui/icons-material/CreateNewFolderRounded";
+} from "@heroui/react";
+import { Icon } from "@iconify/react";
 
 interface FolderSettingsModalProps {
   isOpen: boolean;
@@ -40,11 +40,11 @@ export default function AddFolderModal({
         {(isClosed) => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">Crea una nuova cartella</h3>
+              <h3 className="text-xl font-medium">Crea una nuova cartella</h3>
             </ModalHeader>
             <ModalBody>
               <div className="flex flex-col gap-3">
-                <h2 className="text-small font-bold text-foreground">
+                <h2 className="text-small font-semibold text-foreground">
                   Nome cartella
                 </h2>
                 <Input
@@ -81,7 +81,9 @@ export default function AddFolderModal({
                 }}
                 radius="full"
                 className="mr-2"
-                startContent={<CreateNewFolderRoundedIcon />}
+                startContent={
+                  <Icon icon="solar:add-folder-linear" fontSize={20} />
+                }
               >
                 Crea cartella
               </Button>

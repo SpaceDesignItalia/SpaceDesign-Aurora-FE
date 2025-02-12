@@ -1,17 +1,26 @@
-import Groups2RoundedIcon from "@mui/icons-material/Groups2Rounded";
-import StoreRoundedIcon from "@mui/icons-material/StoreRounded";
+"use client";
+
+import { Card } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
 export default function CustomerStats() {
-  const [stats, setStats] = useState([{ stat: 0 }, { stat: 0 }]);
+  const [stats, setStats] = useState([{ stat: 0 }, { stat: 0 }, { stat: 0 }]);
 
   function fetchStats() {
     Promise.all([
       axios.get("/Customer/GET/GetAllCustomers"),
       axios.get("/Company/GET/GetAllCompany"),
     ]).then((res) => {
-      setStats([{ stat: res[0].data.length }, { stat: res[1].data.length }]);
+      setStats([
+        { stat: res[0].data.length },
+        { stat: res[1].data.length },
+        {
+          stat:
+            Math.round((res[0].data.length / res[1].data.length) * 100) / 100,
+        },
+      ]);
     });
   }
 
@@ -21,43 +30,44 @@ export default function CustomerStats() {
 
   const statistics = [
     {
-      id: 1,
-      name: "Clienti Totali",
-      stat: stats[0]?.stat,
-      icon: Groups2RoundedIcon,
+      title: "Clienti Totali",
+      value: stats[0]?.stat,
+      icon: "material-symbols-light:groups-2-rounded",
     },
     {
-      id: 2,
-      name: "Aziende Totali",
-      stat: stats[1]?.stat,
-      icon: StoreRoundedIcon,
+      title: "Aziende Totali",
+      value: stats[1]?.stat,
+      icon: "material-symbols-light:store-rounded",
+    },
+    {
+      title: "Media Clienti per Azienda",
+      value: stats[2]?.stat,
+      icon: "material-symbols-light:analytics-rounded",
     },
   ];
 
   return (
-    <div>
-      <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {statistics.map((item) => (
-          <div
-            key={item.id}
-            className="relative overflow-hidden rounded-lg bg-white px-4 pt-5 sm:px-6 sm:pt-6 border border-gray"
-          >
-            <dt>
-              <div className="absolute rounded-md bg-primary p-3">
-                <item.icon aria-hidden="true" className="h-6 w-6 text-white" />
+    <dl className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+      {statistics.map((item, index) => (
+        <Card
+          key={index}
+          className="mt-5 border-2 dark:border-default-100 shadow-none"
+        >
+          <section className="flex flex-nowrap justify-between p-4">
+            <div className="flex flex-col justify-between gap-y-2">
+              <div className="flex flex-col gap-y-4">
+                <dt className="text-sm font-medium text-gray-500 flex items-center gap-2">
+                  <Icon icon={item.icon} className="w-5 h-5" />
+                  {item.title}
+                </dt>
+                <dd className="text-3xl font-semibold text-gray-900">
+                  {item.value !== 0 ? item.value : "Dati non disponibili"}
+                </dd>
               </div>
-              <p className="ml-16 truncate text-sm font-medium text-gray-500">
-                {item.name}
-              </p>
-            </dt>
-            <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p className="text-lg md:text-2xl font-semibold text-gray-900">
-                {item.stat !== 0 ? item.stat : "Dati non disponibili"}
-              </p>
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </div>
+            </div>
+          </section>
+        </Card>
+      ))}
+    </dl>
   );
 }

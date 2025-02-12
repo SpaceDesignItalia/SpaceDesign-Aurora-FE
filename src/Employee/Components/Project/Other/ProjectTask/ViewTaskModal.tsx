@@ -24,7 +24,8 @@ import {
   ScrollShadow,
   Textarea,
   Tooltip,
-} from "@nextui-org/react";
+  Spinner,
+} from "@heroui/react";
 import { API_URL_IMG } from "../../../../../API/API";
 import { I18nProvider, useDateFormatter } from "@react-aria/i18n";
 import dayjs from "dayjs";
@@ -33,30 +34,14 @@ import "react-quill/dist/quill.snow.css"; // Import styles
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { parseDate } from "@internationalized/date";
-import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
+import { Icon } from "@iconify/react";
 
-import {
-  Comment,
-  EditRounded,
-  SendRounded as SendRoundedIcon,
-  CreditCardRounded as CreditCardRoundedIcon,
-  NotesRounded as NotesRoundedIcon,
-  LocalOfferRounded as LocalOfferRoundedIcon,
-  Groups2Rounded as Groups2RoundedIcon,
-  CalendarMonthRounded as CalendarMonthRoundedIcon,
-  ChatRounded as ChatRoundedIcon,
-  CheckBoxOutlined as CheckBoxOutlinedIcon,
-  AddRounded as AddRoundedIcon,
-  DeleteRounded as DeleteRoundedIcon,
-  ModeEditRounded as ModeEditRoundedIcon,
-  CloseRounded as CloseRoundedIcon,
-  SaveRounded as SaveRoundedIcon,
-  AttachFileRounded as AttachFileRoundedIcon,
-} from "@mui/icons-material";
 import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
 import FileUploaderModal from "./FileUploaderModal";
 import FileCard from "./FileCard";
 import StatusAlert from "../../../Layout/StatusAlert";
+import ConfirmDeleteChecklistModal from "./ConfirmDeleteChecklistModal";
+import ConfirmDeleteCheckboxModal from "./ConfirmDeleteCheckboxModal";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -96,8 +81,8 @@ interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
-  ProjectTaskExpiration: DateValue;
-  ProjectTaskCreation: DateValue;
+  ProjectTaskExpiration?: any;
+  ProjectTaskCreation: any;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
@@ -174,6 +159,7 @@ export default function ViewTaskModal({
     open: false,
   });
   const [files, setFiles] = useState<File[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const fetchFiles = async () => {
     try {
@@ -193,6 +179,7 @@ export default function ViewTaskModal({
   //Formatter data
   const formatter = useDateFormatter({ dateStyle: "full" });
   function formatDate(date: DateValue) {
+    if (!date) return "Nessuna scadenza";
     return dayjs(formatter.format(new Date(date.toString()))).format(
       "DD MMM YYYY"
     );
@@ -210,25 +197,50 @@ export default function ViewTaskModal({
       return dayjs(isoString).format("YYYY-MM-DD");
     };
 
-    setNewTask({
-      ...newTask,
-      ProjectTaskCreation: parseDate(
-        formatDate(TaskData.ProjectTaskCreation.toString())
-      ),
-      ProjectTaskExpiration: parseDate(
-        formatDate(TaskData.ProjectTaskExpiration.toString())
-      ),
-      ProjectTaskDescription: TaskData.ProjectTaskDescription,
-      ProjectTaskId: TaskData.ProjectTaskId,
-      ProjectId: TaskData.ProjectId,
-      ProjectTaskName: TaskData.ProjectTaskName,
-      ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
-      ProjectTaskMembers: TaskData.ProjectTaskMembers,
-      ProjectTaskTags: TaskData.ProjectTaskTags,
-      ProjectTaskComments: TaskData.ProjectTaskComments || [],
-      ProjectTaskChecklists: TaskData.ProjectTaskChecklists || [],
-    });
+    if (TaskData) {
+      setNewTask({
+        ...newTask,
+        ProjectTaskCreation: parseDate(
+          formatDate(TaskData.ProjectTaskCreation.toString())
+        ),
+        ProjectTaskExpiration: TaskData.ProjectTaskExpiration
+          ? parseDate(formatDate(TaskData.ProjectTaskExpiration.toString()))
+          : null,
+        ProjectTaskDescription: TaskData.ProjectTaskDescription,
+        ProjectTaskId: TaskData.ProjectTaskId,
+        ProjectId: TaskData.ProjectId,
+        ProjectTaskName: TaskData.ProjectTaskName,
+        ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
+        ProjectTaskMembers: TaskData.ProjectTaskMembers,
+        ProjectTaskTags: TaskData.ProjectTaskTags,
+        ProjectTaskComments: TaskData.ProjectTaskComments || [],
+        ProjectTaskChecklists: TaskData.ProjectTaskChecklists || [],
+      });
+    }
   }
+
+  const handleRefine = async () => {
+    if (!newTask!.ProjectTaskDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post("/Project/POST/RefineText", {
+        text: `Riscrivi in modo più formale e completo il seguente testo: ${
+          newTask!.ProjectTaskDescription
+        }`,
+      });
+
+      // Assicuriamoci di mantenere tutte le proprietà esistenti quando aggiorniamo newTask
+      setNewTask((prevTask) => ({
+        ...prevTask!,
+        ProjectTaskDescription: refinedText.data,
+      }));
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchTaskData();
@@ -409,6 +421,7 @@ export default function ViewTaskModal({
     startDate: DateValue,
     endDate: DateValue
   ): number => {
+    if (!startDate || !endDate) return 0;
     const totalDuration = dayjs(endDate.toString()).diff(
       dayjs(startDate.toString()),
       "day"
@@ -472,11 +485,6 @@ export default function ViewTaskModal({
   const [editingCheckbox, setEditingCheckbox] = useState(0);
   const [checkboxText, setCheckboxText] = useState("");
 
-  const handleEditClick = (checkbox: Checkbox) => {
-    setEditingCheckbox(checkbox.CheckboxId);
-    setCheckboxText(checkbox.Text);
-  };
-
   const handleSaveEdit = (checkboxId: number) => {
     // Qui invia la richiesta per aggiornare il testo della checkbox
     axios
@@ -518,6 +526,8 @@ export default function ViewTaskModal({
       const end = new Date(newTask.ProjectTaskExpiration.toString());
 
       setDateError(start > end); // If start is after end, show error
+    } else {
+      setDateError(false);
     }
   }, [newTask]);
 
@@ -549,7 +559,12 @@ export default function ViewTaskModal({
   }, [newTask, update]);
 
   function handleUpdate() {
-    const formattedDate = new Date(newTask!.ProjectTaskExpiration.toString());
+    let formattedDate;
+    if (newTask?.ProjectTaskExpiration) {
+      formattedDate = new Date(newTask?.ProjectTaskExpiration.toString());
+    } else {
+      formattedDate = new Date();
+    }
     const formattedCreationDate = new Date(
       newTask!.ProjectTaskCreation.toString()
     );
@@ -674,11 +689,27 @@ export default function ViewTaskModal({
     }
   }
 
+  function handleArchiveTask() {
+    try {
+      axios.put("/Project/UPDATE/ArchiveTask", {
+        ProjectTaskId: TaskData.ProjectTaskId,
+      });
+      setUpdate(!update);
+      socket.emit("task-news", TaskData.ProjectId);
+      handleColsesModal();
+    } catch (error) {
+      console.error("Errore nell'archiviazione della task:", error);
+    }
+  }
+
   const tagPopoverContent = (
     <PopoverContent className="w-[350px] p-5">
       {(titleProps) => (
         <div className="px-1 py-2 w-full flex flex-col gap-3">
-          <h2 className="text-small font-bold text-foreground" {...titleProps}>
+          <h2
+            className="text-small font-semibold text-foreground"
+            {...titleProps}
+          >
             Tag
           </h2>
           <div className="mt-2 flex flex-col gap-2 w-full">
@@ -709,7 +740,7 @@ export default function ViewTaskModal({
   const memberPopoverContent = (
     <PopoverContent className="w-[350px] p-5">
       <div className="px-1 py-2 w-full flex flex-col gap-3">
-        <h2 className="text-small font-bold text-foreground">Membri</h2>
+        <h2 className="text-small font-semibold text-foreground">Membri</h2>
         <div className="mt-2 flex flex-col gap-2 w-full">
           <Autocomplete
             defaultItems={members}
@@ -761,7 +792,7 @@ export default function ViewTaskModal({
               <ModalHeader className="flex flex-row justify-between items-center gap-2">
                 {editing ? (
                   <div className="flex flex-row justify-between items-center gap-2 w-full">
-                    <CreditCardRoundedIcon />
+                    <Icon icon="solar:clipboard-check-linear" fontSize={22} />
                     <Input
                       className="w-full"
                       variant="underlined"
@@ -786,18 +817,34 @@ export default function ViewTaskModal({
                   <div className="w-full">
                     <div className="w-full flex flex-row items-center justify-end gap-2 border-b-2 pb-2">
                       <div className="w-full py-3 flex flex-row items-center gap-2">
-                        <CreditCardRoundedIcon /> {newTask!.ProjectTaskName}
+                        <Icon
+                          icon="solar:clipboard-check-linear"
+                          fontSize={22}
+                        />{" "}
+                        {newTask!.ProjectTaskName}
                       </div>
                       <Button
                         isIconOnly
                         color="warning"
                         variant="light"
                         radius="full"
-                        startContent={<EditRounded sx={{ fontSize: 17 }} />}
+                        startContent={
+                          <Icon icon="solar:pen-linear" fontSize={22} />
+                        }
                         onClick={() => setEditing(true)}
                         size="sm"
                       />
-
+                      <Button
+                        color="primary"
+                        variant="light"
+                        onClick={handleArchiveTask}
+                        radius="full"
+                        size="sm"
+                        isIconOnly
+                        startContent={
+                          <Icon icon="solar:archive-up-linear" fontSize={22} />
+                        }
+                      />
                       <ConfirmDeleteTaskModal
                         TaskData={TaskData}
                         DeleteTask={DeleteTask}
@@ -810,9 +857,9 @@ export default function ViewTaskModal({
                         size="sm"
                         isIconOnly
                         startContent={
-                          <CloseRoundedIcon
-                            sx={{ fontSize: 17 }}
-                            className="text-gray-700"
+                          <Icon
+                            icon="material-symbols:close-rounded"
+                            fontSize={22}
                           />
                         }
                       />
@@ -825,7 +872,7 @@ export default function ViewTaskModal({
                   <dl>
                     <div className="px-4 flex flex-col sm:gap-4 sm:px-0">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <LocalOfferRoundedIcon />
+                        <Icon icon="solar:tag-linear" fontSize={22} />
                         Tag associati
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
@@ -841,7 +888,10 @@ export default function ViewTaskModal({
                                     radius="full"
                                     isIconOnly
                                   >
-                                    <AddRoundedIcon />
+                                    <Icon
+                                      icon="mynaui:plus-solid"
+                                      fontSize={22}
+                                    />
                                   </Button>
                                 </PopoverTrigger>
                                 {tagPopoverContent}
@@ -870,7 +920,10 @@ export default function ViewTaskModal({
                                     radius="full"
                                     isIconOnly
                                   >
-                                    <AddRoundedIcon />
+                                    <Icon
+                                      icon="mynaui:plus-solid"
+                                      fontSize={22}
+                                    />
                                   </Button>
                                 </PopoverTrigger>
                                 {tagPopoverContent}
@@ -897,7 +950,10 @@ export default function ViewTaskModal({
                     </div>
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <Groups2RoundedIcon />
+                        <Icon
+                          icon="solar:users-group-rounded-linear"
+                          fontSize={22}
+                        />
                         Membri
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
@@ -913,7 +969,10 @@ export default function ViewTaskModal({
                                     radius="full"
                                     isIconOnly
                                   >
-                                    <AddRoundedIcon />
+                                    <Icon
+                                      icon="mynaui:plus-solid"
+                                      fontSize={22}
+                                    />
                                   </Button>
                                 </PopoverTrigger>
                                 {memberPopoverContent}
@@ -950,7 +1009,10 @@ export default function ViewTaskModal({
                                     radius="full"
                                     isIconOnly
                                   >
-                                    <AddRoundedIcon />
+                                    <Icon
+                                      icon="mynaui:plus-solid"
+                                      fontSize={22}
+                                    />
                                   </Button>
                                 </PopoverTrigger>
                                 {memberPopoverContent}
@@ -982,8 +1044,10 @@ export default function ViewTaskModal({
 
                     <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full">
                       <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                        <CalendarMonthRoundedIcon />
-                        Durata task
+                        <Icon icon="solar:calendar-linear" fontSize={22} />
+                        {newTask?.ProjectTaskExpiration
+                          ? "Durata task"
+                          : "Data inizio"}
                       </dt>
                       <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
                         <div className="flex flex-row justify-between w-full">
@@ -1002,7 +1066,7 @@ export default function ViewTaskModal({
                                     onChange={(date) =>
                                       setNewTask((prevTask) => ({
                                         ...prevTask!,
-                                        ProjectTaskCreation: date,
+                                        ProjectTaskCreation: date!,
                                       }))
                                     }
                                   />
@@ -1035,33 +1099,40 @@ export default function ViewTaskModal({
                           ) : (
                             <>
                               <p>{formatDate(newTask!.ProjectTaskCreation)}</p>
-                              <p>
-                                {formatDate(newTask!.ProjectTaskExpiration)}
-                              </p>
+                              {newTask?.ProjectTaskExpiration && (
+                                <p>
+                                  {formatDate(newTask.ProjectTaskExpiration)}
+                                </p>
+                              )}
                             </>
                           )}
                         </div>
-                        <Progress
-                          value={calculateProgress(
-                            newTask!.ProjectTaskCreation,
-                            newTask!.ProjectTaskExpiration
-                          )}
-                        />
+                        {newTask?.ProjectTaskExpiration && (
+                          <Progress
+                            value={calculateProgress(
+                              newTask!.ProjectTaskCreation,
+                              newTask!.ProjectTaskExpiration
+                            )}
+                          />
+                        )}
                       </dd>
                     </div>
-
                     {((newTask!.ProjectTaskDescription &&
-                      hasValidDescription(newTask!.ProjectTaskDescription)) ||
+                      hasValidDescription(
+                        newTask!.ProjectTaskDescription || ""
+                      )) ||
                       editing) && (
                       <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                         <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                          <NotesRoundedIcon />
+                          <Icon
+                            icon="fluent:text-description-16-filled"
+                            fontSize={22}
+                          />
                           Descrizione
                         </dt>
                         <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                           {editing ? (
                             <>
-                              <></>
                               <ReactQuill
                                 className="sm:col-span-2 sm:mt-0 h-fit"
                                 theme="snow"
@@ -1073,6 +1144,42 @@ export default function ViewTaskModal({
                                   })
                                 }
                               />
+                              {hasValidDescription(
+                                newTask!.ProjectTaskDescription || ""
+                              ) ? (
+                                <div className="flex justify-center items-center">
+                                  <Button
+                                    variant="bordered"
+                                    className="w-max-1/2 gap-3 my-2 py-2"
+                                    radius="full"
+                                    onClick={handleRefine}
+                                    isDisabled={
+                                      loading ||
+                                      !newTask!.ProjectTaskDescription
+                                    }
+                                  >
+                                    {loading ? (
+                                      <>
+                                        {" "}
+                                        <Spinner
+                                          size="sm"
+                                          className="text-black"
+                                        />{" "}
+                                        Riscrittura in corso...{" "}
+                                      </>
+                                    ) : (
+                                      <>
+                                        {" "}
+                                        <Icon
+                                          icon="solar:magic-stick-3-linear"
+                                          fontSize={24}
+                                        />{" "}
+                                        Riscrivi con AI{" "}
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              ) : null}
                             </>
                           ) : (
                             <ReactQuill
@@ -1105,7 +1212,10 @@ export default function ViewTaskModal({
                             aria-label="Accordion 1"
                             title={
                               <div className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                                <AttachFileRoundedIcon />
+                                <Icon
+                                  icon="solar:paperclip-linear"
+                                  fontSize={22}
+                                />
                                 Allegati
                                 <Chip
                                   color="primary"
@@ -1132,7 +1242,12 @@ export default function ViewTaskModal({
                               <Button
                                 radius="full"
                                 color="primary"
-                                startContent={<NoteAddRoundedIcon />}
+                                startContent={
+                                  <Icon
+                                    icon="solar:upload-outline"
+                                    fontSize={24}
+                                  />
+                                }
                                 className="w-1/3 sm:w-1/4"
                                 variant="solid"
                                 onClick={() =>
@@ -1163,7 +1278,12 @@ export default function ViewTaskModal({
                                     color="primary"
                                     radius="full"
                                     variant="ghost"
-                                    startContent={<AddRoundedIcon />}
+                                    startContent={
+                                      <Icon
+                                        icon="mynaui:plus-solid"
+                                        fontSize={22}
+                                      />
+                                    }
                                   >
                                     Crea checklist
                                   </Button>
@@ -1172,7 +1292,7 @@ export default function ViewTaskModal({
                                   {(titleProps) => (
                                     <div className="px-1 py-2 w-full">
                                       <p
-                                        className="text-small font-bold text-foreground"
+                                        className="text-small font-semibold text-foreground"
                                         {...titleProps}
                                       >
                                         Crea checklist
@@ -1198,7 +1318,12 @@ export default function ViewTaskModal({
                                           size="sm"
                                           radius="full"
                                           onClick={handleAddChecklist}
-                                          startContent={<AddRoundedIcon />}
+                                          startContent={
+                                            <Icon
+                                              icon="mynaui:plus-solid"
+                                              fontSize={22}
+                                            />
+                                          }
                                           isDisabled={newChecklistName === ""}
                                         >
                                           Aggiungi Checklist
@@ -1223,7 +1348,10 @@ export default function ViewTaskModal({
                                       title={
                                         <div className="flex items-center justify-between border-b">
                                           <h4 className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                                            <CheckBoxOutlinedIcon />{" "}
+                                            <Icon
+                                              icon="solar:checklist-linear"
+                                              fontSize={22}
+                                            />{" "}
                                             {checklist.Text}
                                           </h4>
                                           <div className="flex flex-row gap-2 items-center">
@@ -1242,23 +1370,10 @@ export default function ViewTaskModal({
                                                 />
                                               </>
                                             )}
-                                            <Button
-                                              color="danger"
-                                              variant="light"
-                                              size="sm"
-                                              radius="full"
-                                              isIconOnly
-                                              onClick={() =>
-                                                handleDeleteChecklist(
-                                                  checklist.ChecklistId
-                                                )
-                                              }
-                                              startContent={
-                                                <DeleteRoundedIcon
-                                                  sx={{
-                                                    fontSize: 17,
-                                                  }}
-                                                />
+                                            <ConfirmDeleteChecklistModal
+                                              checklist={checklist}
+                                              DeleteChecklist={
+                                                handleDeleteChecklist
                                               }
                                             />
                                           </div>
@@ -1335,40 +1450,29 @@ export default function ViewTaskModal({
                                                   <div className="flex flex-row justify-end">
                                                     <Button
                                                       color="warning"
-                                                      variant="light"
                                                       size="sm"
                                                       radius="full"
-                                                      isIconOnly
-                                                      startContent={
-                                                        <ModeEditRoundedIcon
-                                                          sx={{
-                                                            fontSize: 17,
-                                                          }}
-                                                        />
-                                                      }
-                                                      onClick={() =>
-                                                        handleEditClick(
-                                                          checkbox
-                                                        )
-                                                      }
-                                                    />
-                                                    <Button
-                                                      color="danger"
                                                       variant="light"
-                                                      size="sm"
-                                                      radius="full"
-                                                      isIconOnly
-                                                      onClick={() =>
-                                                        handleDeleteCheckbox(
+                                                      onClick={() => {
+                                                        setCommentEditingId(
                                                           checkbox.CheckboxId
-                                                        )
-                                                      }
+                                                        );
+                                                        setUpdateComment(
+                                                          checkbox.Text
+                                                        );
+                                                      }}
                                                       startContent={
-                                                        <DeleteRoundedIcon
-                                                          sx={{
-                                                            fontSize: 17,
-                                                          }}
+                                                        <Icon
+                                                          icon="solar:pen-2-linear"
+                                                          fontSize={22}
                                                         />
+                                                      }
+                                                      isIconOnly
+                                                    />
+                                                    <ConfirmDeleteCheckboxModal
+                                                      checkbox={checkbox}
+                                                      DeleteCheckbox={
+                                                        handleDeleteCheckbox
                                                       }
                                                     />
                                                   </div>
@@ -1400,7 +1504,10 @@ export default function ViewTaskModal({
                                                 size="sm"
                                                 radius="full"
                                                 startContent={
-                                                  <AddRoundedIcon />
+                                                  <Icon
+                                                    icon="mynaui:plus-solid"
+                                                    fontSize={22}
+                                                  />
                                                 }
                                                 onClick={() =>
                                                   togglePopover(
@@ -1415,7 +1522,7 @@ export default function ViewTaskModal({
                                               {(titleProps) => (
                                                 <div className="px-1 py-2 w-full">
                                                   <p
-                                                    className="text-small font-bold text-foreground"
+                                                    className="text-small font-semibold text-foreground"
                                                     {...titleProps}
                                                   >
                                                     Aggiungi elemento
@@ -1452,7 +1559,10 @@ export default function ViewTaskModal({
                                                         checklistText === ""
                                                       }
                                                       startContent={
-                                                        <AddRoundedIcon />
+                                                        <Icon
+                                                          icon="mynaui:plus-solid"
+                                                          fontSize={22}
+                                                        />
                                                       }
                                                     >
                                                       Aggiungi elemento
@@ -1474,7 +1584,10 @@ export default function ViewTaskModal({
 
                         <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                           <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                            <ChatRoundedIcon />
+                            <Icon
+                              icon="solar:chat-round-line-linear"
+                              fontSize={22}
+                            />
                             Commenti
                           </dt>
                           <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
@@ -1536,8 +1649,9 @@ export default function ViewTaskModal({
                                             size="sm"
                                             onClick={handleAddTaskComment}
                                             endContent={
-                                              <SendRoundedIcon
-                                                sx={{ fontSize: 15 }}
+                                              <Icon
+                                                icon="prime:send"
+                                                fontSize={22}
                                               />
                                             }
                                           >
@@ -1597,7 +1711,7 @@ export default function ViewTaskModal({
                                                     }
                                                     className="w-10 h-10 rounded-full"
                                                   />
-                                                  <p className="font-semibold text-base">
+                                                  <p className="font-medium text-base">
                                                     {comment.StafferFullName}
                                                   </p>
                                                   -
@@ -1655,7 +1769,10 @@ export default function ViewTaskModal({
                                                         }
                                                         radius="full"
                                                         startContent={
-                                                          <SaveRoundedIcon />
+                                                          <Icon
+                                                            icon="basil:save-outline"
+                                                            fontSize={22}
+                                                          />
                                                         }
                                                         isDisabled={
                                                           updateComment ===
@@ -1688,10 +1805,9 @@ export default function ViewTaskModal({
                                                           );
                                                         }}
                                                         startContent={
-                                                          <EditRounded
-                                                            sx={{
-                                                              fontSize: 17,
-                                                            }}
+                                                          <Icon
+                                                            icon="solar:pen-2-linear"
+                                                            fontSize={22}
                                                           />
                                                         }
                                                         isIconOnly
@@ -1708,10 +1824,9 @@ export default function ViewTaskModal({
                                                           )
                                                         }
                                                         startContent={
-                                                          <DeleteRoundedIcon
-                                                            sx={{
-                                                              fontSize: 17,
-                                                            }}
+                                                          <Icon
+                                                            icon="solar:trash-bin-linear"
+                                                            fontSize={22}
                                                           />
                                                         }
                                                         isIconOnly
@@ -1745,7 +1860,9 @@ export default function ViewTaskModal({
                           color="primary"
                           onClick={handleUpdate}
                           radius="full"
-                          startContent={<SaveRoundedIcon />}
+                          startContent={
+                            <Icon icon="basil:save-outline" fontSize={22} />
+                          }
                           isDisabled={dateError}
                           variant={dateError ? "flat" : "solid"}
                         >

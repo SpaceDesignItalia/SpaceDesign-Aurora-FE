@@ -1,4 +1,4 @@
-import { Avatar } from "@nextui-org/react";
+import { Avatar } from "@heroui/react";
 import { API_URL_IMG } from "../../../../API/API";
 import dayjs from "dayjs";
 import "dayjs/locale/it";
@@ -20,7 +20,6 @@ export default function ChatMessage({
   message: Message;
   type: string;
 }) {
-  console.log(message);
   const formatDate = (dateStr: Date | undefined): string => {
     if (!dateStr) return "";
 

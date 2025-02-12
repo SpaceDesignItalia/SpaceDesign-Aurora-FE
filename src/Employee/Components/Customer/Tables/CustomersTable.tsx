@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { usePermissions } from "../../Layout/PermissionProvider";
 import {
   Table,
@@ -17,26 +18,18 @@ import {
   Pagination,
   SortDescriptor,
   Link,
-} from "@nextui-org/react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
+} from "@heroui/react";
 import axios from "axios";
 import ViewCustomerModal from "../Other/ViewCustomerModal";
 import ConfirmDeleteCustomerModal from "../Other/ConfirmDeleteCustomerModal";
-import { Edit } from "@mui/icons-material";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import StatusAlert from "../../Layout/StatusAlert";
-
+import { Icon } from "@iconify/react";
 interface Customer {
   CustomerId: number;
   CustomerFullName: string;
   CustomerEmail: string;
   CustomerPhone: string;
+  CustomerImageUrl: string;
 }
 
 interface ModalData {
@@ -73,6 +66,8 @@ const columns = [
 ];
 
 export default function CustomersTable() {
+  const customerId =
+    parseInt(useParams().CustomerId!) > 0 ? useParams().CustomerId : null;
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -102,12 +97,6 @@ export default function CustomersTable() {
     fetchData();
   }, []);
 
-  function fetchData() {
-    axios.get("/Customer/GET/GetAllCustomers").then((res) => {
-      setCustomers(res.data);
-    });
-  }
-
   const [page, setPage] = useState(1);
   const [modalData, setModalData] = useState<ModalData>({
     Customer: {
@@ -118,6 +107,22 @@ export default function CustomersTable() {
     },
     open: false,
   });
+
+  function fetchData() {
+    axios.get("/Customer/GET/GetAllCustomers").then((res) => {
+      setCustomers(res.data);
+      if (customerId) {
+        setModalData({
+          ...modalData,
+          open: true,
+          Customer: res.data.find(
+            (customer: Customer) => customer.CustomerId == parseInt(customerId)
+          ),
+        });
+      }
+    });
+  }
+
   const [modalDeleteData, setModalDeleteData] = useState<ModalDeleteData>({
     Customer: {
       CustomerId: 0,
@@ -270,7 +275,7 @@ export default function CustomersTable() {
                 color="primary"
                 variant="light"
                 size="sm"
-                startContent={<RemoveRedEyeOutlinedIcon />}
+                startContent={<Icon icon="solar:eye-linear" fontSize={24} />}
                 aria-label="View"
                 aria-labelledby="View"
                 onClick={() =>
@@ -282,23 +287,6 @@ export default function CustomersTable() {
                 }
                 isIconOnly
               />
-
-              {adminCustomerPermission.editCustomerPermission ? (
-                <Button
-                  as={Link}
-                  color="warning"
-                  variant="light"
-                  size="sm"
-                  startContent={<ModeOutlinedIcon />}
-                  aria-label="Edit"
-                  aria-labelledby="Edit"
-                  href={
-                    "/administration/customer/edit-customer/" +
-                    customer.CustomerId
-                  }
-                  isIconOnly
-                />
-              ) : null}
 
               {adminCustomerPermission.deleteCustomerPermission ? (
                 <ConfirmDeleteCustomerModal
@@ -331,7 +319,13 @@ export default function CustomersTable() {
             <Input
               radius="full"
               variant="bordered"
-              startContent={<SearchOutlinedIcon className="text-gray-400" />}
+              startContent={
+                <Icon
+                  icon="solar:magnifer-linear"
+                  fontSize={24}
+                  color="gray-400"
+                />
+              }
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 if (e.target.value.trim() === "") {
@@ -345,7 +339,7 @@ export default function CustomersTable() {
             <Button
               color="primary"
               radius="full"
-              endContent={<SearchOutlinedIcon />}
+              endContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
               isDisabled={searchTerm == ""}
               onClick={SearchCustomer}
               className="hidden sm:flex"
@@ -360,7 +354,7 @@ export default function CustomersTable() {
               className="sm:hidden"
               isIconOnly
             >
-              <SearchOutlinedIcon />
+              <Icon icon="solar:magnifer-linear" fontSize={22} />
             </Button>
           </div>
           <div className="flex gap-3">
@@ -371,7 +365,9 @@ export default function CustomersTable() {
                   href="./customer/add-customer"
                   color="primary"
                   radius="full"
-                  startContent={<PersonAddAlt1RoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:user-plus-linear" fontSize={24} />
+                  }
                   className="hidden sm:flex"
                 >
                   Aggiungi cliente
@@ -384,7 +380,7 @@ export default function CustomersTable() {
                   isIconOnly
                   className="sm:hidden"
                 >
-                  <PersonAddAlt1RoundedIcon />
+                  <Icon icon="solar:user-plus-linear" fontSize={24} />
                 </Button>
               </>
             )}
@@ -403,7 +399,9 @@ export default function CustomersTable() {
               color="primary"
               variant="ghost"
               radius="full"
-              startContent={<FileDownloadOutlinedIcon />}
+              startContent={
+                <Icon icon="solar:file-download-linear" fontSize={24} />
+              }
               onClick={exportCSV}
             >
               Esporta Tabella
@@ -449,7 +447,7 @@ export default function CustomersTable() {
         onSortChange={setSortDescriptor}
         radius="full"
         classNames={{
-          wrapper: "border rounded-lg shadow-none",
+          wrapper: "border-2 rounded-2xl shadow-none",
         }}
       >
         <TableHeader columns={columns}>
@@ -465,8 +463,8 @@ export default function CustomersTable() {
         <TableBody
           emptyContent={
             searchTerm == "" ? (
-              <div className="text-center p-10">
-                <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col justify-center items-center p-10">
+                <Icon icon="solar:user-plus-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun cliente trovato!
                 </h3>
@@ -477,21 +475,23 @@ export default function CustomersTable() {
                   <Button
                     color="primary"
                     radius="full"
-                    startContent={<AddRoundedIcon />}
+                    startContent={
+                      <Icon icon="solar:user-plus-linear" fontSize={24} />
+                    }
                   >
                     Aggiungi cliente
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="text-center p-10">
-                <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col justify-center items-center p-10">
+                <Icon icon="solar:user-plus-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun cliente trovato!
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Nessun risultato corrisponde alla tua ricerca:{" "}
-                  <span className="font-semibold italic">{searchTerm}</span>
+                  <span className="font-medium italic">{searchTerm}</span>
                 </p>
               </div>
             )

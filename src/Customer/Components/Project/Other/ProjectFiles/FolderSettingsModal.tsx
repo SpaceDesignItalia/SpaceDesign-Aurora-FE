@@ -9,7 +9,7 @@ import {
   ModalFooter,
   ModalHeader,
   Switch,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
@@ -87,7 +87,7 @@ export default function FolderSettingsModal({
         {(isClosed) => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-xl font-semibold">
+              <h3 className="text-xl font-medium">
                 Modifica della cartella {FolderData.FolderName}
               </h3>
             </ModalHeader>

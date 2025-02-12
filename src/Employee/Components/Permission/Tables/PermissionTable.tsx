@@ -1,11 +1,3 @@
-import AddModeratorRoundedIcon from "@mui/icons-material/AddModeratorRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import LocalPoliceRoundedIcon from "@mui/icons-material/LocalPoliceRounded";
-import ModeOutlinedIcon from "@mui/icons-material/ModeOutlined";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import {
   Button,
   Input,
@@ -18,7 +10,8 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from "@nextui-org/react";
+} from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { usePermissions } from "../../Layout/PermissionProvider";
@@ -94,7 +87,6 @@ export default function PermissionTable() {
   function fetchData() {
     axios.get("/Permission/GET/GetAllPermissions").then((res) => {
       setPermissions(res.data);
-      console.log(res);
     });
   }
 
@@ -165,8 +157,6 @@ export default function PermissionTable() {
       wrapInQuotes(permission.PermissionGroup.PermissionGroupName),
     ]);
 
-    console.log(rows);
-
     let csvContent =
       "data:text/csv;charset=utf-8," +
       headers.map(wrapInQuotes).join(",") +
@@ -212,7 +202,7 @@ export default function PermissionTable() {
                 size="sm"
                 color="primary"
                 variant="light"
-                startContent={<RemoveRedEyeOutlinedIcon />}
+                startContent={<Icon icon="solar:eye-linear" fontSize={24} />}
                 aria-label="View"
                 aria-labelledby="View"
                 onClick={() =>
@@ -231,7 +221,7 @@ export default function PermissionTable() {
                   size="sm"
                   color="warning"
                   variant="light"
-                  startContent={<ModeOutlinedIcon />}
+                  startContent={<Icon icon="solar:pen-linear" fontSize={22} />}
                   aria-label="Edit"
                   aria-labelledby="Edit"
                   href={
@@ -270,7 +260,7 @@ export default function PermissionTable() {
             <Input
               radius="full"
               variant="bordered"
-              startContent={<SearchOutlinedIcon />}
+              startContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 if (e.target.value.trim() === "") {
@@ -283,7 +273,7 @@ export default function PermissionTable() {
             <Button
               color="primary"
               radius="full"
-              endContent={<SearchOutlinedIcon />}
+              endContent={<Icon icon="solar:magnifer-linear" fontSize={22} />}
               isDisabled={searchTerm == ""}
               onClick={SearchPermission}
               className="hidden sm:flex"
@@ -298,7 +288,7 @@ export default function PermissionTable() {
               className="sm:hidden"
               isIconOnly
             >
-              <SearchOutlinedIcon />
+              <Icon icon="solar:magnifer-linear" fontSize={22} />
             </Button>
           </div>
           <div className="flex gap-3">
@@ -309,7 +299,7 @@ export default function PermissionTable() {
                   href="./permission/add-permission"
                   color="primary"
                   radius="full"
-                  startContent={<VpnKeyIcon />}
+                  startContent={<Icon icon="solar:key-linear" fontSize={24} />}
                   className="hidden sm:flex"
                 >
                   Aggiungi permesso
@@ -323,7 +313,7 @@ export default function PermissionTable() {
                   isIconOnly
                   className="sm:hidden"
                 >
-                  <AddModeratorRoundedIcon />
+                  <Icon icon="solar:shield-plus-linear" fontSize={24} />
                 </Button>
               </>
             )}
@@ -342,7 +332,9 @@ export default function PermissionTable() {
               color="primary"
               variant="ghost"
               radius="full"
-              startContent={<FileDownloadOutlinedIcon />}
+              startContent={
+                <Icon icon="solar:file-download-linear" fontSize={24} />
+              }
               onClick={exportCSV}
             >
               Esporta Tabella
@@ -384,7 +376,7 @@ export default function PermissionTable() {
         topContentPlacement="inside"
         onSortChange={setSortDescriptor}
         classNames={{
-          wrapper: "border rounded-lg shadow-none",
+          wrapper: "border-2 rounded-2xl shadow-none",
         }}
       >
         <TableHeader columns={columns}>
@@ -400,8 +392,8 @@ export default function PermissionTable() {
         <TableBody
           emptyContent={
             searchTerm == "" ? (
-              <div className="text-center p-10">
-                <LocalPoliceRoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col items-center justify-center p-10">
+                <Icon icon="solar:shield-star-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun permesso trovato!
                 </h3>
@@ -413,7 +405,9 @@ export default function PermissionTable() {
                     as={Link}
                     color="primary"
                     radius="full"
-                    startContent={<AddRoundedIcon />}
+                    startContent={
+                      <Icon icon="solar:shield-plus-linear" fontSize={24} />
+                    }
                     href="./permission/add-permission"
                   >
                     Aggiungi permesso
@@ -421,14 +415,14 @@ export default function PermissionTable() {
                 </div>
               </div>
             ) : (
-              <div className="text-center p-10">
-                <LocalPoliceRoundedIcon sx={{ fontSize: 50 }} />
+              <div className="flex flex-col items-center justify-center p-10">
+                <Icon icon="solar:shield-star-linear" fontSize={50} />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
                   Nessun permesso trovato!
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Nessun risultato corrisponde alla tua ricerca:{" "}
-                  <span className="font-semibold italic">{searchTerm}</span>
+                  <span className="font-medium italic">{searchTerm}</span>
                 </p>
               </div>
             )

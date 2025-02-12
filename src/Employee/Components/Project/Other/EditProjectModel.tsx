@@ -8,19 +8,20 @@ import {
   AutocompleteItem,
   Chip,
   DatePicker,
-} from "@nextui-org/react";
+  Spinner,
+} from "@heroui/react";
 import { I18nProvider } from "@react-aria/i18n";
-import SaveIcon from "@mui/icons-material/Save";
+import { Icon } from "@iconify/react";
 import StatusAlert from "../../Layout/StatusAlert";
-import { DateValue, parseDate } from "@internationalized/date";
+import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 import { useParams } from "react-router-dom";
 
 interface Project {
   ProjectName: string;
   ProjectDescription: string;
-  ProjectCreationDate: DateValue;
-  ProjectEndDate: DateValue;
+  ProjectCreationDate: any;
+  ProjectEndDate: any;
   ProjectManagerId: number;
   CompanyId: number;
   ProjectBannerId: number;
@@ -93,6 +94,7 @@ export default function EditProjectModel() {
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [statusList, setStatusList] = useState<Status[]>([]);
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -167,14 +169,14 @@ export default function EditProjectModel() {
     });
   }
 
-  function handleProjectCreationDateChange(date: DateValue) {
+  function handleProjectCreationDateChange(date: any) {
     setNewProjectData({
       ...newProjectData,
       ProjectCreationDate: date,
     });
   }
 
-  function handleProjectEndDateChange(date: DateValue) {
+  function handleProjectEndDateChange(date: any) {
     setNewProjectData({
       ...newProjectData,
       ProjectEndDate: date,
@@ -209,6 +211,28 @@ export default function EditProjectModel() {
       newProjectData.StatusId === initialProjectData.StatusId
     );
   }
+
+  const handleRefine = async () => {
+    if (!newProjectData.ProjectDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post(
+        "/Project/POST/RefineProjectDescription",
+        {
+          text: `Riscrivi in modo più formale e completo il seguente testo: ${newProjectData.ProjectDescription}`,
+        }
+      );
+      setNewProjectData({
+        ...newProjectData,
+        ProjectDescription: refinedText.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   async function handleUpdateProject() {
     try {
@@ -298,7 +322,7 @@ export default function EditProjectModel() {
       <div className="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
         <div className="space-y-6 bg-white">
           <div>
-            <h3 className="text-base font-semibold leading-6 text-gray-900">
+            <h3 className="text-base font-medium leading-6 text-gray-900">
               Progetto
             </h3>
             <p className="mt-1 text-sm text-gray-500">
@@ -370,6 +394,32 @@ export default function EditProjectModel() {
                 onChange={handleProjectDescriptionChange}
                 fullWidth
               />
+              {newProjectData.ProjectDescription ? (
+                <Button
+                  variant="bordered"
+                  className="w-max-1/2 mx-auto  gap-3 my-5 py-2 mt-2"
+                  radius="full"
+                  onClick={handleRefine}
+                  isDisabled={loading || !newProjectData.ProjectDescription}
+                >
+                  {loading ? (
+                    <>
+                      {" "}
+                      <Spinner size="sm" className="text-black" /> Riscrittura
+                      in corso...{" "}
+                    </>
+                  ) : (
+                    <>
+                      {" "}
+                      <Icon
+                        icon="solar:magic-stick-3-linear"
+                        fontSize={24}
+                      />{" "}
+                      Riscrivi con AI{" "}
+                    </>
+                  )}
+                </Button>
+              ) : null}
             </div>
             <div className="col-span-6 sm:col-span-3">
               <label
@@ -498,7 +548,9 @@ export default function EditProjectModel() {
             color="primary"
             className="text-white"
             radius="full"
-            startContent={!isAddingData && <SaveIcon />}
+            startContent={
+              !isAddingData && <Icon icon="basil:save-outline" fontSize={24} />
+            }
             isDisabled={checkAllDataCompiled()}
             isLoading={isAddingData}
             onClick={handleUpdateProject}

@@ -1,15 +1,13 @@
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import { Button, Input, ScrollShadow } from "@nextui-org/react";
+import { Button, Input, ScrollShadow } from "@heroui/react";
 import ProjectTeamMemberCard from "../ProjectTeamMemberCard";
-import SendRoundedIcon from "@mui/icons-material/SendRounded";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import ChatMessage from "../ProjectTeamChat/ChatMessage";
-import { useState, useEffect, useRef } from "react";
+import { Icon } from "@iconify/react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 import AddProjectTeamMember from "../AddProjectTeamMember";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import { usePermissions } from "../../../Layout/PermissionProvider";
+import ChatMessage from "../ProjectTeamChat/ChatMessage";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -76,8 +74,18 @@ export default function TeamContainer({
   const [adminPermission, setAdminPermission] = useState({
     editTeamMember: false,
   });
+  const [onlineUsers, setOnlineUsers] = useState<onlineUser[]>([]);
+  const [videoParticipantsCount, setVideoParticipantsCount] = useState(0);
+  const [isInVideoCall, setIsInVideoCall] = useState(false);
   const { hasPermission } = usePermissions();
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const getJitsiUrl = useCallback(() => {
+    const sanitizedProjectName = projectData.ProjectName.replace(/\s+/g, "-")
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "");
+    return `https://meet.jit.si/${sanitizedProjectName}`;
+  }, [projectData.ProjectName]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -85,7 +93,7 @@ export default function TeamContainer({
         scrollRef.current as HTMLElement
       ).scrollHeight;
     }
-  }, [messages]);
+  }, [scrollRef]);
 
   useEffect(() => {
     axios
@@ -95,9 +103,11 @@ export default function TeamContainer({
       .then((res) => {
         setMembers(res.data);
       });
+
     socket.on("message-update", () => {
-      handleOpenChat(parseInt(localStorage.getItem("conversationId")!));
+      handleOpenChat(Number.parseInt(localStorage.getItem("conversationId")!));
     });
+
     async function checkPermissions() {
       setAdminPermission({
         editTeamMember: await hasPermission("MANAGE_TEAM_MEMBER"),
@@ -111,7 +121,6 @@ export default function TeamContainer({
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then(async (res) => {
         setloggedStafferId(res.data.StafferId);
-
         return axios.get("/Project/GET/GetConversationByProjectId", {
           params: { ProjectId: projectData.ProjectId },
         });
@@ -122,43 +131,125 @@ export default function TeamContainer({
         socket.emit("join", res.data[0].ConversationId);
         handleOpenChat(res.data[0].ConversationId);
       });
-  }, [messages.length, projectData.ProjectId]);
-
-  const [onlineUsers, setOnlineUsers] = useState<onlineUser[]>([]);
+  }, [projectData.ProjectId]);
 
   useEffect(() => {
     socket.emit("get-users");
-
     socket.on("get-users", (users) => {
       setOnlineUsers(users);
     });
   }, []);
 
   useEffect(() => {
-    // Tab has focus
-    const handleFocus = async () => {
-      socket.emit("new-user-add", loggedStafferId);
-      socket.on("get-users", (users) => {
-        setOnlineUsers(users);
-      });
-    };
+    // Controlla lo stato iniziale della stanza video
+    socket.emit("check-video-room", projectData.ProjectId);
 
-    // Tab closed
-    const handleBlur = () => {
-      if (loggedStafferId !== 0) {
-        socket.emit("offline");
+    // Ascolta gli aggiornamenti dei partecipanti
+    const handleVideoParticipantsUpdate = (data: {
+      projectId: number;
+      count: number;
+      participants: number[];
+    }) => {
+      if (data.projectId === projectData.ProjectId) {
+        setVideoParticipantsCount(data.count);
+        // Controlla se l'utente corrente è nella chiamata
+        setIsInVideoCall(data.participants.includes(loggedStafferId));
       }
     };
 
-    // Track if the user changes the tab to determine when they are online
-    window.addEventListener("focus", handleFocus);
-    window.addEventListener("blur", handleBlur);
+    socket.on("video-participants-update", handleVideoParticipantsUpdate);
+
+    // Ricevi lo stato iniziale delle stanze video
+    socket.on(
+      "initial-video-participants",
+      (rooms: Record<string, Set<number>>) => {
+        const projectRoom = rooms[projectData.ProjectId];
+        if (projectRoom) {
+          setVideoParticipantsCount(projectRoom.size);
+          setIsInVideoCall(Array.from(projectRoom).includes(loggedStafferId));
+        }
+      }
+    );
 
     return () => {
-      window.removeEventListener("focus", handleFocus);
-      window.removeEventListener("blur", handleBlur);
+      socket.off("video-participants-update", handleVideoParticipantsUpdate);
+      socket.off("initial-video-participants");
+      // Se l'utente è in chiamata quando il componente viene smontato, fallo uscire
+      if (isInVideoCall) {
+        socket.emit("leave-video-room", projectData.ProjectId, loggedStafferId);
+      }
     };
-  }, [loggedStafferId]);
+  }, [projectData.ProjectId, loggedStafferId]);
+
+  const handleLeaveVideoCall = useCallback(() => {
+    socket.emit("leave-video-room", projectData.ProjectId, loggedStafferId);
+    setIsInVideoCall(false);
+  }, [projectData.ProjectId, loggedStafferId]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isInVideoCall) {
+        handleLeaveVideoCall();
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("unload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("unload", handleBeforeUnload);
+      if (isInVideoCall) {
+        handleLeaveVideoCall();
+      }
+    };
+  }, [isInVideoCall, handleLeaveVideoCall]);
+
+  // Aggiungi un effetto per il ping di presenza quando si è in chiamata
+  useEffect(() => {
+    let pingInterval: NodeJS.Timeout | null = null;
+
+    if (isInVideoCall) {
+      // Invia un ping immediato
+      socket.emit(
+        "ping-video-presence",
+        projectData.ProjectId,
+        loggedStafferId
+      );
+
+      // Imposta l'intervallo di ping
+      pingInterval = setInterval(() => {
+        socket.emit(
+          "ping-video-presence",
+          projectData.ProjectId,
+          loggedStafferId
+        );
+      }, 3000); // Ping ogni 3 secondi
+    }
+
+    return () => {
+      if (pingInterval) {
+        clearInterval(pingInterval);
+      }
+    };
+  }, [isInVideoCall, projectData.ProjectId, loggedStafferId]);
+
+  const startJitsiCall = () => {
+    const url = getJitsiUrl();
+    const videoWindow = window.open(url, "_blank", "noopener,noreferrer");
+
+    // Aggiungi l'utente alla stanza video
+    socket.emit("join-video-room", projectData.ProjectId, loggedStafferId);
+    setIsInVideoCall(true);
+
+    // Gestisci la chiusura della finestra
+    const checkWindow = setInterval(() => {
+      if (videoWindow?.closed) {
+        clearInterval(checkWindow);
+        handleLeaveVideoCall();
+      }
+    }, 300);
+  };
 
   function handleOpenChat(conversationId: number) {
     try {
@@ -210,7 +301,6 @@ export default function TeamContainer({
     }
   }
 
-  // Funzione per raggruppare i messaggi per data
   const groupMessagesByDate = (messages: Message[]) => {
     const groupedMessages: { [key: string]: Message[] } = {};
 
@@ -226,7 +316,6 @@ export default function TeamContainer({
     return groupedMessages;
   };
 
-  // Raggruppa i messaggi per data
   const groupedMessages = groupMessagesByDate(messages);
 
   return (
@@ -261,7 +350,6 @@ export default function TeamContainer({
                         </span>
                       </div>
                     </div>
-                    {/* Data dei messaggi */}
                     {groupedMessages[date].map((message) => {
                       return (
                         <ChatMessage
@@ -296,15 +384,41 @@ export default function TeamContainer({
                 isIconOnly
                 isDisabled={newMessage.trim() === ""}
               >
-                <SendRoundedIcon />
+                <Icon icon="prime:send" fontSize={22} />
               </Button>
             </div>
           </div>
         </div>
+
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
           <div className="flex flex-row justify-between items-center">
-            <h1 className="font-bold">Membri del progetto</h1>
+            <h1 className="font-semibold">Membri del progetto</h1>
             <div className="flex flex-row gap-2">
+              <Button
+                onClick={startJitsiCall}
+                color="primary"
+                variant={isInVideoCall ? "solid" : "faded"}
+                radius="full"
+                size="sm"
+                endContent={
+                  <div className="flex items-center gap-1">
+                    {videoParticipantsCount > 0 && (
+                      <span
+                        className={`${
+                          isInVideoCall
+                            ? "bg-white text-primary-500"
+                            : "bg-primary-500 text-white"
+                        } rounded-full px-2 text-xs`}
+                      >
+                        {videoParticipantsCount}
+                      </span>
+                    )}
+                    <Icon icon="solar:videocamera-linear" fontSize={22} />
+                  </div>
+                }
+              >
+                Video Chat
+              </Button>
               {adminPermission.editTeamMember && (
                 <>
                   {editTeam && (
@@ -321,7 +435,7 @@ export default function TeamContainer({
                       }
                       isIconOnly
                     >
-                      <AddRoundedIcon sx={{ fontSize: 20 }} />
+                      <Icon icon="mynaui:plus-solid" fontSize={22} />
                     </Button>
                   )}
                   <Button
@@ -332,7 +446,7 @@ export default function TeamContainer({
                     size="sm"
                     isIconOnly
                   >
-                    <EditRoundedIcon sx={{ fontSize: 20 }} />
+                    <Icon icon="solar:pen-linear" fontSize={18} />
                   </Button>
                 </>
               )}

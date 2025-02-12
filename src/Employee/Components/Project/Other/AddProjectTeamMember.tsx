@@ -9,10 +9,10 @@ import {
   Autocomplete,
   AutocompleteItem,
   Chip,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import SaveIcon from "@mui/icons-material/Save";
+import { Icon } from "@iconify/react";
 import { API_URL_IMG } from "../../../../API/API";
 import StatusAlert from "../../Layout/StatusAlert";
 
@@ -97,7 +97,6 @@ export default function AddProjectTeamMember({
         setTimeout(() => {
           window.location.reload();
         }, 2000);
-        console.log("Successo:", res.data);
       }
       // Esegui altre azioni dopo la creazione del progetto, se necessario
     } catch (error) {
@@ -133,7 +132,7 @@ export default function AddProjectTeamMember({
           {(isClosed) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                <h3 className="text-xl font-semibold">Aggiungi un membro</h3>
+                <h3 className="text-xl font-medium">Aggiungi un membro</h3>
               </ModalHeader>
               <ModalBody>
                 <div className="grid grid-cols-6 gap-6">
@@ -201,7 +200,11 @@ export default function AddProjectTeamMember({
                   color="success"
                   className="text-white"
                   radius="sm"
-                  startContent={!isAddingData && <SaveIcon />}
+                  startContent={
+                    !isAddingData && (
+                      <Icon icon="basil:save-outline" fontSize={24} />
+                    )
+                  }
                   isDisabled={checkAllDataCompiled()}
                   isLoading={isAddingData}
                   onClick={handleCreateNewLink}

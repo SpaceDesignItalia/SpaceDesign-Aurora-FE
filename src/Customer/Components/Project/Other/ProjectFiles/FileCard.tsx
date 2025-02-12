@@ -1,19 +1,17 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { API_URL_IMG } from "../../../../../API/API";
-import ConfirmRemoveFilePopover from "../ConfirmRemoveFilePopover";
 import {
   Button,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-} from "@nextui-org/react";
-import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
-import BorderColorRoundedIcon from "@mui/icons-material/BorderColorRounded";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+} from "@heroui/react";
 import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
-
+import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { API_URL_IMG } from "../../../../../API/API";
+import ConfirmRemoveFilePopover from "../ConfirmRemoveFilePopover";
+import { Icon } from "@iconify/react";
 interface FileCardProps {
   file: any;
   index: number;
@@ -160,7 +158,9 @@ export default function FileCard({
                 </DropdownItem>
                 <DropdownItem
                   key="edit"
-                  startContent={<BorderColorRoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:pen-2-linear" fontSize={22} />
+                  }
                   onClick={() => setIsEditing(true)} // Entra in modalità di modifica
                 >
                   Rinomina file
@@ -169,7 +169,9 @@ export default function FileCard({
                   key="delete"
                   className="text-danger"
                   color="danger"
-                  startContent={<DeleteRoundedIcon />}
+                  startContent={
+                    <Icon icon="solar:trash-bin-trash-linear" fontSize={24} />
+                  }
                   onClick={() => DeleteFile(file)}
                 >
                   Rimuovi file
