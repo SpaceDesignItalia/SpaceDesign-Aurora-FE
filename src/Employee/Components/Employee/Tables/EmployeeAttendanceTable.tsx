@@ -37,11 +37,6 @@ interface Props {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   loggedStafferId: number;
-  setStatusAlert: (alert: {
-    show: boolean;
-    message: string;
-    type: "success" | "error";
-  }) => void;
 }
 
 export default function EmployeeAttendanceTable({
@@ -49,7 +44,6 @@ export default function EmployeeAttendanceTable({
   selectedDate,
   onDateChange,
   loggedStafferId,
-  setStatusAlert,
 }: Props) {
   if (!employees) return null;
 
@@ -205,43 +199,8 @@ export default function EmployeeAttendanceTable({
       Date: date,
     });
 
-      const res = await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
-        Status: status,
-        StafferId: loggedStafferId,
-        Date: date,
-      });
-
-      if (res.status === 200) {
-        socket.emit("employee-attendance-update");
-
-        // Se lo stato selezionato è uguale a quello corrente, non fare nulla
-        if (currentAttendance && currentAttendance.status === status) {
-          return;
-        }
-
-        setStatusAlert({
-          show: true,
-          type: "success",
-          message:
-            status === "delete"
-              ? "Presenza eliminata con successo!"
-              : currentAttendance
-              ? `Presenza modificata da "${
-                  statusConfig[
-                    currentAttendance.status as keyof typeof statusConfig
-                  ].label
-                }" a "${
-                  statusConfig[status as keyof typeof statusConfig].label
-                }"`
-              : "Nuova presenza aggiunta con successo!",
-        });
-      }
-    } catch (error) {
-      setStatusAlert({
-        show: true,
-        type: "error",
-        message: "Errore durante l'aggiornamento della presenza",
-      });
+    if (res.status === 200) {
+      socket.emit("employee-attendance-update");
     }
   }
 
