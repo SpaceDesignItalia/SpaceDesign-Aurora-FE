@@ -512,29 +512,40 @@ export default function EmployeeAttendanceTable({
                                       </DropdownItem>
                                     )
                                   )}
-                                  <DropdownItem
-                                    onPress={() =>
-                                      handleStatusChange(
-                                        "delete",
-                                        formatInTimeZone(
-                                          date,
-                                          "Europe/Rome",
-                                          "yyyy-MM-dd"
+                                  {employees
+                                    .find(
+                                      (emp) =>
+                                        emp.id === loggedStafferId.toString()
+                                    )
+                                    ?.attendances.some(
+                                      (att) =>
+                                        new Date(att.date).toDateString() ===
+                                        date.toDateString()
+                                    ) && (
+                                    <DropdownItem
+                                      onPress={() =>
+                                        handleStatusChange(
+                                          "delete",
+                                          formatInTimeZone(
+                                            date,
+                                            "Europe/Rome",
+                                            "yyyy-MM-dd"
+                                          )
                                         )
-                                      )
-                                    }
-                                    key="delete"
-                                    startContent={
-                                      <div className="w-6 h-6 bg-zinc-300 rounded-lg flex items-center justify-center">
-                                        <Icon
-                                          icon="material-symbols-light:delete-outline"
-                                          className="w-4 h-4 text-gray-700"
-                                        />
-                                      </div>
-                                    }
-                                  >
-                                    Elimina
-                                  </DropdownItem>
+                                      }
+                                      key="delete"
+                                      startContent={
+                                        <div className="w-6 h-6 bg-zinc-300 rounded-lg flex items-center justify-center">
+                                          <Icon
+                                            icon="material-symbols-light:delete-outline"
+                                            className="w-4 h-4 text-gray-700"
+                                          />
+                                        </div>
+                                      }
+                                    >
+                                      Elimina
+                                    </DropdownItem>
+                                  )}
                                 </>
                               </DropdownMenu>
                             </Dropdown>
