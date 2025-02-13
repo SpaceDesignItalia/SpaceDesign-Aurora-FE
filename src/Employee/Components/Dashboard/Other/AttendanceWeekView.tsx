@@ -102,9 +102,6 @@ export default function AttendanceWeekView({
                 }"`
               : "Nuova presenza aggiunta con successo!",
         });
-        setTimeout(() => {
-          setStatusAlert((prev) => ({ ...prev, show: false }));
-        }, 5000);
       }
     } catch (error) {
       setStatusAlert({
@@ -112,9 +109,6 @@ export default function AttendanceWeekView({
         type: "error",
         message: "Errore durante l'aggiornamento della presenza",
       });
-      setTimeout(() => {
-        setStatusAlert((prev) => ({ ...prev, show: false }));
-      }, 5000);
     }
   };
 

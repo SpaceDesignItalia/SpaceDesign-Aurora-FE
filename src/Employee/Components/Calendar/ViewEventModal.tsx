@@ -35,7 +35,6 @@ import ConfirmDeleteEventModal from "./ConfirmDeleteEventModal";
 import { io, Socket } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
 import { Spinner } from "@heroui/react";
-import StatusAlert from "../Layout/StatusAlert";
 const socket: Socket = io(API_WEBSOCKET_URL);
 
 dayjs.extend(utc);
@@ -72,6 +71,13 @@ interface ViewEventModalProps {
   isOpen: boolean;
   eventId: number;
   isClosed: () => void;
+  setStatusAlert: React.Dispatch<
+    React.SetStateAction<{
+      show: boolean;
+      message: string;
+      type: "success" | "error";
+    }>
+  >;
 }
 
 interface EventTag {
@@ -112,6 +118,7 @@ export default function ViewEventModal({
   isOpen,
   eventId,
   isClosed,
+  setStatusAlert,
 }: ViewEventModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingData, setIsAddingData] = useState(false);
@@ -127,15 +134,6 @@ export default function ViewEventModal({
     EventTagName: "",
   });
   const [loading, setLoading] = useState<boolean>(false);
-  const [statusAlert, setStatusAlert] = useState<{
-    show: boolean;
-    message: string;
-    type: "success" | "error";
-  }>({
-    show: false,
-    message: "",
-    type: "success",
-  });
 
   async function fetchTags() {
     const res = await axios.get("/Calendar/GET/GetEventTags");
@@ -284,9 +282,7 @@ export default function ViewEventModal({
           type: "success",
           message: "Evento modificato con successo!",
         });
-        setTimeout(() => {
-          handleCloseModal();
-        }, 1000);
+        handleCloseModal();
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -334,9 +330,7 @@ export default function ViewEventModal({
   function handleCloseModal() {
     setIsEditing(false);
     setNewEvent(INITIAL_EVENT_DATA);
-    if (!statusAlert.show) {
-      isClosed();
-    }
+    isClosed();
   }
 
   function handleExportEvent() {
@@ -488,18 +482,6 @@ END:VCALENDAR`;
 
   return (
     <>
-      <StatusAlert
-        AlertData={{
-          isOpen: statusAlert.show,
-          onClose: () => {
-            setStatusAlert((prev) => ({ ...prev, show: false }));
-            isClosed();
-          },
-          alertTitle: "",
-          alertDescription: statusAlert.message,
-          alertColor: statusAlert.type === "success" ? "green" : "red",
-        }}
-      />
       <Modal
         isOpen={isOpen}
         onOpenChange={handleCloseModal}

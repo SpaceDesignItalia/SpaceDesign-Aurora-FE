@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EmployeeAttendanceTable from "../../Components/Employee/Tables/EmployeeAttendanceTable";
 import { Breadcrumbs, BreadcrumbItem, Spinner } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
-import { useEffect } from "react";
 import EmployeeAttendanceStats from "../../Components/Employee/Other/EmployeeAttendanceStats";
 import axios from "axios";
 import { API_URL_IMG } from "../../../API/API";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
+import StatusAlert from "../../Components/Layout/StatusAlert";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -28,6 +28,15 @@ export default function EmployeeAttendance() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loggedStafferId, setLoggedStafferId] = useState<number>(0);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [statusAlert, setStatusAlert] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
   useEffect(() => {
     async function fetchData() {
@@ -87,6 +96,15 @@ export default function EmployeeAttendance() {
 
   return (
     <div className="py-10 m-0 lg:ml-72">
+      <StatusAlert
+        AlertData={{
+          isOpen: statusAlert.show,
+          onClose: () => setStatusAlert((prev) => ({ ...prev, show: false })),
+          alertTitle: "",
+          alertDescription: statusAlert.message,
+          alertColor: statusAlert.type === "success" ? "green" : "red",
+        }}
+      />
       <header>
         <div className="flex flex-col gap-3 px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
@@ -122,7 +140,8 @@ export default function EmployeeAttendance() {
                 selectedDate={selectedDate}
                 onDateChange={setSelectedDate}
                 loggedStafferId={loggedStafferId}
-              />{" "}
+                setStatusAlert={setStatusAlert}
+              />
             </div>
           </>
         )}

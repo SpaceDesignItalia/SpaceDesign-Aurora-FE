@@ -34,6 +34,11 @@ interface Props {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   loggedStafferId: number;
+  setStatusAlert: (alert: {
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }) => void;
 }
 
 export default function EmployeeAttendanceTable({
@@ -41,6 +46,7 @@ export default function EmployeeAttendanceTable({
   selectedDate,
   onDateChange,
   loggedStafferId,
+  setStatusAlert,
 }: Props) {
   if (!employees) return null;
 
@@ -91,8 +97,7 @@ export default function EmployeeAttendanceTable({
       isFirst: boolean;
       startDate: Date;
     },
-    key: string,
-    employee: Employee
+    key: string
   ) => {
     return (
       <div
@@ -104,18 +109,6 @@ export default function EmployeeAttendanceTable({
           width: `${streak.count * 64 - 8}px`,
           margin: "0 4px",
         }}
-        onClick={() =>
-          console.log(
-            "Employee ID:",
-            employee.id,
-            "Date:",
-            formatInTimeZone(
-              streak.startDate,
-              "Europe/Rome",
-              "yyyy-MM-dd HH:mm:ss"
-            )
-          )
-        }
         title={statusConfig[streak.status as keyof typeof statusConfig].label}
       >
         <Icon
@@ -145,7 +138,7 @@ export default function EmployeeAttendanceTable({
       if (!attendance) {
         if (currentStreak) {
           attendanceBlocks.push(
-            renderStreak(currentStreak, `${date.toISOString()}-end`, employee)
+            renderStreak(currentStreak, `${date.toISOString()}-end`)
           );
           currentStreak = null;
         }
@@ -175,7 +168,7 @@ export default function EmployeeAttendanceTable({
         currentStreak.count++;
       } else {
         attendanceBlocks.push(
-          renderStreak(currentStreak, `${date.toISOString()}-streak`, employee)
+          renderStreak(currentStreak, `${date.toISOString()}-streak`)
         );
         currentStreak = {
           status: attendance.status,
@@ -187,7 +180,7 @@ export default function EmployeeAttendanceTable({
 
       if (index === days.length - 1 && currentStreak) {
         attendanceBlocks.push(
-          renderStreak(currentStreak, `${date.toISOString()}-last`, employee)
+          renderStreak(currentStreak, `${date.toISOString()}-last`)
         );
       }
     });
@@ -203,16 +196,106 @@ export default function EmployeeAttendanceTable({
   };
 
   async function handleStatusChange(status: string, date: string) {
-    console.log(status, loggedStafferId, date);
-    const res = await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
-      Status: status,
-      StafferId: loggedStafferId,
-      Date: date,
+    try {
+      // Trova la presenza attuale per questa data
+      const currentAttendance = employees
+        .find((emp) => emp.id === loggedStafferId.toString())
+        ?.attendances.find(
+          (att) =>
+            new Date(att.date).toDateString() === new Date(date).toDateString()
+        );
+
+      const res = await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
+        Status: status,
+        StafferId: loggedStafferId,
+        Date: date,
+      });
+
+      if (res.status === 200) {
+        socket.emit("employee-attendance-update");
+
+        // Se lo stato selezionato è uguale a quello corrente, non fare nulla
+        if (currentAttendance && currentAttendance.status === status) {
+          return;
+        }
+
+        setStatusAlert({
+          show: true,
+          type: "success",
+          message:
+            status === "delete"
+              ? "Presenza eliminata con successo!"
+              : currentAttendance
+              ? `Presenza modificata da "${
+                  statusConfig[
+                    currentAttendance.status as keyof typeof statusConfig
+                  ].label
+                }" a "${
+                  statusConfig[status as keyof typeof statusConfig].label
+                }"`
+              : "Nuova presenza aggiunta con successo!",
+        });
+      }
+    } catch (error) {
+      setStatusAlert({
+        show: true,
+        type: "error",
+        message: "Errore durante l'aggiornamento della presenza",
+      });
+    }
+  }
+
+  const exportCSV = () => {
+    const days = getDaysInMonth();
+    const headers = ["Nome", ...days.map((date) => format(date, "dd"))];
+
+    const statusInitials = {
+      present: "P",
+      absent: "A",
+      vacation: "F",
+      smartworking: "S",
+    };
+
+    const csvData = employees.map((employee) => {
+      const row = [employee.name];
+      days.forEach((date) => {
+        const attendance = employee.attendances.find(
+          (a) => new Date(a.date).toDateString() === date.toDateString()
+        );
+        row.push(
+          attendance
+            ? statusInitials[attendance.status as keyof typeof statusInitials]
+            : ""
+        );
+      });
+      return row;
     });
 
-    if (res.status === 200) {
-      socket.emit("employee-attendance-update");
-    }
+    const csvContent = [headers, ...csvData]
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `presenze_${format(selectedDate, "MMMM_yyyy", { locale: it })}.csv`
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  async function sendAttendance() {
+    await axios.post("/Staffer/POST/SendAttendanceReport", {
+      month:
+        format(selectedDate, "MMMM", { locale: it }).charAt(0).toUpperCase() +
+        format(selectedDate, "MMMM", { locale: it }).slice(1),
+      year: format(selectedDate, "yyyy"),
+    });
   }
 
   return (
@@ -228,18 +311,32 @@ export default function EmployeeAttendanceTable({
           >
             <Icon icon="solar:alt-arrow-left-linear" fontSize={24} />
             <span className="text-sm">
-              {format(subMonths(selectedDate, 1), "MMMM", { locale: it })}
+              {format(subMonths(selectedDate, 1), "MMMM", { locale: it })
+                .charAt(0)
+                .toUpperCase() +
+                format(subMonths(selectedDate, 1), "MMMM", {
+                  locale: it,
+                }).slice(1)}
             </span>
           </button>
           <span className="px-4 py-2 bg-gray-50 rounded-lg font-medium">
-            {format(selectedDate, "MMMM yyyy", { locale: it })}
+            {format(selectedDate, "MMMM", { locale: it })
+              .charAt(0)
+              .toUpperCase() +
+              format(selectedDate, "MMMM", { locale: it }).slice(1)}{" "}
+            {format(selectedDate, "yyyy")}
           </span>
           <button
             onClick={() => onDateChange(addMonths(selectedDate, 1))}
             className="p-2 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-1 text-gray-600"
           >
             <span className="text-sm">
-              {format(addMonths(selectedDate, 1), "MMMM", { locale: it })}
+              {format(addMonths(selectedDate, 1), "MMMM", { locale: it })
+                .charAt(0)
+                .toUpperCase() +
+                format(addMonths(selectedDate, 1), "MMMM", {
+                  locale: it,
+                }).slice(1)}
             </span>
             <Icon icon="solar:alt-arrow-right-linear" fontSize={24} />
           </button>
@@ -277,11 +374,13 @@ export default function EmployeeAttendanceTable({
           </div>
 
           {/* Area scrollabile */}
-          <div
-            className="overflow-x-auto scrollbar-hide"
-            style={{ width: "calc(100% - 16rem)" }}
-          >
-            <div className="min-w-max">
+          <div className="flex-1 overflow-x-auto">
+            <div
+              style={{
+                minWidth: `${getDaysInMonth().length * 64}px`,
+                width: "100%",
+              }}
+            >
               {/* Header giorni */}
               <div className="h-12 bg-gray-50 border-b border-gray-200 flex divide-x divide-gray-200">
                 {getDaysInMonth().map((date) => {
@@ -401,21 +500,50 @@ export default function EmployeeAttendanceTable({
         </div>
       </div>
 
-      <div className="mt-6 px-2 py-4 flex gap-6 text-sm text-gray-600 border-t border-gray-100 pt-4">
-        {Object.entries(statusConfig).map(([key, config]) => (
-          <div key={key} className="flex items-center gap-2">
-            <div
-              className={`w-10 h-10 ${config.color} rounded-xl border-2 flex items-center justify-center`}
-            >
-              <Icon
-                icon={config.icon}
-                className="w-6 h-6 text-gray-700"
-                style={{ strokeWidth: 1.5 }}
-              />
-            </div>
-            <span className="font-medium">{config.label}</span>
+      <div className="mt-6 px-2 py-4 flex items-center justify-between border-t border-gray-100 pt-4">
+        <div className="flex items-center gap-4">
+          <Button
+            color="primary"
+            variant="ghost"
+            radius="full"
+            startContent={
+              <Icon icon="solar:file-download-linear" fontSize={24} />
+            }
+            onClick={exportCSV}
+          >
+            Esporta Tabella
+          </Button>
+          <div className="flex gap-6 text-sm text-gray-600">
+            {Object.entries(statusConfig).map(([key, config]) => (
+              <div key={key} className="flex items-center gap-2">
+                <div
+                  className={`w-10 h-10 ${config.color} rounded-xl border-2 flex items-center justify-center`}
+                >
+                  <Icon
+                    icon={config.icon}
+                    className="w-6 h-6 text-gray-700"
+                    style={{ strokeWidth: 1.5 }}
+                  />
+                </div>
+                <span className="font-medium">{config.label}</span>
+              </div>
+            ))}
           </div>
-        ))}
+
+          <Button
+            color="primary"
+            variant="ghost"
+            radius="full"
+            startContent={<Icon icon="solar:letter-linear" fontSize={24} />}
+            onPress={sendAttendance}
+          >
+            Invia presenze di{" "}
+            {format(selectedDate, "MMMM", { locale: it })
+              .charAt(0)
+              .toUpperCase() +
+              format(selectedDate, "MMMM", { locale: it }).slice(1)}
+          </Button>
+        </div>
       </div>
     </div>
   );

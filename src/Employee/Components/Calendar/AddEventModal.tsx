@@ -28,7 +28,6 @@ import { io, Socket } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import StatusAlert from "../Layout/StatusAlert";
 
 const socket: Socket = io(API_WEBSOCKET_URL);
 
@@ -67,6 +66,13 @@ interface AddEventModalProps {
   isOpen: boolean;
   isClosed: () => void;
   prefilledData: any | null;
+  setStatusAlert: React.Dispatch<
+    React.SetStateAction<{
+      show: boolean;
+      message: string;
+      type: "success" | "error";
+    }>
+  >;
 }
 
 const INITIAL_EVENT_DATA: CalendarEvent = {
@@ -90,6 +96,7 @@ export default function AddEventModal({
   isOpen,
   isClosed,
   prefilledData,
+  setStatusAlert,
 }: AddEventModalProps) {
   const navigate = useNavigate();
   const { Action } = useParams();
@@ -103,15 +110,6 @@ export default function AddEventModal({
     EventTagName: "",
   });
   const [loading, setLoading] = useState<boolean>(false);
-  const [statusAlert, setStatusAlert] = useState<{
-    show: boolean;
-    message: string;
-    type: "success" | "error";
-  }>({
-    show: false,
-    message: "",
-    type: "success",
-  });
 
   async function fetchTags() {
     const res = await axios.get("/Calendar/GET/GetEventTags");
@@ -277,15 +275,6 @@ export default function AddEventModal({
 
   return (
     <>
-      <StatusAlert
-        AlertData={{
-          isOpen: statusAlert.show,
-          onClose: () => setStatusAlert({ ...statusAlert, show: false }),
-          alertTitle: "",
-          alertDescription: statusAlert.message,
-          alertColor: statusAlert.type === "success" ? "green" : "red",
-        }}
-      />
       <Modal
         isOpen={isOpen}
         onOpenChange={handleCloseModal}
