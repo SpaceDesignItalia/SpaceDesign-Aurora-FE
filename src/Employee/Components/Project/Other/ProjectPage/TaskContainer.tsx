@@ -452,17 +452,19 @@ export default function TaskContainer({
                         />
                       </>
                     )}
-                    <Button
-                      variant={isMultiSelect ? "solid" : "bordered"}
-                      color="primary"
-                      radius="full"
-                      className="w-fit"
-                      onPress={toggleMultiSelect}
-                    >
-                      {isMultiSelect
-                        ? "Disabilita Selezione Multipla"
-                        : "Abilita Selezione Multipla"}
-                    </Button>
+                    {activeTab === "Attive" && (
+                      <Button
+                        variant={isMultiSelect ? "solid" : "bordered"}
+                        color="primary"
+                        radius="full"
+                        className="w-fit"
+                        onPress={toggleMultiSelect}
+                      >
+                        {isMultiSelect
+                          ? "Disabilita Selezione Multipla"
+                          : "Abilita Selezione Multipla"}
+                      </Button>
+                    )}
                   </div>
                   <Button
                     color="primary"
