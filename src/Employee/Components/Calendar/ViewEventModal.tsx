@@ -73,13 +73,6 @@ interface ViewEventModalProps {
   isOpen: boolean;
   eventId: number;
   isClosed: () => void;
-  setStatusAlert: React.Dispatch<
-    React.SetStateAction<{
-      show: boolean;
-      message: string;
-      type: "success" | "error";
-    }>
-  >;
 }
 
 interface EventTag {
@@ -129,7 +122,6 @@ export default function ViewEventModal({
   isOpen,
   eventId,
   isClosed,
-  setStatusAlert,
 }: ViewEventModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingData, setIsAddingData] = useState(false);
@@ -274,67 +266,35 @@ export default function ViewEventModal({
   }
 
   async function handleUpdateEvent() {
-    try {
-      setIsAddingData(true);
-      const res = await axios.put("/Calendar/UPDATE/UpdateEvent", {
-        Partecipants: Partecipants,
-        Tag: newTag.EventTagId,
-        EventData: {
-          ...newEvent,
-          EventStartDate: new Date(newEvent.EventStartDate.toString()),
-          EventEndDate: new Date(newEvent.EventEndDate.toString()),
-        },
-      });
+    setIsAddingData(true);
+    console.log(newEvent);
+    const res = await axios.put("/Calendar/UPDATE/UpdateEvent", {
+      Partecipants: Partecipants,
+      Tag: newTag.EventTagId,
+      EventData: {
+        ...newEvent,
+        EventStartDate: new Date(newEvent.EventStartDate.toString()),
+        EventEndDate: new Date(newEvent.EventEndDate.toString()),
+      },
+    });
 
-      if (res.status === 200) {
-        socket.emit("calendar-update");
-        setStatusAlert({
-          show: true,
-          type: "success",
-          message: "Evento modificato con successo!",
-        });
-        handleCloseModal();
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        setStatusAlert({
-          show: true,
-          type: "error",
-          message: "Errore durante la modifica dell'evento",
-        });
-      }
-    } finally {
+    if (res.status === 200) {
+      socket.emit("calendar-update");
       setIsAddingData(false);
+      handleCloseModal();
     }
   }
 
   async function DeleteEvent() {
-    try {
-      const res = await axios.delete(`/Calendar/DELETE/DeleteEvent`, {
-        params: {
-          EventId: eventId,
-        },
-      });
+    const res = await axios.delete(`/Calendar/DELETE/DeleteEvent`, {
+      params: {
+        EventId: eventId,
+      },
+    });
 
-      if (res.status === 200) {
-        socket.emit("calendar-update");
-        setStatusAlert({
-          show: true,
-          type: "success",
-          message: "Evento eliminato con successo!",
-        });
-        setTimeout(() => {
-          handleCloseModal();
-        }, 1000);
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        setStatusAlert({
-          show: true,
-          type: "error",
-          message: "Errore durante l'eliminazione dell'evento",
-        });
-      }
+    if (res.status === 200) {
+      socket.emit("calendar-update");
+      handleCloseModal();
     }
   }
 
@@ -414,37 +374,15 @@ END:VCALENDAR`;
   }
 
   async function DeleteFile(index: number) {
-    try {
-      const res = await axios.delete(`/Calendar/DELETE/DeleteEventAttachment`, {
-        params: {
-          EventAttachmentId: newEvent.EventAttachments[index].EventAttachmentId,
-          EventAttachmentUrl:
-            newEvent.EventAttachments[index].EventAttachmentUrl,
-        },
-      });
+    const res = await axios.delete(`/Calendar/DELETE/DeleteEventAttachment`, {
+      params: {
+        EventAttachmentId: newEvent.EventAttachments[index].EventAttachmentId,
+        EventAttachmentUrl: newEvent.EventAttachments[index].EventAttachmentUrl,
+      },
+    });
 
-      if (res.status === 200) {
-        socket.emit("event-update", eventId);
-        setStatusAlert({
-          show: true,
-          type: "success",
-          message: "File eliminato con successo!",
-        });
-        setTimeout(() => {
-          setStatusAlert((prev) => ({ ...prev, show: false }));
-        }, 5000);
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        setStatusAlert({
-          show: true,
-          type: "error",
-          message: "Errore durante l'eliminazione del file",
-        });
-        setTimeout(() => {
-          setStatusAlert((prev) => ({ ...prev, show: false }));
-        }, 5000);
-      }
+    if (res.status === 200) {
+      socket.emit("event-update", eventId);
     }
   }
 
@@ -462,23 +400,9 @@ END:VCALENDAR`;
         ...newEvent,
         EventDescription: refinedText.data,
       });
-      setStatusAlert({
-        show: true,
-        type: "success",
-        message: "Testo rielaborato con successo!",
-      });
-      setTimeout(() => {
-        setStatusAlert((prev) => ({ ...prev, show: false }));
-      }, 5000);
     } catch (error) {
-      setStatusAlert({
-        show: true,
-        type: "error",
-        message: "Errore durante la rielaborazione del testo",
-      });
-      setTimeout(() => {
-        setStatusAlert((prev) => ({ ...prev, show: false }));
-      }, 5000);
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
     } finally {
       setLoading(false);
     }

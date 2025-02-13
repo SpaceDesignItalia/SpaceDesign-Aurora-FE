@@ -50,16 +50,6 @@ interface CalendarEvent {
   EventPartecipants: EventPartecipant[];
 }
 
-interface CalendarProps {
-  setStatusAlert: React.Dispatch<
-    React.SetStateAction<{
-      show: boolean;
-      message: string;
-      type: "success" | "error";
-    }>
-  >;
-}
-
 const formatDate = (date: Date, view: string): string => {
   const options: Intl.DateTimeFormatOptions = {
     month: "long",
@@ -89,7 +79,7 @@ const formatDate = (date: Date, view: string): string => {
     .replace(/^\w/, (c) => c.toUpperCase());
 };
 
-export default function Calendar({ setStatusAlert }: CalendarProps) {
+export default function Calendar() {
   const navigate = useNavigate();
   const { Action, EventId, EventPartecipantEmail } = useParams();
   const [isOpen, setIsOpen] = useState(false);
@@ -385,7 +375,6 @@ END:VEVENT`;
         isClosed={() => {
           setIsOpen(false);
         }}
-        setStatusAlert={setStatusAlert}
       />
       <AddEventModal
         isOpen={isOpen}
@@ -394,7 +383,6 @@ END:VEVENT`;
           setIsOpen(false);
         }}
         prefilledData={prefilledEventData}
-        setStatusAlert={setStatusAlert}
       />
 
       <input

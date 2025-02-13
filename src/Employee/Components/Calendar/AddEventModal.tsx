@@ -67,13 +67,6 @@ interface AddEventModalProps {
   isOpen: boolean;
   isClosed: () => void;
   prefilledData: any | null;
-  setStatusAlert: React.Dispatch<
-    React.SetStateAction<{
-      show: boolean;
-      message: string;
-      type: "success" | "error";
-    }>
-  >;
 }
 
 const colors = [
@@ -108,7 +101,6 @@ export default function AddEventModal({
   isOpen,
   isClosed,
   prefilledData,
-  setStatusAlert,
 }: AddEventModalProps) {
   const navigate = useNavigate();
   const { Action } = useParams();
@@ -229,14 +221,6 @@ export default function AddEventModal({
       });
       if (res.status === 200) {
         socket.emit("calendar-update");
-        setStatusAlert({
-          show: true,
-          type: "success",
-          message: "Evento aggiunto con successo!",
-        });
-        setTimeout(() => {
-          handleCloseModal();
-        }, 2000);
         setPartecipants([]);
         setNewTag({
           EventTagId: 0,
@@ -245,14 +229,10 @@ export default function AddEventModal({
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        setStatusAlert({
-          show: true,
-          type: "error",
-          message: "Errore durante l'aggiunta dell'evento",
-        });
       }
     } finally {
       setIsAddingData(false);
+      handleCloseModal();
     }
   }
 
