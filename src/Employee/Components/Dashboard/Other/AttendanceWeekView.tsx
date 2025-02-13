@@ -1,3 +1,4 @@
+import { useRef, useLayoutEffect } from "react";
 import { Icon } from "@iconify/react";
 import {
   Button,
@@ -110,6 +111,25 @@ export default function AttendanceWeekView({
       });
     }
   };
+
+  // Al primo render, cerchiamo di centrare il giorno "today"
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const todayEl = todayRef.current;
+    if (!container || !todayEl) return;
+
+    // Ricaviamo i bounding rect
+    const containerRect = container.getBoundingClientRect();
+    const todayRect = todayEl.getBoundingClientRect();
+
+    // Calcoliamo il delta fra il centro dell'elemento "oggi" e il centro del container
+    const diff =
+      (todayRect.left + todayRect.width / 2) -
+      (containerRect.left + containerRect.width / 2);
+
+    // Muoviamo lo scroll di tale differenza
+    container.scrollLeft += diff;
+  }, []);
 
   return (
     <>

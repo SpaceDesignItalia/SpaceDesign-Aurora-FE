@@ -70,14 +70,25 @@ export default function SidebarLayout() {
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
 
   useEffect(() => {
-    axios
-      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
-      .then((res) => {
-        setUserData(res.data);
-        socket.emit("join-notifications", res.data.StafferId);
-      });
-    fetchProjects();
-  }, [currentUrl, notificationUpdate]);
+    const fetchData = async () => {
+      try {
+        const sessionData = await axios.get("/Authentication/GET/GetSessionData");
+        setUserData(sessionData.data);
+        socket.emit("join-notifications", sessionData.data.StafferId);
+        await fetchProjects(); // Assicurati che questa funzione non aggiorni uno stato che causa un nuovo rendering
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchData();
+
+    // Cleanup function
+    return () => {
+      socket.off("delete-notifications");
+      socket.off("newNotification");
+    };
+  }, []); // Assicurati che le dipendenze siano corrette
 
   useEffect(() => {
     getAllSidebarItems().then((items) => {
@@ -87,18 +98,18 @@ export default function SidebarLayout() {
 
   useEffect(() => {
     socket.on("delete-notifications", () => {
-      setNotificationUpdate(!notificationUpdate);
+      setNotificationUpdate((prev) => !prev);
     });
 
     socket.on("newNotification", () => {
-      setNotificationUpdate(!notificationUpdate);
+      setNotificationUpdate((prev) => !prev);
     });
 
     return () => {
       socket.off("delete-notifications");
       socket.off("newNotification");
     };
-  }, [notificationUpdate]);
+  }, []);
 
   function fetchProjects() {
     axios
@@ -147,7 +158,11 @@ export default function SidebarLayout() {
         ...projects.map((project) => ({
           key: `project-${project.ProjectId}`,
           href: `/projects/${project.UniqueCode}`,
-          title: project.ProjectName,
+          title: (
+            <span title={project.ProjectName} className="truncate max-w-[120px] block">
+              {project.ProjectName}
+            </span>
+          ),
           startContent: (
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-white text-xs font-medium border-gray-400 text-gray-400 group-hover:border-gray-700 group-hover:text-gray-700">
               {project.ProjectName.charAt(0)}
@@ -155,7 +170,7 @@ export default function SidebarLayout() {
           ),
           endContent:
             project.NotificationCount > 0 ? (
-              <span className="ml-auto inline-flex items-center justify-center h-fit px-[4px] py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full self-center">
+              <span className="ml-auto px-2 py-0.5 text-xs font-bold text-white bg-primary rounded-full">
                 {project.NotificationCount}
               </span>
             ) : undefined,
