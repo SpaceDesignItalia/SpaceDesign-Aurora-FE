@@ -7,6 +7,7 @@ import {
   DropdownTrigger,
   Skeleton,
 } from "@heroui/react";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import { Fragment, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
@@ -22,7 +23,6 @@ import {
   salesItems,
 } from "./Sidebar/sidebarItems";
 import Sidebar, { type SidebarItem } from "./Sidebar/SidebarOption";
-import { Icon } from "@iconify/react";
 
 interface Notification {
   NotificationId: number;
@@ -72,7 +72,9 @@ export default function SidebarLayout() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const sessionData = await axios.get("/Authentication/GET/GetSessionData");
+        const sessionData = await axios.get(
+          "/Authentication/GET/GetSessionData"
+        );
         setUserData(sessionData.data);
         socket.emit("join-notifications", sessionData.data.StafferId);
         await fetchProjects(); // Assicurati che questa funzione non aggiorni uno stato che causa un nuovo rendering
@@ -111,8 +113,8 @@ export default function SidebarLayout() {
     };
   }, []);
 
-  function fetchProjects() {
-    axios
+  async function fetchProjects() {
+    await axios
       .get("/Project/GET/GetProjectInTeam", {
         withCredentials: true,
       })
@@ -159,7 +161,10 @@ export default function SidebarLayout() {
           key: `project-${project.ProjectId}`,
           href: `/projects/${project.UniqueCode}`,
           title: (
-            <span title={project.ProjectName} className="truncate max-w-[120px] block">
+            <span
+              title={project.ProjectName}
+              className="truncate max-w-[120px] block"
+            >
               {project.ProjectName}
             </span>
           ),
@@ -189,7 +194,7 @@ export default function SidebarLayout() {
               }
             : item
         ),
-      }));
+      })) as SidebarItem[];
 
       baseItems.push(...projectItems);
     }
@@ -381,16 +386,14 @@ export default function SidebarLayout() {
                 <Dropdown placement="bottom-start" radius="sm">
                   <DropdownTrigger>
                     <div className="-m-1.5 flex items-center p-1.5 cursor-pointer">
-                      <Avatar
-                        className="h-8 w-8 rounded-full bg-gray-100"
-                        src={
-                          userData.StafferImageUrl &&
-                          API_URL_IMG +
-                            "/profileIcons/" +
-                            userData.StafferImageUrl
-                        }
-                        alt=""
-                      />
+                      {userData.StafferImageUrl && (
+                        <Avatar
+                          src={`${API_URL_IMG}/profileIcons/${userData.StafferImageUrl}`}
+                          alt={
+                            userData.StafferName + " " + userData.StafferSurname
+                          }
+                        />
+                      )}
                       <span className="hidden lg:flex lg:items-center">
                         <span
                           className="ml-4 text-sm font-medium leading-6 text-gray-900"

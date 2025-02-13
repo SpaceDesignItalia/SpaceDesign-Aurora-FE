@@ -246,13 +246,15 @@ export default function SettingsModel() {
         <form className="md:col-span-2">
           <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
             <div className="col-span-full flex items-center gap-x-8">
-              <Avatar
-                name={userData.StafferName}
-                radius="sm"
-                isBordered
-                src={profileImagePreview}
-                className="h-24 w-24"
-              />
+              {userData.StafferImageUrl && (
+                <Avatar
+                  name={userData.StafferName}
+                  radius="sm"
+                  isBordered
+                  src={profileImagePreview}
+                  className="h-24 w-24"
+                />
+              )}
               <div>
                 <input
                   type="file"
