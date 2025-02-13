@@ -9,4 +9,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    outDir: "dist", // Assicurati che l'output vada nella cartella dist
+    emptyOutDir: true, // Pulisce la cartella dist prima della build
+    minify: true, // Abilita la minificazione
+  },
 });
