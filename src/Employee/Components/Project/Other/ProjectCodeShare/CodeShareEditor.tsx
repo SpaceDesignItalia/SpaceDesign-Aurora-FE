@@ -53,9 +53,13 @@ export default function CodeShareContainer({
   const [isLoading, setIsLoading] = useState(false);
   const [, setOnlineCodeShareUsers] = useState<Employee[]>([]);
 
-  setFontSize(14);
-  setTheme("light");
-  setLanguage("javascript");
+  // Move these state updates into a useEffect
+  useEffect(() => {
+    setFontSize(14);
+    setTheme("light");
+    setLanguage("javascript");
+  }, []); // Empty dependency array to run only once
+
   async function handleEditorChange(value: string | undefined) {
     setCode(value || "");
 
