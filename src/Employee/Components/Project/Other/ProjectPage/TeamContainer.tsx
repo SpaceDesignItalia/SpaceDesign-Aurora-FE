@@ -9,6 +9,13 @@ import { API_WEBSOCKET_URL } from "../../../../../API/API";
 import { usePermissions } from "../../../Layout/PermissionProvider";
 import ChatMessage from "../ProjectTeamChat/ChatMessage";
 
+// Funzione di utilità per troncare i nomi lunghi.
+// Restituisce sempre una stringa.
+function truncateName(name: string, maxLength: number): string {
+  if (!name) return "";
+  return name.length <= maxLength ? name : name.slice(0, maxLength) + "...";
+}
+
 const socket = io(API_WEBSOCKET_URL);
 
 interface Message {
@@ -88,6 +95,7 @@ export default function TeamContainer({
   }, [projectData.ProjectName]);
 
   useEffect(() => {
+    // Scorri automaticamente la chat verso il basso
     if (scrollRef.current) {
       (scrollRef.current as HTMLElement).scrollTop = (
         scrollRef.current as HTMLElement
@@ -96,6 +104,7 @@ export default function TeamContainer({
   }, [scrollRef]);
 
   useEffect(() => {
+    // Carica i membri del team
     axios
       .get("Project/GET/GetProjetTeamMembers", {
         params: { ProjectId: projectData.ProjectId },
@@ -104,19 +113,22 @@ export default function TeamContainer({
         setMembers(res.data);
       });
 
+    // Ascolta eventuali nuovi messaggi da socket
     socket.on("message-update", () => {
       handleOpenChat(Number.parseInt(localStorage.getItem("conversationId")!));
     });
 
+    // Controlla permessi
     async function checkPermissions() {
       setAdminPermission({
         editTeamMember: await hasPermission("MANAGE_TEAM_MEMBER"),
       });
     }
     checkPermissions();
-  }, [projectData.ProjectId]);
+  }, [projectData.ProjectId, hasPermission]);
 
   useEffect(() => {
+    // Ottieni ID staffer loggato e conversation iniziale
     axios
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then(async (res) => {
@@ -141,10 +153,9 @@ export default function TeamContainer({
   }, []);
 
   useEffect(() => {
-    // Controlla lo stato iniziale della stanza video
+    // Controlla la stanza video
     socket.emit("check-video-room", projectData.ProjectId);
 
-    // Ascolta gli aggiornamenti dei partecipanti
     const handleVideoParticipantsUpdate = (data: {
       projectId: number;
       count: number;
@@ -152,14 +163,12 @@ export default function TeamContainer({
     }) => {
       if (data.projectId === projectData.ProjectId) {
         setVideoParticipantsCount(data.count);
-        // Controlla se l'utente corrente è nella chiamata
         setIsInVideoCall(data.participants.includes(loggedStafferId));
       }
     };
 
     socket.on("video-participants-update", handleVideoParticipantsUpdate);
 
-    // Ricevi lo stato iniziale delle stanze video
     socket.on(
       "initial-video-participants",
       (rooms: Record<string, Set<number>>) => {
@@ -174,12 +183,11 @@ export default function TeamContainer({
     return () => {
       socket.off("video-participants-update", handleVideoParticipantsUpdate);
       socket.off("initial-video-participants");
-      // Se l'utente è in chiamata quando il componente viene smontato, fallo uscire
       if (isInVideoCall) {
         socket.emit("leave-video-room", projectData.ProjectId, loggedStafferId);
       }
     };
-  }, [projectData.ProjectId, loggedStafferId]);
+  }, [projectData.ProjectId, loggedStafferId, isInVideoCall]);
 
   const handleLeaveVideoCall = useCallback(() => {
     socket.emit("leave-video-room", projectData.ProjectId, loggedStafferId);
@@ -205,26 +213,20 @@ export default function TeamContainer({
     };
   }, [isInVideoCall, handleLeaveVideoCall]);
 
-  // Aggiungi un effetto per il ping di presenza quando si è in chiamata
+  // Ping di presenza quando si è in chiamata
   useEffect(() => {
     let pingInterval: NodeJS.Timeout | null = null;
 
     if (isInVideoCall) {
-      // Invia un ping immediato
-      socket.emit(
-        "ping-video-presence",
-        projectData.ProjectId,
-        loggedStafferId
-      );
+      socket.emit("ping-video-presence", projectData.ProjectId, loggedStafferId);
 
-      // Imposta l'intervallo di ping
       pingInterval = setInterval(() => {
         socket.emit(
           "ping-video-presence",
           projectData.ProjectId,
           loggedStafferId
         );
-      }, 3000); // Ping ogni 3 secondi
+      }, 3000);
     }
 
     return () => {
@@ -238,11 +240,9 @@ export default function TeamContainer({
     const url = getJitsiUrl();
     const videoWindow = window.open(url, "_blank", "noopener,noreferrer");
 
-    // Aggiungi l'utente alla stanza video
     socket.emit("join-video-room", projectData.ProjectId, loggedStafferId);
     setIsInVideoCall(true);
 
-    // Gestisci la chiusura della finestra
     const checkWindow = setInterval(() => {
       if (videoWindow?.closed) {
         clearInterval(checkWindow);
@@ -301,6 +301,7 @@ export default function TeamContainer({
     }
   }
 
+  // Raggruppa i messaggi per data
   const groupMessagesByDate = (messages: Message[]) => {
     const groupedMessages: { [key: string]: Message[] } = {};
 
@@ -326,6 +327,7 @@ export default function TeamContainer({
         ProjectId={modalData.ProjectId}
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-20">
+        {/* Colonna CHAT */}
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
           <div className="flex flex-col gap-5">
             <h1 className="font-bold">Team chat</h1>
@@ -350,19 +352,17 @@ export default function TeamContainer({
                         </span>
                       </div>
                     </div>
-                    {groupedMessages[date].map((message) => {
-                      return (
-                        <ChatMessage
-                          message={message}
-                          type={
-                            message.StafferSenderId !== loggedStafferId
-                              ? "recive"
-                              : "send"
-                          }
-                          key={message.MessageId}
-                        />
-                      );
-                    })}
+                    {groupedMessages[date].map((message) => (
+                      <ChatMessage
+                        key={message.MessageId}
+                        message={message}
+                        type={
+                          message.StafferSenderId !== loggedStafferId
+                            ? "recive"
+                            : "send"
+                        }
+                      />
+                    ))}
                   </div>
                 ))}
               </div>
@@ -390,6 +390,7 @@ export default function TeamContainer({
           </div>
         </div>
 
+        {/* Colonna Membri */}
         <div className="flex flex-col gap-5 border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6 h-fit">
           <div className="flex flex-row justify-between items-center">
             <h1 className="font-semibold">Membri del progetto</h1>
@@ -453,27 +454,21 @@ export default function TeamContainer({
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {members.map((member) =>
-              member.StafferId !== projectData.ProjectManagerId ? (
-                <div key={member.StafferId}>
-                  <ProjectTeamMemberCard
-                    MemberData={member}
-                    ProjectId={projectData.ProjectId}
-                    onlineUser={onlineUsers}
-                    type={editTeam}
-                  />
-                </div>
-              ) : (
-                <div key={member.StafferId}>
-                  <ProjectTeamMemberCard
-                    MemberData={member}
-                    ProjectId={projectData.ProjectId}
-                    onlineUser={onlineUsers}
-                    type={false}
-                  />
-                </div>
-              )
-            )}
+            {members.map((member) => (
+              <div key={member.StafferId}>
+                <ProjectTeamMemberCard
+                  // Passiamo il nome come stringa troncata,
+                  // così non c'è errore di tipo.
+                  MemberData={{
+                    ...member,
+                    StafferFullName: truncateName(member.StafferFullName, 22),
+                  }}
+                  ProjectId={projectData.ProjectId}
+                  onlineUser={onlineUsers}
+                  type={editTeam}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>

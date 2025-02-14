@@ -1,82 +1,76 @@
-// @ts-nocheck
-import {
-  Avatar,
-  AvatarGroup,
-  Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownItem,
-  DropdownMenu,
-  DateValue,
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Chip,
-  Tooltip,
-  Checkbox,
-} from "@heroui/react";
+"use client"
 
-import { API_URL_IMG } from "../../../../../API/API";
-import dayjs from "dayjs";
-import { useDateFormatter } from "@react-aria/i18n";
-import { useState } from "react";
-import { parseDate } from "@internationalized/date";
-import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
-import ViewTaskModal from "./ViewTaskModal";
-import axios from "axios";
-import { useEffect } from "react";
-import { usePermissions } from "../../../Layout/PermissionProvider";
-import ReactQuill from "react-quill";
-import { Icon } from "@iconify/react";
+import { Avatar, AvatarGroup, Card, CardHeader, CardBody, CardFooter, Chip, Tooltip } from "@heroui/react"
+import { Icon } from "@iconify/react"
+import dayjs from "dayjs"
+import { parseDate, type DateValue } from "@internationalized/date"
+import { useDateFormatter } from "@react-aria/i18n"
+import axios from "axios"
+import { useEffect, useState, useCallback } from "react"
+import type React from "react"
 
+// Import modali
+import ViewTaskModal from "./ViewTaskModal"
+import { API_URL_IMG } from "../../../../../API/API"
+import { usePermissions } from "../../../Layout/PermissionProvider"
+
+// Interfacce
 interface Tag {
-  ProjectTaskTagId: number;
-  ProjectTaskTagName: string;
+  ProjectTaskTagId: number
+  ProjectTaskTagName: string
 }
 
 interface Member {
-  StafferId: number;
-  StafferFullName: string;
-  StafferEmail: string;
-  StafferImageUrl: string;
+  StafferId: number
+  StafferFullName: string
+  StafferEmail: string
+  StafferImageUrl: string
 }
 
 interface Comment {
-  ProjectTaskCommentId: number;
-  StafferId: number;
-  StafferFullName: string;
-  StafferImageUrl: string;
-  Text: string;
-  CommentDate: Date;
+  ProjectTaskCommentId: number
+  StafferId: number
+  StafferFullName: string
+  StafferImageUrl: string
+  Text: string
+  CommentDate: Date
 }
 
 interface Task {
-  ProjectTaskId: number;
-  ProjectTaskName: string;
-  ProjectTaskDescription?: string;
-  ProjectTaskExpiration?: DateValue | null;
-  ProjectTaskCreation: DateValue;
-  ProjectTaskStatusId: number;
-  ProjectTaskTags: Tag[];
-  ProjectTaskMembers: Member[];
-  ProjectTaskComments: Comment[];
-  ProjectId: number;
+  ProjectTaskId: number
+  ProjectTaskName: string
+  ProjectTaskDescription?: string
+  ProjectTaskExpiration?: DateValue | null
+  ProjectTaskCreation: DateValue
+  ProjectTaskStatusId: number
+  ProjectTaskTags: Tag[]
+  ProjectTaskMembers: Member[]
+  ProjectTaskComments: Comment[]
+  ProjectId: number
 }
 
 interface ModalData {
-  Task: Task;
-  open: boolean;
+  Task: Task
+  open: boolean
 }
 
-interface ModalDeleteData {
-  Task: Task;
-  open: boolean;
-}
-
-interface ModalEditData {
-  Task: Task;
-  open: boolean;
+interface TaskCardProps {
+  provided: any
+  task: Task
+  setUpdate: (value: boolean) => void
+  update: boolean
+  socket: any
+  projectId: number
+  updateTaskStatus: (taskId: number, statusId: number) => void
+  columnCount: number
+  isMultiSelect: boolean
+  handleTaskSelect: (taskId: number, isDragging?: boolean) => void
+  isSelected: boolean
+  isDragging?: boolean
+  isCtrlPressed?: boolean
+  // Nuovi props per il multi-drag layer
+  draggingTaskId?: number | null
+  onDragStyleUpdate?: (style: any) => void
 }
 
 export default function TaskCard({
@@ -91,25 +85,18 @@ export default function TaskCard({
   isMultiSelect,
   handleTaskSelect,
   isSelected,
-}: {
-  provided: any;
-  task: Task;
-  setUpdate: any;
-  update: any;
-  socket: any;
-  projectId: number;
-  updateTaskStatus: any;
-  columnCount: number;
-  isMultiSelect: boolean;
-  handleTaskSelect: (taskId: number) => void;
-  isSelected: boolean;
-}) {
+  isDragging,
+  isCtrlPressed,
+  draggingTaskId,
+  onDragStyleUpdate,
+}: TaskCardProps) {
+  // Modale di view
   const [modalData, setModalData] = useState<ModalData>({
     Task: {
       ProjectTaskId: 0,
       ProjectTaskName: "",
-      ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
-      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+      ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
+      ProjectTaskCreation: parseDate(dayjs().format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
@@ -117,92 +104,130 @@ export default function TaskCard({
       ProjectId: 0,
     },
     open: false,
-  });
+  })
+
+  // Permessi
   const [permissions, setPermissions] = useState({
     editActivity: false,
     removeActivity: false,
-  });
+  })
 
-  const { hasPermission } = usePermissions();
+  const { hasPermission } = usePermissions()
+
   useEffect(() => {
     async function fetchPermissions() {
-      const editActivity = await hasPermission("EDIT_ACTIVITY");
-      const removeActivity = await hasPermission("REMOVE_ACTIVITY");
-
+      const editActivity = await hasPermission("EDIT_ACTIVITY")
+      const removeActivity = await hasPermission("REMOVE_ACTIVITY")
       setPermissions({
-        ...permissions,
-        editActivity: editActivity,
-        removeActivity: removeActivity,
-      });
+        editActivity,
+        removeActivity,
+      })
     }
-    fetchPermissions();
-  }, [hasPermission]);
+    fetchPermissions()
+  }, [hasPermission])
 
-  const [commentsCount, setCommentsCount] = useState(0);
+  // Conteggio commenti
+  const [commentsCount, setCommentsCount] = useState(0)
+
   useEffect(() => {
     const fetchComments = async () => {
-      const commentResponse = await axios.get<Comment[]>(
-        "/Project/GET/GetCommentsByTaskId",
-        {
-          params: { ProjectTaskId: task.ProjectTaskId },
-        }
-      );
-      setCommentsCount(commentResponse.data.length);
-    };
-    fetchComments();
-  }, [update]);
+      const commentResponse = await axios.get<Comment[]>("/Project/GET/GetCommentsByTaskId", {
+        params: { ProjectTaskId: task.ProjectTaskId },
+      })
+      setCommentsCount(commentResponse.data.length)
+    }
+    fetchComments()
+  }, [task.ProjectTaskId])
 
-  const [checkboxCount, setCheckboxCount] = useState(0);
+  // Conteggio checklist
+  const [checkboxCount, setCheckboxCount] = useState(0)
+
   useEffect(() => {
     const fetchCheckboxes = async () => {
-      const checkboxResponse = await axios.get(
-        "/Project/GET/GetChecklistsByTaskId",
-        {
-          params: { TaskId: task.ProjectTaskId },
-        }
-      );
-      setCheckboxCount(checkboxResponse.data.length);
-    };
-    fetchCheckboxes();
-  }, [update]);
+      const checkboxResponse = await axios.get("/Project/GET/GetChecklistsByTaskId", {
+        params: { TaskId: task.ProjectTaskId },
+      })
+      setCheckboxCount(checkboxResponse.data.length)
+    }
+    fetchCheckboxes()
+  }, [task.ProjectTaskId])
 
-  const [fileCount, setFileCount] = useState(0);
+  // Conteggio file
+  const [fileCount, setFileCount] = useState(0)
+
   useEffect(() => {
     const fetchFiles = async () => {
       try {
         const response = await axios.get("/Project/GET/GetFilesByTaskId", {
           params: { TaskId: task.ProjectTaskId },
-        });
-        setFileCount(response.data.length);
+        })
+        setFileCount(response.data.length)
       } catch (err) {
-        console.error("Error fetching files:", err);
+        console.error("Error fetching files:", err)
       }
-    };
-    fetchFiles();
-  }, [update]);
-
-  function formatDate(date: DateValue) {
-    if (!date) return "Nessuna scadenza";
-    let formatter = useDateFormatter({ dateStyle: "full" });
-    return dayjs(formatter.format(new Date(date.toString()))).format(
-      "DD MMM YYYY"
-    );
-  }
-
-  function hasValidDescription(content) {
-    let splittedContent: string[] = content.split(">");
-    let valid = false;
-    splittedContent.forEach((element) => {
-      if (!element.startsWith("<") && element.length > 0) {
-        valid = true;
-      }
-    });
-    if (valid) {
-      return true;
-    } else {
-      return false;
     }
+    fetchFiles()
+  }, [task.ProjectTaskId])
+
+  const formatter = useDateFormatter({ dateStyle: "full" })
+
+  // Formatta data scadenza
+  function formatDate(date: DateValue) {
+    if (!date) return "Nessuna scadenza"
+    return dayjs(formatter.format(new Date(date.toString()))).format("DD MMM YYYY")
   }
+
+  // Verifica descrizione "valida"
+  function hasValidDescription(content: string) {
+    if (!content) return false
+    const splittedContent: string[] = content.split(">")
+    let valid = false
+    splittedContent.forEach((element) => {
+      if (!element.startsWith("<") && element.trim().length > 0) {
+        valid = true
+      }
+    })
+    return valid
+  }
+
+  // Gestione click sulla card
+  const handleCardClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isDragging) {
+        e.preventDefault()
+        e.stopPropagation()
+        return
+      }
+
+      if (e.ctrlKey || isCtrlPressed || isMultiSelect) {
+        e.preventDefault()
+        e.stopPropagation()
+        handleTaskSelect(task.ProjectTaskId, false)
+      } else {
+        setModalData({ Task: task, open: true })
+      }
+    },
+    [isDragging, isCtrlPressed, isMultiSelect, handleTaskSelect, task],
+  )
+
+  useEffect(() => {
+    const handleTaskNews = () => {
+      setUpdate((prev) => !prev)
+    }
+
+    socket.on("task-news", handleTaskNews)
+
+    return () => {
+      socket.off("task-news", handleTaskNews)
+    }
+  }, [socket, setUpdate])
+
+  // Se questo è l’elemento attivo e si sta trascinando, aggiorno lo stile per il multi-drag layer
+  useEffect(() => {
+    if (isDragging && draggingTaskId === task.ProjectTaskId && provided.draggableProps.style && onDragStyleUpdate) {
+      onDragStyleUpdate(provided.draggableProps.style)
+    }
+  }, [isDragging, provided.draggableProps.style, draggingTaskId, task.ProjectTaskId, onDragStyleUpdate])
 
   return (
     <>
@@ -217,31 +242,22 @@ export default function TaskCard({
       />
 
       <div
-        onClick={(e) =>
-          isMultiSelect
-            ? handleTaskSelect(task.ProjectTaskId)
-            : setModalData({
-                ...modalData,
-                open: true,
-                Task: task,
-              })
-        }
         ref={provided.innerRef}
         {...provided.draggableProps}
         {...provided.dragHandleProps}
-        className="w-full cursor-pointer relative"
+        onClick={handleCardClick}
+        className={`w-full cursor-grab active:cursor-grabbing ${isDragging ? "z-50" : ""}`}
       >
         <Card
-          className={`w-full hover:shadow-lg transition-shadow duration-200 ${
-            isSelected ? "border-3 border-primary" : ""
-          }`}
+          className={`w-full hover:shadow-lg transition-all duration-200 ${
+            isSelected ? "border-2 border-primary bg-primary-50" : ""
+          } ${isDragging ? "opacity-70 shadow-xl scale-105" : ""}`}
           radius="sm"
         >
           <CardHeader className="flex justify-between items-start gap-3 px-4 pt-4 pb-2">
             <div className="flex flex-col gap-2 flex-grow">
-              <h1 className="text-lg font-semibold text-default-700 line-clamp-2">
-                {task.ProjectTaskName}
-              </h1>
+              <h1 className="text-lg font-semibold text-default-700 line-clamp-2">{task.ProjectTaskName}</h1>
+
               {task.ProjectTaskTags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {task.ProjectTaskTags.map((tag) => (
@@ -261,13 +277,10 @@ export default function TaskCard({
 
           <CardBody className="px-4 py-3">
             <div className="flex flex-wrap gap-3 text-default-500">
-              {hasValidDescription(task.ProjectTaskDescription) && (
+              {hasValidDescription(task.ProjectTaskDescription ?? "") && (
                 <Tooltip content="Descrizione presente" showArrow>
                   <div className="flex items-center gap-1.5 text-sm bg-default-100 px-2.5 py-1 rounded-lg">
-                    <Icon
-                      icon="fluent:text-description-16-filled"
-                      fontSize={22}
-                    />
+                    <Icon icon="fluent:text-description-16-filled" fontSize={22} />
                     <span>Descrizione</span>
                   </div>
                 </Tooltip>
@@ -302,23 +315,11 @@ export default function TaskCard({
           <CardFooter className="flex flex-col gap-3 px-4 pb-4 pt-2 border-t border-default-200">
             <div className="flex justify-between items-center w-full">
               {task.ProjectTaskMembers.length > 0 && (
-                <AvatarGroup
-                  isBordered
-                  max={3}
-                  size="sm"
-                  className="justify-start ml-3"
-                >
+                <AvatarGroup isBordered max={3} size="sm" className="justify-start ml-3">
                   {task.ProjectTaskMembers.map((member) => (
-                    <Tooltip
-                      key={member.StafferId}
-                      content={member.StafferFullName}
-                      showArrow
-                    >
+                    <Tooltip key={member.StafferId} content={member.StafferFullName} showArrow>
                       <Avatar
-                        src={
-                          member.StafferImageUrl &&
-                          `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
-                        }
+                        src={member.StafferImageUrl && `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`}
                         alt={member.StafferFullName}
                       />
                     </Tooltip>
@@ -336,5 +337,5 @@ export default function TaskCard({
         </Card>
       </div>
     </>
-  );
+  )
 }
