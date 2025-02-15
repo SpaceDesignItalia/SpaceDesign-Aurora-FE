@@ -55,7 +55,6 @@ interface ModalData {
 }
 
 interface TaskCardProps {
-  provided: any
   task: Task
   setUpdate: (value: boolean) => void
   update: boolean
@@ -68,13 +67,10 @@ interface TaskCardProps {
   isSelected: boolean
   isDragging?: boolean
   isCtrlPressed?: boolean
-  // Nuovi props per il multi-drag layer
-  draggingTaskId?: number | null
-  onDragStyleUpdate?: (style: any) => void
+  isPartOfGroup: boolean
 }
 
 export default function TaskCard({
-  provided,
   task,
   setUpdate,
   update,
@@ -87,8 +83,7 @@ export default function TaskCard({
   isSelected,
   isDragging,
   isCtrlPressed,
-  draggingTaskId,
-  onDragStyleUpdate,
+  isPartOfGroup,
 }: TaskCardProps) {
   // Modale di view
   const [modalData, setModalData] = useState<ModalData>({
@@ -222,13 +217,6 @@ export default function TaskCard({
     }
   }, [socket, setUpdate])
 
-  // Se questo è l’elemento attivo e si sta trascinando, aggiorno lo stile per il multi-drag layer
-  useEffect(() => {
-    if (isDragging && draggingTaskId === task.ProjectTaskId && provided.draggableProps.style && onDragStyleUpdate) {
-      onDragStyleUpdate(provided.draggableProps.style)
-    }
-  }, [isDragging, provided.draggableProps.style, draggingTaskId, task.ProjectTaskId, onDragStyleUpdate])
-
   return (
     <>
       <ViewTaskModal
@@ -242,22 +230,27 @@ export default function TaskCard({
       />
 
       <div
-        ref={provided.innerRef}
-        {...provided.draggableProps}
-        {...provided.dragHandleProps}
         onClick={handleCardClick}
-        className={`w-full cursor-grab active:cursor-grabbing ${isDragging ? "z-50" : ""}`}
+        className={`w-full cursor-grab active:cursor-grabbing transition-all duration-200 ${
+          isDragging ? "z-50 opacity-70 shadow-xl scale-105" : ""
+        }`}
       >
         <Card
-          className={`w-full hover:shadow-lg transition-all duration-200 ${
-            isSelected ? "border-2 border-primary bg-primary-50" : ""
-          } ${isDragging ? "opacity-70 shadow-xl scale-105" : ""}`}
+          className={`w-full hover:shadow-lg ${
+            isSelected
+              ? "border-2 border-primary bg-primary-50"
+              : isPartOfGroup
+                ? "border-2 border-primary-200 bg-primary-100"
+                : ""
+          }`}
           radius="sm"
         >
           <CardHeader className="flex justify-between items-start gap-3 px-4 pt-4 pb-2">
             <div className="flex flex-col gap-2 flex-grow">
-              <h1 className="text-lg font-semibold text-default-700 line-clamp-2">{task.ProjectTaskName}</h1>
-
+              <div className="flex items-center justify-between">
+                <h1 className="text-lg font-semibold text-default-700 line-clamp-2">{task.ProjectTaskName}</h1>
+                {isSelected && <Icon icon="mdi:check-circle" className="text-primary" fontSize={24} />}
+              </div>
               {task.ProjectTaskTags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {task.ProjectTaskTags.map((tag) => (
@@ -339,3 +332,4 @@ export default function TaskCard({
     </>
   )
 }
+

@@ -1,8 +1,10 @@
+"use client"
+
 import { Button, Chip, cn, type DateValue, Select, SelectItem, Spinner, Tab, Tabs } from "@heroui/react"
 import { Icon } from "@iconify/react"
 import axios from "axios"
 import { useEffect, useMemo, useState } from "react"
-import { DragDropContext, Draggable, Droppable, DropResult, DragStart } from "react-beautiful-dnd"
+import { DragDropContext, Draggable, Droppable, type DropResult, type DragStart } from "react-beautiful-dnd"
 import { useParams } from "react-router-dom"
 import { io } from "socket.io-client"
 import { API_WEBSOCKET_URL } from "../../../../../API/API"
@@ -54,19 +56,6 @@ interface Task {
   ProjectTaskChecklists: any[]
 }
 
-interface Checkbox {
-  CheckboxId: number
-  Text: string
-  IsSelected: boolean
-  ChecklistId: number
-}
-
-interface Checklist {
-  ChecklistId: number
-  Text: string
-  Checkboxes: Checkbox[]
-}
-
 interface Project {
   ProjectId: number
   ProjectName: string
@@ -88,10 +77,8 @@ interface ModalAddData {
   open: boolean
 }
 
-// Oggetto per il rendering: può essere un singolo task o un gruppo
-type RenderItem =
-  | { type: "single"; task: Task }
-  | { type: "group"; tasks: Task[] }
+// Può essere un singolo task o un gruppo di task
+type RenderItem = { type: "single"; task: Task } | { type: "group"; tasks: Task[] }
 
 export default function TaskContainer({ projectData }: { projectData: Project }) {
   const { Action } = useParams<{ Action: string }>()
@@ -106,39 +93,43 @@ export default function TaskContainer({ projectData }: { projectData: Project })
     open: false,
   })
 
+  // Gestione route "add-task"
   useEffect(() => {
     if (Action === "add-task") {
-      setModalAddData({ ...modalAddData, open: true })
+      setModalAddData((prev) => ({ ...prev, open: true }))
     }
-  }, [Action, modalAddData])
+  }, [Action])
 
+  // Gestione permessi
   const [permissions, setPermissions] = useState({ assignActivity: false })
   const { hasPermission } = usePermissions()
 
   useEffect(() => {
     async function fetchPermission() {
       const permission = await hasPermission("ASSIGN_ACTIVITY")
-      setPermissions({ ...permissions, assignActivity: permission })
+      setPermissions((prev) => ({ ...prev, assignActivity: permission }))
     }
     fetchPermission()
   }, [hasPermission])
 
+  // Fetch colonne e task
   useEffect(() => {
     fetchData()
   }, [update, projectData.ProjectId])
 
   async function fetchData() {
     try {
+      setIsLoading(true)
       const statusResponse = await axios.get<Status[]>("/Project/GET/GetTaskStatuses")
       setColumns(statusResponse.data)
 
       const res = await axios.get<Task[]>("/Project/GET/GetTasksByProjectId", {
         params: { ProjectId: projectId },
       })
-
       if (res.status === 200) {
         const fetchedTasks = res.data
         socket.emit("join", projectId)
+
         const updatedTasks = await Promise.all(
           fetchedTasks.map(async (task: Task) => {
             const tagsResponse = await axios.get<Tag[]>("/Project/GET/GetTagsByTaskId", {
@@ -159,29 +150,26 @@ export default function TaskContainer({ projectData }: { projectData: Project })
           }),
         )
         setTasks(updatedTasks)
-        setIsLoading(false)
       }
+      setIsLoading(false)
     } catch (error) {
       console.error(error)
       setIsLoading(false)
     }
   }
 
-  // Stati per la gestione della multi-selezione
+  // ------------------- MULTI-SELEZIONE -------------------
   const [isMultiSelect, setIsMultiSelect] = useState(false)
   const [selectedTasks, setSelectedTasks] = useState<number[]>([])
   const [isCtrlPressed, setIsCtrlPressed] = useState(false)
 
+  // Gestisco il CTRL premuto
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Control") {
-        setIsCtrlPressed(true)
-      }
+      if (e.key === "Control") setIsCtrlPressed(true)
     }
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "Control") {
-        setIsCtrlPressed(false)
-      }
+      if (e.key === "Control") setIsCtrlPressed(false)
     }
     window.addEventListener("keydown", handleKeyDown)
     window.addEventListener("keyup", handleKeyUp)
@@ -191,28 +179,26 @@ export default function TaskContainer({ projectData }: { projectData: Project })
     }
   }, [])
 
-  // Se non si preme Ctrl e non ci sono task selezionati, disabilita automaticamente la modalità multi-select
+  // Se non premo più Ctrl e non ho task selezionati, disabilita multiSelect
   useEffect(() => {
     if (!isCtrlPressed && selectedTasks.length === 0) {
       setIsMultiSelect(false)
     }
   }, [isCtrlPressed, selectedTasks])
 
-  const handleTaskSelect = (taskId: number, isDragging = false) => {
+  // Selezione/deselezione di un task
+  function handleTaskSelect(taskId: number, isDragging = false) {
     if (isDragging) return
     if (isCtrlPressed) {
       setIsMultiSelect(true)
-      setSelectedTasks((prev) =>
-        prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId],
-      )
+      setSelectedTasks((prev) => (prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]))
     } else if (isMultiSelect) {
-      setSelectedTasks((prev) =>
-        prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId],
-      )
+      setSelectedTasks((prev) => (prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]))
     }
   }
 
-  const changeSelectedTasksStatus = (newStatusId: number) => {
+  // Cambio di stato di tutti i task selezionati
+  function changeSelectedTasksStatus(newStatusId: number) {
     selectedTasks.forEach((taskId) => {
       updateTaskStatus(taskId, newStatusId)
     })
@@ -220,15 +206,15 @@ export default function TaskContainer({ projectData }: { projectData: Project })
     setIsMultiSelect(false)
   }
 
-  const toggleMultiSelect = () => {
-    if (isMultiSelect) {
-      setSelectedTasks([])
-    }
+  // Toggle multi select
+  function toggleMultiSelect() {
+    if (isMultiSelect) setSelectedTasks([])
     setIsMultiSelect(!isMultiSelect)
   }
 
-  const deleteSelectedTasks = (tasks: Task[]) => {
-    tasks.forEach((task) => {
+  // Cancellazione di tutti i task selezionati
+  function deleteSelectedTasks(taskList: Task[]) {
+    taskList.forEach((task) => {
       axios
         .delete("/Project/DELETE/DeleteTask", {
           params: { ProjectTaskId: task.ProjectTaskId },
@@ -245,7 +231,8 @@ export default function TaskContainer({ projectData }: { projectData: Project })
     })
   }
 
-  const updateTaskStatus = (taskId: number, statusId: number) => {
+  // Update singolo
+  function updateTaskStatus(taskId: number, statusId: number) {
     axios
       .post("/Project/POST/UpdateTaskStatus", {
         ProjectTaskId: taskId,
@@ -260,73 +247,55 @@ export default function TaskContainer({ projectData }: { projectData: Project })
       })
   }
 
-  // Costruzione dell'array di rendering per una colonna.
-  // Se in una sequenza consecutiva appaiono task selezionati, li raggruppa in un oggetto "group".
-  const renderListForColumn = (tasksInColumn: Task[]): RenderItem[] => {
-    if (!isMultiSelect) return tasksInColumn.map((task) => ({ type: "single", task }))
-    const list: RenderItem[] = []
-    let i = 0
-    while (i < tasksInColumn.length) {
-      if (selectedTasks.includes(tasksInColumn[i].ProjectTaskId)) {
-        const group: Task[] = []
-        while (i < tasksInColumn.length && selectedTasks.includes(tasksInColumn[i].ProjectTaskId)) {
-          group.push(tasksInColumn[i])
-          i++
-        }
-        list.push({ type: "group", tasks: group })
-      } else {
-        list.push({ type: "single", task: tasksInColumn[i] })
-        i++
-      }
+  // ---------------- RAGGRUPPAMENTO PER COLONNA ----------------
+  // Se ho multiSelect, i task selezionati e consecutivi vengono "gruppati" in un unico Draggable
+  function renderListForColumn(tasksInColumn: Task[]): RenderItem[] {
+    if (!isMultiSelect) {
+      return tasksInColumn.map((task) => ({ type: "single", task }))
     }
-    return list
+
+    // Return single tasks with selection state, no grouping needed
+    return tasksInColumn.map((task) => ({
+      type: "single",
+      task,
+    }))
   }
 
-  // Componente che rende un unico draggable per un gruppo di task
-  const GroupDraggable = ({ groupTasks, index }: { groupTasks: Task[]; index: number }) => (
-    <Draggable draggableId={`group-${groupTasks[0].ProjectTaskId}`} index={index}>
+  // ---------------- GROUP DRAGGABLE CON OFFSET ----------------
+  const SelectedTaskCard = ({ task, index }: { task: Task; index: number }) => (
+    <Draggable draggableId={task.ProjectTaskId.toString()} index={index}>
       {(provided, snapshot) => {
-        // Se si sta trascinando, applichiamo uno stile per simulare uno stack
-        const groupStyle = snapshot.isDragging
-          ? {
-              ...provided.draggableProps.style,
-              boxShadow: "0 5px 10px rgba(0,0,0,0.2)",
-              transform: provided.draggableProps.style.transform,
-            }
-          : provided.draggableProps.style
+        const style = {
+          ...provided.draggableProps.style,
+          transition: "transform 0.25s ease, box-shadow 0.25s ease",
+          boxShadow: snapshot.isDragging ? "0 10px 20px rgba(0,0,0,0.4)" : "none",
+          zIndex: snapshot.isDragging ? 999 : "auto",
+        }
+
         return (
-          <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} style={groupStyle}>
-            <div style={{ border: "1px solid blue", padding: "8px", background: "lightblue" }}>
-              <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-                Gruppo di {groupTasks.length} task
-              </div>
-              {groupTasks.map((task, i) => (
-                <div key={task.ProjectTaskId} style={{ marginTop: i > 0 ? "-8px" : "0" }}>
-                  <TaskCard
-                    provided={{ innerRef: null, draggableProps: { style: {} } } as any}
-                    task={task}
-                    setUpdate={setUpdate}
-                    update={update}
-                    socket={socket}
-                    projectId={projectId}
-                    updateTaskStatus={updateTaskStatus}
-                    columnCount={columns.length}
-                    isMultiSelect={isMultiSelect}
-                    handleTaskSelect={handleTaskSelect}
-                    isSelected={true}
-                    isCtrlPressed={isCtrlPressed}
-                    isDragging={false}
-                  />
-                </div>
-              ))}
-            </div>
+          <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} style={style}>
+            <TaskCard
+              task={task}
+              setUpdate={setUpdate}
+              update={update}
+              socket={socket}
+              projectId={projectId}
+              updateTaskStatus={updateTaskStatus}
+              columnCount={columns.length}
+              isMultiSelect={true}
+              handleTaskSelect={handleTaskSelect}
+              isSelected={selectedTasks.includes(task.ProjectTaskId)}
+              isCtrlPressed={isCtrlPressed}
+              isDragging={snapshot.isDragging}
+              isPartOfGroup={selectedTasks.includes(task.ProjectTaskId)}
+            />
           </div>
         )
       }}
     </Draggable>
   )
 
-  // Calcolo dei task per colonna
+  // ---------------- CALCOLO PER COLONNA, ARCHIVIATE, ETC. ----------------
   const columnTasks = useMemo(() => {
     const tasksByColumn: { [key: number]: Task[] } = {}
     columns.forEach((column) => {
@@ -337,26 +306,11 @@ export default function TaskContainer({ projectData }: { projectData: Project })
     return tasksByColumn
   }, [tasks, columns])
 
-  const countTasksByColumn = () => {
-    const taskCounts: { [key: number]: number } = {}
-    columns.forEach((column) => {
-      taskCounts[column.ProjectTaskStatusId] = columnTasks[column.ProjectTaskStatusId]?.length || 0
-    })
-    return taskCounts
-  }
-
-  const taskCounts = countTasksByColumn()
   const [activeTab, setActiveTab] = useState("Attive")
 
   const tabs = [
-    {
-      title: "Attive",
-      icon: <Icon icon="solar:check-read-linear" fontSize={22} />,
-    },
-    {
-      title: "Archiviate",
-      icon: <Icon icon="solar:archive-linear" fontSize={22} />,
-    },
+    { title: "Attive", icon: <Icon icon="solar:check-read-linear" fontSize={22} /> },
+    { title: "Archiviate", icon: <Icon icon="solar:archive-linear" fontSize={22} /> },
   ]
 
   const [archivedTasks, setArchivedTasks] = useState<Task[]>([])
@@ -369,6 +323,7 @@ export default function TaskContainer({ projectData }: { projectData: Project })
       if (res.status === 200) {
         const fetchedTasks = res.data
         socket.emit("join", projectId)
+
         const updatedTasks = await Promise.all(
           fetchedTasks.map(async (task: Task) => {
             const tagsResponse = await axios.get<Tag[]>("/Project/GET/GetTagsByTaskId", {
@@ -394,56 +349,89 @@ export default function TaskContainer({ projectData }: { projectData: Project })
     fetchArchivedTasks()
   }, [projectId, update])
 
-  // Stati per la gestione del draggable (singolo o gruppo)
+  // ---------------- LOGICA DRAG & DROP PRINCIPALE ----------------
   const [draggingTaskId, setDraggingTaskId] = useState<number | null>(null)
 
-  // Gestione degli eventi drag per task singoli o gruppi
-  const onDragStart = (start: DragStart) => {
+  function onDragStart(start: DragStart) {
     const idStr = start.draggableId
     if (!idStr.startsWith("group-")) {
+      // Se sto iniziando a trascinare un singolo task
       const id = Number.parseInt(idStr, 10)
-      if (isMultiSelect && !selectedTasks.includes(id)) {
-        setSelectedTasks((prev) => [...prev, id])
-      }
       setDraggingTaskId(id)
-    } else {
-      setDraggingTaskId(null)
+
+      if (isMultiSelect && selectedTasks.includes(id)) {
+        const element = document.getElementById(`task-${id}`)
+        if (element) {
+          const ghostElement = element.cloneNode(true) as HTMLElement
+          ghostElement.style.transform = "none"
+          ghostElement.style.width = `${element.offsetWidth}px`
+
+          const stackContainer = document.createElement("div")
+          stackContainer.appendChild(ghostElement)
+
+          selectedTasks.forEach((taskId, index) => {
+            if (taskId !== id) {
+              const indicator = document.createElement("div")
+              indicator.style.height = "10px"
+              indicator.style.width = `${element.offsetWidth}px`
+              indicator.style.backgroundColor = "lightblue"
+              indicator.style.marginTop = "-5px"
+              indicator.style.borderRadius = "5px"
+              stackContainer.appendChild(indicator)
+            }
+          })
+
+          stackContainer.style.position = "fixed"
+          stackContainer.style.pointerEvents = "none"
+          stackContainer.style.zIndex = "1000"
+          stackContainer.style.opacity = "0.8"
+
+          document.body.appendChild(stackContainer)
+          start.source.index = selectedTasks.indexOf(id)
+          start.dataTransfer.setDragImage(stackContainer, 0, 0)
+
+          setTimeout(() => {
+            document.body.removeChild(stackContainer)
+          }, 0)
+        }
+      }
     }
   }
 
-  const onDragEnd = async (result: DropResult) => {
+  async function onDragEnd(result: DropResult) {
     setIsLoading(true)
     setDraggingTaskId(null)
+
     const { source, destination, draggableId } = result
     if (!destination) {
       setIsLoading(false)
       return
     }
+
+    const newStatusId = Number.parseInt(destination.droppableId, 10)
+    const taskId = Number.parseInt(draggableId.replace("group-", ""), 10)
+
+    let tasksToMove: number[]
+
     if (draggableId.startsWith("group-")) {
-      // Aggiorna lo status per tutti i task selezionati nel gruppo
-      const newStatusId = Number.parseInt(destination.droppableId, 10)
-      const updatePromises = selectedTasks.map((taskId) =>
-        axios.post("/Project/POST/UpdateTaskStatus", {
-          ProjectTaskId: taskId,
-          ProjectTaskStatusId: newStatusId,
-        }),
-      )
-      await Promise.all(updatePromises)
-      socket.emit("task-news", projectId)
-      setUpdate((prev) => !prev)
+      tasksToMove = selectedTasks
+    } else if (selectedTasks.includes(taskId)) {
+      tasksToMove = selectedTasks
     } else {
-      // Logica per un draggable singolo
-      const newTasks = Array.from(tasks)
-      const [reorderedItem] = newTasks.splice(source.index, 1)
-      reorderedItem.ProjectTaskStatusId = Number.parseInt(destination.droppableId, 10)
-      newTasks.splice(destination.index, 0, reorderedItem)
-      await axios.post("/Project/POST/UpdateTaskStatus", {
-        ProjectTaskId: reorderedItem.ProjectTaskId,
-        ProjectTaskStatusId: reorderedItem.ProjectTaskStatusId,
-      })
-      socket.emit("task-news", projectId)
-      setUpdate((prev) => !prev)
+      tasksToMove = [taskId]
     }
+
+    const updatePromises = tasksToMove.map((id) =>
+      axios.post("/Project/POST/UpdateTaskStatus", {
+        ProjectTaskId: id,
+        ProjectTaskStatusId: newStatusId,
+      }),
+    )
+
+    await Promise.all(updatePromises)
+
+    socket.emit("task-news", projectId)
+    setUpdate((prev) => !prev)
     setSelectedTasks([])
     setIsMultiSelect(false)
     setIsLoading(false)
@@ -454,16 +442,18 @@ export default function TaskContainer({ projectData }: { projectData: Project })
       <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
         <AddTaskModal
           isOpen={modalAddData.open}
-          isClosed={() => setModalAddData({ ...modalAddData, open: false })}
+          isClosed={() => setModalAddData((prev) => ({ ...prev, open: false }))}
           fetchData={fetchData}
           ProjectId={projectId}
         />
+
         {isLoading ? (
           <div className="w-full flex justify-center items-center h-screen">
             <Spinner />
           </div>
         ) : (
           <>
+            {/* Barra in alto con tabs e pulsanti */}
             <div className="w-full flex justify-between">
               <Tabs
                 aria-label="Options"
@@ -486,6 +476,7 @@ export default function TaskContainer({ projectData }: { projectData: Project })
                   />
                 ))}
               </Tabs>
+
               {permissions.assignActivity && (
                 <div className="flex justify-end flex-row gap-2 w-full">
                   <div className="flex justify-end items-center w-full gap-2">
@@ -526,7 +517,7 @@ export default function TaskContainer({ projectData }: { projectData: Project })
                   <Button
                     color="primary"
                     radius="full"
-                    onPress={() => setModalAddData({ ...modalAddData, open: true })}
+                    onPress={() => setModalAddData((prev) => ({ ...prev, open: true }))}
                     startContent={<Icon icon="mynaui:plus-solid" fontSize={22} />}
                     className="hidden sm:flex w-44"
                   >
@@ -535,7 +526,7 @@ export default function TaskContainer({ projectData }: { projectData: Project })
                   <Button
                     color="primary"
                     radius="full"
-                    onPress={() => setModalAddData({ ...modalAddData, open: true })}
+                    onPress={() => setModalAddData((prev) => ({ ...prev, open: true }))}
                     startContent={<Icon icon="mynaui:plus-solid" fontSize={22} />}
                     isIconOnly
                     className="sm:hidden"
@@ -543,11 +534,16 @@ export default function TaskContainer({ projectData }: { projectData: Project })
                 </div>
               )}
             </div>
+
+            {/* Area "Attive" */}
             {activeTab === "Attive" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 justify-between py-5 gap-5 mb-14">
                 {columns.map((column) => {
-                  const colTasks = tasks.filter((task) => task.ProjectTaskStatusId === column.ProjectTaskStatusId)
+                  // Task della colonna
+                  const colTasks = columnTasks[column.ProjectTaskStatusId] || []
+                  // Costruisco la lista (singoli o gruppi)
                   const renderList = renderListForColumn(colTasks)
+
                   return (
                     <div
                       key={column.ProjectTaskStatusId}
@@ -573,36 +569,9 @@ export default function TaskContainer({ projectData }: { projectData: Project })
                                 : "bg-lightgrey",
                             )}
                           >
-                            {renderList.map((item, index) => {
-                              if (item.type === "group" && item.tasks) {
-                                return <GroupDraggable key={`group-${item.tasks[0].ProjectTaskId}`} groupTasks={item.tasks} index={index} />
-                              } else if (item.type === "single" && item.task) {
-                                return (
-                                  <Draggable key={item.task.ProjectTaskId} draggableId={item.task.ProjectTaskId.toString()} index={index}>
-                                    {(provided, snapshot) => (
-                                      <TaskCard
-                                        provided={provided}
-                                        task={item.task}
-                                        setUpdate={setUpdate}
-                                        update={update}
-                                        socket={socket}
-                                        projectId={projectId}
-                                        updateTaskStatus={updateTaskStatus}
-                                        columnCount={columns.length}
-                                        isMultiSelect={isMultiSelect}
-                                        handleTaskSelect={handleTaskSelect}
-                                        isSelected={selectedTasks.includes(item.task.ProjectTaskId)}
-                                        isCtrlPressed={isCtrlPressed}
-                                        isDragging={snapshot.isDragging}
-                                        draggingTaskId={draggingTaskId}
-                                      />
-                                    )}
-                                  </Draggable>
-                                )
-                              } else {
-                                return null
-                              }
-                            })}
+                            {renderList.map((item, index) => (
+                              <SelectedTaskCard key={item.task.ProjectTaskId} task={item.task} index={index} />
+                            ))}
                             {provided.placeholder}
                           </div>
                         )}
@@ -612,6 +581,7 @@ export default function TaskContainer({ projectData }: { projectData: Project })
                 })}
               </div>
             ) : (
+              // Area "Archiviate"
               <div className="grid grid-cols-1 justify-between py-5 gap-5 mb-14">
                 <div
                   key={"Archiviate"}
@@ -625,7 +595,11 @@ export default function TaskContainer({ projectData }: { projectData: Project })
                       {archivedTasks.length}
                     </Chip>
                   </h2>
-                  <div className={cn("w-full p-2 grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-5 h-auto bg-lightgrey")}>
+                  <div
+                    className={cn(
+                      "w-full p-2 grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-5 h-auto bg-lightgrey",
+                    )}
+                  >
                     {archivedTasks.map((task) => (
                       <ArchivedTaskCard
                         key={task.ProjectTaskId}
@@ -647,3 +621,4 @@ export default function TaskContainer({ projectData }: { projectData: Project })
     </>
   )
 }
+
