@@ -444,24 +444,24 @@ export default function TaskContainer({
           );
           return groupTasks.length
             ? [{ type: "group", tasks: groupTasks }]
-            : tasksInColumn.map((task) => ({ type: "single", task }));
+            : tasksInColumn.map((task) => ({ type: "single" as const, task }));
         } else {
           return tasksInColumn
             .filter((t) => !selectedTasks.includes(t.ProjectTaskId))
-            .map((task) => ({ type: "single", task }));
+            .map((task) => ({ type: "single" as const, task }));
         }
       }
-      if (!isMultiSelect) return tasksInColumn.map((task) => ({ type: "single", task }));
+      if (!isMultiSelect) return tasksInColumn.map((task) => ({ type: "single" as const, task }));
       const selectedInThisColumn = tasksInColumn.filter((t) =>
         selectedTasks.includes(t.ProjectTaskId)
       );
       if (selectedInThisColumn.length > 1) {
         const singleItems = tasksInColumn
           .filter((t) => !selectedTasks.includes(t.ProjectTaskId))
-          .map((task) => ({ type: "single", task }));
+          .map((task) => ({ type: "single" as const, task }));
         return [...singleItems, { type: "group", tasks: selectedInThisColumn }];
       }
-      return tasksInColumn.map((task) => ({ type: "single", task }));
+      return tasksInColumn.map((task) => ({ type: "single" as const, task }));
     },
     [tasks, selectedTasks, isDraggingMultiColumn, isMultiSelect, dragSourceColumnId]
   );
