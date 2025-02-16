@@ -630,8 +630,42 @@ END:VCALENDAR`;
                                             />
                                           ) : (
                                             <Icon
-                                              icon="solar:pending-circle-linear"
+                                              icon="solar:question-circle-linear"
                                               fontSize={18}
+                                            />
+                                          )
+                                        }
+                                        endContent={
+                                          Partecipant.EventPartecipantRole ===
+                                          "Organizzatore" ? (
+                                            <div
+                                              className="w-2 h-2 rounded-full"
+                                              style={{
+                                                backgroundColor: "#3B82F6",
+                                              }}
+                                            />
+                                          ) : Partecipant.EventPartecipantRole ===
+                                            "esterno" ? (
+                                            <div
+                                              className="w-2 h-2 rounded-full"
+                                              style={{
+                                                backgroundColor: "#EF4444",
+                                              }}
+                                            />
+                                          ) : Partecipant.EventPartecipantRole ===
+                                            "dipendente" ? (
+                                            <div
+                                              className="w-2 h-2 rounded-full"
+                                              style={{
+                                                backgroundColor: "#10B981",
+                                              }}
+                                            />
+                                          ) : (
+                                            <div
+                                              className="w-2 h-2 rounded-full"
+                                              style={{
+                                                backgroundColor: "#EF4444",
+                                              }}
                                             />
                                           )
                                         }
