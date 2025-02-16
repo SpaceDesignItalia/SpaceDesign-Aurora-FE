@@ -21,7 +21,6 @@ import type React from "react";
 // Import modali
 import ViewTaskModal from "./ViewTaskModal";
 import { API_URL_IMG } from "../../../../../API/API";
-import { usePermissions } from "../../../Layout/PermissionProvider";
 
 // Interfacce
 interface Tag {
@@ -108,26 +107,6 @@ export default function TaskCard({
     },
     open: false,
   });
-
-  // Permessi
-  const [permissions, setPermissions] = useState({
-    editActivity: false,
-    removeActivity: false,
-  });
-
-  const { hasPermission } = usePermissions();
-
-  useEffect(() => {
-    async function fetchPermissions() {
-      const editActivity = await hasPermission("EDIT_ACTIVITY");
-      const removeActivity = await hasPermission("REMOVE_ACTIVITY");
-      setPermissions({
-        editActivity,
-        removeActivity,
-      });
-    }
-    fetchPermissions();
-  }, [hasPermission]);
 
   // Conteggio commenti
   const [commentsCount, setCommentsCount] = useState(0);

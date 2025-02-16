@@ -11,7 +11,7 @@ import {
   Tabs,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import axios, { CancelTokenSource } from "axios";
+import axios from "axios";
 import {
   useEffect,
   useMemo,
@@ -129,7 +129,6 @@ export default function TaskContainer({
     null
   );
   const [isDraggingMultiColumn, setIsDraggingMultiColumn] = useState(false);
-  const [loading, setLoading] = useState<boolean>(false);
 
   // ----- Gestione URL e permessi -----
   useEffect(() => {
@@ -148,20 +147,16 @@ export default function TaskContainer({
 
   // ----- Fetch Data (con cancellazione) -----
   const fetchData = useCallback(async () => {
-    setLoading(true);
-    const cancelSource: CancelTokenSource = axios.CancelToken.source();
     try {
       // 1) Colonne
       const statusResponse = await axios.get<Status[]>(
-        "/Project/GET/GetTaskStatuses",
-        { cancelToken: cancelSource.token }
+        "/Project/GET/GetTaskStatuses"
       );
       setColumns(statusResponse.data);
 
       // 2) Task
       const res = await axios.get<Task[]>("/Project/GET/GetTasksByProjectId", {
         params: { ProjectId: projectId },
-        cancelToken: cancelSource.token,
       });
       if (res.status === 200) {
         const fetchedTasks = res.data;
@@ -172,15 +167,12 @@ export default function TaskContainer({
               await Promise.all([
                 axios.get<Tag[]>("/Project/GET/GetTagsByTaskId", {
                   params: { ProjectTaskId: task.ProjectTaskId },
-                  cancelToken: cancelSource.token,
                 }),
                 axios.get<Member[]>("/Project/GET/GetMembersByTaskId", {
                   params: { ProjectTaskId: task.ProjectTaskId },
-                  cancelToken: cancelSource.token,
                 }),
                 axios.get<Comment[]>("/Project/GET/GetCommentsByTaskId", {
                   params: { ProjectTaskId: task.ProjectTaskId },
-                  cancelToken: cancelSource.token,
                 }),
               ]);
             return {
@@ -194,18 +186,8 @@ export default function TaskContainer({
         setTasks(updatedTasks);
       }
     } catch (error) {
-      if (axios.isCancel(error)) {
-        console.log("Request canceled", error.message);
-      } else {
-        console.error(error);
-      }
-    } finally {
-      setLoading(false);
+      console.error(error);
     }
-    // Restituisco la funzione di cleanup per cancellare eventuali richieste pendenti
-    return () => {
-      cancelSource.cancel("Operation canceled by the user.");
-    };
   }, [projectId]);
 
   useEffect(() => {
