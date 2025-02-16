@@ -37,6 +37,11 @@ interface Props {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   loggedStafferId: number;
+  setStatusAlert: (alert: {
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }) => void;
 }
 
 export default function EmployeeAttendanceTable({
@@ -44,6 +49,7 @@ export default function EmployeeAttendanceTable({
   selectedDate,
   onDateChange,
   loggedStafferId,
+  setStatusAlert,
 }: Props) {
   if (!employees) return null;
 
@@ -193,14 +199,51 @@ export default function EmployeeAttendanceTable({
   };
 
   async function handleStatusChange(status: string, date: string) {
-    const res = await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
-      Status: status,
-      StafferId: loggedStafferId,
-      Date: date,
-    });
+    try {
+      // Trova la presenza attuale per questa data
+      const currentAttendance = employees
+        .find((emp) => emp.id === loggedStafferId.toString())
+        ?.attendances.find(
+          (att) =>
+            new Date(att.date).toDateString() === new Date(date).toDateString()
+        );
 
-    if (res.status === 200) {
-      socket.emit("employee-attendance-update");
+      // Se lo stato selezionato è uguale a quello corrente, non fare nulla
+      if (currentAttendance && currentAttendance.status === status) {
+        return;
+      }
+
+      const res = await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
+        Status: status,
+        StafferId: loggedStafferId,
+        Date: date,
+      });
+
+      if (res.status === 200) {
+        socket.emit("employee-attendance-update");
+        setStatusAlert({
+          show: true,
+          type: "success",
+          message:
+            status === "delete"
+              ? "Presenza eliminata con successo!"
+              : currentAttendance
+              ? `Presenza modificata da "${
+                  statusConfig[
+                    currentAttendance.status as keyof typeof statusConfig
+                  ].label
+                }" a "${
+                  statusConfig[status as keyof typeof statusConfig].label
+                }"`
+              : "Nuova presenza aggiunta con successo!",
+        });
+      }
+    } catch (error) {
+      setStatusAlert({
+        show: true,
+        type: "error",
+        message: "Errore durante l'aggiornamento della presenza",
+      });
     }
   }
 
@@ -469,29 +512,40 @@ export default function EmployeeAttendanceTable({
                                       </DropdownItem>
                                     )
                                   )}
-                                  <DropdownItem
-                                    onPress={() =>
-                                      handleStatusChange(
-                                        "delete",
-                                        formatInTimeZone(
-                                          date,
-                                          "Europe/Rome",
-                                          "yyyy-MM-dd"
+                                  {employees
+                                    .find(
+                                      (emp) =>
+                                        emp.id === loggedStafferId.toString()
+                                    )
+                                    ?.attendances.some(
+                                      (att) =>
+                                        new Date(att.date).toDateString() ===
+                                        date.toDateString()
+                                    ) && (
+                                    <DropdownItem
+                                      onPress={() =>
+                                        handleStatusChange(
+                                          "delete",
+                                          formatInTimeZone(
+                                            date,
+                                            "Europe/Rome",
+                                            "yyyy-MM-dd"
+                                          )
                                         )
-                                      )
-                                    }
-                                    key="delete"
-                                    startContent={
-                                      <div className="w-6 h-6 bg-zinc-300 rounded-lg flex items-center justify-center">
-                                        <Icon
-                                          icon="material-symbols-light:delete-outline"
-                                          className="w-4 h-4 text-gray-700"
-                                        />
-                                      </div>
-                                    }
-                                  >
-                                    Elimina
-                                  </DropdownItem>
+                                      }
+                                      key="delete"
+                                      startContent={
+                                        <div className="w-6 h-6 bg-zinc-300 rounded-lg flex items-center justify-center">
+                                          <Icon
+                                            icon="material-symbols-light:delete-outline"
+                                            className="w-4 h-4 text-gray-700"
+                                          />
+                                        </div>
+                                      }
+                                    >
+                                      Elimina
+                                    </DropdownItem>
+                                  )}
                                 </>
                               </DropdownMenu>
                             </Dropdown>

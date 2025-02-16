@@ -9,6 +9,7 @@ import axios from "axios";
 import { API_URL_IMG } from "../../../API/API";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
+import StatusAlert from "../../Components/Layout/StatusAlert";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -31,6 +32,15 @@ export default function EmployeeAttendance() {
   const [previousMonthEmployees, setPreviousMonthEmployees] = useState<
     Employee[]
   >([]);
+  const [statusAlert, setStatusAlert] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
   const fetchEmployeeData = async (date: Date, setPrevious = false) => {
     const staffers = await axios.get("/Staffer/GET/GetAllStaffers");
@@ -116,6 +126,15 @@ export default function EmployeeAttendance() {
 
   return (
     <div className="py-10 m-0 lg:ml-72">
+      <StatusAlert
+        AlertData={{
+          isOpen: statusAlert.show,
+          onClose: () => setStatusAlert((prev) => ({ ...prev, show: false })),
+          alertTitle: "",
+          alertDescription: statusAlert.message,
+          alertColor: statusAlert.type === "success" ? "green" : "red",
+        }}
+      />
       <header>
         <div className="flex flex-col gap-3 px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
@@ -152,6 +171,7 @@ export default function EmployeeAttendance() {
                 selectedDate={selectedDate}
                 onDateChange={setSelectedDate}
                 loggedStafferId={loggedStafferId}
+                setStatusAlert={setStatusAlert}
               />
             </div>
           </>

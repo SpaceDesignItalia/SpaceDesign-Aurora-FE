@@ -1818,14 +1818,14 @@ export default function ViewTaskModal({
                                                         size="sm"
                                                         radius="full"
                                                         variant="light"
-                                                        onClick={() =>
+                                                        onPress={() =>
                                                           handleDeleteComment(
                                                             comment.ProjectTaskCommentId
                                                           )
                                                         }
                                                         startContent={
                                                           <Icon
-                                                            icon="solar:trash-bin-linear"
+                                                            icon="solar:trash-bin-trash-linear"
                                                             fontSize={22}
                                                           />
                                                         }
