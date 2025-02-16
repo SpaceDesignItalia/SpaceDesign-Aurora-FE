@@ -436,7 +436,9 @@ END:VCALENDAR`;
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-2 w-full">
                       <Icon icon="solar:calendar-linear" fontSize={18} />
                       <div className="flex flex-col sm:flex-row justify-between items-center gap-2 w-full">
-                        <p className="text-lg font-medium">{newEvent.EventTitle}</p>
+                        <p className="text-lg font-medium">
+                          {newEvent.EventTitle}
+                        </p>
                         <div
                           className="h-5 w-5 rounded-full"
                           style={{
@@ -846,7 +848,10 @@ END:VCALENDAR`;
                       <div className="col-span-1">
                         <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0">
                           <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                            <Icon icon="fluent:text-description-16-filled" fontSize={18} />
+                            <Icon
+                              icon="fluent:text-description-16-filled"
+                              fontSize={18}
+                            />
                             Descrizione
                           </dt>
                           <dd className="mt-1 text-sm leading-6 text-gray-700">
@@ -876,11 +881,16 @@ END:VCALENDAR`;
                             >
                               {loading ? (
                                 <>
-                                  <Spinner size="sm" className="text-black" /> Riscrittura in corso...
+                                  <Spinner size="sm" className="text-black" />{" "}
+                                  Riscrittura in corso...
                                 </>
                               ) : (
                                 <>
-                                  <Icon icon="solar:magic-stick-3-linear" fontSize={18} /> Riscrivi con AI
+                                  <Icon
+                                    icon="solar:magic-stick-3-linear"
+                                    fontSize={18}
+                                  />{" "}
+                                  Riscrivi con AI
                                 </>
                               )}
                             </Button>
@@ -892,7 +902,10 @@ END:VCALENDAR`;
                     <div className="flex flex-col sm:flex-row w-full gap-4">
                       <div className="px-4 py-6 flex flex-col sm:gap-4 sm:px-0 w-full sm:w-1/2">
                         <dt className="flex flex-row gap-2 items-center text-sm font-semibold leading-6 text-gray-900">
-                          <Icon icon="solar:users-group-rounded-linear" fontSize={18} />
+                          <Icon
+                            icon="solar:users-group-rounded-linear"
+                            fontSize={18}
+                          />
                           Partecipanti
                         </dt>
                         <dd className="mt-1 text-sm leading-6 text-gray-700">
@@ -920,7 +933,8 @@ END:VCALENDAR`;
                                       className="w-2 h-2 rounded-full"
                                       style={{
                                         backgroundColor:
-                                          user.EventPartecipantRole === "dipendente"
+                                          user.EventPartecipantRole ===
+                                          "dipendente"
                                             ? "#EF4444"
                                             : "#3B82F6",
                                       }}
@@ -951,7 +965,8 @@ END:VCALENDAR`;
                                     className="w-2 h-2 rounded-full"
                                     style={{
                                       backgroundColor:
-                                        Partecipant.EventPartecipantRole === "dipendente"
+                                        Partecipant.EventPartecipantRole ===
+                                        "dipendente"
                                           ? "#EF4444"
                                           : "#3B82F6",
                                     }}
@@ -1075,7 +1090,7 @@ END:VCALENDAR`;
                         !newEvent.EventEndDate ||
                         !newEvent.EventEndTime ||
                         !newEvent.EventColor ||
-                        !newTag.EventTagName
+                        (!newTag.EventTagName && newTag.EventTagId === 0)
                       }
                       color="primary"
                       onClick={handleUpdateEvent}
