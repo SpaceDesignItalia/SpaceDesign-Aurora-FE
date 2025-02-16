@@ -82,11 +82,7 @@ interface ModalAddData {
 // Può essere un singolo task o un gruppo di task
 type RenderItem = { type: "single"; task: Task } | { type: "group"; tasks: Task[] }
 
-export default function TaskContainer({
-  projectData,
-}: {
-  projectData: Project
-}) {
+export default function TaskContainer({ projectData }: { projectData: Project }) {
   const { Action } = useParams<{ Action: string }>()
 
   // ---------- Stato dei dati ----------
@@ -125,7 +121,7 @@ export default function TaskContainer({
   // ---------- Fetch Colonne & Task ----------
   useEffect(() => {
     fetchData()
-  }, [update, projectId]) //This line was not changed, as the prompt did not specify how to reduce dependencies
+  }, [update, projectId])
 
   async function fetchData() {
     console.log(">>> fetchData")
@@ -223,7 +219,7 @@ export default function TaskContainer({
       setSelectedTasks([taskId])
     }
 
-    // Update task status if needed
+    // Se vuoi che cambi anche lo stato (come nel tuo codice originale)
     if (firstSelectedTask && task && task.ProjectTaskStatusId !== firstSelectedTask.ProjectTaskStatusId) {
       updateTaskStatus(taskId, firstSelectedTask.ProjectTaskStatusId)
     }
@@ -357,8 +353,6 @@ export default function TaskContainer({
     } else {
       setIsDraggingMultiColumn(false)
     }
-
-    // NOTA: Abbiamo rimosso la parte di setDragImage custom per evitare conflitti
   }
 
   async function onDragEnd(result: DropResult) {
@@ -413,35 +407,12 @@ export default function TaskContainer({
     setIsLoading(false)
   }
 
-  // ------ Rendering (costruzione "lista da colonna") ------
+  // ------ NUOVA VERSIONE: raggruppa tutti i selezionati in un'unica pila ------
   function renderListForColumn(tasksInColumn: Task[], columnId: number): RenderItem[] {
-    if (!isDraggingMultiColumn) {
-      if (!isMultiSelect) {
-        return tasksInColumn.map((task) => ({ type: "single", task }))
-      }
-      // multiSelect standard: raggruppa consecutivi
-      const list: RenderItem[] = []
-      let currentGroup: Task[] = []
-
-      tasksInColumn.forEach((task) => {
-        if (selectedTasks.includes(task.ProjectTaskId)) {
-          currentGroup.push(task)
-        } else {
-          if (currentGroup.length > 0) {
-            list.push({ type: "group", tasks: currentGroup })
-            currentGroup = []
-          }
-          list.push({ type: "single", task })
-        }
-      })
-      if (currentGroup.length > 0) {
-        list.push({ type: "group", tasks: currentGroup })
-      }
-      return list
-    } else {
-      // MULTI-DRAG CROSS-COLONNA
+    // Se sto facendo multi-drag cross-colonna
+    if (isDraggingMultiColumn) {
       if (columnId === dragSourceColumnId) {
-        // Qui mostriamo un unico "group" con tutti i task selezionati
+        // Qui mostriamo un unico "group" con tutti i task selezionati nella colonna sorgente
         const groupTasks = tasks.filter((t) => selectedTasks.includes(t.ProjectTaskId))
         if (groupTasks.length === 0) {
           // fallback
@@ -453,6 +424,34 @@ export default function TaskContainer({
         const unselected = tasksInColumn.filter((t) => !selectedTasks.includes(t.ProjectTaskId))
         return unselected.map((task) => ({ type: "single", task }))
       }
+    }
+
+    // Se NON sto facendo cross-colonna
+    if (!isMultiSelect) {
+      // Se non è multiSelect, rimani tutto single
+      return tasksInColumn.map((task) => ({ type: "single", task }))
+    }
+
+    // Altrimenti, raggruppa TUTTI i selezionati in questa colonna in un'unica "group"
+    const selectedInThisColumn = tasksInColumn.filter((t) => selectedTasks.includes(t.ProjectTaskId))
+
+    // Se in questa colonna ho più di un task selezionato, faccio un solo "group"
+    if (selectedInThisColumn.length > 1) {
+      // Prendo i non selezionati
+      const unselectedInThisColumn = tasksInColumn.filter((t) => !selectedTasks.includes(t.ProjectTaskId))
+      // Ritorno prima i non selezionati come single
+      const singleItems: RenderItem[] = unselectedInThisColumn.map((task) => ({ type: "single", task }))
+      // E poi un solo group con tutti i selezionati
+      return [
+        ...singleItems,
+        {
+          type: "group",
+          tasks: selectedInThisColumn,
+        },
+      ]
+    } else {
+      // Se ho 0 o 1 task selezionato, rimane single
+      return tasksInColumn.map((task) => ({ type: "single", task }))
     }
   }
 
@@ -479,9 +478,10 @@ export default function TaskContainer({
               {groupTasks.map((task, i) => (
                 <div
                   key={task.ProjectTaskId}
-                  className={cn("absolute w-full transition-all duration-200", i === 0 ? "z-10" : `z-${10 - i}`)}
+                  className="absolute w-full transition-all duration-200"
                   style={{
                     transform: `translateY(${i * (snapshot.isDragging ? 8 : 16)}px)`,
+                    zIndex: 10 - i, // Usiamo uno stile inline per gestire la sovrapposizione
                   }}
                 >
                   <TaskCard
@@ -518,7 +518,9 @@ export default function TaskContainer({
   const columnTasks = useMemo(() => {
     const tasksByColumn: { [key: number]: Task[] } = {}
     columns.forEach((col) => {
-      tasksByColumn[col.ProjectTaskStatusId] = tasks.filter((t) => t.ProjectTaskStatusId === col.ProjectTaskStatusId)
+      tasksByColumn[col.ProjectTaskStatusId] = tasks.filter(
+        (t) => t.ProjectTaskStatusId === col.ProjectTaskStatusId,
+      )
     })
     return tasksByColumn
   }, [tasks, columns])
@@ -569,11 +571,11 @@ export default function TaskContainer({
                 <div className="flex justify-end flex-row gap-2 w-full">
                   <div className="flex justify-end items-center w-full gap-2">
                     {isMultiSelect && selectedTasks.length > 0 && (
-                      <>
+                      <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
                         <Select
                           onChange={(e) => changeSelectedTasksStatus(Number(e.target.value))}
                           placeholder="Seleziona Stato"
-                          className="w-48"
+                          className="w-full sm:w-48"
                           color="primary"
                           variant="bordered"
                           radius="full"
@@ -590,7 +592,7 @@ export default function TaskContainer({
                             .filter((t): t is Task => t !== undefined)}
                           DeleteTasks={deleteSelectedTasks}
                         />
-                      </>
+                      </div>
                     )}
                     {activeTab === "Attive" && (
                       <Button
@@ -648,7 +650,7 @@ export default function TaskContainer({
                         </Chip>
                       </h2>
                       <Droppable
-                        droppableId={String(column.ProjectTaskStatusId)} // Importante: string
+                        droppableId={String(column.ProjectTaskStatusId)}
                         direction="vertical"
                         type="TASK"
                       >
@@ -756,4 +758,3 @@ export default function TaskContainer({
     </>
   )
 }
-
