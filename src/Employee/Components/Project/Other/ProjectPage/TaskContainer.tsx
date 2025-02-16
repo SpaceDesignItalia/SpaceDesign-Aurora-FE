@@ -1,18 +1,30 @@
+"use client";
+
 import {
   Button,
   Chip,
   cn,
-  DateValue,
+  type DateValue,
   Select,
   SelectItem,
-  Spinner,
   Tab,
   Tabs,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import axios from "axios";
-import { useEffect, useMemo, useState } from "react";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from "react";
+import {
+  DragDropContext,
+  Draggable,
+  Droppable,
+  type DropResult,
+  type DragStart,
+} from "react-beautiful-dnd";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../../API/API";
@@ -22,9 +34,10 @@ import ArchivedTaskCard from "../ProjectTask/ArchivedTaskCard";
 import TaskCard from "../ProjectTask/TaskCard";
 import ConfirmDeleteTaskModal from "../ProjectTask/ConfirmDeleteTaskModal";
 
+// Inizializzo il socket una sola volta
 const socket = io(API_WEBSOCKET_URL);
 
-// Define interfaces
+// ----- INTERFACCE -----
 interface Status {
   ProjectTaskStatusId: number;
   ProjectTaskStatusName: string;
@@ -62,20 +75,7 @@ interface Task {
   ProjectTaskMembers: Member[];
   ProjectTaskComments: Comment[];
   ProjectId: number;
-  ProjectTaskChecklists: Checklist[];
-}
-
-interface Checkbox {
-  CheckboxId: number;
-  Text: string;
-  IsSelected: boolean;
-  ChecklistId: number;
-}
-
-interface Checklist {
-  ChecklistId: number;
-  Text: string;
-  Checkboxes: Checkbox[];
+  ProjectTaskChecklists: any[];
 }
 
 interface Project {
@@ -99,92 +99,82 @@ interface ModalAddData {
   open: boolean;
 }
 
+// Può essere un singolo task o un gruppo di task
+type RenderItem =
+  | { type: "single"; task: Task }
+  | { type: "group"; tasks: Task[] };
+
 export default function TaskContainer({
   projectData,
 }: {
   projectData: Project;
 }) {
   const { Action } = useParams<{ Action: string }>();
+  const projectId = projectData.ProjectId;
+
   const [columns, setColumns] = useState<Status[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [update, setUpdate] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const projectId = projectData.ProjectId;
-
   const [modalAddData, setModalAddData] = useState<ModalAddData>({
     ProjectId: projectId,
     open: false,
   });
+  const { hasPermission } = usePermissions();
+  const [permissions, setPermissions] = useState({ assignActivity: false });
+  const [isMultiSelect, setIsMultiSelect] = useState(false);
+  const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
+  const [activeTab, setActiveTab] = useState("Attive");
+  const [archivedTasks, setArchivedTasks] = useState<Task[]>([]);
+  const [dragSourceColumnId, setDragSourceColumnId] = useState<number | null>(
+    null
+  );
+  const [isDraggingMultiColumn, setIsDraggingMultiColumn] = useState(false);
 
+  // ----- Gestione URL e permessi -----
   useEffect(() => {
     if (Action === "add-task") {
-      setModalAddData({ ...modalAddData, open: true });
+      setModalAddData((prev) => ({ ...prev, open: true }));
     }
   }, [Action]);
-
-  const [permissions, setPermissions] = useState({
-    assignActivity: false,
-  });
-
-  const { hasPermission } = usePermissions();
-
-  useEffect(() => {
-    socket.on("task-update", () => {
-      setUpdate((prev) => !prev);
-    });
-  }, []);
 
   useEffect(() => {
     async function fetchPermission() {
       const permission = await hasPermission("ASSIGN_ACTIVITY");
-
-      setPermissions({ ...permissions, assignActivity: permission });
+      setPermissions({ assignActivity: permission });
     }
     fetchPermission();
   }, [hasPermission]);
 
-  useEffect(() => {
-    fetchData();
-  }, [update, projectData.ProjectId]);
-
-  async function fetchData() {
+  // ----- Fetch Data (con cancellazione) -----
+  const fetchData = useCallback(async () => {
     try {
+      // 1) Colonne
       const statusResponse = await axios.get<Status[]>(
         "/Project/GET/GetTaskStatuses"
       );
       setColumns(statusResponse.data);
 
+      // 2) Task
       const res = await axios.get<Task[]>("/Project/GET/GetTasksByProjectId", {
         params: { ProjectId: projectId },
       });
-
-      if (res.status == 200) {
+      if (res.status === 200) {
         const fetchedTasks = res.data;
         socket.emit("join", projectId);
-
         const updatedTasks = await Promise.all(
           fetchedTasks.map(async (task: Task) => {
-            const tagsResponse = await axios.get<Tag[]>(
-              "/Project/GET/GetTagsByTaskId",
-              {
-                params: { ProjectTaskId: task.ProjectTaskId },
-              }
-            );
-
-            const membersResponse = await axios.get<Member[]>(
-              "/Project/GET/GetMembersByTaskId",
-              {
-                params: { ProjectTaskId: task.ProjectTaskId },
-              }
-            );
-
-            const commentResponse = await axios.get<Comment[]>(
-              "/Project/GET/GetCommentsByTaskId",
-              {
-                params: { ProjectTaskId: task.ProjectTaskId },
-              }
-            );
-
+            const [tagsResponse, membersResponse, commentResponse] =
+              await Promise.all([
+                axios.get<Tag[]>("/Project/GET/GetTagsByTaskId", {
+                  params: { ProjectTaskId: task.ProjectTaskId },
+                }),
+                axios.get<Member[]>("/Project/GET/GetMembersByTaskId", {
+                  params: { ProjectTaskId: task.ProjectTaskId },
+                }),
+                axios.get<Comment[]>("/Project/GET/GetCommentsByTaskId", {
+                  params: { ProjectTaskId: task.ProjectTaskId },
+                }),
+              ]);
             return {
               ...task,
               ProjectTaskTags: tagsResponse.data,
@@ -194,180 +184,161 @@ export default function TaskContainer({
           })
         );
         setTasks(updatedTasks);
-        setIsLoading(false);
       }
     } catch (error) {
       console.error(error);
-      setIsLoading(false);
     }
-  }
-
-  // Handler for drag end
-  const onDragEnd = (result: {
-    source: any;
-    destination: any;
-    draggableId: any;
-  }) => {
-    setIsLoading(true);
-    const { source, destination } = result;
-
-    if (!destination) {
-      return;
-    }
-
-    if (
-      source.droppableId !== destination.droppableId ||
-      source.index !== destination.index
-    ) {
-      const newTasks = Array.from(tasks);
-      const [reorderedItem] = newTasks.splice(source.index, 1);
-      reorderedItem.ProjectTaskStatusId = parseInt(destination.droppableId, 10);
-      reorderedItem.ProjectTaskId = parseInt(result.draggableId, 10);
-      newTasks.splice(destination.index, 0, reorderedItem);
-
-      setTasks(newTasks); // Update the UI immediately
-      updateTaskStatus(
-        reorderedItem.ProjectTaskId,
-        reorderedItem.ProjectTaskStatusId
-      );
-    }
-  };
-
-  function updateTaskStatus(taskId: number, statusId: number) {
-    axios
-      .post("/Project/POST/UpdateTaskStatus", {
-        ProjectTaskId: taskId,
-        ProjectTaskStatusId: statusId,
-      })
-      .then(() => {
-        socket.emit("task-news", projectId);
-        setUpdate((prev) => !prev); // Optionally update to refresh tasks
-      })
-      .catch((error) => {
-        console.error("Error updating task status:", error);
-      });
-  }
-
-  // Use useMemo to calculate the tasks for each column
-  const columnTasks = useMemo(() => {
-    const tasksByColumn: { [key: number]: Task[] } = {};
-    columns.forEach((column) => {
-      tasksByColumn[column.ProjectTaskStatusId] = tasks.filter(
-        (task) => task.ProjectTaskStatusId === column.ProjectTaskStatusId
-      );
-    });
-    return tasksByColumn;
-  }, [tasks, columns]);
-
-  // Function to count tasks by column
-  const countTasksByColumn = () => {
-    const taskCounts: { [key: number]: number } = {};
-    columns.forEach((column) => {
-      taskCounts[column.ProjectTaskStatusId] =
-        columnTasks[column.ProjectTaskStatusId]?.length || 0;
-    });
-    return taskCounts;
-  };
-
-  // Get the task counts
-  const taskCounts = countTasksByColumn();
-
-  const [activeTab, setActiveTab] = useState("Attive");
-
-  const tabs = [
-    {
-      title: "Attive",
-      icon: <Icon icon="solar:check-read-linear" fontSize={22} />,
-    },
-    {
-      title: "Archiviate",
-      icon: <Icon icon="solar:archive-linear" fontSize={22} />,
-    },
-  ];
-
-  const [archivedTasks, setArchivedTasks] = useState<Task[]>([]);
+  }, [projectId]);
 
   useEffect(() => {
+    fetchData();
+  }, [fetchData, update, projectId]);
+
+  // ----- Fetch Task Archiviate -----
+  useEffect(() => {
     async function fetchArchivedTasks() {
-      const res = await axios.get("/Project/GET/GetArchivedTasksByProjectId", {
-        params: { ProjectId: projectId },
-      });
-
-      if (res.status == 200) {
-        const fetchedTasks = res.data;
-        socket.emit("join", projectId);
-
-        const updatedTasks = await Promise.all(
-          fetchedTasks.map(async (task: Task) => {
-            const tagsResponse = await axios.get<Tag[]>(
-              "/Project/GET/GetTagsByTaskId",
-              {
-                params: { ProjectTaskId: task.ProjectTaskId },
-              }
-            );
-
-            const membersResponse = await axios.get<Member[]>(
-              "/Project/GET/GetMembersByTaskId",
-              {
-                params: { ProjectTaskId: task.ProjectTaskId },
-              }
-            );
-
-            const commentResponse = await axios.get<Comment[]>(
-              "/Project/GET/GetCommentsByTaskId",
-              {
-                params: { ProjectTaskId: task.ProjectTaskId },
-              }
-            );
-
-            return {
-              ...task,
-              ProjectTaskTags: tagsResponse.data,
-              ProjectTaskMembers: membersResponse.data,
-              ProjectTaskComments: commentResponse.data,
-            };
-          })
-        );
-        setArchivedTasks(updatedTasks);
+      try {
+        const res = await axios.get<Task[]>("/Project/GET/GetArchivedTasksByProjectId", {
+          params: { ProjectId: projectId },
+        });
+        if (res.status === 200) {
+          socket.emit("join", projectId);
+          const updatedTasks = await Promise.all(
+            res.data.map(async (task: Task) => {
+              const [tagsResponse, membersResponse, commentResponse] =
+                await Promise.all([
+                  axios.get<Tag[]>("/Project/GET/GetTagsByTaskId", {
+                    params: { ProjectTaskId: task.ProjectTaskId },
+                  }),
+                  axios.get<Member[]>("/Project/GET/GetMembersByTaskId", {
+                    params: { ProjectTaskId: task.ProjectTaskId },
+                  }),
+                  axios.get<Comment[]>("/Project/GET/GetCommentsByTaskId", {
+                    params: { ProjectTaskId: task.ProjectTaskId },
+                  }),
+                ]);
+              return {
+                ...task,
+                ProjectTaskTags: tagsResponse.data,
+                ProjectTaskMembers: membersResponse.data,
+                ProjectTaskComments: commentResponse.data,
+              };
+            })
+          );
+          setArchivedTasks(updatedTasks);
+        }
+      } catch (error) {
+        console.error(error);
       }
     }
     fetchArchivedTasks();
-  }, [projectId, update]);
+  }, [projectId]);
 
-  const [isMultiSelect, setIsMultiSelect] = useState(false);
-  const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
+  // ----- Multi Selezione -----
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Control" && !isMultiSelect) {
+        toggleMultiSelect(true);
+      }
+    };
 
-  const handleTaskSelect = (taskId: number) => {
-    setSelectedTasks((prev) =>
-      prev.includes(taskId)
-        ? prev.filter((id) => id !== taskId)
-        : [...prev, taskId]
-    );
-  };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "Control" && selectedTasks.length === 0) {
+        toggleMultiSelect(false);
+      }
+    };
 
-  const changeSelectedTasksStatus = (newStatusId: number) => {
-    selectedTasks.forEach((taskId) => {
-      updateTaskStatus(taskId, newStatusId);
-    });
-    setSelectedTasks([]);
-    setIsMultiSelect(false);
-  };
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [isMultiSelect, selectedTasks]);
 
-  const toggleMultiSelect = () => {
-    if (isMultiSelect) {
-      setSelectedTasks([]);
-    }
-    setIsMultiSelect(!isMultiSelect);
-  };
+  const handleTaskSelect = useCallback(
+    (taskId: number, isDragging = false) => {
+      if (isDragging) return;
+      const task = tasks.find((t) => t.ProjectTaskId === taskId);
+      const firstSelectedTask = tasks.find((t) =>
+        selectedTasks.includes(t.ProjectTaskId)
+      );
+      if (isMultiSelect) {
+        setSelectedTasks((prev) =>
+          prev.includes(taskId)
+            ? prev.filter((id) => id !== taskId)
+            : [...prev, taskId]
+        );
+      } else {
+        setSelectedTasks([taskId]);
+      }
+      if (firstSelectedTask && task && task.ProjectTaskStatusId !== firstSelectedTask.ProjectTaskStatusId) {
+        updateTaskStatus(taskId, firstSelectedTask.ProjectTaskStatusId);
+      }
+      setUpdate((prev) => !prev);
+    },
+    [tasks, selectedTasks, isMultiSelect]
+  );
 
-  console.log(selectedTasks);
-
-  const deleteSelectedTasks = (tasks: Task[]) => {
-    tasks.forEach((task) => {
+  const updateTaskStatus = useCallback(
+    (taskId: number, statusId: number) => {
       axios
-        .delete("/Project/DELETE/DeleteTask", {
-          params: { ProjectTaskId: task.ProjectTaskId },
+        .post("/Project/POST/UpdateTaskStatus", {
+          ProjectTaskId: taskId,
+          ProjectTaskStatusId: statusId,
         })
+        .then(() => {
+          socket.emit("task-news", projectId);
+          setUpdate((prev) => !prev);
+        })
+        .catch((error) => {
+          console.error("Error updating task status:", error);
+        });
+    },
+    [projectId]
+  );
+
+  const changeSelectedTasksStatus = useCallback(
+    (newStatusId: number) => {
+      Promise.all(
+        selectedTasks.map((taskId) =>
+          axios.post("/Project/POST/UpdateTaskStatus", {
+            ProjectTaskId: taskId,
+            ProjectTaskStatusId: newStatusId,
+          })
+        )
+      )
+        .then(() => {
+          socket.emit("task-news", projectId);
+          setUpdate((prev) => !prev);
+          setSelectedTasks([]);
+          setIsMultiSelect(false);
+        })
+        .catch((error) => {
+          console.error("Error updating tasks status:", error);
+        });
+    },
+    [selectedTasks, projectId]
+  );
+
+  const toggleMultiSelect = useCallback(
+    (force?: boolean) => {
+      const newState = force !== undefined ? force : !isMultiSelect;
+      if (!newState) setSelectedTasks([]);
+      setIsMultiSelect(newState);
+    },
+    [isMultiSelect]
+  );
+
+  const deleteSelectedTasks = useCallback(
+    (taskList: Task[]) => {
+      Promise.all(
+        taskList.map((task) =>
+          axios.delete("/Project/DELETE/DeleteTask", {
+            params: { ProjectTaskId: task.ProjectTaskId },
+          })
+        )
+      )
         .then(() => {
           socket.emit("task-news", projectId);
           setUpdate((prev) => !prev);
@@ -377,176 +348,367 @@ export default function TaskContainer({
         .catch((error) => {
           console.error("Error deleting task:", error);
         });
+    },
+    [projectId]
+  );
+
+  // ----- Drag & Drop -----
+  const onDragStart = useCallback(
+    (start: DragStart) => {
+      const startColId = Number.parseInt(start.source.droppableId, 10);
+      setDragSourceColumnId(startColId);
+
+      if (selectedTasks.length > 1) {
+        const selectedCols = new Set(
+          selectedTasks.map((taskId) => {
+            const task = tasks.find((t) => t.ProjectTaskId === taskId);
+            return task ? task.ProjectTaskStatusId : null;
+          })
+        );
+        setIsDraggingMultiColumn(selectedCols.size > 1);
+      } else {
+        setIsDraggingMultiColumn(false);
+      }
+    },
+    [selectedTasks, tasks]
+  );
+
+  const onDragEnd = useCallback(
+    async (result: DropResult) => {
+      setIsDraggingMultiColumn(false);
+      const { destination, draggableId } = result;
+      if (!destination) {
+        setDragSourceColumnId(null);
+        return;
+      }
+      const newStatusId = Number.parseInt(destination.droppableId, 10);
+      let tasksToMove: number[] = [];
+      if (draggableId.startsWith("group-")) {
+        tasksToMove = [...selectedTasks];
+      } else {
+        const draggedId = Number.parseInt(draggableId, 10);
+        tasksToMove = selectedTasks.includes(draggedId)
+          ? [...selectedTasks]
+          : [draggedId];
+      }
+      // Aggiornamento ottimistico
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          tasksToMove.includes(task.ProjectTaskId)
+            ? { ...task, ProjectTaskStatusId: newStatusId }
+            : task
+        )
+      );
+      await Promise.all(
+        tasksToMove.map((id) =>
+          axios.post("/Project/POST/UpdateTaskStatus", {
+            ProjectTaskId: id,
+            ProjectTaskStatusId: newStatusId,
+          })
+        )
+      );
+      socket.emit("task-news", projectId);
+      setUpdate((prev) => !prev);
+      setSelectedTasks([]);
+      setIsMultiSelect(false);
+      setDragSourceColumnId(null);
+    },
+    [selectedTasks, projectId]
+  );
+
+  // Raggruppa i task per la visualizzazione (drag & drop)
+  const renderListForColumn = useCallback(
+    (tasksInColumn: Task[], columnId: number): RenderItem[] => {
+      if (isDraggingMultiColumn) {
+        if (columnId === dragSourceColumnId) {
+          const groupTasks = tasks.filter((t) =>
+            selectedTasks.includes(t.ProjectTaskId)
+          );
+          return groupTasks.length
+            ? [{ type: "group", tasks: groupTasks }]
+            : tasksInColumn.map((task) => ({ type: "single" as const, task }));
+        } else {
+          return tasksInColumn
+            .filter((t) => !selectedTasks.includes(t.ProjectTaskId))
+            .map((task) => ({ type: "single" as const, task }));
+        }
+      }
+      if (!isMultiSelect) return tasksInColumn.map((task) => ({ type: "single" as const, task }));
+      const selectedInThisColumn = tasksInColumn.filter((t) =>
+        selectedTasks.includes(t.ProjectTaskId)
+      );
+      if (selectedInThisColumn.length > 1) {
+        const singleItems = tasksInColumn
+          .filter((t) => !selectedTasks.includes(t.ProjectTaskId))
+          .map((task) => ({ type: "single" as const, task }));
+        return [...singleItems, { type: "group", tasks: selectedInThisColumn }];
+      }
+      return tasksInColumn.map((task) => ({ type: "single" as const, task }));
+    },
+    [tasks, selectedTasks, isDraggingMultiColumn, isMultiSelect, dragSourceColumnId]
+  );
+
+  const columnTasks = useMemo(() => {
+    const tasksByColumn: { [key: number]: Task[] } = {};
+    columns.forEach((col) => {
+      tasksByColumn[col.ProjectTaskStatusId] = tasks.filter(
+        (t) => t.ProjectTaskStatusId === col.ProjectTaskStatusId
+      );
     });
-  };
+    return tasksByColumn;
+  }, [tasks, columns]);
+
+  const tabs = useMemo(
+    () => [
+      {
+        title: "Attive",
+        icon: <Icon icon="solar:check-read-linear" fontSize={22} />,
+      },
+      {
+        title: "Archiviate",
+        icon: <Icon icon="solar:archive-linear" fontSize={22} />,
+      },
+    ],
+    []
+  );
+
+  // Componente per il drag di un gruppo di task
+  const GroupDraggable = useCallback(
+    ({
+      groupTasks,
+      index,
+    }: {
+      groupTasks: Task[];
+      index: number;
+    }) => (
+      <Draggable draggableId={`group-${groupTasks[0].ProjectTaskId}`} index={index}>
+        {(provided, snapshot) => {
+          const groupStyle = {
+            ...provided.draggableProps.style,
+            transition: "transform 0.25s ease, box-shadow 0.25s ease",
+            boxShadow: snapshot.isDragging ? "0 10px 20px rgba(0,0,0,0.4)" : "none",
+            zIndex: snapshot.isDragging ? 999 : "auto",
+          };
+
+          return (
+            <div
+              ref={provided.innerRef}
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}
+              style={groupStyle}
+            >
+              <div className="relative">
+                {groupTasks.map((task, i) => (
+                  <div
+                    key={task.ProjectTaskId}
+                    className="absolute w-full transition-all duration-200"
+                    style={{
+                      transform: `translateY(${i * (snapshot.isDragging ? 8 : 16)}px)`,
+                      zIndex: 10 - i,
+                    }}
+                  >
+                    <TaskCard
+                      task={task}
+                      setUpdate={setUpdate}
+                      update={update}
+                      socket={socket}
+                      projectId={projectId}
+                      updateTaskStatus={updateTaskStatus}
+                      columnCount={columns.length}
+                      isMultiSelect={true}
+                      handleTaskSelect={handleTaskSelect}
+                      isSelected={true}
+                      isDragging={snapshot.isDragging}
+                      isPartOfGroup={true}
+                    />
+                  </div>
+                ))}
+                <div
+                  className="invisible"
+                  style={{
+                    height: `${groupTasks.length * 40 + 80}px`,
+                  }}
+                />
+              </div>
+            </div>
+          );
+        }}
+      </Draggable>
+    ),
+    [columns.length, projectId, setUpdate, update, updateTaskStatus, handleTaskSelect]
+  );
 
   return (
-    <>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <AddTaskModal
-          isOpen={modalAddData.open}
-          isClosed={() => setModalAddData({ ...modalAddData, open: false })}
-          fetchData={fetchData}
-          ProjectId={projectId}
-        />
+    <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+      <AddTaskModal
+        isOpen={modalAddData.open}
+        isClosed={() =>
+          setModalAddData((prev) => ({ ...prev, open: false }))
+        }
+        fetchData={fetchData}
+        ProjectId={projectId}
+      />
 
-        {isLoading ? (
-          <div className="w-full flex justify-center items-center h-screen">
-            <Spinner />
-          </div>
-        ) : (
-          <>
-            <div className="w-full flex justify-between">
-              <Tabs
-                aria-label="Options"
-                color="primary"
-                radius="full"
-                variant="bordered"
-                selectedKey={activeTab}
-                className="hidden sm:flex"
-                onSelectionChange={(key) => setActiveTab(key as string)}
-              >
-                {tabs.map((tab) => (
-                  <Tab
-                    key={tab.title}
-                    title={
-                      <div className="flex items-center space-x-2">
-                        {tab.icon}
-                        <span>{tab.title}</span>
-                      </div>
+      <div className="w-full flex justify-between">
+        <Tabs
+          aria-label="Options"
+          color="primary"
+          radius="full"
+          variant="bordered"
+          selectedKey={activeTab}
+          className="hidden sm:flex"
+          onSelectionChange={(key) => setActiveTab(key as string)}
+        >
+          {tabs.map((tab) => (
+            <Tab
+              key={tab.title}
+              title={
+                <div className="flex items-center space-x-2">
+                  {tab.icon}
+                  <span>{tab.title}</span>
+                </div>
+              }
+            />
+          ))}
+        </Tabs>
+
+        {permissions.assignActivity && (
+          <div className="flex justify-end flex-row gap-2 w-full">
+            <div className="flex justify-end items-center w-full gap-2">
+              {isMultiSelect && selectedTasks.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
+                  <Select
+                    onChange={(e) =>
+                      changeSelectedTasksStatus(Number(e.target.value))
                     }
-                  />
-                ))}
-              </Tabs>
-              {permissions.assignActivity && (
-                <div className="flex justify-end flex-row gap-2 w-full">
-                  <div className="flex justify-end items-center w-full gap-2">
-                    {isMultiSelect && selectedTasks.length > 0 && (
-                      <>
-                        <Select
-                          onChange={(e) =>
-                            changeSelectedTasksStatus(Number(e.target.value))
-                          }
-                          placeholder="Seleziona Stato"
-                          className="w-48"
-                          color="primary"
-                          variant="bordered"
-                          radius="full"
-                        >
-                          {columns.map((column) => (
-                            <SelectItem
-                              key={column.ProjectTaskStatusId}
-                              value={column.ProjectTaskStatusId}
-                            >
-                              {column.ProjectTaskStatusName}
-                            </SelectItem>
-                          ))}
-                        </Select>
-                        <ConfirmDeleteTaskModal
-                          TaskData={selectedTasks
-                            .map((id) =>
-                              tasks.find((task) => task.ProjectTaskId === id)
-                            )
-                            .filter((task): task is Task => task !== undefined)}
-                          DeleteTasks={deleteSelectedTasks}
-                        />
-                      </>
-                    )}
-                    {activeTab === "Attive" && (
-                      <Button
-                        variant={isMultiSelect ? "solid" : "bordered"}
-                        color="primary"
-                        radius="full"
-                        className="w-fit"
-                        onPress={toggleMultiSelect}
-                      >
-                        {isMultiSelect
-                          ? "Disabilita Selezione Multipla"
-                          : "Abilita Selezione Multipla"}
-                      </Button>
-                    )}
-                  </div>
-                  <Button
+                    placeholder="Seleziona Stato"
+                    className="w-full sm:w-48"
                     color="primary"
+                    variant="bordered"
                     radius="full"
-                    onPress={() =>
-                      setModalAddData({ ...modalAddData, open: true })
-                    }
-                    startContent={
-                      <Icon icon="mynaui:plus-solid" fontSize={22} />
-                    }
-                    className="hidden sm:flex w-44"
                   >
-                    Aggiungi Task
-                  </Button>
-
-                  <Button
-                    color="primary"
-                    radius="full"
-                    onPress={() =>
-                      setModalAddData({ ...modalAddData, open: true })
-                    }
-                    startContent={
-                      <Icon icon="mynaui:plus-solid" fontSize={22} />
-                    }
-                    isIconOnly
-                    className="sm:hidden"
+                    {columns.map((column) => (
+                      <SelectItem
+                        key={column.ProjectTaskStatusId}
+                        value={column.ProjectTaskStatusId}
+                      >
+                        {column.ProjectTaskStatusName}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  <ConfirmDeleteTaskModal
+                    TaskData={selectedTasks
+                      .map((id) =>
+                        tasks.find(
+                          (task) => task.ProjectTaskId === id
+                        )
+                      )
+                      .filter((t): t is Task => t !== undefined)}
+                    DeleteTasks={deleteSelectedTasks}
                   />
                 </div>
               )}
+              {activeTab === "Attive" && (
+                <Button
+                  variant={isMultiSelect ? "solid" : "bordered"}
+                  color="primary"
+                  radius="full"
+                  className="w-fit"
+                  onPress={() => toggleMultiSelect()}
+                >
+                  {isMultiSelect
+                    ? "Disabilita Selezione Multipla"
+                    : "Abilita Selezione Multipla"}
+                </Button>
+              )}
             </div>
+            <Button
+              color="primary"
+              radius="full"
+              onPress={() =>
+                setModalAddData((prev) => ({ ...prev, open: true }))
+              }
+              startContent={
+                <Icon icon="mynaui:plus-solid" fontSize={22} />
+              }
+              className="hidden sm:flex w-44"
+            >
+              Aggiungi Task
+            </Button>
+            <Button
+              color="primary"
+              radius="full"
+              onPress={() =>
+                setModalAddData((prev) => ({ ...prev, open: true }))
+              }
+              startContent={
+                <Icon icon="mynaui:plus-solid" fontSize={22} />
+              }
+              isIconOnly
+              className="sm:hidden"
+            />
+          </div>
+        )}
+      </div>
 
-            {activeTab === "Attive" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 justify-between py-5 gap-5 mb-14">
-                {columns.map((column) => {
-                  const columnTaskList =
-                    columnTasks[column.ProjectTaskStatusId] || [];
-                  return (
+      {activeTab === "Attive" ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 justify-between py-5 gap-5 mb-14">
+          {columns.map((column) => {
+            const tasksInThisColumn =
+              columnTasks[column.ProjectTaskStatusId] || [];
+            const renderList = renderListForColumn(
+              tasksInThisColumn,
+              column.ProjectTaskStatusId
+            );
+
+            return (
+              <div
+                key={column.ProjectTaskStatusId}
+                className={`flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center h-fit transition-height duration-300 ${
+                  tasksInThisColumn.length === 0
+                    ? "min-h-[100px]"
+                    : "min-h-[200px]"
+                }`}
+              >
+                <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
+                  {column.ProjectTaskStatusName}
+                  <Chip radius="full" color="primary" variant="faded" size="sm">
+                    {tasksInThisColumn.length}
+                  </Chip>
+                </h2>
+                <Droppable
+                  droppableId={String(column.ProjectTaskStatusId)}
+                  direction="vertical"
+                  type="TASK"
+                >
+                  {(provided, snapshot) => (
                     <div
-                      key={column.ProjectTaskStatusId}
-                      className={`flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center h-fit transition-height duration-300 ${
-                        columnTaskList.length === 0
-                          ? "min-h-[100px]"
-                          : "min-h-[200px]"
-                      }`}
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={cn(
+                        "w-full p-2 flex flex-col gap-5 h-auto",
+                        snapshot.isDraggingOver
+                          ? "bg-gray-200 opacity-35 rounded-b-lg border-2 border-dashed border-gray-500"
+                          : "bg-lightgrey"
+                      )}
                     >
-                      <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
-                        {column.ProjectTaskStatusName}
-                        <Chip
-                          radius="full"
-                          color="primary"
-                          variant="faded"
-                          size="sm"
-                        >
-                          {taskCounts[column.ProjectTaskStatusId]}
-                        </Chip>
-                      </h2>
-                      <Droppable
-                        droppableId={column.ProjectTaskStatusId.toString()}
-                        direction="vertical"
-                        type="TASK"
-                      >
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                            className={cn(
-                              "w-full p-2 flex flex-col gap-5 h-auto",
-                              snapshot.isDraggingOver
-                                ? "bg-gray-200 opacity-35 rounded-b-lg border-2 border-dashed border-gray-500"
-                                : "bg-lightgrey"
-                            )}
-                          >
-                            {columnTaskList.map((task, index) => (
-                              <Draggable
-                                key={task.ProjectTaskId}
-                                draggableId={task.ProjectTaskId.toString()}
-                                index={index}
-                              >
-                                {(provided) => (
+                      {renderList.map((item, index) => {
+                        if (item.type === "single") {
+                          return (
+                            <Draggable
+                              key={item.task.ProjectTaskId}
+                              draggableId={item.task.ProjectTaskId.toString()}
+                              index={index}
+                            >
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  id={`task-${item.task.ProjectTaskId}`}
+                                >
                                   <TaskCard
-                                    provided={provided}
-                                    task={task}
+                                    task={item.task}
                                     setUpdate={setUpdate}
                                     update={update}
                                     socket={socket}
@@ -556,64 +718,67 @@ export default function TaskContainer({
                                     isMultiSelect={isMultiSelect}
                                     handleTaskSelect={handleTaskSelect}
                                     isSelected={selectedTasks.includes(
-                                      task.ProjectTaskId
+                                      item.task.ProjectTaskId
                                     )}
+                                    isDragging={snapshot.isDragging}
+                                    isPartOfGroup={false}
                                   />
-                                )}
-                              </Draggable>
-                            ))}
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
+                                </div>
+                              )}
+                            </Draggable>
+                          );
+                        } else {
+                          return (
+                            <GroupDraggable
+                              key={`group-${item.tasks[0].ProjectTaskId}`}
+                              groupTasks={item.tasks}
+                              index={index}
+                            />
+                          );
+                        }
+                      })}
+                      {provided.placeholder}
                     </div>
-                  );
-                })}
+                  )}
+                </Droppable>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 justify-between py-5 gap-5 mb-14">
-                <div
-                  key={"Archiviate"}
-                  className={`flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center h-fit transition-height duration-300 ${
-                    archivedTasks.length === 0
-                      ? "min-h-[100px]"
-                      : "min-h-[200px]"
-                  }`}
-                >
-                  <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
-                    Archiviate
-                    <Chip
-                      radius="full"
-                      color="primary"
-                      variant="faded"
-                      size="sm"
-                    >
-                      {archivedTasks.length}
-                    </Chip>
-                  </h2>
-                  <div
-                    className={cn(
-                      "w-full p-2 grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-5 h-auto bg-lightgrey"
-                    )}
-                  >
-                    {archivedTasks.map((task) => (
-                      <ArchivedTaskCard
-                        key={task.ProjectTaskId}
-                        task={task}
-                        setUpdate={setUpdate}
-                        update={update}
-                        socket={socket}
-                        projectId={projectId}
-                        columnCount={columns.length}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </DragDropContext>
-    </>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 justify-between py-5 gap-5 mb-14">
+          <div
+            key={"Archiviate"}
+            className={`flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center h-fit transition-height duration-300 ${
+              archivedTasks.length === 0 ? "min-h-[100px]" : "min-h-[200px]"
+            }`}
+          >
+            <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
+              Archiviate
+              <Chip radius="full" color="primary" variant="faded" size="sm">
+                {archivedTasks.length}
+              </Chip>
+            </h2>
+            <div
+              className={cn(
+                "w-full p-2 grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-5 h-auto bg-lightgrey"
+              )}
+            >
+              {archivedTasks.map((task) => (
+                <ArchivedTaskCard
+                  key={task.ProjectTaskId}
+                  task={task}
+                  setUpdate={setUpdate}
+                  update={update}
+                  socket={socket}
+                  projectId={projectId}
+                  columnCount={columns.length}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </DragDropContext>
   );
 }
