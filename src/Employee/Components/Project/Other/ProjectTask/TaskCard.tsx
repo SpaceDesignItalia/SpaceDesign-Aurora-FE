@@ -1,35 +1,29 @@
-// @ts-nocheck
+"use client";
+
 import {
   Avatar,
   AvatarGroup,
-  Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownItem,
-  DropdownMenu,
-  DateValue,
   Card,
   CardHeader,
   CardBody,
   CardFooter,
   Chip,
   Tooltip,
-  Checkbox,
 } from "@heroui/react";
-
-import { API_URL_IMG } from "../../../../../API/API";
-import dayjs from "dayjs";
-import { useDateFormatter } from "@react-aria/i18n";
-import { useState } from "react";
-import { parseDate } from "@internationalized/date";
-import ConfirmDeleteTaskModal from "./ConfirmDeleteTaskModal";
-import ViewTaskModal from "./ViewTaskModal";
-import axios from "axios";
-import { useEffect } from "react";
-import { usePermissions } from "../../../Layout/PermissionProvider";
-import ReactQuill from "react-quill";
 import { Icon } from "@iconify/react";
+import dayjs from "dayjs";
+import { parseDate, type DateValue } from "@internationalized/date";
+import { useDateFormatter } from "@react-aria/i18n";
+import axios from "axios";
+import { useEffect, useState, useCallback } from "react";
+import type React from "react";
 
+// Import modali
+import ViewTaskModal from "./ViewTaskModal";
+import { API_URL_IMG } from "../../../../../API/API";
+import { usePermissions } from "../../../Layout/PermissionProvider";
+
+// Interfacce
 interface Tag {
   ProjectTaskTagId: number;
   ProjectTaskTagName: string;
@@ -55,13 +49,14 @@ interface Task {
   ProjectTaskId: number;
   ProjectTaskName: string;
   ProjectTaskDescription?: string;
-  ProjectTaskExpiration?: DateValue | null;
+  ProjectTaskExpiration?: DateValue | null | undefined;
   ProjectTaskCreation: DateValue;
   ProjectTaskStatusId: number;
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
   ProjectTaskComments: Comment[];
   ProjectId: number;
+  ProjectTaskChecklists: any[];
 }
 
 interface ModalData {
@@ -69,76 +64,74 @@ interface ModalData {
   open: boolean;
 }
 
-interface ModalDeleteData {
-  Task: Task;
-  open: boolean;
-}
-
-interface ModalEditData {
-  Task: Task;
-  open: boolean;
+interface TaskCardProps {
+  task: Task;
+  setUpdate: (value: boolean | ((prev: boolean) => boolean)) => void;
+  update: boolean;
+  socket: any;
+  projectId: number;
+  updateTaskStatus: (taskId: number, statusId: number) => void;
+  columnCount: number;
+  isMultiSelect: boolean;
+  handleTaskSelect: (taskId: number, isDragging?: boolean) => void;
+  isSelected: boolean;
+  isDragging?: boolean;
+  isCtrlPressed?: boolean;
+  isPartOfGroup: boolean;
 }
 
 export default function TaskCard({
-  provided,
   task,
   setUpdate,
   update,
   socket,
-  projectId,
-  updateTaskStatus,
-  columnCount,
   isMultiSelect,
   handleTaskSelect,
   isSelected,
-}: {
-  provided: any;
-  task: Task;
-  setUpdate: any;
-  update: any;
-  socket: any;
-  projectId: number;
-  updateTaskStatus: any;
-  columnCount: number;
-  isMultiSelect: boolean;
-  handleTaskSelect: (taskId: number) => void;
-  isSelected: boolean;
-}) {
+  isDragging,
+  isCtrlPressed,
+  isPartOfGroup,
+}: TaskCardProps) {
+  // Modale di view
   const [modalData, setModalData] = useState<ModalData>({
     Task: {
       ProjectTaskId: 0,
       ProjectTaskName: "",
-      ProjectTaskExpiration: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
-      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+      ProjectTaskExpiration: parseDate(dayjs().format("YYYY-MM-DD")),
+      ProjectTaskCreation: parseDate(dayjs().format("YYYY-MM-DD")),
       ProjectTaskStatusId: 0,
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
       ProjectTaskComments: [],
       ProjectId: 0,
+      ProjectTaskChecklists: [],
     },
     open: false,
   });
+
+  // Permessi
   const [permissions, setPermissions] = useState({
     editActivity: false,
     removeActivity: false,
   });
 
   const { hasPermission } = usePermissions();
+
   useEffect(() => {
     async function fetchPermissions() {
       const editActivity = await hasPermission("EDIT_ACTIVITY");
       const removeActivity = await hasPermission("REMOVE_ACTIVITY");
-
       setPermissions({
-        ...permissions,
-        editActivity: editActivity,
-        removeActivity: removeActivity,
+        editActivity,
+        removeActivity,
       });
     }
     fetchPermissions();
   }, [hasPermission]);
 
+  // Conteggio commenti
   const [commentsCount, setCommentsCount] = useState(0);
+
   useEffect(() => {
     const fetchComments = async () => {
       const commentResponse = await axios.get<Comment[]>(
@@ -150,9 +143,11 @@ export default function TaskCard({
       setCommentsCount(commentResponse.data.length);
     };
     fetchComments();
-  }, [update]);
+  }, [task.ProjectTaskId]);
 
+  // Conteggio checklist
   const [checkboxCount, setCheckboxCount] = useState(0);
+
   useEffect(() => {
     const fetchCheckboxes = async () => {
       const checkboxResponse = await axios.get(
@@ -164,9 +159,11 @@ export default function TaskCard({
       setCheckboxCount(checkboxResponse.data.length);
     };
     fetchCheckboxes();
-  }, [update]);
+  }, [task.ProjectTaskId]);
 
+  // Conteggio file
   const [fileCount, setFileCount] = useState(0);
+
   useEffect(() => {
     const fetchFiles = async () => {
       try {
@@ -179,30 +176,62 @@ export default function TaskCard({
       }
     };
     fetchFiles();
-  }, [update]);
+  }, [task.ProjectTaskId]);
 
+  const formatter = useDateFormatter({ dateStyle: "full" });
+
+  // Formatta data scadenza
   function formatDate(date: DateValue) {
     if (!date) return "Nessuna scadenza";
-    let formatter = useDateFormatter({ dateStyle: "full" });
     return dayjs(formatter.format(new Date(date.toString()))).format(
       "DD MMM YYYY"
     );
   }
 
-  function hasValidDescription(content) {
-    let splittedContent: string[] = content.split(">");
+  // Verifica descrizione "valida"
+  function hasValidDescription(content: string) {
+    if (!content) return false;
+    const splittedContent: string[] = content.split(">");
     let valid = false;
     splittedContent.forEach((element) => {
-      if (!element.startsWith("<") && element.length > 0) {
+      if (!element.startsWith("<") && element.trim().length > 0) {
         valid = true;
       }
     });
-    if (valid) {
-      return true;
-    } else {
-      return false;
-    }
+    return valid;
   }
+
+  // Gestione click sulla card
+  const handleCardClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isDragging) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+
+      if (e.ctrlKey || isCtrlPressed || isMultiSelect) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleTaskSelect(task.ProjectTaskId, false);
+      } else {
+        setModalData({ Task: task, open: true });
+      }
+    },
+    [isDragging, isCtrlPressed, isMultiSelect, handleTaskSelect, task]
+  );
+
+  useEffect(() => {
+    const handleTaskNews = () => {
+      setUpdate((prev) => !prev);
+    };
+
+    socket.on("task-news", handleTaskNews);
+
+    return () => {
+      socket.off("task-news", handleTaskNews);
+    };
+  }, [socket, setUpdate]);
 
   return (
     <>
@@ -217,31 +246,35 @@ export default function TaskCard({
       />
 
       <div
-        onClick={(e) =>
-          isMultiSelect
-            ? handleTaskSelect(task.ProjectTaskId)
-            : setModalData({
-                ...modalData,
-                open: true,
-                Task: task,
-              })
-        }
-        ref={provided.innerRef}
-        {...provided.draggableProps}
-        {...provided.dragHandleProps}
-        className="w-full cursor-pointer relative"
+        onClick={handleCardClick}
+        className={`w-full cursor-grab active:cursor-grabbing transition-all duration-200 ${
+          isDragging ? "z-50 opacity-70 shadow-xl scale-105" : ""
+        }`}
       >
         <Card
-          className={`w-full hover:shadow-lg transition-shadow duration-200 ${
-            isSelected ? "border-3 border-primary" : ""
+          className={`w-full hover:shadow-lg ${
+            isSelected
+              ? "border-2 border-primary bg-primary-50"
+              : isPartOfGroup
+              ? "border-2 border-primary-200 bg-primary-100"
+              : ""
           }`}
           radius="sm"
         >
           <CardHeader className="flex justify-between items-start gap-3 px-4 pt-4 pb-2">
             <div className="flex flex-col gap-2 flex-grow">
-              <h1 className="text-lg font-semibold text-default-700 line-clamp-2">
-                {task.ProjectTaskName}
-              </h1>
+              <div className="flex items-center justify-between">
+                <h1 className="text-lg font-semibold text-default-700 line-clamp-2">
+                  {task.ProjectTaskName}
+                </h1>
+                {isSelected && (
+                  <Icon
+                    icon="mdi:check-circle"
+                    className="text-primary"
+                    fontSize={24}
+                  />
+                )}
+              </div>
               {task.ProjectTaskTags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {task.ProjectTaskTags.map((tag) => (
@@ -261,7 +294,7 @@ export default function TaskCard({
 
           <CardBody className="px-4 py-3">
             <div className="flex flex-wrap gap-3 text-default-500">
-              {hasValidDescription(task.ProjectTaskDescription) && (
+              {hasValidDescription(task.ProjectTaskDescription ?? "") && (
                 <Tooltip content="Descrizione presente" showArrow>
                   <div className="flex items-center gap-1.5 text-sm bg-default-100 px-2.5 py-1 rounded-lg">
                     <Icon
@@ -328,7 +361,11 @@ export default function TaskCard({
               <Tooltip content="Data di scadenza" showArrow>
                 <div className="flex items-center gap-1.5 text-sm text-default-500 bg-default-100 px-2.5 py-1 rounded-lg">
                   <Icon icon="solar:calendar-linear" fontSize={22} />
-                  <span>{formatDate(task.ProjectTaskExpiration)}</span>
+                  <span>
+                    {task.ProjectTaskExpiration
+                      ? formatDate(task.ProjectTaskExpiration)
+                      : "Nessuna scadenza"}
+                  </span>
                 </div>
               </Tooltip>
             </div>
