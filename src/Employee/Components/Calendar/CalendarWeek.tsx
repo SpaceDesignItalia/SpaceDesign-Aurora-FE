@@ -224,7 +224,10 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                           return false;
                         });
 
-                        const width = eventsAtThisHour.length > 1 ? 50 : 100;
+                        const width =
+                          eventsAtThisHour.length > 1
+                            ? 100 / eventsAtThisHour.length
+                            : 100;
 
                         return eventsAtThisHour.map((event, index) => {
                           const eventStartDate = new Date(event.EventStartDate);

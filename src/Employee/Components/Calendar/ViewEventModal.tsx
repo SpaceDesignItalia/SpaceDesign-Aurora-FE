@@ -432,8 +432,8 @@ END:VCALENDAR`;
             <>
               {!isEditing ? (
                 <>
-                  <ModalHeader className="flex flex-col sm:flex-row justify-between items-center gap-2">
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-2 w-full">
+                  <ModalHeader className="flex flex-col sm:flex-row justify-between items-center gap-1">
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-2 px-2 w-full">
                       <Icon icon="solar:calendar-linear" fontSize={18} />
                       <div className="flex flex-col sm:flex-row justify-between items-center gap-2 w-full">
                         <p className="text-lg font-medium">
@@ -447,7 +447,7 @@ END:VCALENDAR`;
                         />
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                       <Button
                         isIconOnly
                         color="warning"
@@ -464,6 +464,7 @@ END:VCALENDAR`;
                         variant="light"
                         radius="full"
                         onPress={handleExportEvent}
+                        size="sm"
                         isIconOnly
                         startContent={
                           <Icon icon="solar:download-linear" fontSize={18} />
