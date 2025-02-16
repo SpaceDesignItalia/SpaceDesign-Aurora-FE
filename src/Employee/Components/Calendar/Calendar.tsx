@@ -322,14 +322,25 @@ END:VEVENT`;
   }
 
   useEffect(() => {
-    if (Action === "add-event") {
-      setIsOpen(true);
-    } else if (Action === "accept" && EventId && EventPartecipantEmail) {
-      updateEventPartecipantStatus(EventId, EventPartecipantEmail, "Accettato");
-    } else if (Action === "reject" && EventId && EventPartecipantEmail) {
-      updateEventPartecipantStatus(EventId, EventPartecipantEmail, "Rifiutato");
+    if (EventId && EventPartecipantEmail) {
+      if (Action === "add-event") {
+        setIsOpen(true);
+      } else if (Action === "accept" && EventId && EventPartecipantEmail) {
+        updateEventPartecipantStatus(
+          EventId,
+          EventPartecipantEmail,
+          "Accettato"
+        );
+      } else if (Action === "reject" && EventId && EventPartecipantEmail) {
+        updateEventPartecipantStatus(
+          EventId,
+          EventPartecipantEmail,
+          "Rifiutato"
+        );
+      }
     }
     fetchEvents();
+
     socket.on("calendar-update", () => {
       fetchEvents();
     });

@@ -578,7 +578,7 @@ END:VCALENDAR`;
                                       fontSize={18}
                                     />
                                   }
-                                  className="w-full sm:w-1/3 sm:w-1/4"
+                                  className="w-full sm:w-1/3"
                                   variant="solid"
                                   onClick={() =>
                                     setModalUploadFile({
@@ -614,10 +614,26 @@ END:VCALENDAR`;
                                         size="lg"
                                         variant="flat"
                                         startContent={
-                                          <Icon
-                                            icon="solar:check-circle-linear"
-                                            fontSize={18}
-                                          />
+                                          Partecipant.EventPartecipantStatus ===
+                                          "Accettato" ? (
+                                            <Icon
+                                              color="green"
+                                              icon="solar:check-circle-linear"
+                                              fontSize={18}
+                                            />
+                                          ) : Partecipant.EventPartecipantStatus ===
+                                            "Rifiutato" ? (
+                                            <Icon
+                                              color="red"
+                                              icon="solar:close-circle-linear"
+                                              fontSize={18}
+                                            />
+                                          ) : (
+                                            <Icon
+                                              icon="solar:pending-circle-linear"
+                                              fontSize={18}
+                                            />
+                                          )
                                         }
                                       >
                                         {Partecipant.EventPartecipantEmail}

@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { Icon } from "@iconify/react";
-import { Link, Badge, Avatar, cn } from "@heroui/react";
+import { Link, Badge, Avatar, cn, Button } from "@heroui/react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/it";
 import axios from "axios";
 import Notification from "./Notification";
+import { FRONTEND_URL } from "../../../../API/API";
 
 dayjs.extend(relativeTime);
 dayjs.locale("it");
@@ -15,9 +16,11 @@ interface Notification {
   NotificationMessage: string;
   NotificationTypeName: string;
   ProjectId: number;
+  EventId: number;
   ProjectName: string;
   CompanyName: string;
   UserId: number;
+  StafferEmail: string;
   userfullname: string;
   NotificationCreationDate: Date;
   IsRead: boolean;
@@ -93,6 +96,11 @@ export default function NotificationItem({
     location.href = "/comunications/chat/";
   };
 
+  const handleReadCalendarNotification = () => {
+    handleReadNotification();
+    location.href = "/comunications/calendar";
+  };
+
   const contentByType: Record<string, JSX.Element | null> = {
     Progetto: (
       <div className="flex items-center gap-2">
@@ -106,17 +114,26 @@ export default function NotificationItem({
         <strong>{NotificationInfo.userfullname}</strong>
       </div>
     ),
+    Evento: (
+      <div className="flex items-center gap-2">
+        <Icon icon="solar:calendar-linear" fontSize={24} />
+      </div>
+    ),
     default: null,
   };
+
+  console.log(NotificationInfo.EventId, NotificationInfo.StafferEmail);
 
   return (
     <Link
       className="w-full"
       color="foreground"
-      onClick={
+      onPress={
         NotificationInfo.NotificationTypeName === "Progetto"
           ? handleReadProjectNotification
-          : handleReadMessageNotification
+          : NotificationInfo.NotificationTypeName === "Dipendente"
+          ? handleReadMessageNotification
+          : handleReadCalendarNotification
       }
     >
       <div
@@ -147,26 +164,54 @@ export default function NotificationItem({
               />
             </Badge>
           )}
-          <div className="flex flex-col">
+          <div className="flex flex-row gap-2">
             {contentByType[NotificationInfo.NotificationTypeName]}
-            <p
-              dangerouslySetInnerHTML={{
-                __html: NotificationInfo.NotificationMessage,
-              }}
-            />
-            <time className="text-tiny text-default-400">{formattedDate}</time>
+            <div className="flex flex-col">
+              <p
+                dangerouslySetInnerHTML={{
+                  __html: NotificationInfo.NotificationMessage,
+                }}
+              />
+              <time className="text-tiny text-default-400">
+                {formattedDate}
+              </time>
+            </div>
           </div>
         </div>
-        {/*  {NotificationInfo.NotificationTypeName === "Progetto" && (
+        {NotificationInfo.NotificationTypeName === "Evento" && (
           <div className="flex gap-2 pt-2">
-            <Button color="primary" size="sm">
-              Accept
+            <Button
+              as={Link}
+              color="primary"
+              size="sm"
+              href={
+                FRONTEND_URL +
+                "/comunications/calendar/" +
+                NotificationInfo.EventId +
+                "/" +
+                NotificationInfo.StafferEmail +
+                "/accept"
+              }
+            >
+              Partecipa
             </Button>
-            <Button size="sm" variant="flat">
-              Decline
+            <Button
+              as={Link}
+              size="sm"
+              variant="flat"
+              href={
+                FRONTEND_URL +
+                "/comunications/calendar/" +
+                NotificationInfo.EventId +
+                "/" +
+                NotificationInfo.StafferEmail +
+                "/reject"
+              }
+            >
+              Rifiuta
             </Button>
           </div>
-        )} */}
+        )}
       </div>
     </Link>
   );
