@@ -92,8 +92,60 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
         isClosed={() => setIsOpen(false)}
       />
       <div className="flex flex-col h-full overflow-hidden">
+        {/* Sezione "Tutto il giorno" */}
+        <div className="flex border-b border-gray-100">
+          <div className="w-[8.33%] bg-white text-center py-3 text-sm leading-5 text-gray-500">
+            Tutto il giorno
+          </div>
+          <div className="flex-1">
+            {(() => {
+              const allDayEvents = events.filter((event) => {
+                const eventStartHour = parseInt(
+                  event.EventStartTime.split(":")[0]
+                );
+                return (
+                  eventStartHour === 0 &&
+                  event.EventEndTime === "00:00" &&
+                  currentDate.toDateString() ===
+                    new Date(event.EventStartDate).toDateString()
+                );
+              });
+
+              return (
+                <div
+                  style={{
+                    minHeight: "3rem",
+                    height:
+                      allDayEvents.length > 0
+                        ? `${allDayEvents.length * 2.5}rem`
+                        : "3rem",
+                    padding: allDayEvents.length > 0 ? "0.5rem 0" : "0",
+                  }}
+                >
+                  {allDayEvents.map((event) => (
+                    <div
+                      key={event.EventId}
+                      className="mx-1 rounded-lg p-2 text-xs opacity-70 hover:opacity-90 transition-opacity cursor-pointer mb-1 last:mb-0"
+                      style={{
+                        backgroundColor: event.EventColor,
+                        color: "white",
+                      }}
+                    >
+                      <div className="font-medium truncate">
+                        {event.EventTitle}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
+        {/* Griglia delle ore */}
         <div className="flex-1 overflow-x-hidden" ref={scrollRef}>
           <div className="grid grid-cols-12 divide-x divide-gray-100 relative">
+            {/* Griglia delle ore */}
             <div className="col-span-1 divide-y divide-gray-100">
               {HOURS.map((hour) => (
                 <div
@@ -119,6 +171,14 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
                       const eventStartHour = parseInt(
                         event.EventStartTime.split(":")[0]
                       );
+
+                      // Non includere eventi di tutto il giorno
+                      if (
+                        eventStartHour === 0 &&
+                        event.EventEndTime === "00:00"
+                      ) {
+                        return false;
+                      }
 
                       const isMiddleDay =
                         currentDate.toDateString() !==
@@ -242,26 +302,29 @@ const CalendarDay: React.FC<CalendarDayProps> = ({
                                 {event.EventTitle}
                               </div>
                               <div className="text-xs opacity-90 truncate">
-                                {(() => {
-                                  if (
-                                    currentDate.toDateString() ===
-                                    eventStartDate.toDateString()
-                                  ) {
-                                    if (
-                                      eventStartDate.toDateString() ===
-                                      eventEndDate.toDateString()
-                                    ) {
-                                      return `${event.EventStartTime} - ${event.EventEndTime}`;
-                                    }
-                                    return `dalle ${event.EventStartTime}`;
-                                  } else if (
-                                    currentDate.toDateString() ===
-                                    eventEndDate.toDateString()
-                                  ) {
-                                    return `fino alle ${event.EventEndTime}`;
-                                  }
-                                  return "Tutto il giorno";
-                                })()}
+                                {eventStartHour === 0 &&
+                                event.EventEndTime === "00:00"
+                                  ? "Tutto il giorno"
+                                  : (() => {
+                                      if (
+                                        currentDate.toDateString() ===
+                                        eventStartDate.toDateString()
+                                      ) {
+                                        if (
+                                          eventStartDate.toDateString() ===
+                                          eventEndDate.toDateString()
+                                        ) {
+                                          return `${event.EventStartTime} - ${event.EventEndTime}`;
+                                        }
+                                        return `dalle ${event.EventStartTime}`;
+                                      } else if (
+                                        currentDate.toDateString() ===
+                                        eventEndDate.toDateString()
+                                      ) {
+                                        return `fino alle ${event.EventEndTime}`;
+                                      }
+                                      return "Tutto il giorno";
+                                    })()}
                               </div>
                             </div>
 

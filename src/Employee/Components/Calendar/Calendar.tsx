@@ -288,7 +288,7 @@ END:VEVENT`;
     setIsLoading(true);
     try {
       const res = await axios.get(`Calendar/GET/GetEventsByEmail`);
-      setEvents(res.data);
+      setEvents([...res.data, ...events]);
     } catch (error) {
       console.error(error);
       // Add error handling UI here
@@ -340,7 +340,7 @@ END:VEVENT`;
       }
     }
     fetchEvents();
-
+    fetchProjects();
     socket.on("calendar-update", () => {
       fetchEvents();
     });
@@ -377,6 +377,37 @@ END:VEVENT`;
   }, [container]); //Corrected useEffect dependency
 
   const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+
+  async function fetchProjects() {
+    await axios
+      .get("/Project/GET/GetProjectInTeam", {
+        withCredentials: true,
+      })
+      .then((res) => {
+        for (const project of res.data) {
+          console.log(project);
+          if (project.ProjectEndDate) {
+            const endDate = new Date(project.ProjectEndDate);
+            events.push({
+              EventId: project.ProjectId,
+              EventTitle: project.ProjectName.substring(0, 20),
+              EventStartDate: endDate,
+              EventEndDate: endDate,
+              EventStartTime: "00:00",
+              EventEndTime: "00:00",
+              EventColor: "#000000",
+              EventDescription: "",
+              EventLocation: "",
+              EventTagName: "",
+              EventAttachments: [],
+              EventPartecipants: [],
+            });
+          }
+        }
+      });
+  }
+
+  console.log(events);
 
   return (
     <>
