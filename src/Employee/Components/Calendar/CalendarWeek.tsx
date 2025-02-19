@@ -155,6 +155,61 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
             })}
           </div>
         </div>
+
+        <div className="flex border-b border-gray-100">
+          <div className="w-[12.5%] bg-white text-center py-3 text-sm leading-5 text-gray-500 sticky left-0">
+            Tutto il giorno
+          </div>
+          <div className="flex flex-1">
+            {Array.from({ length: 7 }).map((_, dayIndex) => {
+              const dayDate = new Date(startOfWeek);
+              dayDate.setDate(startOfWeek.getDate() + dayIndex);
+
+              const allDayEvents = events.filter((event) => {
+                const eventStartHour = parseInt(
+                  event.EventStartTime.split(":")[0]
+                );
+                return (
+                  eventStartHour === 0 &&
+                  event.EventEndTime === "00:00" &&
+                  dayDate.toDateString() ===
+                    new Date(event.EventStartDate).toDateString()
+                );
+              });
+
+              return (
+                <div
+                  key={dayIndex}
+                  className="flex-1"
+                  style={{
+                    minHeight: "3rem",
+                    height:
+                      allDayEvents.length > 0
+                        ? `${allDayEvents.length * 2.5}rem`
+                        : "3rem",
+                    padding: allDayEvents.length > 0 ? "0.5rem 0" : "0",
+                  }}
+                >
+                  {allDayEvents.map((event) => (
+                    <div
+                      key={event.EventId}
+                      className="mx-1 rounded-lg p-2 text-xs opacity-70 hover:opacity-90 transition-opacity cursor-pointer mb-1 last:mb-0"
+                      style={{
+                        backgroundColor: event.EventColor,
+                        color: "white",
+                      }}
+                    >
+                      <div className="font-medium truncate">
+                        {event.EventTitle}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="flex-1 overflow-y-auto relative" ref={scrollRef}>
           <div className="grid grid-cols-8 divide-x divide-gray-100 relative">
             <div className="col-span-1 divide-y divide-gray-100">
@@ -174,6 +229,7 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
               const dayDate = new Date(startOfWeek);
               dayDate.setDate(startOfWeek.getDate() + dayIndex);
               const isPastDay = isPastDate(dayDate);
+
               return (
                 <div
                   key={dayIndex}
@@ -194,6 +250,13 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                           const eventStartHour = parseInt(
                             event.EventStartTime.split(":")[0]
                           );
+
+                          if (
+                            eventStartHour === 0 &&
+                            event.EventEndTime === "00:00"
+                          ) {
+                            return false;
+                          }
 
                           const isMiddleDay =
                             dayDate.toDateString() !==
@@ -224,7 +287,10 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                           return false;
                         });
 
-                        const width = eventsAtThisHour.length > 1 ? 50 : 100;
+                        const width =
+                          eventsAtThisHour.length > 1
+                            ? 100 / eventsAtThisHour.length
+                            : 100;
 
                         return eventsAtThisHour.map((event, index) => {
                           const eventStartDate = new Date(event.EventStartDate);
@@ -301,26 +367,29 @@ const CalendarWeek: React.FC<CalendarWeekProps> = ({
                                 {event.EventTitle}
                               </div>
                               <div className="text-xs opacity-90">
-                                {(() => {
-                                  if (
-                                    dayDate.toDateString() ===
-                                    eventStartDate.toDateString()
-                                  ) {
-                                    if (
-                                      eventStartDate.toDateString() ===
-                                      eventEndDate.toDateString()
-                                    ) {
-                                      return `${event.EventStartTime} - ${event.EventEndTime}`;
-                                    }
-                                    return `dalle ${event.EventStartTime}`;
-                                  } else if (
-                                    dayDate.toDateString() ===
-                                    eventEndDate.toDateString()
-                                  ) {
-                                    return `fino alle ${event.EventEndTime}`;
-                                  }
-                                  return "Tutto il giorno";
-                                })()}
+                                {eventStartHour === 0 &&
+                                event.EventEndTime === "00:00"
+                                  ? "Tutto il giorno"
+                                  : (() => {
+                                      if (
+                                        dayDate.toDateString() ===
+                                        eventStartDate.toDateString()
+                                      ) {
+                                        if (
+                                          eventStartDate.toDateString() ===
+                                          eventEndDate.toDateString()
+                                        ) {
+                                          return `${event.EventStartTime} - ${event.EventEndTime}`;
+                                        }
+                                        return `dalle ${event.EventStartTime}`;
+                                      } else if (
+                                        dayDate.toDateString() ===
+                                        eventEndDate.toDateString()
+                                      ) {
+                                        return `fino alle ${event.EventEndTime}`;
+                                      }
+                                      return "Tutto il giorno";
+                                    })()}
                               </div>
                               {width > 50 && (
                                 <>
