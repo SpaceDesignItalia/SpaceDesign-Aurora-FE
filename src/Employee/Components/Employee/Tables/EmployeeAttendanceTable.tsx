@@ -33,6 +33,11 @@ interface Employee {
   }[];
 }
 
+interface Attendance {
+  date: string;
+  status: string;
+}
+
 interface Props {
   employees: Employee[];
   selectedDate: Date;
@@ -380,19 +385,19 @@ export default function EmployeeAttendanceTable({
             date.getMonth() === selectedDate.getMonth() &&
             date.getFullYear() === selectedDate.getFullYear()
           ) {
-            // Imposta solo l'iniziale nello stato
-            const initial: StatusKey =
-              attendance.status === "present"
-                ? "present"
-                : attendance.status === "smartworking"
-                ? "smartworking"
-                : attendance.status === "absent"
-                ? "absent"
-                : attendance.status === "vacation"
-                ? "vacation"
-                : "";
+            const statusMap: Record<string, StatusKey | undefined> = {
+              present: "present",
+              smartworking: "smartworking",
+              absent: "absent",
+              vacation: "vacation",
+            };
 
-            row[`day_${date.getDate()}`] = initial;
+            const initial: StatusKey =
+              statusMap[attendance.status] || "present";
+
+            if (initial) {
+              row[`day_${date.getDate()}`] = initial;
+            }
           }
         });
 
@@ -499,9 +504,7 @@ export default function EmployeeAttendanceTable({
     }
   }
 
-  const handleExportAndSend = async (
-    e?: React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const handleExportAndSend = async () => {
     try {
       await exportAttendanceToExcel(employees, selectedDate);
       await sendAttendance();
@@ -845,7 +848,7 @@ export default function EmployeeAttendanceTable({
             variant="ghost"
             radius="full"
             startContent={<Icon icon="solar:letter-linear" fontSize={24} />}
-            onPress={(e: any) => handleExportAndSend(e)}
+            onPress={handleExportAndSend}
           >
             Invia presenze di{" "}
             {format(selectedDate, "MMMM", { locale: it })
