@@ -17,7 +17,6 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../API/API";
 import ExcelJS from "exceljs";
-import { saveAs } from "file-saver"; // npm install file-saver
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -29,6 +28,11 @@ interface Employee {
     date: string;
     status: string;
   }[];
+}
+
+interface Attendance {
+  date: string;
+  status: string;
 }
 
 interface Props {
@@ -55,7 +59,10 @@ export default function EmployeeAttendanceTable({
     return Array.from({ length: days }, (_, i) => new Date(year, month, i + 1));
   };
 
-  const statusConfig = {
+  const statusConfig: Record<
+    string,
+    { color: string; icon: string; label: string }
+  > = {
     present: {
       color: "bg-emerald-100 border-emerald-300",
       icon: "hugeicons:office",
@@ -79,7 +86,7 @@ export default function EmployeeAttendanceTable({
   };
 
   // Aggiorna i colori per usare gli stessi del config
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     present: statusConfig.present.color,
     absent: statusConfig.absent.color,
     vacation: statusConfig.vacation.color,
@@ -94,7 +101,7 @@ export default function EmployeeAttendanceTable({
       startDate: Date;
     },
     key: string
-  ) => {
+  ): JSX.Element => {
     return (
       <div
         key={key}
@@ -191,17 +198,21 @@ export default function EmployeeAttendanceTable({
     );
   };
 
-  async function handleStatusChange(status: string, date: string) {
-    const res = await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
-      Status: status,
-      StafferId: loggedStafferId,
-      Date: date,
-    });
+  const handleStatusChange = async (status: string, date: string) => {
+    try {
+      const res = await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
+        Status: status,
+        StafferId: loggedStafferId,
+        Date: date,
+      });
 
-    if (res.status === 200) {
-      socket.emit("employee-attendance-update");
+      if (res.status === 200) {
+        socket.emit("employee-attendance-update");
+      }
+    } catch (error) {
+      console.error("Errore nell'aggiornamento dello stato:", error);
     }
-  }
+  };
 
   async function sendAttendance() {
     await axios.post("/Staffer/POST/SendAttendanceReport", {
@@ -212,139 +223,192 @@ export default function EmployeeAttendanceTable({
     });
   }
 
-  async function exportAttendanceToExcel(employees, selectedDate) {
-    // Creazione del workbook e del foglio
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Presenze");
+  async function exportAttendanceToExcel(
+    employees: Employee[],
+    selectedDate: Date
+  ): Promise<void> {
+    try {
+      console.log("Esportazione in corso...");
+      // Creazione del workbook e del foglio
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Presenze");
 
-    // Titolo della tabella
-    worksheet.getCell("A1").value = `Nome completo`;
-    worksheet.getCell("A1").font = { size: 16, bold: true };
+      // Titolo della tabella
+      worksheet.getCell("A1").value = `Nome completo`;
+      worksheet.getCell("A1").font = { size: 16, bold: true };
 
-    // Intestazione della tabella
-    worksheet.columns = [
-      { header: "Nome", key: "name", width: 30 },
-      ...Array.from(
-        {
-          length: new Date(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth() + 1,
-            0
-          ).getDate(),
-        },
-        (_, i) => ({
-          header: (i + 1).toString(),
-          key: `day_${i + 1}`,
-          width: 10,
-        })
-      ),
-    ];
+      // Intestazione della tabella
+      worksheet.columns = [
+        { header: "Nome", key: "name", width: 30 },
+        ...Array.from(
+          {
+            length: new Date(
+              selectedDate.getFullYear(),
+              selectedDate.getMonth() + 1,
+              0
+            ).getDate(),
+          },
+          (_, i) => ({
+            header: (i + 1).toString(),
+            key: `day_${i + 1}`,
+            width: 10,
+          })
+        ),
+      ];
 
-    // Definizione dei colori e delle iniziali per ciascuno stato
-    const statusColors = {
-      P: "FFCCFFCC", // Verde chiaro
-      SW: "FFCCCCFF", // Viola chiaro
-      A: "FFFFCCCC", // Giallo chiaro
-      ML: "FFFF9999", // Rosso chiaro
-    };
-
-    // Riempimento dei dati
-    employees.forEach((employee: Employee) => {
-      const row = {
-        name: employee.name,
+      // Correzione del tipo per row
+      type RowType = {
+        name: string;
+        [key: string]: string | undefined;
       };
 
-      employee.attendances.forEach((attendance: any) => {
-        const date: any = new Date(attendance.date);
-        if (
-          date.getMonth() === selectedDate.getMonth() &&
-          date.getFullYear() === selectedDate.getFullYear()
-        ) {
-          console.log(attendance.status);
-          // Imposta solo l'iniziale nello stato
-          const initial =
-            attendance.status === "present"
-              ? "P"
-              : attendance.status === "smartworking"
-              ? "SW"
-              : attendance.status === "absent"
-              ? "A"
-              : attendance.status === "vacation"
-              ? "F"
-              : "";
+      // Aggiungi un tipo per gli stati
+      type StatusKey = keyof typeof statusColors;
 
-          row[`day_${date.getDate()}`] = initial;
-        }
-      });
-
-      // Aggiungi la riga al foglio
-      const newRow = worksheet.addRow(row);
-
-      // Colora ogni cella basata sullo stato
-      newRow.eachCell((cell, colNumber) => {
-        if (colNumber > 1) {
-          // Escludi la colonna del nome
-          const initial = cell.value;
-          if (statusColors[initial]) {
-            cell.fill = {
-              type: "pattern",
-              pattern: "solid",
-              fgColor: { argb: statusColors[initial] },
-            };
-          }
-        }
-      });
-    });
-
-    // Formattazione delle celle
-    worksheet.eachRow((row, rowNumber) => {
-      row.eachCell((cell) => {
-        cell.border = {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
+      employees.forEach((employee: Employee) => {
+        const row: RowType = {
+          name: employee.name,
         };
-        cell.alignment = { vertical: "middle", horizontal: "center" };
+
+        employee.attendances.forEach((attendance: Attendance) => {
+          const date: any = new Date(attendance.date);
+          if (
+            date.getMonth() === selectedDate.getMonth() &&
+            date.getFullYear() === selectedDate.getFullYear()
+          ) {
+            // Imposta solo l'iniziale nello stato
+            const initial: StatusKey =
+              attendance.status === "present"
+                ? "present"
+                : attendance.status === "smartworking"
+                ? "smartworking"
+                : attendance.status === "absent"
+                ? "absent"
+                : attendance.status === "vacation"
+                ? "vacation"
+                : "";
+
+            row[`day_${date.getDate()}`] = initial;
+          }
+        });
+
+        // Aggiungi la riga al foglio
+        const newRow = worksheet.addRow(row);
+
+        // Colora ogni cella basata sullo stato
+        newRow.eachCell((cell, colNumber) => {
+          if (colNumber > 1) {
+            // Escludi la colonna del nome
+            const initial = cell.value as StatusKey; // Assicurati che initial sia di tipo StatusKey
+            if (statusColors[initial]) {
+              cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: statusColors[initial] },
+              };
+            }
+          }
+        });
       });
-      if (rowNumber === 1) {
-        row.font = { bold: true };
-      }
-    });
 
-    // Aggiunta della legenda
-    const legendRow = worksheet.addRow([]);
-    legendRow.getCell(1).value = "Legenda:";
-    legendRow.getCell(1).font = { bold: true };
+      // Formattazione delle celle
+      worksheet.eachRow((row, rowNumber) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          };
+          cell.alignment = { vertical: "middle", horizontal: "center" };
+        });
+        if (rowNumber === 1) {
+          row.font = { bold: true };
+        }
+      });
 
-    const statuses = [
-      { label: "Presente", initial: "P", color: statusColors.P },
-      { label: "SmartWorking", initial: "SW", color: statusColors.SW },
-      { label: "Assente", initial: "A", color: statusColors.A },
-      { label: "Malattia", initial: "ML", color: statusColors.ML },
-    ];
+      // Aggiunta della legenda
+      const legendRow = worksheet.addRow([]);
+      legendRow.getCell(1).value = "Legenda:";
+      legendRow.getCell(1).font = { bold: true };
 
-    statuses.forEach((status, index) => {
-      const cell = legendRow.getCell(index + 2);
-      cell.value = `${status.initial} - ${status.label}`;
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: status.color },
-      };
-    });
+      const statuses = [
+        { label: "Presente", initial: "present", color: statusColors.present },
+        {
+          label: "SmartWorking",
+          initial: "smartworking",
+          color: statusColors.smartworking,
+        },
+        { label: "Assente", initial: "absent", color: statusColors.absent },
+        {
+          label: "Malattia",
+          initial: "vacation",
+          color: statusColors.vacation,
+        },
+      ];
 
-    // Salva il file
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: "application/octet-stream" });
-    saveAs(
-      blob,
-      `Presenze_${selectedDate.toLocaleString("it-IT", {
+      statuses.forEach((status, index) => {
+        const cell = legendRow.getCell(index + 2);
+        cell.value = `${status.initial} - ${status.label}`;
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: status.color },
+        };
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const formData = new FormData();
+      const fileName = `Presenze_${selectedDate.toLocaleString("it-IT", {
         month: "long",
         year: "numeric",
-      })}.xlsx`
-    );
+      })}.xlsx`;
+
+      formData.append("file", blob, fileName);
+
+      // Assicuriamoci che la chiamata API venga eseguita
+      try {
+        const response = await axios.post(
+          "/Staffer/POST/UploadAttendanceExcel",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        if (response.status !== 200) {
+          throw new Error(`Upload failed with status: ${response.status}`);
+        }
+
+        console.log("File Excel caricato con successo");
+      } catch (uploadError) {
+        console.error("Errore durante l'upload del file:", uploadError);
+        throw uploadError;
+      }
+    } catch (error) {
+      console.error("Errore durante l'esportazione:", error);
+      throw error;
+    }
   }
+
+  const handleExportAndSend = async (
+    e?: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e?.preventDefault();
+    try {
+      console.log("Esportazione in corso...");
+      await exportAttendanceToExcel(employees, selectedDate);
+      await sendAttendance();
+    } catch (error) {
+      console.error("Errore durante l'esportazione e l'invio:", error);
+    }
+  };
 
   return (
     <div className="rounded-2xl shadow-sm border-2">
@@ -459,52 +523,34 @@ export default function EmployeeAttendanceTable({
                                 {Object.entries(statusConfig).map(
                                   ([key, config]) => (
                                     <DropdownItem
-                                      onPress={() =>
-                                        handleStatusChange(
+                                      key={key}
+                                      onPress={() => {
+                                        void handleStatusChange(
                                           key,
                                           formatInTimeZone(
                                             date,
                                             "Europe/Rome",
                                             "yyyy-MM-dd"
                                           )
-                                        )
-                                      }
-                                      key={key}
-                                      startContent={
-                                        <div
-                                          className={`w-6 h-6 ${config.color} rounded-lg flex items-center justify-center`}
-                                        >
-                                          <Icon
-                                            icon={config.icon}
-                                            className="w-4 h-4 text-gray-700"
-                                          />
-                                        </div>
-                                      }
+                                        );
+                                      }}
                                     >
                                       {config.label}
                                     </DropdownItem>
                                   )
                                 )}
                                 <DropdownItem
-                                  onPress={() =>
-                                    handleStatusChange(
+                                  key="delete"
+                                  onPress={() => {
+                                    void handleStatusChange(
                                       "delete",
                                       formatInTimeZone(
                                         date,
                                         "Europe/Rome",
                                         "yyyy-MM-dd"
                                       )
-                                    )
-                                  }
-                                  key="delete"
-                                  startContent={
-                                    <div className="w-6 h-6 bg-zinc-300 rounded-lg flex items-center justify-center">
-                                      <Icon
-                                        icon="material-symbols-light:delete-outline"
-                                        className="w-4 h-4 text-gray-700"
-                                      />
-                                    </div>
-                                  }
+                                    );
+                                  }}
                                 >
                                   Elimina
                                 </DropdownItem>
@@ -554,10 +600,12 @@ export default function EmployeeAttendanceTable({
             color="primary"
             variant="ghost"
             radius="full"
+            onPress={(e: any) => {
+              handleExportAndSend(e);
+            }}
             startContent={
               <Icon icon="solar:file-download-linear" fontSize={24} />
             }
-            onPress={() => exportAttendanceToExcel(employees, selectedDate)}
           >
             Esporta Tabella
           </Button>
@@ -583,7 +631,7 @@ export default function EmployeeAttendanceTable({
             variant="ghost"
             radius="full"
             startContent={<Icon icon="solar:letter-linear" fontSize={24} />}
-            onPress={sendAttendance}
+            onPress={(e: any) => handleExportAndSend(e)}
           >
             Invia presenze di{" "}
             {format(selectedDate, "MMMM", { locale: it })

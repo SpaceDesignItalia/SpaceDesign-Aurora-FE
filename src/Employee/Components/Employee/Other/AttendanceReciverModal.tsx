@@ -39,7 +39,7 @@ export default function AttendanceReciverModal() {
         {userEmails.length > 0 ? (
           userEmails.map((userEmail, index) => (
             <div key={index}>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center py-2">
                 <span>{userEmail.AttendanceReportEmail}</span>
                 <Button
                   variant="light"
