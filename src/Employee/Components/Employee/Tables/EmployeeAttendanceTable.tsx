@@ -18,8 +18,8 @@ import { formatInTimeZone } from "date-fns-tz";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../API/API";
-import ExcelJS from "exceljs";
 import { useState } from "react";
+import ExcelJS from "exceljs";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -31,11 +31,6 @@ interface Employee {
     date: string;
     status: string;
   }[];
-}
-
-interface Attendance {
-  date: string;
-  status: string;
 }
 
 interface Props {
@@ -68,10 +63,7 @@ export default function EmployeeAttendanceTable({
     return Array.from({ length: days }, (_, i) => new Date(year, month, i + 1));
   };
 
-  const statusConfig: Record<
-    string,
-    { color: string; icon: string; label: string }
-  > = {
+  const statusConfig = {
     present: {
       color: "bg-emerald-100 border-emerald-300",
       icon: "hugeicons:office",
@@ -95,7 +87,7 @@ export default function EmployeeAttendanceTable({
   };
 
   // Aggiorna i colori per usare gli stessi del config
-  const statusColors: Record<string, string> = {
+  const statusColors = {
     present: statusConfig.present.color,
     absent: statusConfig.absent.color,
     vacation: statusConfig.vacation.color,
@@ -110,7 +102,7 @@ export default function EmployeeAttendanceTable({
       startDate: Date;
     },
     key: string
-  ): JSX.Element => {
+  ) => {
     return (
       <div
         key={key}
@@ -207,13 +199,6 @@ export default function EmployeeAttendanceTable({
     );
   };
 
-  const handleStatusChange = async (status: string, date: string) => {
-    try {
-      const res = await axios.put("/Staffer/UPDATE/UpdateStafferAttendance", {
-        Status: status,
-        StafferId: loggedStafferId,
-        Date: date,
-      });
   async function handleStatusChange(status: string, date: string) {
     try {
       // Trova la presenza attuale per questa data
@@ -224,11 +209,6 @@ export default function EmployeeAttendanceTable({
             new Date(att.date).toDateString() === new Date(date).toDateString()
         );
 
-      if (res.status === 200) {
-        socket.emit("employee-attendance-update");
-      }
-    } catch (error) {
-      console.error("Errore nell'aggiornamento dello stato:", error);
       // Se lo stato selezionato è uguale a quello corrente, non fare nulla
       if (currentAttendance && currentAttendance.status === status) {
         return;
@@ -266,6 +246,77 @@ export default function EmployeeAttendanceTable({
         message: "Errore durante l'aggiornamento della presenza",
       });
     }
+  }
+
+  const exportCSV = () => {
+    const days = getDaysInMonth();
+    const headers = ["Nome", ...days.map((date) => format(date, "dd"))];
+
+    const statusInitials = {
+      present: "P",
+      absent: "A",
+      vacation: "F",
+      smartworking: "S",
+    };
+
+    const csvData = employees.map((employee) => {
+      const row = [employee.name];
+      days.forEach((date) => {
+        const attendance = employee.attendances.find(
+          (a) => new Date(a.date).toDateString() === date.toDateString()
+        );
+        row.push(
+          attendance
+            ? statusInitials[attendance.status as keyof typeof statusInitials]
+            : ""
+        );
+      });
+      return row;
+    });
+
+    const csvContent = [headers, ...csvData]
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `presenze_${format(selectedDate, "MMMM_yyyy", { locale: it })}.csv`
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const [isMultiSelect, setIsMultiSelect] = useState(false);
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+
+  const handleDaySelect = (date: Date) => {
+    const dateString = date.toDateString();
+    setSelectedDays((prev) =>
+      prev.includes(dateString)
+        ? prev.filter((d) => d !== dateString)
+        : [...prev, dateString]
+    );
+  };
+
+  const changeSelectedDaysStatus = (newStatus: string) => {
+    selectedDays.forEach((date) => {
+      handleStatusChange(newStatus, date);
+    });
+    setSelectedDays([]);
+    setIsMultiSelect(false);
+  };
+
+  const toggleMultiSelect = () => {
+    if (isMultiSelect) {
+      setSelectedDays([]);
+    }
+    setIsMultiSelect(!isMultiSelect);
   };
 
   async function sendAttendance() {
@@ -282,7 +333,6 @@ export default function EmployeeAttendanceTable({
     selectedDate: Date
   ): Promise<void> {
     try {
-      console.log("Esportazione in corso...");
       // Creazione del workbook e del foglio
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Presenze");
@@ -439,8 +489,6 @@ export default function EmployeeAttendanceTable({
         if (response.status !== 200) {
           throw new Error(`Upload failed with status: ${response.status}`);
         }
-
-        console.log("File Excel caricato con successo");
       } catch (uploadError) {
         console.error("Errore durante l'upload del file:", uploadError);
         throw uploadError;
@@ -454,43 +502,12 @@ export default function EmployeeAttendanceTable({
   const handleExportAndSend = async (
     e?: React.MouseEvent<HTMLButtonElement>
   ) => {
-    e?.preventDefault();
     try {
-      console.log("Esportazione in corso...");
       await exportAttendanceToExcel(employees, selectedDate);
       await sendAttendance();
     } catch (error) {
       console.error("Errore durante l'esportazione e l'invio:", error);
     }
-  };
-
-  const [isMultiSelect, setIsMultiSelect] = useState(false);
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-
-  const handleDaySelect = (date: Date) => {
-    const dateString = date.toDateString();
-    setSelectedDays((prev) =>
-      prev.includes(dateString)
-        ? prev.filter((d) => d !== dateString)
-        : [...prev, dateString]
-    );
-  };
-
-  const changeSelectedDaysStatus = (newStatus: string) => {
-    console.log(selectedDays);
-    console.log(newStatus);
-    selectedDays.forEach((date) => {
-      handleStatusChange(newStatus, date);
-    });
-    setSelectedDays([]);
-    setIsMultiSelect(false);
-  };
-
-  const toggleMultiSelect = () => {
-    if (isMultiSelect) {
-      setSelectedDays([]);
-    }
-    setIsMultiSelect(!isMultiSelect);
   };
 
   return (
@@ -550,10 +567,10 @@ export default function EmployeeAttendanceTable({
           )}
           <button
             onClick={() => onDateChange(subMonths(selectedDate, 1))}
-            className="p-2.5 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-2 text-gray-600"
+            className="p-2 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-1 text-gray-600"
           >
-            <Icon icon="solar:alt-arrow-left-linear" className="w-5 h-5" />
-            <span className="text-sm font-medium">
+            <Icon icon="solar:alt-arrow-left-linear" fontSize={24} />
+            <span className="text-sm">
               {format(subMonths(selectedDate, 1), "MMMM", { locale: it })
                 .charAt(0)
                 .toUpperCase() +
@@ -562,18 +579,18 @@ export default function EmployeeAttendanceTable({
                 }).slice(1)}
             </span>
           </button>
-          <div className="px-4 py-2.5 bg-gray-50 rounded-xl font-medium text-gray-900">
+          <span className="px-4 py-2 bg-gray-50 rounded-lg font-medium">
             {format(selectedDate, "MMMM", { locale: it })
               .charAt(0)
               .toUpperCase() +
               format(selectedDate, "MMMM", { locale: it }).slice(1)}{" "}
             {format(selectedDate, "yyyy")}
-          </div>
+          </span>
           <button
             onClick={() => onDateChange(addMonths(selectedDate, 1))}
-            className="p-2.5 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-2 text-gray-600"
+            className="p-2 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-1 text-gray-600"
           >
-            <span className="text-sm font-medium">
+            <span className="text-sm">
               {format(addMonths(selectedDate, 1), "MMMM", { locale: it })
                 .charAt(0)
                 .toUpperCase() +
@@ -581,7 +598,7 @@ export default function EmployeeAttendanceTable({
                   locale: it,
                 }).slice(1)}
             </span>
-            <Icon icon="solar:alt-arrow-right-linear" className="w-5 h-5" />
+            <Icon icon="solar:alt-arrow-right-linear" fontSize={24} />
           </button>
         </div>
       </div>
@@ -589,15 +606,15 @@ export default function EmployeeAttendanceTable({
       <div className="relative">
         <div className="flex">
           {/* Colonna nomi fissa */}
-          <div className="w-64 border-r-2 flex-shrink-0 sticky left-0 bg-white z-10">
-            <div className="flex items-center h-12 p-4 font-medium text-gray-600 text-sm">
+          <div className="w-64 pl-2 flex-shrink-0 sticky left-0 bg-white z-10 border-r border-gray-200">
+            <div className="flex items-center h-12 bg-gray-50 border-1 rounded-l-lg border-gray-200 p-4 font-medium text-gray-600 text-sm shadow-md">
               Nome
             </div>
             {employees.map((employee, index) => (
               <div
                 key={employee.id}
-                className={`h-12 flex items-center gap-2 p-4 border-b border-gray-100 ${
-                  index % 2 === 0 ? "bg-gray-100" : ""
+                className={`h-12 flex items-center gap-2 p-4 border-b border-gray-100 rounded-l-lg ${
+                  index % 2 === 0 ? "bg-gray-200" : ""
                 }`}
               >
                 {employee.avatar ? (
@@ -607,7 +624,7 @@ export default function EmployeeAttendanceTable({
                     alt={employee.name}
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
                     {employee.name.charAt(0)}
                   </div>
                 )}
@@ -696,10 +713,6 @@ export default function EmployeeAttendanceTable({
                                         date.toDateString()
                                     ) && (
                                     <DropdownItem
-                                      key={key}
-                                      onPress={() => {
-                                        void handleStatusChange(
-                                          key,
                                       onPress={() =>
                                         handleStatusChange(
                                           "delete",
@@ -708,8 +721,6 @@ export default function EmployeeAttendanceTable({
                                             "Europe/Rome",
                                             "yyyy-MM-dd"
                                           )
-                                        );
-                                      }}
                                         )
                                       }
                                       key="delete"
@@ -724,26 +735,6 @@ export default function EmployeeAttendanceTable({
                                     >
                                       Elimina
                                     </DropdownItem>
-                                  )
-                                )}
-                                <DropdownItem
-                                  key="delete"
-                                  onPress={() => {
-                                    void handleStatusChange(
-                                      "delete",
-                                      formatInTimeZone(
-                                        date,
-                                        "Europe/Rome",
-                                        "yyyy-MM-dd"
-                                      )
-                                    );
-                                  }}
-                                >
-                                  Elimina
-                                </DropdownItem>
-                              </>
-                            </DropdownMenu>
-                          </Dropdown>
                                   )}
                                 </>
                               </DropdownMenu>
@@ -787,7 +778,7 @@ export default function EmployeeAttendanceTable({
                     <div
                       key={employeeIndex}
                       className={`h-12 flex divide-x divide-gray-200 ${
-                        employeeIndex % 2 === 0 ? "bg-gray-100" : ""
+                        employeeIndex % 2 === 0 ? "bg-gray-200" : ""
                       }`}
                     >
                       {getDaysInMonth().map((date) => (
@@ -815,9 +806,6 @@ export default function EmployeeAttendanceTable({
             color="primary"
             variant="ghost"
             radius="full"
-            onPress={(e: any) => {
-              handleExportAndSend(e);
-            }}
             startContent={
               <Icon icon="solar:file-download-linear" fontSize={24} />
             }
@@ -841,7 +829,17 @@ export default function EmployeeAttendanceTable({
               </div>
             ))}
           </div>
-
+          <Button
+            variant={isMultiSelect ? "solid" : "bordered"}
+            color="primary"
+            radius="full"
+            className="w-fit"
+            onPress={toggleMultiSelect}
+          >
+            {isMultiSelect
+              ? "Disabilita Selezione Multipla"
+              : "Abilita Selezione Multipla"}
+          </Button>
           <Button
             color="primary"
             variant="ghost"
@@ -854,17 +852,6 @@ export default function EmployeeAttendanceTable({
               .charAt(0)
               .toUpperCase() +
               format(selectedDate, "MMMM", { locale: it }).slice(1)}
-          </Button>
-          <Button
-            variant={isMultiSelect ? "solid" : "bordered"}
-            color="primary"
-            radius="full"
-            className="w-fit"
-            onPress={toggleMultiSelect}
-          >
-            {isMultiSelect
-              ? "Disabilita Selezione Multipla"
-              : "Abilita Selezione Multipla"}
           </Button>
         </div>
       </div>
