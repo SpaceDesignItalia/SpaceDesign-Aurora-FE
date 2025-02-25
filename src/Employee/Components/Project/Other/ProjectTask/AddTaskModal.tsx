@@ -15,6 +15,8 @@ import {
   PopoverContent,
   PopoverTrigger,
   Progress,
+  Select,
+  SelectItem,
   Spinner,
 } from "@heroui/react";
 import ReactQuill from "react-quill";
@@ -52,6 +54,7 @@ interface Task {
   ProjectTaskTags: Tag[];
   ProjectTaskMembers: Member[];
   ProjectId: number;
+  PriorityId: number;
 }
 
 interface AddTaskModalProps {
@@ -69,6 +72,11 @@ interface AlertData {
   alertColor: "green" | "red" | "yellow";
 }
 
+interface Priority {
+  ProjectTaskPriorityId: number;
+  ProjectTaskPriorityName: string;
+}
+
 const INITIAL_TASK_DATA: Task = {
   ProjectTaskId: 0,
   ProjectTaskName: "",
@@ -79,6 +87,7 @@ const INITIAL_TASK_DATA: Task = {
   ProjectTaskTags: [],
   ProjectTaskMembers: [],
   ProjectId: 0,
+  PriorityId: 4,
 };
 
 const INITIAL_ALERT_DATA: AlertData = {
@@ -106,6 +115,7 @@ export default function AddTaskModal({
   const [update, setUpdate] = useState(false);
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
+  const [priorities, setPriorities] = useState<Priority[]>([]);
 
   useEffect(() => {
     axios
@@ -130,6 +140,10 @@ export default function AddTaskModal({
           );
         })
       );
+    });
+
+    axios.get("/Project/GET/GetAllPriorities").then((res) => {
+      setPriorities(res.data);
     });
   }, [newTask, update, ProjectId]);
 
@@ -345,6 +359,7 @@ export default function AddTaskModal({
       ProjectTaskTags: [],
       ProjectTaskMembers: [],
       ProjectId: ProjectId,
+      PriorityId: 4,
     });
     isClosed();
     // Remove action from URL
@@ -372,6 +387,8 @@ export default function AddTaskModal({
       setLoading(false);
     }
   };
+
+  console.log(newTask.PriorityId);
 
   return (
     <>
@@ -413,6 +430,28 @@ export default function AddTaskModal({
                       </div>
                     }
                   />
+                  <Select
+                    items={priorities}
+                    label="Priorità"
+                    className="w-52 mb-4"
+                    variant="underlined"
+                    radius="full"
+                    onSelectionChange={(e) => {
+                      setNewTask({
+                        ...newTask,
+                        PriorityId: parseInt(e.currentKey ?? "4"),
+                      });
+                    }}
+                  >
+                    {(priority) => (
+                      <SelectItem
+                        key={priority.ProjectTaskPriorityId}
+                        value={priority.ProjectTaskPriorityId}
+                      >
+                        {priority.ProjectTaskPriorityName}
+                      </SelectItem>
+                    )}
+                  </Select>
                   <Button
                     color="primary"
                     variant="light"

@@ -41,6 +41,7 @@ interface Task {
   ProjectTaskComments: Comment[];
   ProjectId: number;
   ProjectTaskChecklists: Checklist[];
+  PriorityId: number;
 }
 
 interface Checkbox {
