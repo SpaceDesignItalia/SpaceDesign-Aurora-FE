@@ -45,6 +45,8 @@
       "date-fns-tz": "^3.2.0",
       "dayjs": "^1.11.11",
       "dnd-kit": "^0.0.2",
+      "exceljs": "^4.4.0",
+      "file-saver": "^2.0.5",
       "framer-motion": "^11.0.24",
       "html-to-image": "^1.11.11",
       "lucide-react": "^0.447.0",
@@ -62,7 +64,9 @@
       "socket.io-client": "^4.7.5",
       "tailwind-merge": "^2.5.3",
       "tailwindcss-animate": "^1.0.7",
-      "use-debounce": "^10.0.4"
+      "use-debounce": "^10.0.4",
+      "xlsx": "^0.18.5",
+      "xlsx-style": "^0.8.13"
    },
    "devDependencies": {
       "@types/node": "^22.7.4",

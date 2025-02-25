@@ -487,13 +487,13 @@ END:VCALENDAR`;
                           <dd className="flex flex-col gap-2 mt-1 text-sm leading-6 text-gray-700 sm:mt-0 w-full">
                             <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
                               <I18nProvider locale="it">
-                                <p>{formatDate(newEvent.EventStartDate)}</p>
+                                <p>{formatDate(newEvent.EventStartDate)}</p>-
                                 <p>{newEvent.EventStartTime}</p>
                               </I18nProvider>
                             </div>
                             <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
                               <I18nProvider locale="it">
-                                <p>{formatDate(newEvent.EventEndDate)}</p>
+                                <p>{formatDate(newEvent.EventEndDate)}</p>-
                                 <p>{newEvent.EventEndTime}</p>
                               </I18nProvider>
                             </div>

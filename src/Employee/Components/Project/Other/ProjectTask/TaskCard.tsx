@@ -56,6 +56,7 @@ interface Task {
   ProjectTaskComments: Comment[];
   ProjectId: number;
   ProjectTaskChecklists: any[];
+  PriorityId: number;
 }
 
 interface ModalData {
@@ -77,6 +78,11 @@ interface TaskCardProps {
   isDragging?: boolean;
   isCtrlPressed?: boolean;
   isPartOfGroup: boolean;
+}
+
+interface Priority {
+  ProjectTaskPriorityId: number;
+  ProjectTaskPriorityName: string;
 }
 
 export default function TaskCard({
@@ -104,13 +110,14 @@ export default function TaskCard({
       ProjectTaskComments: [],
       ProjectId: 0,
       ProjectTaskChecklists: [],
+      PriorityId: 4,
     },
     open: false,
   });
 
   // Conteggio commenti
   const [commentsCount, setCommentsCount] = useState(0);
-
+  const [priorities, setPriorities] = useState<Priority[]>([]);
   useEffect(() => {
     const fetchComments = async () => {
       const commentResponse = await axios.get<Comment[]>(
@@ -122,6 +129,13 @@ export default function TaskCard({
       setCommentsCount(commentResponse.data.length);
     };
     fetchComments();
+    const fetchPriorities = async () => {
+      const priorityResponse = await axios.get<Priority[]>(
+        "/Project/GET/GetAllPriorities"
+      );
+      setPriorities(priorityResponse.data);
+    };
+    fetchPriorities();
   }, [task.ProjectTaskId]);
 
   // Conteggio checklist
@@ -344,6 +358,19 @@ export default function TaskCard({
                     {task.ProjectTaskExpiration
                       ? formatDate(task.ProjectTaskExpiration)
                       : "Nessuna scadenza"}
+                  </span>
+                </div>
+              </Tooltip>
+              <Tooltip content="Priorità" showArrow>
+                <div className="flex items-center text-sm text-default-500 bg-default-100 px-2.5 py-1 rounded-lg">
+                  <Icon icon="solar:priority-linear" fontSize={22} />
+                  <span>
+                    {
+                      priorities.find(
+                        (priority) =>
+                          priority.ProjectTaskPriorityId === task.PriorityId
+                      )?.ProjectTaskPriorityName
+                    }
                   </span>
                 </div>
               </Tooltip>
