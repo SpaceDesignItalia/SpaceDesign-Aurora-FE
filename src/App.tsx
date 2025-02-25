@@ -54,43 +54,57 @@ const App: React.FC = () => {
   const { loadPermissions, setStafferId, permissionsLoaded } = usePermissions();
   const [openSearchBar, setOpenSearchBar] = useState<boolean>(false);
 
+  const checkSession = async () => {
+    try {
+      const res = await axios.get("/Authentication/GET/CheckSession", {
+        withCredentials: true,
+      });
+
+      if (res.status === 200 && res.data) {
+        setIsAuth(true);
+        const sessionRes = await axios.get(
+          "/Authentication/GET/GetSessionData",
+          {
+            withCredentials: true,
+          }
+        );
+        if (
+          sessionRes.status === 200 &&
+          sessionRes.data &&
+          sessionRes.data.IsStaffer
+        ) {
+          setIsStaffer(sessionRes.data.IsStaffer);
+          socket.emit("new-user-add", sessionRes.data.StafferId);
+          localStorage.setItem("socketId", socket.id!);
+          await loadPermissions(sessionRes.data.StafferId);
+        }
+      } else {
+        setIsAuth(false);
+      }
+    } catch (error) {
+      console.error("Errore durante il controllo della sessione:", error);
+      setIsAuth(false);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("/Authentication/GET/CheckSession", {
-          withCredentials: true,
-        });
-
-        if (res.status === 200 && res.data) {
-          setIsAuth(true);
-          const sessionRes = await axios.get(
-            "/Authentication/GET/GetSessionData",
-            {
-              withCredentials: true,
-            }
-          );
-          if (
-            sessionRes.status === 200 &&
-            sessionRes.data &&
-            sessionRes.data.IsStaffer
-          ) {
-            setIsStaffer(sessionRes.data.IsStaffer);
-            socket.emit("new-user-add", sessionRes.data.StafferId);
-            localStorage.setItem("socketId", socket.id!);
-            await loadPermissions(sessionRes.data.StafferId);
-          }
-        } else {
-          setIsAuth(false);
-        }
-      } catch (error) {
-        console.error("Errore durante il controllo della sessione:", error);
-        setIsAuth(false);
+        await checkSession();
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
+
+    // Imposta un intervallo per controllare la sessione ogni 10 minuti
+    const sessionInterval = setInterval(() => {
+      checkSession();
+    }, 10 * 60 * 1000); // 10 minuti in millisecondi
+
+    // Pulisci l'intervallo quando il componente viene smontato
+    return () => clearInterval(sessionInterval);
   }, [loadPermissions, permissionsLoaded, setStafferId]);
 
   useEffect(() => {
