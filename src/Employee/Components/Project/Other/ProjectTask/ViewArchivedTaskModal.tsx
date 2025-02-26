@@ -85,6 +85,7 @@ interface Task {
   ProjectTaskComments: Comment[];
   ProjectId: number;
   ProjectTaskChecklists: Checklist[];
+  PriorityId: number;
 }
 
 interface ModalData {
@@ -201,6 +202,7 @@ export default function ViewTaskModal({
         ProjectTaskTags: TaskData.ProjectTaskTags,
         ProjectTaskComments: TaskData.ProjectTaskComments || [],
         ProjectTaskChecklists: TaskData.ProjectTaskChecklists || [],
+        PriorityId: TaskData.PriorityId,
       });
     }
   }

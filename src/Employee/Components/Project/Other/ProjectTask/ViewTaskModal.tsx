@@ -25,6 +25,8 @@ import {
   Textarea,
   Tooltip,
   Spinner,
+  Select,
+  SelectItem,
 } from "@heroui/react";
 import { API_URL_IMG } from "../../../../../API/API";
 import { I18nProvider, useDateFormatter } from "@react-aria/i18n";
@@ -89,6 +91,7 @@ interface Task {
   ProjectTaskComments: Comment[];
   ProjectId: number;
   ProjectTaskChecklists: Checklist[];
+  PriorityId: number;
 }
 
 interface PopoverStates {
@@ -98,6 +101,11 @@ interface PopoverStates {
 interface ModalData {
   TaskId: number;
   open: boolean;
+}
+
+interface Priority {
+  ProjectTaskPriorityId: number;
+  ProjectTaskPriorityName: string;
 }
 
 interface File {
@@ -160,7 +168,7 @@ export default function ViewTaskModal({
   });
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
+  const [priorities, setPriorities] = useState<Priority[]>([]);
   const fetchFiles = async () => {
     try {
       const response = await axios.get("/Project/GET/GetFilesByTaskId", {
@@ -172,8 +180,14 @@ export default function ViewTaskModal({
     }
   };
 
+  const fetchPriorities = async () => {
+    const response = await axios.get("/Project/GET/GetAllPriorities");
+    setPriorities(response.data);
+  };
+
   useEffect(() => {
     fetchFiles();
+    fetchPriorities();
   }, [TaskData.ProjectTaskId, update]);
 
   //Formatter data
@@ -215,6 +229,7 @@ export default function ViewTaskModal({
         ProjectTaskTags: TaskData.ProjectTaskTags,
         ProjectTaskComments: TaskData.ProjectTaskComments || [],
         ProjectTaskChecklists: TaskData.ProjectTaskChecklists || [],
+        PriorityId: TaskData.PriorityId,
       });
     }
   }
@@ -812,16 +827,51 @@ export default function ViewTaskModal({
                         </div>
                       }
                     />
+                    <Select
+                      items={priorities}
+                      label="Priorità"
+                      className="w-52 mb-4"
+                      variant="underlined"
+                      radius="full"
+                      onSelectionChange={(e) => {
+                        setNewTask({
+                          ...newTask!,
+                          PriorityId: parseInt(e.currentKey ?? "4"),
+                        });
+                      }}
+                    >
+                      {(priority) => (
+                        <SelectItem
+                          key={priority.ProjectTaskPriorityId}
+                          value={priority.ProjectTaskPriorityId}
+                        >
+                          {priority.ProjectTaskPriorityName}
+                        </SelectItem>
+                      )}
+                    </Select>
                   </div>
                 ) : (
                   <div className="w-full">
                     <div className="w-full flex flex-row items-center justify-end gap-2 border-b-2 pb-2">
-                      <div className="w-full py-3 flex flex-row items-center gap-2">
-                        <Icon
-                          icon="solar:clipboard-check-linear"
-                          fontSize={22}
-                        />{" "}
-                        {newTask!.ProjectTaskName}
+                      <div className="w-full py-3 flex flex-row items-center gap-2 justify-between">
+                        <div className="flex flex-row items-center gap-2">
+                          <Icon
+                            icon="solar:clipboard-check-linear"
+                            fontSize={22}
+                          />{" "}
+                          {newTask!.ProjectTaskName}
+                        </div>
+                        <p className="text-sm">
+                          {" "}
+                          Priorità:{" "}
+                          {
+                            priorities.find(
+                              (priority) =>
+                                priority.ProjectTaskPriorityId ===
+                                newTask!.PriorityId
+                            )?.ProjectTaskPriorityName
+                          }
+                        </p>
                       </div>
                       <Button
                         isIconOnly
@@ -834,6 +884,7 @@ export default function ViewTaskModal({
                         onClick={() => setEditing(true)}
                         size="sm"
                       />
+
                       <Button
                         color="primary"
                         variant="light"
