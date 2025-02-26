@@ -28,6 +28,8 @@ interface Notification {
   ProjectId: number;
   ProjectName: string;
   CompanyName: string;
+  EventId: number;
+  StafferEmail: string;
   UserId: number;
   userfullname: string;
   NotificationCreationDate: Date;
@@ -59,6 +61,10 @@ export default function Notification() {
       .then((response) => {
         setNotifications(response.data);
       });
+
+    socket.on("newNotification", () => {
+      setUpdate((prev) => !prev);
+    });
   }, [update]);
 
   const unreadNotificationsCount = notifications.filter(
