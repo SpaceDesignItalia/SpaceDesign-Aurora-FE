@@ -367,14 +367,33 @@ export default function OverviewContainer({
                         radius="full"
                         variant="faded"
                         isIconOnly
+                        className="min-w-[32px] min-h-[32px] p-1.5"
                       >
                         <img
                           src={
-                            API_URL_IMG +
-                            "/linkIcons/" +
-                            link.ProjectLinkTypeImage
+                            link.ProjectLinkTypeId.toString() === "7"
+                              ? `https://www.google.com/s2/favicons?domain=${
+                                  new URL(link.ProjectLinkUrl).hostname
+                                }&sz=128`
+                              : API_URL_IMG +
+                                "/linkIcons/" +
+                                link.ProjectLinkTypeImage
                           }
-                          className="h-5 w-5"
+                          className={cn("h-full w-full object-contain", {
+                            "scale-[2.5] object-cover":
+                              link.ProjectLinkTypeId.toString() === "7",
+                          })}
+                          onLoad={(e) => {
+                            if (link.ProjectLinkTypeId.toString() === "7") {
+                              const img = e.target as HTMLImageElement;
+                              const scale =
+                                Math.min(
+                                  32 / img.naturalWidth,
+                                  32 / img.naturalHeight
+                                ) * 5.5;
+                              img.style.transform = `scale(${scale})`;
+                            }
+                          }}
                         />
                       </Button>
                     </Tooltip>
