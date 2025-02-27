@@ -1461,9 +1461,6 @@ export default function ViewTaskModal({
                                                 />
                                               ) : (
                                                 <Checkbox
-                                                  lineThrough={
-                                                    checkbox.IsSelected
-                                                  }
                                                   radius="full"
                                                   value={String(
                                                     checkbox.CheckboxId
@@ -1477,8 +1474,26 @@ export default function ViewTaskModal({
                                                       !checkbox.IsSelected
                                                     )
                                                   }
+                                                  classNames={{
+                                                    label:
+                                                      "max-w-[calc(100%-40px)] text-left items-center whitespace-normal",
+                                                    wrapper:
+                                                      "flex items-center",
+                                                  }}
                                                 >
-                                                  {checkbox.Text}
+                                                  <span
+                                                    className={`${
+                                                      checkbox.IsSelected
+                                                        ? "line-through"
+                                                        : ""
+                                                    } whitespace-pre-wrap`}
+                                                    style={{
+                                                      wordBreak: "break-word",
+                                                      overflowWrap: "anywhere",
+                                                    }}
+                                                  >
+                                                    {checkbox.Text}
+                                                  </span>
                                                 </Checkbox>
                                               )}
                                               {editingCheckbox ===
@@ -1863,7 +1878,6 @@ export default function ViewTaskModal({
                                                         }
                                                         isIconOnly
                                                       />
-
                                                       <Button
                                                         color="danger"
                                                         size="sm"
