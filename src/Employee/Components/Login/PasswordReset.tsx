@@ -5,6 +5,8 @@ import axios from "axios";
 import LockResetIcon from "@mui/icons-material/LockReset";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { motion, AnimatePresence } from "framer-motion";
 
 type StatusType = "success" | "error" | null;
@@ -14,6 +16,9 @@ export default function PasswordReset({ email }: { email: string }) {
   const [code, setCode] = useState<string>("");
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
   const [step, setStep] = useState<StepType>("otp");
   const [status, setStatus] = useState<StatusType>(null);
   const [countdown, setCountdown] = useState(5);
@@ -310,7 +315,7 @@ export default function PasswordReset({ email }: { email: string }) {
                   isRequired
                   label="Nuova Password"
                   name="newPassword"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Inserisci la nuova password"
                   variant="bordered"
                   radius="full"
@@ -323,13 +328,26 @@ export default function PasswordReset({ email }: { email: string }) {
                     label: "font-medium text-default-700",
                   }}
                   onChange={handlePasswordChange}
+                  endContent={
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="focus:outline-none"
+                    >
+                      {showPassword ? (
+                        <VisibilityOffIcon className="text-default-400 hover:text-default-600 transition-colors" />
+                      ) : (
+                        <VisibilityIcon className="text-default-400 hover:text-default-600 transition-colors" />
+                      )}
+                    </button>
+                  }
                 />
 
                 <Input
                   isRequired
                   label="Conferma Password"
                   name="confirmPassword"
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   placeholder="Conferma la nuova password"
                   variant="bordered"
                   radius="full"
@@ -344,6 +362,21 @@ export default function PasswordReset({ email }: { email: string }) {
                     label: "font-medium text-default-700",
                   }}
                   onChange={handleConfirmPasswordChange}
+                  endContent={
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="focus:outline-none"
+                    >
+                      {showConfirmPassword ? (
+                        <VisibilityOffIcon className="text-default-400 hover:text-default-600 transition-colors" />
+                      ) : (
+                        <VisibilityIcon className="text-default-400 hover:text-default-600 transition-colors" />
+                      )}
+                    </button>
+                  }
                 />
 
                 {newPassword !== confirmPassword && confirmPassword !== "" && (
