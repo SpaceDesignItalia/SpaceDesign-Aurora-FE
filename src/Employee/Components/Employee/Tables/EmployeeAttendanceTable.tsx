@@ -626,7 +626,7 @@ export default function EmployeeAttendanceTable({
                 <div className="h-12 bg-gray-50 border-b border-gray-200 flex">
                   {getDaysInMonth().map((date) => {
                     return (
-                      <Popover showArrow>
+                      <Popover showArrow key={date.toISOString()}>
                         <PopoverTrigger>
                           <div
                             key={date.toISOString()}
