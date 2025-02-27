@@ -1,101 +1,278 @@
 import { useState } from "react";
-import { Button, Input } from "@heroui/react";
+import { Button, Input, InputOtp } from "@heroui/react";
 import axios from "axios";
+import LockResetIcon from "@mui/icons-material/LockReset";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorIcon from "@mui/icons-material/Error";
+import { motion, AnimatePresence } from "framer-motion";
+
+type StatusType = "success" | "error" | null;
+type StepType = "otp" | "password" | "success";
 
 export default function PasswordReset({ email }: { email: string }) {
-  // Accept email as a prop
   const [code, setCode] = useState<string>("");
   const [newPassword, setNewPassword] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
+  const [step, setStep] = useState<StepType>("otp");
+  const [status, setStatus] = useState<StatusType>(null);
+  const [countdown, setCountdown] = useState(5);
 
-  const handleCodeChange = (e: any) => {
-    setCode(e.target.value);
+  const handleCodeChange = (value: string) => {
+    setCode(value);
+    setStatus(null);
   };
 
   const handlePasswordChange = (e: any) => {
     setNewPassword(e.target.value);
+    setStatus(null);
   };
 
-  const handlePasswordReset = (e: any) => {
+  const verifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    axios
-      .put(
-        "/Authentication/UPDATE/ResetPassword",
-        { email, code, newPassword }, // Send email along with the code and new password
+    if (code.length !== 6) {
+      setStatus("error");
+      return;
+    }
+
+    setStatus(null);
+    try {
+      const res = await axios.post(
+        "/Authentication/POST/VerifyOtp",
+        { code },
         { withCredentials: true }
-      )
-      .then((res) => {
-        if (res.status === 200) {
-          setMessage("Password successfully reset. Redirecting to login...");
-          setTimeout(() => {
-            window.location.href = "/login";
-          }, 3000);
-        } else {
-          setMessage("Failed to reset password. Please try again.");
-        }
-      })
-      .catch(() => {
-        setMessage("An error occurred. Please try again.");
-      });
+      );
+      if (res.status === 200) {
+        setStep("password");
+        setStatus("success");
+      } else {
+        setStatus("error");
+      }
+    } catch (error) {
+      setStatus("error");
+    }
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      setStatus("error");
+      return;
+    }
+
+    setStatus(null);
+    try {
+      const res = await axios.put(
+        "/Authentication/UPDATE/ResetPassword",
+        { email, code, newPassword },
+        { withCredentials: true }
+      );
+      if (res.status === 200) {
+        setStatus("success");
+        setStep("success");
+        const timer = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              window.location.href = "/login";
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      } else {
+        setStatus("error");
+      }
+    } catch (error) {
+      setStatus("error");
+    }
+  };
+
+  const containerVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -20 },
+  };
+
+  const getBorderColor = () => {
+    if (step === "success") return "border-success-400";
+    if (status === "error") return "border-danger-400";
+    return "border-white/20";
   };
 
   return (
-    <div className="font-sans text-gray-800">
-      <div className="min-h-screen flex flex-col items-center justify-center py-6 px-4">
-        <div className="border border-gray-300 rounded-md p-6 max-w-md shadow-lg">
-          <form className="space-y-6" onSubmit={handlePasswordReset}>
-            <div className="mb-10">
-              <h3 className="text-3xl font-semibold">Reset Password</h3>
-              <p className="text-sm mt-4">
-                Enter the code sent to your email and your new password.
+    <div className="min-h-screen flex flex-col items-center justify-center py-6 px-4 relative z-10">
+      <motion.div
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        variants={containerVariants}
+        transition={{
+          duration: 0.6,
+          type: "spring",
+          stiffness: 100,
+        }}
+        className={`bg-white/90 backdrop-blur-xl border-2 ${getBorderColor()} rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl hover:shadow-3xl transition-all duration-500`}
+      >
+        <AnimatePresence mode="wait">
+          {step === "success" ? (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="flex flex-col items-center text-center"
+            >
+              <motion.div
+                className="w-20 h-20 bg-success-100 rounded-full flex items-center justify-center mb-4"
+                animate={{
+                  scale: [1, 1.2, 1],
+                  rotate: [0, 360, 360],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  repeatDelay: 1,
+                }}
+              >
+                <CheckCircleIcon className="text-success-600 text-4xl" />
+              </motion.div>
+              <h2 className="text-2xl font-semibold text-success-600 mb-4">
+                Password Reimpostata con Successo!
+              </h2>
+              <p className="text-default-600">
+                Sarai reindirizzato alla pagina di login tra {countdown}{" "}
+                secondi...
               </p>
-            </div>
-            <div>
-              <label htmlFor="code" className="text-sm mb-2 block">
-                Recovery Code
-              </label>
-              <div className="relative flex items-center">
-                <Input
-                  name="code"
-                  variant="bordered"
-                  placeholder="Enter your recovery code"
-                  size="lg"
-                  radius="sm"
-                  onChange={handleCodeChange}
-                  isRequired
-                  fullWidth
+            </motion.div>
+          ) : step === "otp" ? (
+            <motion.div
+              key="otp"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col items-center"
+            >
+              <motion.div
+                className={`w-20 h-20 ${
+                  status === "error" ? "bg-danger-100" : "bg-primary/10"
+                } rounded-full flex items-center justify-center mb-4 shadow-lg transition-colors duration-300`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <LockResetIcon
+                  className={`${
+                    status === "error" ? "text-danger-600" : "text-primary"
+                  } text-4xl transition-colors duration-300`}
                 />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="newPassword" className="text-sm mb-2 block">
-                New Password
-              </label>
-              <div className="relative flex items-center">
+              </motion.div>
+              <h2 className="text-2xl font-semibold text-primary">
+                Verifica Codice
+              </h2>
+              <p className="text-small text-default-600 mt-2 text-center mb-8">
+                Inserisci il codice di verifica ricevuto via email
+              </p>
+
+              <form className="w-full flex flex-col gap-6" onSubmit={verifyOtp}>
+                <div className="flex flex-col gap-3">
+                  <div className="flex justify-center">
+                    <InputOtp
+                      length={6}
+                      radius="full"
+                      size="lg"
+                      value={code}
+                      onValueChange={handleCodeChange}
+                      classNames={{
+                        input: `w-11 h-11 text-lg bg-white/50 backdrop-blur-sm border-2 ${
+                          status === "error"
+                            ? "border-danger-400 hover:border-danger-500 focus:border-danger-500"
+                            : "hover:border-primary focus:border-primary"
+                        } transition-colors`,
+                        segmentWrapper: "gap-2",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  color={status === "error" ? "danger" : "primary"}
+                  radius="full"
+                  className="w-full shadow-lg hover:shadow-xl transition-all duration-300 text-base py-6"
+                  isDisabled={code.length !== 6}
+                >
+                  Verifica Codice
+                </Button>
+              </form>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="password"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col items-center"
+            >
+              <motion.div
+                className={`w-20 h-20 ${
+                  status === "error" ? "bg-danger-100" : "bg-success-100"
+                } rounded-full flex items-center justify-center mb-4 shadow-lg transition-colors duration-300`}
+                initial={{ scale: 0.8, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 100 }}
+              >
+                {status === "error" ? (
+                  <ErrorIcon className="text-danger-600 text-4xl" />
+                ) : (
+                  <CheckCircleIcon className="text-success-600 text-4xl" />
+                )}
+              </motion.div>
+              <h2 className="text-2xl font-semibold text-primary">
+                Nuova Password
+              </h2>
+              <p className="text-small text-default-600 mt-2 text-center mb-8">
+                {status === "error"
+                  ? "Si è verificato un errore. Riprova."
+                  : "Codice verificato con successo. Inserisci la nuova password"}
+              </p>
+
+              <form
+                className="w-full flex flex-col gap-6"
+                onSubmit={handlePasswordReset}
+              >
                 <Input
+                  isRequired
+                  label="Nuova Password"
                   name="newPassword"
-                  variant="bordered"
                   type="password"
-                  placeholder="Enter your new password"
-                  size="lg"
-                  radius="sm"
+                  placeholder="Inserisci la nuova password"
+                  variant="bordered"
+                  radius="full"
+                  className="backdrop-blur-sm bg-white/50"
+                  classNames={{
+                    input: "rounded-full",
+                    inputWrapper: `rounded-full ${
+                      status === "error" ? "border-danger-400" : ""
+                    }`,
+                    label: "font-medium text-default-700",
+                  }}
                   onChange={handlePasswordChange}
-                  isRequired
-                  fullWidth
                 />
-              </div>
-            </div>
-            <div className="mt-10">
-              <Button type="submit" color="primary" radius="sm" fullWidth>
-                Reset Password
-              </Button>
-            </div>
-            {message && (
-              <div className="mt-4 text-sm text-gray-600">{message}</div>
-            )}
-          </form>
-        </div>
-      </div>
+
+                <Button
+                  type="submit"
+                  color={status === "error" ? "danger" : "primary"}
+                  radius="full"
+                  className="w-full shadow-lg hover:shadow-xl transition-all duration-300 text-base py-6"
+                  isDisabled={newPassword.length < 8}
+                >
+                  Reimposta Password
+                </Button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }
