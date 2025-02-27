@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import { Button, Input, InputOtp } from "@heroui/react";
 import axios from "axios";
 import LockResetIcon from "@mui/icons-material/LockReset";
@@ -12,9 +13,23 @@ type StepType = "otp" | "password" | "success";
 export default function PasswordReset({ email }: { email: string }) {
   const [code, setCode] = useState<string>("");
   const [newPassword, setNewPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [step, setStep] = useState<StepType>("otp");
   const [status, setStatus] = useState<StatusType>(null);
   const [countdown, setCountdown] = useState(5);
+  const [resendTimer, setResendTimer] = useState(30);
+  const [canResend, setCanResend] = useState(false);
+
+  useEffect(() => {
+    if (resendTimer > 0 && !canResend) {
+      const timer = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    } else if (resendTimer === 0 && !canResend) {
+      setCanResend(true);
+    }
+  }, [resendTimer, canResend]);
 
   const handleCodeChange = (value: string) => {
     setCode(value);
@@ -24,6 +39,29 @@ export default function PasswordReset({ email }: { email: string }) {
   const handlePasswordChange = (e: any) => {
     setNewPassword(e.target.value);
     setStatus(null);
+  };
+
+  const handleConfirmPasswordChange = (e: any) => {
+    setConfirmPassword(e.target.value);
+    setStatus(null);
+  };
+
+  const handleResendCode = async () => {
+    try {
+      const res = await axios.post(
+        "/Authentication/POST/PasswordRecovery",
+        { email },
+        { withCredentials: true }
+      );
+      if (res.status === 200) {
+        setCode("");
+        setCanResend(false);
+        setResendTimer(30);
+        setStatus("success");
+      }
+    } catch (error) {
+      setStatus("error");
+    }
   };
 
   const verifyOtp = async (e: React.FormEvent) => {
@@ -37,16 +75,22 @@ export default function PasswordReset({ email }: { email: string }) {
     try {
       const res = await axios.post(
         "/Authentication/POST/VerifyOtp",
-        { code },
+        {
+          email,
+          code,
+        },
         { withCredentials: true }
       );
-      if (res.status === 200) {
-        setStep("password");
+
+      if (res.data.valid || res.status === 200) {
         setStatus("success");
+        setStep("password");
       } else {
+        console.error("Errore verifica OTP:", res.data.error);
         setStatus("error");
       }
     } catch (error) {
+      console.error("Errore durante la verifica OTP:", error);
       setStatus("error");
     }
   };
@@ -162,7 +206,7 @@ export default function PasswordReset({ email }: { email: string }) {
                 <LockResetIcon
                   className={`${
                     status === "error" ? "text-danger-600" : "text-primary"
-                  } text-4xl transition-colors duration-300`}
+                  } text-6xl transition-colors duration-300`}
                 />
               </motion.div>
               <h2 className="text-2xl font-semibold text-primary">
@@ -171,6 +215,11 @@ export default function PasswordReset({ email }: { email: string }) {
               <p className="text-small text-default-600 mt-2 text-center mb-8">
                 Inserisci il codice di verifica ricevuto via email
               </p>
+              {status === "error" && (
+                <p className="text-small text-danger-600 mt-2 text-center mb-4">
+                  Codice non valido. Riprova.
+                </p>
+              )}
 
               <form className="w-full flex flex-col gap-6" onSubmit={verifyOtp}>
                 <div className="flex flex-col gap-3">
@@ -190,6 +239,23 @@ export default function PasswordReset({ email }: { email: string }) {
                         segmentWrapper: "gap-2",
                       }}
                     />
+                  </div>
+                  <div className="flex justify-center mt-2">
+                    {canResend ? (
+                      <Button
+                        variant="light"
+                        onClick={handleResendCode}
+                        className="text-primary"
+                        radius="full"
+                      >
+                        Rinvia Codice
+                      </Button>
+                    ) : (
+                      <p className="text-small text-default-500">
+                        Sarà possibile rinviare il codice tra {resendTimer}{" "}
+                        secondi
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -214,7 +280,7 @@ export default function PasswordReset({ email }: { email: string }) {
               className="flex flex-col items-center"
             >
               <motion.div
-                className={`w-20 h-20 ${
+                className={`w-24 h-24 ${
                   status === "error" ? "bg-danger-100" : "bg-success-100"
                 } rounded-full flex items-center justify-center mb-4 shadow-lg transition-colors duration-300`}
                 initial={{ scale: 0.8, rotate: -180 }}
@@ -259,12 +325,41 @@ export default function PasswordReset({ email }: { email: string }) {
                   onChange={handlePasswordChange}
                 />
 
+                <Input
+                  isRequired
+                  label="Conferma Password"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Conferma la nuova password"
+                  variant="bordered"
+                  radius="full"
+                  className="backdrop-blur-sm bg-white/50"
+                  classNames={{
+                    input: "rounded-full",
+                    inputWrapper: `rounded-full ${
+                      status === "error" || newPassword !== confirmPassword
+                        ? "border-danger-400"
+                        : ""
+                    }`,
+                    label: "font-medium text-default-700",
+                  }}
+                  onChange={handleConfirmPasswordChange}
+                />
+
+                {newPassword !== confirmPassword && confirmPassword !== "" && (
+                  <p className="text-small text-danger-600 text-center">
+                    Le password non coincidono
+                  </p>
+                )}
+
                 <Button
                   type="submit"
                   color={status === "error" ? "danger" : "primary"}
                   radius="full"
                   className="w-full shadow-lg hover:shadow-xl transition-all duration-300 text-base py-6"
-                  isDisabled={newPassword.length < 8}
+                  isDisabled={
+                    newPassword.length < 8 || newPassword !== confirmPassword
+                  }
                 >
                   Reimposta Password
                 </Button>
