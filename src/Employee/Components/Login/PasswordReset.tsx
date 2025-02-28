@@ -71,6 +71,7 @@ export default function PasswordReset({ email }: { email: string }) {
 
   const verifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (code.length !== 6) {
       setStatus("error");
       return;
@@ -159,7 +160,7 @@ export default function PasswordReset({ email }: { email: string }) {
           type: "spring",
           stiffness: 100,
         }}
-        className={`bg-white/90 backdrop-blur-xl border-2 ${getBorderColor()} rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl hover:shadow-3xl transition-all duration-500`}
+        className={`bg-white/90 backdrop-blur-xl border-2 ${getBorderColor()} rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl hover:shadow-3xl transition-all duration-500 flex flex-col items-center justify-center`}
       >
         <AnimatePresence mode="wait">
           {step === "success" ? (
@@ -168,7 +169,7 @@ export default function PasswordReset({ email }: { email: string }) {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="flex flex-col items-center text-center"
+              className="flex flex-col items-center text-center w-full"
             >
               <motion.div
                 className="w-20 h-20 bg-success-100 rounded-full flex items-center justify-center mb-4"
@@ -226,22 +227,41 @@ export default function PasswordReset({ email }: { email: string }) {
                 </p>
               )}
 
-              <form className="w-full flex flex-col gap-6" onSubmit={verifyOtp}>
-                <div className="flex flex-col gap-3">
-                  <div className="flex justify-center">
+              <form
+                className="w-full flex flex-col items-center gap-6"
+                onSubmit={verifyOtp}
+              >
+                <div className="flex flex-col items-center gap-3 w-full">
+                  <div className="flex justify-center w-full">
                     <InputOtp
                       length={6}
-                      radius="full"
-                      size="lg"
+                      radius="none"
                       value={code}
                       onValueChange={handleCodeChange}
                       classNames={{
-                        input: `w-11 h-11 text-lg bg-white/50 backdrop-blur-sm border-2 ${
+                        segmentWrapper: "gap-x-0",
+                        segment: [
+                          "relative",
+                          "h-12",
+                          "w-12",
+                          "border-y",
+                          "border-r",
+                          "first:rounded-l-md",
+                          "first:border-l",
+                          "last:rounded-r-md",
+                          "border-default-200",
+                          "data-[active=true]:border",
+                          "data-[active=true]:z-20",
+                          "data-[active=true]:ring-2",
+                          "data-[active=true]:ring-offset-2",
+                          "data-[active=true]:ring-offset-background",
+                          "data-[active=true]:ring-foreground",
                           status === "error"
-                            ? "border-danger-400 hover:border-danger-500 focus:border-danger-500"
-                            : "hover:border-primary focus:border-primary"
-                        } transition-colors`,
-                        segmentWrapper: "gap-2",
+                            ? "border-danger-400"
+                            : "border-default-200",
+                          "bg-white/50",
+                          "backdrop-blur-sm",
+                        ],
                       }}
                     />
                   </div>

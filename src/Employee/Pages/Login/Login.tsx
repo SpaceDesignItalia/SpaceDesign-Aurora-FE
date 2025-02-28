@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import StatusAlert from "../../Components/Layout/StatusAlert";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 // Configura la connessione WebSocket
 const socket = io(API_WEBSOCKET_URL);
