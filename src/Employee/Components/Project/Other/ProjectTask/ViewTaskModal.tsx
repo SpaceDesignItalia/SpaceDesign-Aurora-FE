@@ -302,9 +302,17 @@ export default function ViewTaskModal({
   const formatter = useDateFormatter({ dateStyle: "full" });
   function formatDate(date: DateValue) {
     if (!date) return "Nessuna scadenza";
-    return dayjs(formatter.format(new Date(date.toString()))).format(
-      "DD MMM YYYY"
-    );
+    try {
+      const formattedDate = dayjs(new Date(date.toString())).format(
+        "DD MMM YYYY"
+      );
+      return formattedDate === "Invalid Date"
+        ? "Nessuna scadenza"
+        : formattedDate;
+    } catch (error) {
+      console.error("Errore nella formattazione della data:", error);
+      return "Nessuna scadenza";
+    }
   }
 
   useEffect(() => {
@@ -320,29 +328,38 @@ export default function ViewTaskModal({
 
   function fetchTaskData() {
     const formatDate = (isoString: string) => {
-      return dayjs(isoString).format("YYYY-MM-DD");
+      try {
+        return dayjs(isoString).format("YYYY-MM-DD");
+      } catch (error) {
+        console.error("Errore nella formattazione della data:", error);
+        return dayjs().format("YYYY-MM-DD");
+      }
     };
 
     if (TaskData) {
-      setNewTask({
-        ...newTask,
-        ProjectTaskCreation: parseDate(
-          formatDate(TaskData.ProjectTaskCreation.toString())
-        ),
-        ProjectTaskExpiration: TaskData.ProjectTaskExpiration
-          ? parseDate(formatDate(TaskData.ProjectTaskExpiration.toString()))
-          : null,
-        ProjectTaskDescription: TaskData.ProjectTaskDescription,
-        ProjectTaskId: TaskData.ProjectTaskId,
-        ProjectId: TaskData.ProjectId,
-        ProjectTaskName: TaskData.ProjectTaskName,
-        ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
-        ProjectTaskMembers: TaskData.ProjectTaskMembers,
-        ProjectTaskTags: TaskData.ProjectTaskTags,
-        ProjectTaskComments: TaskData.ProjectTaskComments || [],
-        ProjectTaskChecklists: TaskData.ProjectTaskChecklists || [],
-        PriorityId: TaskData.PriorityId,
-      });
+      try {
+        setNewTask({
+          ...newTask,
+          ProjectTaskCreation: parseDate(
+            formatDate(TaskData.ProjectTaskCreation.toString())
+          ),
+          ProjectTaskExpiration: TaskData.ProjectTaskExpiration
+            ? parseDate(formatDate(TaskData.ProjectTaskExpiration.toString()))
+            : null,
+          ProjectTaskDescription: TaskData.ProjectTaskDescription,
+          ProjectTaskId: TaskData.ProjectTaskId,
+          ProjectId: TaskData.ProjectId,
+          ProjectTaskName: TaskData.ProjectTaskName,
+          ProjectTaskStatusId: TaskData.ProjectTaskStatusId,
+          ProjectTaskMembers: TaskData.ProjectTaskMembers,
+          ProjectTaskTags: TaskData.ProjectTaskTags,
+          ProjectTaskComments: TaskData.ProjectTaskComments || [],
+          ProjectTaskChecklists: TaskData.ProjectTaskChecklists || [],
+          PriorityId: TaskData.PriorityId,
+        });
+      } catch (error) {
+        console.error("Errore nell'impostazione dei dati della task:", error);
+      }
     }
   }
 
@@ -370,72 +387,51 @@ export default function ViewTaskModal({
   };
 
   useEffect(() => {
-    fetchTaskData();
-  }, [TaskData, deleteUpdate]);
+    if (TaskData) {
+      fetchTaskData();
+    }
+  }, [TaskData]);
 
   useEffect(() => {
-    const fetchCommentsAndChecklists = async () => {
-      try {
-        // Fetch dei commenti
-        const commentResponse = await axios.get<Comment[]>(
-          "/Project/GET/GetCommentsByTaskId",
-          {
-            params: { ProjectTaskId: TaskData.ProjectTaskId },
-          }
-        );
+    const fetchData = async () => {
+      if (TaskData.ProjectId) {
+        try {
+          const [membersRes, tagsRes] = await Promise.all([
+            axios.get("Project/GET/GetProjetTeamMembers", {
+              params: { ProjectId: TaskData.ProjectId },
+            }),
+            axios.get("/Project/GET/GetAllTags"),
+          ]);
 
-        // Fetch delle checklist
-        const checklistsResponse = await axios.get(
-          "/Project/GET/GetChecklistsByTaskId",
-          {
-            params: { TaskId: TaskData.ProjectTaskId },
-          }
-        );
-
-        // Fetch dei checkbox per ogni checklist
-        const updatedChecklists = await Promise.all(
-          checklistsResponse.data.map(async (checklist: Checklist) => {
-            const checkboxesResponse = await axios.get(
-              "/Project/GET/GetCheckboxesByChecklistId",
-              {
-                params: { ChecklistId: checklist.ChecklistId },
-              }
+          const currentTaskMembers = newTask?.ProjectTaskMembers || [];
+          const filteredMembers = membersRes.data.filter((member: Member) => {
+            return !currentTaskMembers.some(
+              (taskMember) => taskMember.StafferId === member.StafferId
             );
-            return {
-              ...checklist,
-              Checkboxes: checkboxesResponse.data,
-            };
-          })
-        );
+          });
+          setMembers(filteredMembers);
 
-        // Aggiorna lo stato di newTask
-        setNewTask((prevTask) => ({
-          ...prevTask!,
-          ProjectTaskComments: commentResponse.data,
-          ProjectTaskChecklists: updatedChecklists,
-        }));
-
-        fetchFiles();
-      } catch (error) {
-        console.error("Errore nel fetch di commenti o checklist", error);
+          if (newTask?.ProjectTaskTags) {
+            setTags(
+              tagsRes.data.filter((tag: Tag) => {
+                return !newTask.ProjectTaskTags.some(
+                  (taskTag) => taskTag.ProjectTaskTagId === tag.ProjectTaskTagId
+                );
+              })
+            );
+          }
+        } catch (error) {
+          console.error("Errore nel caricamento dei dati:", error);
+        }
       }
     };
 
-    // Effettua il fetch quando cambia TaskData
-    if (TaskData.ProjectTaskId) {
-      fetchCommentsAndChecklists();
-    }
-  }, [update, TaskData]);
-
-  useEffect(() => {
-    // Fetch dei dati di sessione dello staffer
-    axios
-      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
-      .then((res) => {
-        setLoggedStafferId(res.data.StafferId);
-        setLoggedStafferImageUrl(res.data.StafferImageUrl);
-      });
-  }, []);
+    fetchData();
+  }, [
+    TaskData.ProjectId,
+    newTask?.ProjectTaskMembers,
+    newTask?.ProjectTaskTags,
+  ]);
 
   // Valori memorizzati
   const memoizedCheckboxes = useMemo(() => {
@@ -646,72 +642,48 @@ export default function ViewTaskModal({
     setChecklistText("");
     setComment("");
     setEditingCheckbox(0);
-    isClosed();
     setEditing(false);
-    deleteUpdateComment();
+    isClosed();
   }
 
   function closeEditing() {
     setEditing(false);
-    setDeleteUpdate(!deleteUpdate);
     fetchTaskData();
   }
 
-  useEffect(() => {
-    if (TaskData.ProjectId) {
-      axios
-        .get("Project/GET/GetProjetTeamMembers", {
-          params: { ProjectId: TaskData.ProjectId },
-        })
-        .then((res) => {
-          const currentTaskMembers = newTask?.ProjectTaskMembers || [];
-          const filteredMembers = res.data.filter((member: Member) => {
-            return !currentTaskMembers.some(
-              (taskMember) => taskMember.StafferId === member.StafferId
-            );
-          });
-          setMembers(filteredMembers);
-        })
-        .catch((error) => {
-          console.error("Errore nel caricamento dei membri:", error);
-        });
-    }
-  }, [TaskData.ProjectId, newTask?.ProjectTaskMembers]);
-
-  useEffect(() => {
-    axios.get("/Project/GET/GetAllTags").then((res) => {
-      if (newTask?.ProjectTaskTags) {
-        setTags(
-          res.data.filter((tag: Tag) => {
-            return !newTask!.ProjectTaskTags.some(
-              (taskTag) => taskTag.ProjectTaskTagId === tag.ProjectTaskTagId
-            );
-          })
-        );
-      }
-    });
-  }, [newTask, update, TaskData.ProjectId]);
-
   function handleUpdate() {
     let formattedDate = null;
-    if (newTask?.ProjectTaskExpiration) {
-      formattedDate = new Date(newTask?.ProjectTaskExpiration.toString());
+    try {
+      if (newTask?.ProjectTaskExpiration) {
+        const date = new Date(newTask.ProjectTaskExpiration.toString());
+        formattedDate = !isNaN(date.getTime()) ? date : null;
+      }
+      const formattedCreationDate = new Date(
+        newTask!.ProjectTaskCreation.toString()
+      );
+
+      if (isNaN(formattedCreationDate.getTime())) {
+        console.error("Data di inizio non valida");
+        return;
+      }
+
+      axios
+        .put("/Project/UPDATE/UpdateTask", {
+          FormattedDate: formattedDate,
+          FormattedCreationDate: formattedCreationDate,
+          TaskData: newTask,
+        })
+        .then(() => {
+          socket.emit("task-news", TaskData.ProjectId);
+          setEditing(false);
+          handleColsesModal();
+        })
+        .catch((err) => {
+          console.error("Errore nell'aggiornamento della task:", err);
+        });
+    } catch (err) {
+      console.error("Errore nella formattazione delle date:", err);
     }
-    const formattedCreationDate = new Date(
-      newTask!.ProjectTaskCreation.toString()
-    );
-    axios
-      .put("/Project/UPDATE/UpdateTask", {
-        FormattedDate: formattedDate,
-        FormattedCreationDate: formattedCreationDate,
-        TaskData: newTask,
-      })
-      .then(() => {
-        socket.emit("task-news", TaskData.ProjectId);
-        setUpdate(!update);
-        setEditing(false);
-        handleColsesModal();
-      });
   }
 
   function addTaskMember(member: Member) {
@@ -799,7 +771,7 @@ export default function ViewTaskModal({
   }
 
   function deleteUpdateComment() {
-    setComment("");
+    setUpdateComment("");
     setCommentEditingId(0);
   }
 
@@ -1027,6 +999,63 @@ export default function ViewTaskModal({
       setDateError(false); // Se non c'è data di scadenza, non c'è errore
     }
   }, [newTask]);
+
+  useEffect(() => {
+    // Fetch dei dati di sessione dello staffer
+    axios
+      .get("/Authentication/GET/GetSessionData", { withCredentials: true })
+      .then((res) => {
+        setLoggedStafferId(res.data.StafferId);
+        setLoggedStafferImageUrl(res.data.StafferImageUrl);
+      });
+  }, []); // Esegui solo al mount
+
+  useEffect(() => {
+    const fetchCommentsAndChecklists = async () => {
+      if (!TaskData.ProjectTaskId) return;
+
+      try {
+        const [commentResponse, checklistsResponse] = await Promise.all([
+          axios.get<Comment[]>("/Project/GET/GetCommentsByTaskId", {
+            params: { ProjectTaskId: TaskData.ProjectTaskId },
+          }),
+          axios.get("/Project/GET/GetChecklistsByTaskId", {
+            params: { TaskId: TaskData.ProjectTaskId },
+          }),
+        ]);
+
+        // Fetch dei checkbox per ogni checklist in parallelo
+        const checklistPromises = checklistsResponse.data.map(
+          async (checklist: Checklist) => {
+            const checkboxesResponse = await axios.get(
+              "/Project/GET/GetCheckboxesByChecklistId",
+              {
+                params: { ChecklistId: checklist.ChecklistId },
+              }
+            );
+            return {
+              ...checklist,
+              Checkboxes: checkboxesResponse.data,
+            };
+          }
+        );
+
+        const updatedChecklists = await Promise.all(checklistPromises);
+
+        setNewTask((prevTask) => ({
+          ...prevTask!,
+          ProjectTaskComments: commentResponse.data,
+          ProjectTaskChecklists: updatedChecklists,
+        }));
+
+        await fetchFiles();
+      } catch (error) {
+        console.error("Errore nel fetch di commenti o checklist", error);
+      }
+    };
+
+    fetchCommentsAndChecklists();
+  }, [TaskData.ProjectTaskId]); // Rimuovo update dalla dipendenza
 
   return (
     <>
