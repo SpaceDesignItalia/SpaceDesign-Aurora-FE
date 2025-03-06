@@ -244,6 +244,8 @@ export default function ViewTaskModal({
   const [members, setMembers] = useState<Member[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [dateError, setDateError] = useState(false);
+  const [editingCheckbox, setEditingCheckbox] = useState(0);
+  const [checkboxText, setCheckboxText] = useState("");
 
   const fetchFiles = async () => {
     try {
@@ -308,6 +310,7 @@ export default function ViewTaskModal({
   useEffect(() => {
     socket.on("task-update", () => {
       fetchTaskData();
+      fetchCommentsAndChecklists();
       setUpdate(!update);
     });
 
@@ -450,6 +453,8 @@ export default function ViewTaskModal({
       )
       .then(() => {
         setComment("");
+        socket.emit("task-news", TaskData.ProjectId);
+        fetchCommentsAndChecklists();
         setUpdate(!update);
       })
       .catch((error) => {
@@ -464,7 +469,9 @@ export default function ViewTaskModal({
         withCredentials: true,
       })
       .then(() => {
-        setUpdate(!update); // Aggiorna lo stato
+        socket.emit("task-news", TaskData.ProjectId);
+        fetchCommentsAndChecklists();
+        setUpdate(!update);
       });
   };
 
@@ -603,9 +610,6 @@ export default function ViewTaskModal({
         setUpdate(!update); // Aggiorna lo stato
       });
   }
-
-  const [editingCheckbox, setEditingCheckbox] = useState(0);
-  const [checkboxText, setCheckboxText] = useState("");
 
   const handleSaveEdit = (checkboxId: number) => {
     // Qui invia la richiesta per aggiornare il testo della checkbox
@@ -751,6 +755,8 @@ export default function ViewTaskModal({
         CommentText: updateComment,
       })
       .then(() => {
+        socket.emit("task-news", TaskData.ProjectId);
+        fetchCommentsAndChecklists();
         setUpdate(!update);
         setUpdateComment("");
         setCommentEditingId(0);
@@ -1000,52 +1006,52 @@ export default function ViewTaskModal({
       });
   }, []); // Esegui solo al mount
 
+  const fetchCommentsAndChecklists = async () => {
+    if (!TaskData.ProjectTaskId) return;
+
+    try {
+      const [commentResponse, checklistsResponse] = await Promise.all([
+        axios.get<Comment[]>("/Project/GET/GetCommentsByTaskId", {
+          params: { ProjectTaskId: TaskData.ProjectTaskId },
+        }),
+        axios.get("/Project/GET/GetChecklistsByTaskId", {
+          params: { TaskId: TaskData.ProjectTaskId },
+        }),
+      ]);
+
+      // Fetch dei checkbox per ogni checklist in parallelo
+      const checklistPromises = checklistsResponse.data.map(
+        async (checklist: Checklist) => {
+          const checkboxesResponse = await axios.get(
+            "/Project/GET/GetCheckboxesByChecklistId",
+            {
+              params: { ChecklistId: checklist.ChecklistId },
+            }
+          );
+          return {
+            ...checklist,
+            Checkboxes: checkboxesResponse.data,
+          };
+        }
+      );
+
+      const updatedChecklists = await Promise.all(checklistPromises);
+
+      setNewTask((prevTask) => ({
+        ...prevTask!,
+        ProjectTaskComments: commentResponse.data,
+        ProjectTaskChecklists: updatedChecklists,
+      }));
+
+      await fetchFiles();
+    } catch (error) {
+      console.error("Errore nel fetch di commenti o checklist", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchCommentsAndChecklists = async () => {
-      if (!TaskData.ProjectTaskId) return;
-
-      try {
-        const [commentResponse, checklistsResponse] = await Promise.all([
-          axios.get<Comment[]>("/Project/GET/GetCommentsByTaskId", {
-            params: { ProjectTaskId: TaskData.ProjectTaskId },
-          }),
-          axios.get("/Project/GET/GetChecklistsByTaskId", {
-            params: { TaskId: TaskData.ProjectTaskId },
-          }),
-        ]);
-
-        // Fetch dei checkbox per ogni checklist in parallelo
-        const checklistPromises = checklistsResponse.data.map(
-          async (checklist: Checklist) => {
-            const checkboxesResponse = await axios.get(
-              "/Project/GET/GetCheckboxesByChecklistId",
-              {
-                params: { ChecklistId: checklist.ChecklistId },
-              }
-            );
-            return {
-              ...checklist,
-              Checkboxes: checkboxesResponse.data,
-            };
-          }
-        );
-
-        const updatedChecklists = await Promise.all(checklistPromises);
-
-        setNewTask((prevTask) => ({
-          ...prevTask!,
-          ProjectTaskComments: commentResponse.data,
-          ProjectTaskChecklists: updatedChecklists,
-        }));
-
-        await fetchFiles();
-      } catch (error) {
-        console.error("Errore nel fetch di commenti o checklist", error);
-      }
-    };
-
     fetchCommentsAndChecklists();
-  }, [TaskData.ProjectTaskId]); // Rimuovo update dalla dipendenza
+  }, [TaskData.ProjectTaskId, update]); // Aggiunto update come dipendenza
 
   return (
     <>
