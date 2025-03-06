@@ -312,7 +312,11 @@ export default function ViewTaskModal({
       fetchTaskData();
       setUpdate(!update);
     });
-  }, []);
+
+    return () => {
+      socket.off("task-update");
+    };
+  }, [socket]);
 
   function fetchTaskData() {
     const formatDate = (isoString: string) => {
@@ -446,6 +450,8 @@ export default function ViewTaskModal({
 
   // Funzioni
   const handleAddTaskComment = () => {
+    if (!comment.trim()) return;
+
     axios
       .post(
         "/Project/POST/AddTaskComment",
@@ -457,8 +463,11 @@ export default function ViewTaskModal({
         { withCredentials: true }
       )
       .then(() => {
-        setComment(""); // Resetta il commento dopo l'aggiunta
-        setUpdate(!update); // Aggiorna lo stato
+        setComment("");
+        setUpdate(!update);
+      })
+      .catch((error) => {
+        console.error("Errore nell'aggiunta del commento:", error);
       });
   };
 
@@ -655,7 +664,6 @@ export default function ViewTaskModal({
           params: { ProjectId: TaskData.ProjectId },
         })
         .then((res) => {
-          // Filtra i membri che sono già assegnati al task
           const currentTaskMembers = newTask?.ProjectTaskMembers || [];
           const filteredMembers = res.data.filter((member: Member) => {
             return !currentTaskMembers.some(
@@ -773,6 +781,8 @@ export default function ViewTaskModal({
   }
 
   function handleUpdateComment() {
+    if (!updateComment.trim()) return;
+
     axios
       .put("/Project/UPDATE/UpdateComment", {
         CommentId: commentEditingId,
@@ -780,8 +790,11 @@ export default function ViewTaskModal({
       })
       .then(() => {
         setUpdate(!update);
-        setComment("");
+        setUpdateComment("");
         setCommentEditingId(0);
+      })
+      .catch((error) => {
+        console.error("Errore nell'aggiornamento del commento:", error);
       });
   }
 
@@ -944,26 +957,25 @@ export default function ViewTaskModal({
             radius="full"
             size="sm"
             variant="light"
-            color="default"
+            color="danger"
             onClick={deleteUpdateComment}
             startContent={
               <Icon icon="solar:close-circle-bold" className="text-xl" />
             }
-          >
-            Annulla
-          </Button>
+            isIconOnly
+          />
           <Button
             size="sm"
-            color="default"
-            onClick={handleUpdateComment}
+            color="success"
             radius="full"
+            variant="light"
             startContent={
               <Icon icon="solar:check-circle-bold" className="text-xl" />
             }
+            onClick={handleUpdateComment}
             isDisabled={updateComment === "" || updateComment === comment.Text}
-          >
-            Salva
-          </Button>
+            isIconOnly
+          />
         </div>
       );
     }
@@ -971,7 +983,7 @@ export default function ViewTaskModal({
     return (
       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         <Button
-          color="default"
+          color="warning"
           size="sm"
           radius="full"
           variant="light"
@@ -981,19 +993,24 @@ export default function ViewTaskModal({
           }}
           startContent={<Icon icon="solar:pen-2-linear" className="text-xl" />}
           isIconOnly
-          className="hover:bg-default-100"
+          className="hover:bg-warning-100"
         />
-        <Button
-          color="default"
-          size="sm"
-          radius="full"
-          variant="light"
-          onPress={() => handleDeleteComment(comment.ProjectTaskCommentId)}
-          startContent={
-            <Icon icon="solar:trash-bin-trash-linear" className="text-xl" />
+        <ConfirmDeletePopover
+          onConfirm={() => handleDeleteComment(comment.ProjectTaskCommentId)}
+          triggerButton={
+            <Button
+              size="sm"
+              color="danger"
+              variant="light"
+              radius="full"
+              startContent={
+                <Icon icon="solar:trash-bin-trash-linear" fontSize={22} />
+              }
+              aria-label="Remove"
+              aria-labelledby="Remove"
+              isIconOnly
+            />
           }
-          isIconOnly
-          className="hover:bg-default-100"
         />
       </div>
     );
@@ -1405,6 +1422,7 @@ export default function ViewTaskModal({
                                   ? newTask!.ProjectTaskMembers.length - 7
                                   : 0
                               }
+                              className="gap-5"
                             >
                               {newTask!.ProjectTaskMembers.map((member) => (
                                 <Tooltip
@@ -1419,6 +1437,7 @@ export default function ViewTaskModal({
                                       </p>
                                     </div>
                                   }
+                                  placement="bottom"
                                 >
                                   <Avatar
                                     src={
@@ -1426,6 +1445,7 @@ export default function ViewTaskModal({
                                       `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
                                     }
                                     alt={member.StafferFullName}
+                                    className="!translate-x-0 !transition-none"
                                   />
                                 </Tooltip>
                               ))}
@@ -1672,7 +1692,7 @@ export default function ViewTaskModal({
                                   ) : (
                                     <>
                                       <Icon
-                                        icon="solar:magic-stick-bold"
+                                        icon="solar:magic-stick-3-linear"
                                         className="text-xl"
                                       />
                                       Riscrivi con AI
@@ -2235,7 +2255,7 @@ export default function ViewTaskModal({
                                             </div>
                                             {commentEditingId ===
                                             comment.ProjectTaskCommentId ? (
-                                              <div className="mt-2 relative">
+                                              <div className="mt-2">
                                                 <Textarea
                                                   variant="bordered"
                                                   color="default"
@@ -2245,14 +2265,30 @@ export default function ViewTaskModal({
                                                       e.target.value
                                                     )
                                                   }
+                                                  onKeyDown={(e) => {
+                                                    if (
+                                                      e.key === "Enter" &&
+                                                      !e.shiftKey
+                                                    ) {
+                                                      e.preventDefault();
+                                                      handleUpdateComment();
+                                                    } else if (
+                                                      e.key === "Escape"
+                                                    ) {
+                                                      setCommentEditingId(0);
+                                                      setUpdateComment("");
+                                                    }
+                                                  }}
                                                   minRows={2}
-                                                  className="w-full pr-4 focus:border-gray-400"
+                                                  className="w-full focus:border-gray-400"
                                                   placeholder="Modifica il tuo commento..."
                                                   autoFocus
                                                 />
-                                                <div className="absolute bottom-2 right-2 text-xs text-gray-400">
-                                                  Premi Invio per salvare, Esc
-                                                  per annullare
+                                                <div className="flex justify-end mt-2">
+                                                  <span className="text-xs text-gray-400">
+                                                    Premi Invio per salvare, Esc
+                                                    per annullare
+                                                  </span>
                                                 </div>
                                               </div>
                                             ) : (

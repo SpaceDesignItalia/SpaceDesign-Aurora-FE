@@ -120,7 +120,7 @@ const INITIAL_TASK_DATA: Task = {
   ProjectTaskTags: [],
   ProjectTaskMembers: [],
   ProjectId: 0,
-  PriorityId: 4,
+  PriorityId: 0,
 };
 
 const INITIAL_ALERT_DATA: AlertData = {
@@ -149,6 +149,9 @@ export default function AddTaskModal({
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [priorities, setPriorities] = useState<Priority[]>([]);
+  const [isValidTask, setIsValidTask] = useState(false);
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
+  const [dateError, setDateError] = useState(false);
 
   useEffect(() => {
     axios
@@ -259,7 +262,98 @@ export default function AddTaskModal({
     </PopoverContent>
   );
 
+  useEffect(() => {
+    // Validation: check if the start date is after the expiration date
+    if (newTask?.ProjectTaskCreation && newTask?.ProjectTaskExpiration) {
+      const start = new Date(newTask.ProjectTaskCreation.toString());
+      const end = new Date(newTask.ProjectTaskExpiration.toString());
+
+      setDateError(start > end); // If start is after end, show error
+    } else {
+      setDateError(false);
+    }
+  }, [newTask]);
+
+  useEffect(() => {
+    // Verifica che tutti i campi obbligatori siano compilati
+    const isValid =
+      // Titolo della task
+      newTask.ProjectTaskName.length > 0 &&
+      // Data di inizio
+      newTask.ProjectTaskCreation !== null &&
+      // Data di fine (se presente, deve essere valida)
+      (!newTask.ProjectTaskExpiration || !dateError) &&
+      // Descrizione obbligatoria
+      (newTask.ProjectTaskDescription?.length ?? 0) > 0 &&
+      // Priorità obbligatoria
+      newTask.PriorityId > 0;
+
+    setIsValidTask(isValid);
+  }, [newTask, dateError]);
+
+  const calculateProgress = (
+    startDate: DateValue,
+    endDate: DateValue
+  ): number => {
+    if (!startDate || !endDate) return 0;
+    const totalDuration = dayjs(endDate.toString()).diff(
+      dayjs(startDate.toString()),
+      "day"
+    );
+    const daysPassed = dayjs().diff(dayjs(startDate.toString()), "day");
+    const progress = (daysPassed / totalDuration) * 100;
+    return Math.min(Math.max(progress, 0), 100); // Restituisci una percentuale tra 0 e 100
+  };
+
+  function handleCloseModal() {
+    setNewTask({
+      ProjectTaskId: 0,
+      ProjectTaskName: "",
+      ProjectTaskDescription: "",
+      ProjectTaskExpiration: null,
+      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+      ProjectTaskStatusId: 0,
+      ProjectTaskTags: [],
+      ProjectTaskMembers: [],
+      ProjectId: ProjectId,
+      PriorityId: 0,
+    });
+    setShowValidationErrors(false);
+    isClosed();
+    // Remove action from URL
+    if (Action) {
+      navigate(`/projects/${ProjectId}`);
+    }
+  }
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const handleRefine = async () => {
+    if (!newTask.ProjectTaskDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post("/Project/POST/RefineText", {
+        text: `Riscrivi in modo più formale e completo il seguente testo: ${newTask.ProjectTaskDescription}`,
+      });
+      setNewTask({
+        ...newTask,
+        ProjectTaskDescription: refinedText.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  console.log(newTask.PriorityId);
+
   async function handleAddTask() {
+    if (!isValidTask) {
+      setShowValidationErrors(true);
+      return;
+    }
+
     try {
       setIsAddingData(true);
       const formattedDate = newTask.ProjectTaskExpiration
@@ -288,7 +382,6 @@ export default function AddTaskModal({
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        // General error handling
         setAlertData({
           isOpen: true,
           onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
@@ -341,91 +434,6 @@ export default function AddTaskModal({
     });
   }
 
-  const [dateError, setDateError] = useState(false);
-  useEffect(() => {
-    // Validation: check if the start date is after the expiration date
-    if (newTask?.ProjectTaskCreation && newTask?.ProjectTaskExpiration) {
-      const start = new Date(newTask.ProjectTaskCreation.toString());
-      const end = new Date(newTask.ProjectTaskExpiration.toString());
-
-      setDateError(start > end); // If start is after end, show error
-    } else {
-      setDateError(false);
-    }
-  }, [newTask]);
-
-  const [isValidTask, setIsValidTask] = useState(false);
-  useEffect(() => {
-    // Verifica che tutti i campi obbligatori siano compilati
-    const isValid =
-      // Titolo della task
-      newTask.ProjectTaskName.length > 0 &&
-      // Data di inizio
-      newTask.ProjectTaskCreation !== null &&
-      // Data di fine (se presente, deve essere valida)
-      (!newTask.ProjectTaskExpiration || !dateError) &&
-      // Descrizione obbligatoria
-      (newTask.ProjectTaskDescription?.length ?? 0) > 0;
-
-    setIsValidTask(isValid);
-  }, [newTask, dateError]);
-
-  const calculateProgress = (
-    startDate: DateValue,
-    endDate: DateValue
-  ): number => {
-    if (!startDate || !endDate) return 0;
-    const totalDuration = dayjs(endDate.toString()).diff(
-      dayjs(startDate.toString()),
-      "day"
-    );
-    const daysPassed = dayjs().diff(dayjs(startDate.toString()), "day");
-    const progress = (daysPassed / totalDuration) * 100;
-    return Math.min(Math.max(progress, 0), 100); // Restituisci una percentuale tra 0 e 100
-  };
-
-  function handleCloseModal() {
-    setNewTask({
-      ProjectTaskId: 0,
-      ProjectTaskName: "",
-      ProjectTaskDescription: "",
-      ProjectTaskExpiration: null,
-      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
-      ProjectTaskStatusId: 0,
-      ProjectTaskTags: [],
-      ProjectTaskMembers: [],
-      ProjectId: ProjectId,
-      PriorityId: 4,
-    });
-    isClosed();
-    // Remove action from URL
-    if (Action) {
-      navigate(`/projects/${ProjectId}`);
-    }
-  }
-
-  const [loading, setLoading] = useState<boolean>(false);
-  const handleRefine = async () => {
-    if (!newTask.ProjectTaskDescription) return;
-    setLoading(true);
-    try {
-      const refinedText = await axios.post("/Project/POST/RefineText", {
-        text: `Riscrivi in modo più formale e completo il seguente testo: ${newTask.ProjectTaskDescription}`,
-      });
-      setNewTask({
-        ...newTask,
-        ProjectTaskDescription: refinedText.data,
-      });
-    } catch (error) {
-      console.error("Errore:", error);
-      alert("Si è verificato un errore.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  console.log(newTask.PriorityId);
-
   return (
     <>
       <StatusAlert AlertData={alertData} />
@@ -443,36 +451,39 @@ export default function AddTaskModal({
             <>
               <ModalHeader className="flex flex-row justify-between items-center gap-2">
                 <div className="flex flex-row justify-between items-center gap-2 w-full">
-                  <div
-                    className={`p-2 rounded-lg ${
-                      priorityStyles[
-                        newTask?.PriorityId as keyof typeof priorityStyles
-                      ]?.bgColor || "bg-gray-50"
-                    }`}
-                  >
-                    <Icon
-                      icon={
+                  {newTask?.PriorityId > 0 && (
+                    <div
+                      className={`p-2 rounded-lg ${
                         priorityStyles[
                           newTask?.PriorityId as keyof typeof priorityStyles
-                        ]?.icon || "solar:checklist-minimalistic-linear"
-                      }
-                      fontSize={22}
-                      className={
-                        priorityStyles[
-                          newTask?.PriorityId as keyof typeof priorityStyles
-                        ]?.textColor || "text-gray-700"
-                      }
-                    />
-                  </div>
+                        ]?.bgColor || "bg-gray-50"
+                      }`}
+                    >
+                      <Icon
+                        icon={
+                          priorityStyles[
+                            newTask?.PriorityId as keyof typeof priorityStyles
+                          ]?.icon || "solar:checklist-minimalistic-linear"
+                        }
+                        fontSize={22}
+                        className={
+                          priorityStyles[
+                            newTask?.PriorityId as keyof typeof priorityStyles
+                          ]?.textColor || "text-gray-700"
+                        }
+                      />
+                    </div>
+                  )}
                   <Input
                     className="w-full"
                     variant="underlined"
                     color={
+                      showValidationErrors &&
                       newTask.ProjectTaskName.length === 0
                         ? "danger"
                         : "primary"
                     }
-                    placeholder="Titolo della Task *"
+                    placeholder="Titolo della Task"
                     value={newTask!.ProjectTaskName}
                     maxLength={50}
                     onChange={(e) => {
@@ -487,8 +498,10 @@ export default function AddTaskModal({
                       </div>
                     }
                     errorMessage={
-                      newTask.ProjectTaskName.length === 0 &&
-                      "Il titolo è obbligatorio"
+                      showValidationErrors &&
+                      newTask.ProjectTaskName.length === 0
+                        ? "Il titolo è obbligatorio"
+                        : undefined
                     }
                   />
                   <Select
@@ -497,10 +510,20 @@ export default function AddTaskModal({
                     className="w-52 mb-4"
                     variant="underlined"
                     radius="full"
+                    color={
+                      showValidationErrors && !newTask.PriorityId
+                        ? "danger"
+                        : "primary"
+                    }
+                    errorMessage={
+                      showValidationErrors && !newTask.PriorityId
+                        ? "La priorità è obbligatoria"
+                        : undefined
+                    }
                     onSelectionChange={(e) => {
                       setNewTask({
                         ...newTask,
-                        PriorityId: parseInt(e.currentKey ?? "4"),
+                        PriorityId: e?.currentKey ? parseInt(e.currentKey) : 0,
                       });
                     }}
                   >
@@ -776,12 +799,13 @@ export default function AddTaskModal({
                               })
                             }
                           />
-                          {(!newTask.ProjectTaskDescription ||
-                            newTask.ProjectTaskDescription.length === 0) && (
-                            <p className="text-danger text-sm">
-                              La descrizione è obbligatoria
-                            </p>
-                          )}
+                          {showValidationErrors &&
+                            (!newTask.ProjectTaskDescription ||
+                              newTask.ProjectTaskDescription.length === 0) && (
+                              <p className="text-danger text-sm">
+                                La descrizione è obbligatoria
+                              </p>
+                            )}
                         </div>
                       </dd>
                       {newTask.ProjectTaskDescription ? (
@@ -825,50 +849,22 @@ export default function AddTaskModal({
                 >
                   Chiudi
                 </Button>
-                <Tooltip
-                  content={
-                    !isValidTask
-                      ? "Compila tutti i campi obbligatori: Titolo e Descrizione"
-                      : ""
+                <Button
+                  color="primary"
+                  onClick={handleAddTask}
+                  radius="full"
+                  startContent={
+                    !isAddingData && (
+                      <Icon icon="basil:save-outline" fontSize={22} />
+                    )
                   }
-                  isDisabled={isValidTask}
+                  isLoading={isAddingData}
+                  isDisabled={!isValidTask || dateError}
+                  variant={dateError ? "flat" : "solid"}
                 >
-                  <Button
-                    color="primary"
-                    onClick={handleAddTask}
-                    radius="full"
-                    startContent={
-                      !isAddingData && (
-                        <Icon icon="basil:save-outline" fontSize={22} />
-                      )
-                    }
-                    isLoading={isAddingData}
-                    isDisabled={!isValidTask && !isAddingData}
-                    variant={dateError ? "flat" : "solid"}
-                  >
-                    Salva
-                  </Button>
-                </Tooltip>
+                  Salva
+                </Button>
               </ModalFooter>
-              {newTask?.PriorityId && (
-                <div className="absolute bottom-2 left-4">
-                  <p
-                    className={`text-xs ${
-                      priorityStyles[
-                        newTask?.PriorityId as keyof typeof priorityStyles
-                      ]?.textColor || "text-gray-700"
-                    }`}
-                  >
-                    Priorità:{" "}
-                    {
-                      priorities.find(
-                        (priority) =>
-                          priority.ProjectTaskPriorityId === newTask.PriorityId
-                      )?.ProjectTaskPriorityName
-                    }
-                  </p>
-                </div>
-              )}
             </>
           )}
         </ModalContent>
