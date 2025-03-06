@@ -204,14 +204,6 @@ const priorityStyles = {
   },
 };
 
-// Stili di default per il modal
-const defaultModalStyles = {
-  text: "text-gray-600",
-  background: "bg-gray-50",
-  border: "border-gray-200",
-  hover: "hover:bg-gray-100",
-};
-
 export default function ViewTaskModal({
   isOpen,
   isClosed,
@@ -219,7 +211,6 @@ export default function ViewTaskModal({
   socket,
   update,
   setUpdate,
-  hasValidDescription,
 }: {
   isOpen: boolean;
   isClosed: () => void;
@@ -238,8 +229,7 @@ export default function ViewTaskModal({
   const [comment, setComment] = useState("");
   const [updateComment, setUpdateComment] = useState("");
   const [newChecklistName, setNewChecklistName] = useState(""); // Nome della nuova checklist
-  const [checklistText, setChecklistText] = useState(""); // Testo della nuova checklist
-  const [deleteUpdate, setDeleteUpdate] = useState(false);
+  const [checklistText, setChecklistText] = useState("");
   const [editing, setEditing] = useState(false);
   const [commentEditingId, setCommentEditingId] = useState(0);
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
