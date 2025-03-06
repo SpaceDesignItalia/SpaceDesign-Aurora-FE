@@ -18,6 +18,7 @@ import {
   Select,
   SelectItem,
   Spinner,
+  Tooltip,
 } from "@heroui/react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import styles
@@ -75,7 +76,39 @@ interface AlertData {
 interface Priority {
   ProjectTaskPriorityId: number;
   ProjectTaskPriorityName: string;
+  color?: string;
+  icon?: string;
+  bgColor?: string;
+  textColor?: string;
 }
+
+const priorityStyles = {
+  1: {
+    icon: "ri:alarm-warning-fill",
+    textColor: "text-red-700",
+    bgColor: "bg-red-100",
+  },
+  2: {
+    icon: "solar:double-alt-arrow-up-linear",
+    textColor: "text-orange-700",
+    bgColor: "bg-orange-100",
+  },
+  3: {
+    icon: "solar:alt-arrow-up-linear",
+    textColor: "text-amber-700",
+    bgColor: "bg-amber-100",
+  },
+  4: {
+    icon: "solar:alt-arrow-down-linear",
+    textColor: "text-blue-700",
+    bgColor: "bg-blue-100",
+  },
+  5: {
+    icon: "solar:alt-arrow-down-linear",
+    textColor: "text-emerald-700",
+    bgColor: "bg-emerald-100",
+  },
+};
 
 const INITIAL_TASK_DATA: Task = {
   ProjectTaskId: 0,
@@ -323,16 +356,19 @@ export default function AddTaskModal({
 
   const [isValidTask, setIsValidTask] = useState(false);
   useEffect(() => {
-    if (!newTask.ProjectTaskCreation || !newTask.ProjectTaskExpiration) {
-      setIsValidTask(true);
-      return;
-    }
-    setIsValidTask(
+    // Verifica che tutti i campi obbligatori siano compilati
+    const isValid =
+      // Titolo della task
       newTask.ProjectTaskName.length > 0 &&
-        newTask.ProjectTaskCreation.toString().length > 0 &&
-        dateError === false
-    );
-  }, [newTask]);
+      // Data di inizio
+      newTask.ProjectTaskCreation !== null &&
+      // Data di fine (se presente, deve essere valida)
+      (!newTask.ProjectTaskExpiration || !dateError) &&
+      // Descrizione obbligatoria
+      (newTask.ProjectTaskDescription?.length ?? 0) > 0;
+
+    setIsValidTask(isValid);
+  }, [newTask, dateError]);
 
   const calculateProgress = (
     startDate: DateValue,
@@ -407,15 +443,36 @@ export default function AddTaskModal({
             <>
               <ModalHeader className="flex flex-row justify-between items-center gap-2">
                 <div className="flex flex-row justify-between items-center gap-2 w-full">
-                  <Icon
-                    icon="solar:checklist-minimalistic-linear"
-                    fontSize={22}
-                  />
+                  <div
+                    className={`p-2 rounded-lg ${
+                      priorityStyles[
+                        newTask?.PriorityId as keyof typeof priorityStyles
+                      ]?.bgColor || "bg-gray-50"
+                    }`}
+                  >
+                    <Icon
+                      icon={
+                        priorityStyles[
+                          newTask?.PriorityId as keyof typeof priorityStyles
+                        ]?.icon || "solar:checklist-minimalistic-linear"
+                      }
+                      fontSize={22}
+                      className={
+                        priorityStyles[
+                          newTask?.PriorityId as keyof typeof priorityStyles
+                        ]?.textColor || "text-gray-700"
+                      }
+                    />
+                  </div>
                   <Input
                     className="w-full"
                     variant="underlined"
-                    color="primary"
-                    placeholder="Titolo della Task"
+                    color={
+                      newTask.ProjectTaskName.length === 0
+                        ? "danger"
+                        : "primary"
+                    }
+                    placeholder="Titolo della Task *"
                     value={newTask!.ProjectTaskName}
                     maxLength={50}
                     onChange={(e) => {
@@ -428,6 +485,10 @@ export default function AddTaskModal({
                       <div className="text-sm">
                         {newTask?.ProjectTaskName.length}/50
                       </div>
+                    }
+                    errorMessage={
+                      newTask.ProjectTaskName.length === 0 &&
+                      "Il titolo è obbligatorio"
                     }
                   />
                   <Select
@@ -447,8 +508,23 @@ export default function AddTaskModal({
                       <SelectItem
                         key={priority.ProjectTaskPriorityId}
                         value={priority.ProjectTaskPriorityId}
+                        textValue={priority.ProjectTaskPriorityName}
                       >
-                        {priority.ProjectTaskPriorityName}
+                        <div className="flex items-center gap-2">
+                          <Icon
+                            icon={
+                              priorityStyles[
+                                priority.ProjectTaskPriorityId as keyof typeof priorityStyles
+                              ]?.icon || "solar:minimalistic-dots-bold"
+                            }
+                            className={
+                              priorityStyles[
+                                priority.ProjectTaskPriorityId as keyof typeof priorityStyles
+                              ]?.textColor || "text-gray-700"
+                            }
+                          />
+                          <span>{priority.ProjectTaskPriorityName}</span>
+                        </div>
                       </SelectItem>
                     )}
                   </Select>
@@ -479,24 +555,28 @@ export default function AddTaskModal({
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
                         {newTask!.ProjectTaskTags.length === 0 ? (
-                          <div className="flex flex-row items-center gap-3">
-                            <p>Nessun tag trovato</p>
-                            <Popover offset={10} placement="bottom">
-                              <PopoverTrigger>
-                                <Button
-                                  color="primary"
-                                  variant="faded"
-                                  radius="full"
-                                  isIconOnly
-                                >
-                                  <Icon
-                                    icon="mynaui:plus-solid"
-                                    fontSize={22}
-                                  />
-                                </Button>
-                              </PopoverTrigger>
-                              {tagPopoverContent}
-                            </Popover>
+                          <div className="flex flex-col gap-2">
+                            <div className="flex flex-row items-center gap-3">
+                              <p className="text-gray-500">
+                                Nessun tag trovato
+                              </p>
+                              <Popover offset={10} placement="bottom">
+                                <PopoverTrigger>
+                                  <Button
+                                    color="primary"
+                                    variant="faded"
+                                    radius="full"
+                                    isIconOnly
+                                  >
+                                    <Icon
+                                      icon="mynaui:plus-solid"
+                                      fontSize={22}
+                                    />
+                                  </Button>
+                                </PopoverTrigger>
+                                {tagPopoverContent}
+                              </Popover>
+                            </div>
                           </div>
                         ) : (
                           <div className="flex flex-wrap gap-2 items-center">
@@ -543,24 +623,28 @@ export default function AddTaskModal({
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
                         {newTask!.ProjectTaskMembers.length === 0 ? (
-                          <div className="flex flex-row items-center gap-2">
-                            <p>Nessun membro trovato</p>
-                            <Popover offset={10} placement="bottom">
-                              <PopoverTrigger>
-                                <Button
-                                  color="primary"
-                                  variant="faded"
-                                  radius="full"
-                                  isIconOnly
-                                >
-                                  <Icon
-                                    icon="mynaui:plus-solid"
-                                    fontSize={22}
-                                  />
-                                </Button>
-                              </PopoverTrigger>
-                              {memberPopoverContent}
-                            </Popover>
+                          <div className="flex flex-col gap-2">
+                            <div className="flex flex-row items-center gap-2">
+                              <p className="text-gray-500">
+                                Nessun membro trovato
+                              </p>
+                              <Popover offset={10} placement="bottom">
+                                <PopoverTrigger>
+                                  <Button
+                                    color="primary"
+                                    variant="faded"
+                                    radius="full"
+                                    isIconOnly
+                                  >
+                                    <Icon
+                                      icon="mynaui:plus-solid"
+                                      fontSize={22}
+                                    />
+                                  </Button>
+                                </PopoverTrigger>
+                                {memberPopoverContent}
+                              </Popover>
+                            </div>
                           </div>
                         ) : (
                           <div className="flex flex-wrap gap-3 items-center">
@@ -677,20 +761,28 @@ export default function AddTaskModal({
                           icon="fluent:text-description-16-filled"
                           fontSize={22}
                         />
-                        Descrizione
+                        Descrizione <span className="text-danger">*</span>
                       </dt>
                       <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        <ReactQuill
-                          className="sm:col-span-2 sm:mt-0 h-fit"
-                          theme="snow"
-                          value={newTask!.ProjectTaskDescription}
-                          onChange={(e) =>
-                            setNewTask({
-                              ...newTask!,
-                              ProjectTaskDescription: e,
-                            })
-                          }
-                        />
+                        <div className="flex flex-col gap-2">
+                          <ReactQuill
+                            className="sm:col-span-2 sm:mt-0 h-fit"
+                            theme="snow"
+                            value={newTask!.ProjectTaskDescription}
+                            onChange={(e) =>
+                              setNewTask({
+                                ...newTask!,
+                                ProjectTaskDescription: e,
+                              })
+                            }
+                          />
+                          {(!newTask.ProjectTaskDescription ||
+                            newTask.ProjectTaskDescription.length === 0) && (
+                            <p className="text-danger text-sm">
+                              La descrizione è obbligatoria
+                            </p>
+                          )}
+                        </div>
                       </dd>
                       {newTask.ProjectTaskDescription ? (
                         <Button
@@ -733,22 +825,50 @@ export default function AddTaskModal({
                 >
                   Chiudi
                 </Button>
-                <Button
-                  color="primary"
-                  onClick={handleAddTask}
-                  radius="full"
-                  startContent={
-                    !isAddingData && (
-                      <Icon icon="basil:save-outline" fontSize={22} />
-                    )
+                <Tooltip
+                  content={
+                    !isValidTask
+                      ? "Compila tutti i campi obbligatori: Titolo e Descrizione"
+                      : ""
                   }
-                  isLoading={isAddingData}
-                  isDisabled={!isValidTask && !isAddingData}
-                  variant={dateError ? "flat" : "solid"}
+                  isDisabled={isValidTask}
                 >
-                  Salva
-                </Button>
+                  <Button
+                    color="primary"
+                    onClick={handleAddTask}
+                    radius="full"
+                    startContent={
+                      !isAddingData && (
+                        <Icon icon="basil:save-outline" fontSize={22} />
+                      )
+                    }
+                    isLoading={isAddingData}
+                    isDisabled={!isValidTask && !isAddingData}
+                    variant={dateError ? "flat" : "solid"}
+                  >
+                    Salva
+                  </Button>
+                </Tooltip>
               </ModalFooter>
+              {newTask?.PriorityId && (
+                <div className="absolute bottom-2 left-4">
+                  <p
+                    className={`text-xs ${
+                      priorityStyles[
+                        newTask?.PriorityId as keyof typeof priorityStyles
+                      ]?.textColor || "text-gray-700"
+                    }`}
+                  >
+                    Priorità:{" "}
+                    {
+                      priorities.find(
+                        (priority) =>
+                          priority.ProjectTaskPriorityId === newTask.PriorityId
+                      )?.ProjectTaskPriorityName
+                    }
+                  </p>
+                </div>
+              )}
             </>
           )}
         </ModalContent>
