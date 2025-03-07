@@ -819,10 +819,12 @@ export default function ViewTaskModal({
     }
   }
 
-  function handleArchiveTask() {
+  async function handleArchiveTask() {
     try {
-      axios.put("/Project/UPDATE/ArchiveTask", {
+      const currentDate = new Date().toISOString();
+      await axios.put("/Project/UPDATE/ArchiveTask", {
         ProjectTaskId: TaskData.ProjectTaskId,
+        ProjectTaskExpiration: currentDate,
       });
       setUpdate(!update);
       socket.emit("task-news", TaskData.ProjectId);
@@ -1199,7 +1201,7 @@ export default function ViewTaskModal({
                           variant="light"
                           radius="full"
                           startContent={
-                            <Icon icon="solar:pen-bold" className="text-xl" />
+                            <Icon icon="solar:pen-linear" fontSize={22} />
                           }
                           onClick={() => setEditing(true)}
                           size="sm"
@@ -1213,8 +1215,9 @@ export default function ViewTaskModal({
                           isIconOnly
                           startContent={
                             <Icon
-                              icon="solar:archive-up-bold"
-                              className="text-xl"
+                              icon="solar:archive-up-linear"
+                              fontSize={22}
+                              className="text-gray-700"
                             />
                           }
                         />
@@ -1232,7 +1235,8 @@ export default function ViewTaskModal({
                           startContent={
                             <Icon
                               icon="material-symbols:close-rounded"
-                              className="text-xl"
+                              fontSize={22}
+                              className="text-gray-700"
                             />
                           }
                         />
@@ -1662,7 +1666,7 @@ export default function ViewTaskModal({
                                         newTask!.ProjectTaskExpiration
                                       ) >= 70
                                     ? "In scadenza"
-                                    : "Tempo rimanente"}
+                                    : "In tempo"}
                                 </span>
                               </div>
                             </div>

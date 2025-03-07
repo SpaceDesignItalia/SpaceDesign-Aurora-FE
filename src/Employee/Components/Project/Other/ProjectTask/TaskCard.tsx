@@ -174,12 +174,19 @@ export default function TaskCard({
   const formatter = useDateFormatter({ dateStyle: "full" });
 
   // Formatta data scadenza
-  function formatDate(date: DateValue) {
-    if (!date) return "Nessuna scadenza";
+  const formatDate = (date: DateValue | string | null | undefined) => {
+    if (!date) return "Nessuna data";
+
+    // Se la data è già una stringa, la convertiamo direttamente
+    if (typeof date === "string") {
+      return dayjs(date).format("DD MMM YYYY");
+    }
+
+    // Altrimenti usiamo il formatter per DateValue
     return dayjs(formatter.format(new Date(date.toString()))).format(
       "DD MMM YYYY"
     );
-  }
+  };
 
   // Verifica descrizione "valida"
   function hasValidDescription(content: string) {
@@ -527,7 +534,7 @@ export default function TaskCard({
                 </AvatarGroup>
               )}
               <Tooltip
-                content="Data di scadenza"
+                content="Data creazione → Data scadenza"
                 showArrow
                 className="bg-white/90 backdrop-blur-sm"
               >
@@ -550,24 +557,12 @@ export default function TaskCard({
                 >
                   <Icon
                     icon="solar:calendar-linear"
-                    className={
-                      task.ProjectTaskExpiration
-                        ? dayjs(task.ProjectTaskExpiration.toString()).isBefore(
-                            dayjs(),
-                            "day"
-                          )
-                          ? "text-red-700"
-                          : dayjs(task.ProjectTaskExpiration.toString()).isSame(
-                              dayjs(),
-                              "day"
-                            )
-                          ? "text-red-600"
-                          : "text-slate-700"
-                        : "text-slate-700"
-                    }
+                    className="text-slate-700"
                     fontSize={14}
                   />
                   <span className="font-medium tracking-wide">
+                    {formatDate(task.ProjectTaskCreation)}
+                    <span className="mx-2 opacity-50">→</span>
                     {task.ProjectTaskExpiration
                       ? formatDate(task.ProjectTaskExpiration)
                       : "Nessuna scadenza"}

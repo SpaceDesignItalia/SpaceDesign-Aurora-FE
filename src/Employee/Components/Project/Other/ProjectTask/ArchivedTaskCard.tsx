@@ -171,10 +171,26 @@ export default function TaskCard({
 
   function formatDate(date: DateValue) {
     if (!date) return "Nessuna scadenza";
-    let formatter = useDateFormatter({ dateStyle: "full" });
-    return dayjs(formatter.format(new Date(date.toString()))).format(
-      "DD MMM YYYY"
-    );
+    try {
+      // Se la data è già una stringa, la convertiamo direttamente
+      if (typeof date === "string") {
+        const formattedDate = dayjs(date).format("DD MMM YYYY");
+        return formattedDate === "Invalid Date"
+          ? "Nessuna scadenza"
+          : formattedDate;
+      }
+
+      // Se è un DateValue, lo convertiamo prima in una data JavaScript
+      const jsDate = new Date(date.toString());
+      if (isNaN(jsDate.getTime())) {
+        return "Nessuna scadenza";
+      }
+
+      return dayjs(jsDate).format("DD MMM YYYY");
+    } catch (error) {
+      console.error("Errore nella formattazione della data:", error);
+      return "Nessuna scadenza";
+    }
   }
 
   function hasValidDescription(content) {
@@ -205,7 +221,7 @@ export default function TaskCard({
       />
 
       <div
-        className="h-44"
+        className="w-full cursor-pointer transition-all duration-300"
         onClick={(e) =>
           setModalData({
             ...modalData,
@@ -214,140 +230,189 @@ export default function TaskCard({
           })
         }
       >
-        <Card className="h-full p-2" radius="sm">
-          <CardHeader className="justify-between items-start">
-            <h1 className="text-normal font-semibold text-default-600 text-ellipsis overflow-hidden">
-              {task.ProjectTaskName}
-            </h1>
-
-            <div className="flex flex-row">
-              {/*  {Number(task.ProjectTaskStatusId) > 1 && (
-                  <Button
-                    variant="light"
-                    isIconOnly
-                    size="sm"
-                    onClick={() =>
-                      updateTaskStatus(
-                        task.ProjectTaskId,
-                        Number(task.ProjectTaskStatusId) - 1
-                      )
-                    }
-                  >
-                    <ArrowBackIosNewRoundedIcon />
-                  </Button>
-                )}
-  
-                {task.ProjectTaskStatusId < columnCount && (
-                  <Button
-                    variant="light"
-                    isIconOnly
-                    size="sm"
-                    onClick={() =>
-                      updateTaskStatus(
-                        task.ProjectTaskId,
-                        Number(task.ProjectTaskStatusId) + 1
-                      )
-                    }
-                  >
-                    <ArrowForwardIosRoundedIcon />
-                  </Button>
-                )} */}
+        <Card className="w-full border-none" radius="lg">
+          <CardHeader className="flex flex-col gap-2 px-5 pt-4 pb-2">
+            <div className="flex flex-col gap-2.5 flex-grow">
+              <div className="flex items-center justify-between">
+                <h1 className="text-lg font-semibold text-slate-800 line-clamp-2 tracking-tight">
+                  {task.ProjectTaskName}
+                </h1>
+              </div>
+              {task.ProjectTaskTags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {task.ProjectTaskTags.slice(0, 2).map((tag) => (
+                    <Chip
+                      key={tag.ProjectTaskTagId}
+                      size="sm"
+                      className="text-xs font-medium px-2.5 py-1 bg-white/50 text-slate-700 hover:bg-white/80 transition-colors border-2"
+                    >
+                      {tag.ProjectTaskTagName}
+                    </Chip>
+                  ))}
+                  {task.ProjectTaskTags.length > 2 && (
+                    <Tooltip
+                      onClick={(e) => e.stopPropagation()}
+                      content={
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium text-sm">
+                            Altri tag:
+                          </span>
+                          {task.ProjectTaskTags.slice(2).map((tag) => (
+                            <span
+                              key={tag.ProjectTaskTagId}
+                              className="text-sm pl-2"
+                            >
+                              • {tag.ProjectTaskTagName}
+                            </span>
+                          ))}
+                        </div>
+                      }
+                      showArrow
+                      className="bg-white/90 backdrop-blur-sm"
+                    >
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.preventDefault()}
+                      >
+                        <Chip
+                          size="sm"
+                          className="text-xs font-medium px-2.5 py-1 bg-white/50 text-slate-700 hover:bg-white/80 transition-colors border-2"
+                        >
+                          +{task.ProjectTaskTags.length - 2}
+                        </Chip>
+                      </div>
+                    </Tooltip>
+                  )}
+                </div>
+              )}
             </div>
           </CardHeader>
-          <CardBody className="flex flex-row gap-3 px-3 py-0 text-small items-start">
-            {hasValidDescription(task.ProjectTaskDescription) && (
-              <Tooltip
-                content="Questa task ha una descrizione"
-                showArrow
-                placement="bottom"
-              >
-                <Icon icon="fluent:text-description-16-filled" fontSize={22} />
-              </Tooltip>
-            )}
-            {task.ProjectTaskTags.length > 0 && (
-              <Tooltip
-                content="Tags assegnati alla task"
-                showArrow
-                placement="bottom"
-              >
-                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <Icon icon="solar:tag-linear" fontSize={22} />
-                  {task.ProjectTaskTags.length}
-                </div>
-              </Tooltip>
-            )}
-            {fileCount > 0 && (
-              <Tooltip
-                content="File assegnati alla task"
-                showArrow
-                placement="bottom"
-              >
-                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <Icon icon="solar:paperclip-linear" fontSize={22} />
-                  {fileCount}
-                </div>
-              </Tooltip>
-            )}
-            {checkboxCount > 0 && (
-              <Tooltip
-                content="Checklist assegnata alla task"
-                showArrow
-                placement="bottom"
-              >
-                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <Icon icon="solar:checklist-linear" fontSize={22} />
-                  {checkboxCount}
-                </div>
-              </Tooltip>
-            )}
-            {commentsCount > 0 && (
-              <Tooltip
-                content="Commenti riguardo la task"
-                showArrow
-                placement="bottom"
-              >
-                <div className="flex flex-row justify-center items-center gap-1 font-semibold">
-                  <Icon icon="solar:chat-round-line-linear" fontSize={22} />
-                  {commentsCount}
-                </div>
-              </Tooltip>
-            )}
-          </CardBody>
-          <CardFooter className="gap-3 flex flex-col items-end">
-            {task.ProjectTaskMembers.length !== 0 && (
-              <AvatarGroup
-                isBordered
-                isGrid
-                className={
-                  task.ProjectTaskMembers.length > 3
-                    ? `grid-cols-4`
-                    : `grid-cols-${task.ProjectTaskMembers.length}`
-                }
-                max={3}
-              >
-                {task.ProjectTaskMembers.map((member) => (
-                  <Tooltip
-                    key={member.StafferId}
-                    content={member.StafferFullName}
-                  >
-                    <Avatar
-                      size="sm"
-                      src={
-                        member.StafferImageUrl &&
-                        `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
-                      }
-                      alt={member.StafferFullName}
+
+          <CardBody className="px-5 py-3">
+            <div className="flex flex-wrap gap-2 text-slate-700">
+              {hasValidDescription(task.ProjectTaskDescription) && (
+                <Tooltip
+                  content="Descrizione presente"
+                  showArrow
+                  className="bg-white/90 backdrop-blur-sm"
+                >
+                  <div className="flex items-center gap-1.5 text-xs bg-blue-50 hover:bg-blue-100/80 px-2.5 py-1.5 rounded-full transition-all border border-blue-200 shadow-sm">
+                    <Icon
+                      icon="fluent:text-description-16-filled"
+                      className="text-blue-600"
+                      fontSize={14}
                     />
-                  </Tooltip>
-                ))}
-              </AvatarGroup>
-            )}
-            <div className="flex flex-row items-center justify-between gap-3 w-full">
-              <Tooltip content="Scadenza task" showArrow placement="bottom">
-                <span className="flex flex-row gap-2 justify-center items-center font-semibold text-sm">
-                  <Icon icon="solar:calendar-linear" fontSize={22} />
-                  {formatDate(task.ProjectTaskExpiration)}
-                </span>
+                    <span className="font-medium tracking-wide text-blue-600">
+                      Descrizione
+                    </span>
+                  </div>
+                </Tooltip>
+              )}
+              {fileCount > 0 && (
+                <Tooltip
+                  content={`${fileCount} file allegati`}
+                  showArrow
+                  className="bg-white/90 backdrop-blur-sm"
+                >
+                  <div className="flex items-center gap-1.5 text-xs bg-blue-50 hover:bg-blue-100/80 px-2.5 py-1.5 rounded-full transition-all border border-blue-200 shadow-sm">
+                    <Icon
+                      icon="solar:paperclip-linear"
+                      className="text-blue-600"
+                      fontSize={14}
+                    />
+                    <span className="font-medium tracking-wide text-blue-600">
+                      {fileCount} file
+                    </span>
+                  </div>
+                </Tooltip>
+              )}
+              {checkboxCount > 0 && (
+                <Tooltip
+                  content={`${checkboxCount} checklist items`}
+                  showArrow
+                  className="bg-white/90 backdrop-blur-sm"
+                >
+                  <div className="flex items-center gap-1.5 text-xs bg-blue-50 hover:bg-blue-100/80 px-2.5 py-1.5 rounded-full transition-all border border-blue-200 shadow-sm">
+                    <Icon
+                      icon="solar:checklist-linear"
+                      className="text-blue-600"
+                      fontSize={14}
+                    />
+                    <span className="font-medium tracking-wide text-blue-600">
+                      {checkboxCount} task
+                    </span>
+                  </div>
+                </Tooltip>
+              )}
+              {commentsCount > 0 && (
+                <Tooltip
+                  content={`${commentsCount} commenti`}
+                  showArrow
+                  className="bg-white/90 backdrop-blur-sm"
+                >
+                  <div className="flex items-center gap-1.5 text-xs bg-blue-50 hover:bg-blue-100/80 px-2.5 py-1.5 rounded-full transition-all border border-blue-200 shadow-sm">
+                    <Icon
+                      icon="solar:chat-round-line-linear"
+                      className="text-blue-600"
+                      fontSize={14}
+                    />
+                    <span className="font-medium tracking-wide text-blue-600">
+                      {commentsCount} commenti
+                    </span>
+                  </div>
+                </Tooltip>
+              )}
+            </div>
+          </CardBody>
+
+          <CardFooter className="flex flex-col gap-3 px-5 pb-4 pt-2 border-t border-slate-200">
+            <div className="flex justify-between items-center w-full">
+              {task.ProjectTaskMembers.length > 0 && (
+                <AvatarGroup
+                  isBordered
+                  max={3}
+                  size="sm"
+                  className="justify-start"
+                  radius="full"
+                >
+                  {task.ProjectTaskMembers.map((member) => (
+                    <Tooltip
+                      key={member.StafferId}
+                      content={member.StafferFullName}
+                      showArrow
+                      className="bg-white/90 backdrop-blur-sm"
+                    >
+                      <Avatar
+                        src={
+                          member.StafferImageUrl &&
+                          `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
+                        }
+                        alt={member.StafferFullName}
+                        className="border-2 border-white"
+                      />
+                    </Tooltip>
+                  ))}
+                </AvatarGroup>
+              )}
+              <Tooltip
+                content="Data creazione → Data scadenza"
+                showArrow
+                className="bg-white/90 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-2 text-xs bg-slate-100 hover:bg-slate-200/80 border-slate-300 text-slate-700 px-3 py-1.5 rounded-full transition-all border shadow-sm">
+                  <Icon
+                    icon="solar:calendar-linear"
+                    className="text-slate-700"
+                    fontSize={14}
+                  />
+                  <span className="font-medium tracking-wide">
+                    {formatDate(task.ProjectTaskCreation)}
+                    <span className="mx-2 opacity-50">→</span>
+                    {task.ProjectTaskExpiration
+                      ? formatDate(task.ProjectTaskExpiration)
+                      : "Nessuna scadenza"}
+                  </span>
+                </div>
               </Tooltip>
             </div>
           </CardFooter>
