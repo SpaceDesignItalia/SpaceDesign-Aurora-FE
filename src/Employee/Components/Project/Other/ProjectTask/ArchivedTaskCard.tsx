@@ -231,15 +231,16 @@ export default function TaskCard({
         }
       >
         <Card className="w-full border-none" radius="lg">
-          <CardHeader className="flex flex-col gap-2 px-5 pt-4 pb-2">
-            <div className="flex flex-col gap-2.5 flex-grow">
-              <div className="flex items-center justify-between">
-                <h1 className="text-lg font-semibold text-slate-800 line-clamp-2 tracking-tight">
-                  {task.ProjectTaskName}
-                </h1>
-              </div>
+          <CardHeader className="flex flex-col gap-3 px-5 pt-4 pb-2 w-full">
+            <div className="flex items-center justify-between w-full gap-2">
+              <h1 className="text-lg font-semibold text-slate-800 line-clamp-1 tracking-tight flex-grow">
+                {task.ProjectTaskName}
+              </h1>
+            </div>
+
+            <div className="flex flex-col gap-1.5 w-full">
               {task.ProjectTaskTags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 w-full">
                   {task.ProjectTaskTags.slice(0, 2).map((tag) => (
                     <Chip
                       key={tag.ProjectTaskTagId}
@@ -365,14 +366,14 @@ export default function TaskCard({
             </div>
           </CardBody>
 
-          <CardFooter className="flex flex-col gap-3 px-5 pb-4 pt-2 border-t border-slate-200">
-            <div className="flex justify-between items-center w-full">
+          <CardFooter className="flex flex-col gap-2 sm:gap-3 px-5 pb-3 sm:pb-4 pt-2 border-t border-slate-200">
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center w-full gap-2">
               {task.ProjectTaskMembers.length > 0 && (
                 <AvatarGroup
                   isBordered
                   max={3}
                   size="sm"
-                  className="justify-start"
+                  className="justify-start pl-1"
                   radius="full"
                 >
                   {task.ProjectTaskMembers.map((member) => (
@@ -388,7 +389,7 @@ export default function TaskCard({
                           `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
                         }
                         alt={member.StafferFullName}
-                        className="border-2 border-white"
+                        className="border-2 border-white w-7 h-7 sm:w-8 sm:h-8"
                       />
                     </Tooltip>
                   ))}
@@ -399,15 +400,15 @@ export default function TaskCard({
                 showArrow
                 className="bg-white/90 backdrop-blur-sm"
               >
-                <div className="flex items-center gap-2 text-xs bg-slate-100 hover:bg-slate-200/80 border-slate-300 text-slate-700 px-3 py-1.5 rounded-full transition-all border shadow-sm">
+                <div className="flex items-center justify-center gap-2 text-xs bg-slate-100 hover:bg-slate-200/80 border-slate-300 text-slate-700 px-3 py-1.5 rounded-full transition-all border shadow-sm w-full sm:w-auto text-center">
                   <Icon
                     icon="solar:calendar-linear"
                     className="text-slate-700"
-                    fontSize={14}
+                    fontSize={12}
                   />
-                  <span className="font-medium tracking-wide">
+                  <span className="font-medium tracking-wide whitespace-nowrap">
                     {formatDate(task.ProjectTaskCreation)}
-                    <span className="mx-2 opacity-50">→</span>
+                    <span className="mx-1 sm:mx-2 opacity-50">→</span>
                     {task.ProjectTaskExpiration
                       ? formatDate(task.ProjectTaskExpiration)
                       : "Nessuna scadenza"}
