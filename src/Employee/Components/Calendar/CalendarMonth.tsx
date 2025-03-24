@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import ViewEventModal from "./ViewEventModal";
 
 const DAYS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
@@ -47,6 +47,12 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
   const [scrolledToBottom, setScrolledToBottom] = useState<{
     [key: string]: boolean;
   }>({});
+  const [scrolledToTop, setScrolledToTop] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const scrollContainerRefs = useRef<{
+    [key: string]: HTMLDivElement | null;
+  }>({});
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -79,11 +85,43 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
       Math.abs(target.scrollHeight - target.scrollTop - target.clientHeight) <
       5;
 
+    // Controlla se l'utente è all'inizio
+    const isAtTop = target.scrollTop < 5;
+
     if (isAtBottom !== scrolledToBottom[dayKey]) {
       setScrolledToBottom((prev) => ({
         ...prev,
         [dayKey]: isAtBottom,
       }));
+    }
+
+    if (isAtTop !== scrolledToTop[dayKey]) {
+      setScrolledToTop((prev) => ({
+        ...prev,
+        [dayKey]: isAtTop,
+      }));
+    }
+  };
+
+  const scrollToBottom = (dayKey: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const container = scrollContainerRefs.current[dayKey];
+    if (container) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const scrollToTop = (dayKey: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const container = scrollContainerRefs.current[dayKey];
+    if (container) {
+      container.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     }
   };
 
@@ -129,6 +167,21 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                       day >= new Date(event.EventStartDate) &&
                       day <= new Date(event.EventEndDate)
                   )
+                  .sort((a, b) => {
+                    // Prima gli eventi che durano tutto il giorno
+                    const aIsAllDay =
+                      a.EventStartTime === "00:00" &&
+                      a.EventEndTime === "00:00";
+                    const bIsAllDay =
+                      b.EventStartTime === "00:00" &&
+                      b.EventEndTime === "00:00";
+
+                    if (aIsAllDay && !bIsAllDay) return -1;
+                    if (!aIsAllDay && bIsAllDay) return 1;
+
+                    // Poi ordina per orario di inizio
+                    return a.EventStartTime.localeCompare(b.EventStartTime);
+                  })
                   .map((event) => (
                     <div
                       onClick={(e) => {
@@ -175,22 +228,72 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                 className="absolute top-10 left-1 right-1 flex flex-col gap-2 overflow-y-auto max-h-[calc(18vh-40px)] py-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 pr-2 relative"
                 onWheel={(e) => e.stopPropagation()}
                 onScroll={(e) => handleScroll(e, day)}
+                ref={(el) => {
+                  scrollContainerRefs.current[day.toISOString()] = el;
+                }}
               >
                 {(() => {
-                  const dayEvents = events.filter(
-                    (event) =>
-                      day >= new Date(event.EventStartDate) &&
-                      day <= new Date(event.EventEndDate)
-                  );
+                  const dayEvents = events
+                    .filter(
+                      (event) =>
+                        day >= new Date(event.EventStartDate) &&
+                        day <= new Date(event.EventEndDate)
+                    )
+                    .sort((a, b) => {
+                      // Prima gli eventi che durano tutto il giorno
+                      const aIsAllDay =
+                        a.EventStartTime === "00:00" &&
+                        a.EventEndTime === "00:00";
+                      const bIsAllDay =
+                        b.EventStartTime === "00:00" &&
+                        b.EventEndTime === "00:00";
+
+                      if (aIsAllDay && !bIsAllDay) return -1;
+                      if (!aIsAllDay && bIsAllDay) return 1;
+
+                      // Poi ordina per orario di inizio
+                      return a.EventStartTime.localeCompare(b.EventStartTime);
+                    });
 
                   // Se non ci sono eventi, ritorna null
                   if (dayEvents.length === 0) return null;
 
                   const maxVisibleEvents = 4; // Numero massimo di eventi da mostrare prima di indicare che ce ne sono altri
                   const hasMoreEvents = dayEvents.length > maxVisibleEvents;
+                  const dayKey = day.toISOString();
 
                   return (
                     <>
+                      {/* Freccia per scorrere verso l'alto */}
+                      {scrolledToBottom[dayKey] && !scrolledToTop[dayKey] && (
+                        <div
+                          className={`sticky top-0 left-0 right-0 bg-gradient-to-b ${
+                            day < today
+                              ? "from-gray-200 via-gray-200"
+                              : "from-white via-white"
+                          } to-transparent pt-1 pb-5 -mb-6 flex justify-center items-center text-[10px] font-medium text-gray-600 cursor-pointer z-10`}
+                          onClick={(e) => scrollToTop(dayKey, e)}
+                          title="Torna all'inizio"
+                        >
+                          <div className="flex items-center px-1.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-full shadow-sm transition-colors">
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 15l7-7 7 7"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+
                       {dayEvents.map((event, index) => {
                         // Controllo se l'evento inizia nello stesso giorno
                         const isStartDay =
@@ -339,35 +442,34 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                       })}
 
                       {/* Indicatore per eventi aggiuntivi */}
-                      {hasMoreEvents &&
-                        !scrolledToBottom[day.toISOString()] && (
-                          <div
-                            className={`sticky bottom-0 left-0 right-0 bg-gradient-to-t ${
-                              day < today
-                                ? "from-gray-200 via-gray-200"
-                                : "from-white via-white"
-                            } to-transparent pt-5 pb-1 -mt-6 flex justify-center items-center text-[10px] font-medium text-gray-600 cursor-pointer z-10`}
-                            onClick={(e) => e.stopPropagation()}
-                            title={`${dayEvents.length} eventi totali`}
-                          >
-                            <div className="flex items-center px-1.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-full shadow-sm transition-colors">
-                              <svg
-                                className="w-3 h-3"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M19 9l-7 7-7-7"
-                                />
-                              </svg>
-                            </div>
+                      {hasMoreEvents && !scrolledToBottom[dayKey] && (
+                        <div
+                          className={`sticky bottom-0 left-0 right-0 bg-gradient-to-t ${
+                            day < today
+                              ? "from-gray-200 via-gray-200"
+                              : "from-white via-white"
+                          } to-transparent pt-5 pb-1 -mt-6 flex justify-center items-center text-[10px] font-medium text-gray-600 cursor-pointer z-10`}
+                          onClick={(e) => scrollToBottom(dayKey, e)}
+                          title={`${dayEvents.length} eventi totali`}
+                        >
+                          <div className="flex items-center px-1.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-full shadow-sm transition-colors">
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </svg>
                           </div>
-                        )}
+                        </div>
+                      )}
                     </>
                   );
                 })()}
@@ -396,6 +498,21 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                       day >= new Date(event.EventStartDate) &&
                       day <= new Date(event.EventEndDate)
                   )
+                  .sort((a, b) => {
+                    // Prima gli eventi che durano tutto il giorno
+                    const aIsAllDay =
+                      a.EventStartTime === "00:00" &&
+                      a.EventEndTime === "00:00";
+                    const bIsAllDay =
+                      b.EventStartTime === "00:00" &&
+                      b.EventEndTime === "00:00";
+
+                    if (aIsAllDay && !bIsAllDay) return -1;
+                    if (!aIsAllDay && bIsAllDay) return 1;
+
+                    // Poi ordina per orario di inizio
+                    return a.EventStartTime.localeCompare(b.EventStartTime);
+                  })
                   .map((event, index) => {
                     // Controllo se l'evento inizia nello stesso giorno
                     const isStartDay =
