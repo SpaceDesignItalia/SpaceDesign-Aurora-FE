@@ -61,8 +61,8 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const hasEventsOnDay = (date: Date) => {
-    return events.some((event) => {
+  const getEventsForDay = (date: Date) => {
+    return events.filter((event) => {
       const startDate = new Date(event.EventStartDate);
       const endDate = new Date(event.EventEndDate);
       return (
@@ -110,7 +110,8 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
                 const currentDay = new Date(year, monthIndex, day);
                 const isToday =
                   currentDay.toDateString() === today.toDateString();
-                const hasEvents = hasEventsOnDay(currentDay);
+                const dayEvents = getEventsForDay(currentDay);
+                const hasEvents = dayEvents.length > 0;
 
                 return (
                   <div
@@ -126,15 +127,38 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
                       e.stopPropagation();
                       onDateClick(currentDay);
                     }}
+                    title={
+                      dayEvents.length > 0 ? `${dayEvents.length} eventi` : ""
+                    }
                   >
                     <span className={`${hasEvents ? "font-medium" : ""}`}>
                       {day}
                     </span>
                     {hasEvents && (
-                      <div
-                        className={`w-1.5 h-1.5 rounded-full mt-0.5 
-                        ${isToday ? "bg-white" : "bg-blue-500"}`}
-                      />
+                      <div className="flex space-x-0.5 mt-0.5 justify-center">
+                        {dayEvents.slice(0, 3).map((event, index) => (
+                          <div
+                            key={`${event.EventId}-${index}`}
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{
+                              backgroundColor: event.EventColor,
+                              boxShadow: isToday
+                                ? "0 0 0 0.5px rgba(255,255,255,0.7)"
+                                : "none",
+                            }}
+                          />
+                        ))}
+                        {dayEvents.length > 3 && (
+                          <div
+                            className={`text-[9px] leading-none ${
+                              isToday ? "text-white" : "text-gray-500"
+                            }`}
+                            style={{ marginTop: "-1px" }}
+                          >
+                            +{dayEvents.length - 3}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 );
