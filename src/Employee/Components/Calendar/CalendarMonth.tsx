@@ -225,7 +225,7 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                 </time>
               </div>
               <div
-                className="absolute top-10 left-1 right-1 flex flex-col gap-2 overflow-y-auto max-h-[calc(18vh-40px)] py-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 pr-2 relative"
+                className="absolute top-10 left-1 right-1 flex flex-col gap-2 overflow-y-auto max-h-[calc(18vh-40px)] py-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 pr-2"
                 onWheel={(e) => e.stopPropagation()}
                 onScroll={(e) => handleScroll(e, day)}
                 ref={(el) => {
