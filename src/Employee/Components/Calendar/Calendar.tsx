@@ -84,7 +84,7 @@ export default function Calendar() {
   const { Action, EventId, EventPartecipantEmail } = useParams();
   const [isOpen, setIsOpen] = useState(false);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [view, setView] = useState("day");
+  const [view, setView] = useState("week");
   const [currentDate, setCurrentDate] = useState(new Date());
   const container = useRef<HTMLDivElement>(null);
   const [redLineBehavior, setRedLineBehavior] = useState<
@@ -288,7 +288,7 @@ END:VEVENT`;
     setIsLoading(true);
     try {
       const res = await axios.get(`Calendar/GET/GetEventsByEmail`);
-      setEvents(res.data);
+      setEvents([...res.data, ...events]);
     } catch (error) {
       console.error(error);
       // Add error handling UI here
@@ -322,18 +322,29 @@ END:VEVENT`;
   }
 
   useEffect(() => {
-    if (Action === "add-event") {
-      setIsOpen(true);
-    } else if (Action === "accept" && EventId && EventPartecipantEmail) {
-      updateEventPartecipantStatus(EventId, EventPartecipantEmail, "Accettato");
-    } else if (Action === "reject" && EventId && EventPartecipantEmail) {
-      updateEventPartecipantStatus(EventId, EventPartecipantEmail, "Rifiutato");
+    if (EventId && EventPartecipantEmail) {
+      if (Action === "add-event") {
+        setIsOpen(true);
+      } else if (Action === "accept" && EventId && EventPartecipantEmail) {
+        updateEventPartecipantStatus(
+          EventId,
+          EventPartecipantEmail,
+          "Accettato"
+        );
+      } else if (Action === "reject" && EventId && EventPartecipantEmail) {
+        updateEventPartecipantStatus(
+          EventId,
+          EventPartecipantEmail,
+          "Rifiutato"
+        );
+      }
     }
     fetchEvents();
+    fetchProjects();
     socket.on("calendar-update", () => {
       fetchEvents();
     });
-  }, []);
+  }, [EventId, EventPartecipantEmail]);
 
   const changeDate = (offset: number) => {
     const newDate = new Date(currentDate);
@@ -366,6 +377,70 @@ END:VEVENT`;
   }, [container]); //Corrected useEffect dependency
 
   const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+
+  async function fetchProjects() {
+    const res = await axios.get("/Project/GET/GetProjectInTeam", {
+      withCredentials: true,
+    });
+
+    const newEvents: CalendarEvent[] = []; // Creiamo un array per i nuovi eventi
+
+    for (const project of res.data) {
+      if (
+        project.ProjectEndDate &&
+        !events.some((event) => event.EventId === project.ProjectId)
+      ) {
+        const endDate = new Date(project.ProjectEndDate);
+        newEvents.push({
+          EventId: project.ProjectId,
+          EventTitle: "Progetto: " + project.ProjectName.substring(0, 10),
+          EventStartDate: endDate,
+          EventEndDate: endDate,
+          EventStartTime: "00:00",
+          EventEndTime: "00:00",
+          EventColor: "#000000",
+          EventDescription: "",
+          EventLocation: "",
+          EventTagName: "",
+          EventAttachments: [],
+          EventPartecipants: [],
+        });
+      }
+
+      const resTask = await axios.get("/Project/GET/GetTasksByProjectId", {
+        params: { ProjectId: project.ProjectId },
+      });
+
+      for (const task of resTask.data) {
+        console.log(task);
+        if (
+          task.ProjectTaskExpiration &&
+          !events.some((event) => event.EventId === task.ProjectTaskId)
+        ) {
+          console.log(task);
+          const endDate = new Date(task.ProjectTaskExpiration);
+          newEvents.push({
+            EventId: task.ProjectTaskId,
+            EventTitle: "Task: " + task.ProjectTaskName.substring(0, 10),
+            EventStartDate: endDate,
+            EventEndDate: endDate,
+            EventStartTime: "00:00",
+            EventEndTime: "00:00",
+            EventColor: "#707070",
+            EventDescription: "",
+            EventLocation: "",
+            EventTagName: "",
+            EventAttachments: [],
+            EventPartecipants: [],
+          });
+        }
+      }
+    }
+
+    setEvents((prevEvents) => [...prevEvents, ...newEvents]); // Aggiorniamo lo stato degli eventi
+  }
+
+  console.log(events);
 
   return (
     <>

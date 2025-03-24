@@ -18,7 +18,8 @@ import { formatInTimeZone } from "date-fns-tz";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../../API/API";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import ExcelJS from "exceljs";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -62,7 +63,10 @@ export default function EmployeeAttendanceTable({
     return Array.from({ length: days }, (_, i) => new Date(year, month, i + 1));
   };
 
-  const statusConfig = {
+  const statusConfig: Record<
+    string,
+    { color: string; icon: string; label: string }
+  > = {
     present: {
       color: "bg-emerald-100 border-emerald-300",
       icon: "hugeicons:office",
@@ -85,14 +89,6 @@ export default function EmployeeAttendanceTable({
     },
   };
 
-  // Aggiorna i colori per usare gli stessi del config
-  const statusColors = {
-    present: statusConfig.present.color,
-    absent: statusConfig.absent.color,
-    vacation: statusConfig.vacation.color,
-    smartworking: statusConfig.smartworking.color,
-  };
-
   const renderStreak = (
     streak: {
       status: string;
@@ -102,22 +98,18 @@ export default function EmployeeAttendanceTable({
     },
     key: string
   ) => {
+    const config = statusConfig[streak.status as keyof typeof statusConfig];
     return (
       <div
         key={key}
-        className={`h-9 ${
-          statusColors[streak.status as keyof typeof statusColors]
-        } rounded-xl border-2 flex items-center justify-center gap-2 cursor-pointer`}
+        className={`h-9 ${config.color} ${config.color} rounded-xl border transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer transform hover:scale-[1.02]`}
         style={{
           width: `${streak.count * 64 - 8}px`,
           margin: "0 4px",
         }}
-        title={statusConfig[streak.status as keyof typeof statusConfig].label}
+        title={config.label}
       >
-        <Icon
-          icon={statusConfig[streak.status as keyof typeof statusConfig].icon}
-          className="w-5 h-5 text-gray-700"
-        />
+        <Icon icon={config.icon} className="w-5 h-5 text-gray-700" />
       </div>
     );
   };
@@ -304,8 +296,6 @@ export default function EmployeeAttendanceTable({
   };
 
   const changeSelectedDaysStatus = (newStatus: string) => {
-    console.log(selectedDays);
-    console.log(newStatus);
     selectedDays.forEach((date) => {
       handleStatusChange(newStatus, date);
     });
@@ -320,110 +310,288 @@ export default function EmployeeAttendanceTable({
     setIsMultiSelect(!isMultiSelect);
   };
 
-  return (
-    <div className="rounded-2xl shadow-sm border-2">
-      <div className="mb-6 flex justify-between items-center border-b border-gray-100 pb-4">
-        <h2 className="text-xl font-semibold text-gray-900 px-2 py-4 w-1/3">
-          Presenze e assenze
-        </h2>
+  async function sendAttendance() {
+    await axios.post("/Staffer/POST/SendAttendanceReport", {
+      month:
+        format(selectedDate, "MMMM", { locale: it }).charAt(0).toUpperCase() +
+        format(selectedDate, "MMMM", { locale: it }).slice(1),
+      year: format(selectedDate, "yyyy"),
+    });
+  }
 
-        <div className="flex items-center gap-4 w-full justify-end">
-          {isMultiSelect && (
-            <Select
-              onChange={(e) =>
-                changeSelectedDaysStatus(e.target.value as string)
+  async function exportAttendanceToExcel(
+    employees: Employee[],
+    selectedDate: Date
+  ): Promise<void> {
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Presenze");
+
+      // Colori esatti da Tailwind convertiti in ARGB
+
+      const excelColors = {
+        present: "#FFF0FDF4",
+        absent: "#FFFEF2F2", // bg-red-100
+        vacation: "#FFEEF2FF", // bg-indigo-100 (cambiato da blue a indigo)
+        smartworking: "#FFFEF9C3", // bg-amber-100
+      };
+
+      // Intestazioni
+      worksheet.getCell("A1").value = "Nome completo";
+      worksheet.getCell("A1").font = { bold: true };
+
+      const daysInMonth = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth() + 1,
+        0
+      ).getDate();
+
+      // Configura le colonne
+      worksheet.columns = [
+        { header: "Nome", key: "name", width: 30 },
+        ...Array.from({ length: daysInMonth }, (_, i) => ({
+          header: (i + 1).toString(),
+          key: `day_${i + 1}`,
+          width: 5,
+        })),
+      ];
+
+      // Aggiungi i dati
+      employees.forEach((employee) => {
+        const rowData: any = {
+          name: employee.name,
+        };
+
+        // Inizializza tutte le celle dei giorni come vuote
+        for (let day = 1; day <= daysInMonth; day++) {
+          rowData[`day_${day}`] = "";
+        }
+
+        // Popola le presenze
+        employee.attendances.forEach((attendance) => {
+          const date = new Date(attendance.date);
+          if (
+            date.getMonth() === selectedDate.getMonth() &&
+            date.getFullYear() === selectedDate.getFullYear()
+          ) {
+            const dayKey = `day_${date.getDate()}`;
+            rowData[dayKey] = attendance.status.charAt(0).toUpperCase();
+          }
+        });
+
+        const row = worksheet.addRow(rowData);
+
+        // Applica i colori alle celle
+        row.eachCell((cell, colNumber) => {
+          if (colNumber > 1) {
+            // Salta la colonna del nome
+            const value = cell.value as string;
+
+            if (value) {
+              let fillColor = "";
+              switch (value) {
+                case "P":
+                  fillColor = excelColors.present;
+                  break;
+                case "A":
+                  fillColor = excelColors.absent;
+                  break;
+                case "V":
+                  fillColor = excelColors.vacation;
+                  break;
+                case "S":
+                  fillColor = excelColors.smartworking;
+                  break;
               }
-              placeholder="Seleziona Stato"
-              className="w-48"
-              color="primary"
-              variant="bordered"
-              radius="full"
-            >
-              <>
-                {Object.entries(statusConfig).map(([key, config]) => (
-                  <SelectItem
-                    value={key}
-                    key={key}
-                    startContent={
-                      <div
-                        className={`w-6 h-6 ${config.color} rounded-lg flex items-center justify-center`}
-                      >
-                        <Icon
-                          icon={config.icon}
-                          className="w-4 h-4 text-gray-700"
-                        />
-                      </div>
-                    }
-                  >
-                    {config.label}
-                  </SelectItem>
-                ))}
-                <SelectItem
-                  value="delete"
-                  key="delete"
-                  startContent={
-                    <div className="w-6 h-6 bg-zinc-300 rounded-lg flex items-center justify-center">
-                      <Icon
-                        icon="material-symbols-light:delete-outline"
-                        className="w-4 h-4 text-gray-700"
-                      />
-                    </div>
-                  }
-                >
-                  Elimina
-                </SelectItem>
-              </>
-            </Select>
-          )}
+
+              if (fillColor) {
+                cell.fill = {
+                  type: "pattern",
+                  pattern: "solid",
+                  fgColor: { argb: fillColor },
+                };
+              }
+            }
+          }
+        });
+      });
+
+      // Formattazione finale
+      worksheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          };
+          cell.alignment = { vertical: "middle", horizontal: "center" };
+        });
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const formData = new FormData();
+      const fileName = `Presenze_${selectedDate.toLocaleString("it-IT", {
+        month: "long",
+        year: "numeric",
+      })}.xlsx`;
+
+      formData.append("file", blob, fileName);
+
+      // Assicuriamoci che la chiamata API venga eseguita
+      try {
+        const response = await axios.post(
+          "/Staffer/POST/UploadAttendanceExcel",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        if (response.status !== 200) {
+          throw new Error(`Upload failed with status: ${response.status}`);
+        }
+
+        console.log("File Excel caricato con successo");
+      } catch (uploadError) {
+        console.error("Errore durante l'upload del file:", uploadError);
+        throw uploadError;
+      }
+    } catch (error) {
+      console.error("Errore durante l'esportazione:", error);
+      throw error;
+    }
+  }
+
+  const handleExportAndSend = async () => {
+    try {
+      console.log("Esportazione in corso...");
+      await exportAttendanceToExcel(employees, selectedDate);
+      await sendAttendance();
+    } catch (error) {
+      console.error("Errore durante l'esportazione e l'invio:", error);
+    }
+  };
+
+  // Aggiungi questo stato per gestire la visualizzazione mobile
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
+
+  // Aggiungi questo useEffect per gestire il resize della finestra
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return (
+    <div className="rounded-2xl shadow-lg border-2 ">
+      {/* Header superiore con titolo e controlli */}
+      <div className="p-4 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b bg-gray-50 rounded-t-xl">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
+          <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+            Presenze e assenze
+          </h2>
+        </div>
+
+        <div className="flex items-center gap-2 bg-white shadow-sm px-3 py-1.5 md:px-4 md:py-2 rounded-full border w-full md:w-auto">
+          <Icon
+            icon="solar:calendar-linear"
+            className="w-4 h-4 md:w-5 md:h-5 text-gray-600"
+          />
           <button
             onClick={() => onDateChange(subMonths(selectedDate, 1))}
-            className="p-2 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-1 text-gray-600"
+            className="hover:bg-gray-100 p-1 rounded-full transition-colors"
           >
-            <Icon icon="solar:alt-arrow-left-linear" fontSize={24} />
-            <span className="text-sm">
-              {format(subMonths(selectedDate, 1), "MMMM", { locale: it })
-                .charAt(0)
-                .toUpperCase() +
-                format(subMonths(selectedDate, 1), "MMMM", {
-                  locale: it,
-                }).slice(1)}
-            </span>
+            <Icon
+              icon="solar:alt-arrow-left-linear"
+              className="w-4 h-4 md:w-5 md:h-5"
+            />
           </button>
-          <span className="px-4 py-2 bg-gray-50 rounded-lg font-medium">
-            {format(selectedDate, "MMMM", { locale: it })
-              .charAt(0)
-              .toUpperCase() +
-              format(selectedDate, "MMMM", { locale: it }).slice(1)}{" "}
-            {format(selectedDate, "yyyy")}
+          <span className="font-medium px-2 min-w-[100px] md:min-w-[120px] text-center text-sm md:text-base">
+            {format(selectedDate, "MMMM yyyy", { locale: it })}
           </span>
           <button
             onClick={() => onDateChange(addMonths(selectedDate, 1))}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-1 text-gray-600"
+            className="hover:bg-gray-100 p-1 rounded-full transition-colors"
           >
-            <span className="text-sm">
-              {format(addMonths(selectedDate, 1), "MMMM", { locale: it })
-                .charAt(0)
-                .toUpperCase() +
-                format(addMonths(selectedDate, 1), "MMMM", {
-                  locale: it,
-                }).slice(1)}
-            </span>
-            <Icon icon="solar:alt-arrow-right-linear" fontSize={24} />
+            <Icon
+              icon="solar:alt-arrow-right-linear"
+              className="w-4 h-4 md:w-5 md:h-5"
+            />
           </button>
+        </div>
+
+        <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-end">
+          <Button
+            variant={isMultiSelect ? "solid" : "ghost"}
+            color="primary"
+            radius="full"
+            startContent={
+              <Icon
+                icon={
+                  isMultiSelect
+                    ? "solar:check-square-linear"
+                    : "solar:square-linear"
+                }
+                className="w-5 h-5"
+              />
+            }
+            onPress={toggleMultiSelect}
+          >
+            {isMultiSelect ? "Fine selezione" : "Selezione multipla"}
+          </Button>
+
+          <Dropdown>
+            <DropdownTrigger>
+              <Button color="primary" variant="ghost" radius="full" isIconOnly>
+                <Icon icon="solar:menu-dots-linear" className="w-5 h-5" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu>
+              <DropdownItem
+                key="export-csv"
+                startContent={
+                  <Icon icon="solar:file-download-linear" className="w-5 h-5" />
+                }
+                onPress={exportCSV}
+              >
+                Esporta CSV
+              </DropdownItem>
+              <DropdownItem
+                key="send-report"
+                startContent={
+                  <Icon icon="solar:letter-linear" className="w-5 h-5" />
+                }
+                onPress={handleExportAndSend}
+              >
+                Invia report mensile
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
         </div>
       </div>
 
-      <div className="relative">
-        <div className="flex">
+      {/* Tabella principale */}
+      <div className="relative overflow-hidden">
+        <div className="flex min-w-[800px]">
           {/* Colonna nomi fissa */}
-          <div className="w-64 pl-2 flex-shrink-0 sticky left-0 bg-white z-10 border-r border-gray-200">
-            <div className="flex items-center h-12 bg-gray-50 border-1 rounded-l-lg border-gray-200 p-4 font-medium text-gray-600 text-sm shadow-md">
+          <div className="w-48 md:w-64 flex-shrink-0 sticky left-0 bg-white z-10 border-r border-gray-200">
+            <div className="flex items-center h-12 bg-gray-50 border-1 border-gray-200 p-4 font-medium text-gray-600 text-sm shadow-md">
               Nome
             </div>
             {employees.map((employee, index) => (
               <div
                 key={employee.id}
-                className={`h-12 flex items-center gap-2 p-4 border-b border-gray-100 rounded-l-lg ${
+                className={`h-12 flex items-center gap-2 p-4 border-b border-gray-100 ${
                   index % 2 === 0 ? "bg-gray-200" : ""
                 }`}
               >
@@ -447,27 +615,31 @@ export default function EmployeeAttendanceTable({
           <div className="flex-1 overflow-x-auto">
             <div
               style={{
-                minWidth: `${getDaysInMonth().length * 64}px`,
+                minWidth: isMobileView
+                  ? `${getDaysInMonth().length * 48}px`
+                  : `${getDaysInMonth().length * 64}px`,
                 width: "100%",
               }}
             >
               {/* Header giorni */}
               {!isMultiSelect ? (
-                <div className="h-12 bg-gray-50 border-b border-gray-200 flex divide-x divide-gray-200">
+                <div className="h-12 bg-gray-50 border-b border-gray-200 flex">
                   {getDaysInMonth().map((date) => {
                     return (
-                      <Popover showArrow>
+                      <Popover showArrow key={date.toISOString()}>
                         <PopoverTrigger>
                           <div
                             key={date.toISOString()}
-                            className="w-16 flex-shrink-0 flex flex-col justify-center items-center py-2 text-sm text-gray-600 font-medium border-r-1 border-t-1 hover:cursor-pointer"
+                            className="w-12 md:w-16 flex-shrink-0 flex flex-col justify-center items-center py-2 text-xs md:text-sm text-gray-600 font-medium border-r border-gray-300 hover:cursor-pointer hover:bg-gray-100"
                           >
                             <div className="text-xs text-gray-500">
                               {format(date, "EEE", { locale: it })
                                 .toLowerCase()
                                 .slice(0, 3)}
                             </div>
-                            <div>{date.getDate()}</div>
+                            <div className="font-semibold">
+                              {date.getDate()}
+                            </div>
                           </div>
                         </PopoverTrigger>
                         <PopoverContent>
@@ -609,49 +781,98 @@ export default function EmployeeAttendanceTable({
           </div>
         </div>
       </div>
-
-      <div className="mt-6 px-2 py-4 flex items-center justify-between border-t border-gray-100 pt-4">
-        <div className="flex items-center gap-4">
-          <Button
-            color="primary"
-            variant="ghost"
-            radius="full"
-            startContent={
-              <Icon icon="solar:file-download-linear" fontSize={24} />
-            }
-            onPress={exportCSV}
-          >
-            Esporta Tabella
-          </Button>
-          <div className="flex gap-6 text-sm text-gray-600">
+      {/* Legenda stati aggiornata */}
+      <div className="px-4 md:px-6 py-4 border-t bg-gray-50 rounded-b-xl">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center">
+          <span className="font-medium text-gray-700">Legenda:</span>
+          <div className="flex flex-wrap gap-3 md:gap-6 text-sm">
             {Object.entries(statusConfig).map(([key, config]) => (
-              <div key={key} className="flex items-center gap-2">
+              <div
+                key={key}
+                className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 rounded-lg bg-white shadow-sm border border-gray-200"
+              >
                 <div
-                  className={`w-10 h-10 ${config.color} rounded-xl border-2 flex items-center justify-center`}
+                  className={`w-6 md:w-8 h-6 md:h-8 ${config.color} rounded-lg flex items-center justify-center border`}
                 >
                   <Icon
                     icon={config.icon}
-                    className="w-6 h-6 text-gray-700"
-                    style={{ strokeWidth: 1.5 }}
+                    className="w-4 md:w-5 h-4 md:h-5 text-gray-700"
                   />
                 </div>
-                <span className="font-medium">{config.label}</span>
+                <span className="font-medium text-gray-600 text-sm">
+                  {config.label}
+                </span>
               </div>
             ))}
           </div>
-          <Button
-            variant={isMultiSelect ? "solid" : "bordered"}
-            color="primary"
-            radius="full"
-            className="w-fit"
-            onPress={toggleMultiSelect}
-          >
-            {isMultiSelect
-              ? "Disabilita Selezione Multipla"
-              : "Abilita Selezione Multipla"}
-          </Button>
         </div>
       </div>
+
+      {/* Barra inferiore con azioni multiple */}
+      {isMultiSelect && selectedDays.length > 0 && (
+        <div className="sticky bottom-0 w-full p-4 bg-white border-t shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="font-medium">
+              {selectedDays.length} giorni selezionati
+            </span>
+            <div className="flex gap-2">
+              <Button
+                color="danger"
+                variant="light"
+                radius="full"
+                onPress={() => setSelectedDays([])}
+              >
+                Annulla
+              </Button>
+              <Select
+                onChange={(e) =>
+                  changeSelectedDaysStatus(e.target.value as string)
+                }
+                placeholder="Imposta stato"
+                className="w-48"
+                variant="bordered"
+                color="primary"
+                radius="full"
+              >
+                <>
+                  {Object.entries(statusConfig).map(([key, config]) => (
+                    <SelectItem
+                      value={key}
+                      key={key}
+                      startContent={
+                        <div
+                          className={`w-6 h-6 ${config.color} rounded-lg flex items-center justify-center`}
+                        >
+                          <Icon
+                            icon={config.icon}
+                            className="w-4 h-4 text-gray-700"
+                          />
+                        </div>
+                      }
+                    >
+                      {config.label}
+                    </SelectItem>
+                  ))}
+                  <SelectItem
+                    value="delete"
+                    key="delete"
+                    startContent={
+                      <div className="w-6 h-6 bg-zinc-300 rounded-lg flex items-center justify-center">
+                        <Icon
+                          icon="material-symbols-light:delete-outline"
+                          className="w-4 h-4 text-gray-700"
+                        />
+                      </div>
+                    }
+                  >
+                    Elimina
+                  </SelectItem>
+                </>
+              </Select>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

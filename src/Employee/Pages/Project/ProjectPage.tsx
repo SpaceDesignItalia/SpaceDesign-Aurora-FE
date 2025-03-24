@@ -220,27 +220,27 @@ export default function ProjectPage() {
                 <Chip color="primary" radius="full" className="hidden sm:flex">
                   {projectData.StatusName}
                 </Chip>
-                <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900 w-full text-wrap">
+                <h1 className="text-3xl font-semibold leading-tight tracking-tight text-gray-900 w-full text-wrap break-words max-w-full">
                   {projectData.ProjectName}
                 </h1>
               </div>
 
               <div className="flex flex-row items-center justify-between sm:justify-end gap-5">
-                <div>
+                <div className="overflow-x-auto">
                   <Tabs
                     aria-label="Options"
                     color="primary"
                     radius="full"
                     variant="bordered"
                     selectedKey={activeTab}
-                    className="hidden sm:flex"
+                    className="hidden [@media(min-width:896px)]:flex min-w-fit"
                     onSelectionChange={(key) => setActiveTab(key as string)}
                   >
                     {tabs.map((tab) => (
                       <Tab
                         key={tab.title}
                         title={
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2 whitespace-nowrap">
                             {tab.icon}
                             <span>{tab.title}</span>
                           </div>
@@ -248,14 +248,14 @@ export default function ProjectPage() {
                       />
                     ))}
                   </Tabs>
-                  <div className="sm:hidden bg-white p-4 fixed bottom-0 z-50 w-full left-0 border-t-1 shadow-large rounded-tr-xl rounded-tl-xl">
+                  <div className="[@media(min-width:896px)]:hidden bg-white p-4 fixed bottom-0 z-50 w-full left-0 border-t-1 shadow-large rounded-tr-xl rounded-tl-xl">
                     <Tabs
                       aria-label="Options"
                       color="primary"
                       size="lg"
                       variant="light"
                       selectedKey={activeTab}
-                      className="sm:hidden"
+                      className="[@media(min-width:896px)]:hidden"
                       fullWidth
                       onSelectionChange={(key) => setActiveTab(key as string)}
                     >

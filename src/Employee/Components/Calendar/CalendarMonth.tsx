@@ -113,7 +113,7 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
-                        setIsOpen(true);
+                        setIsOpen(true && event.EventColor !== "#000000");
                         setSelectedEventId(event.EventId);
                       }}
                       key={event.EventId}
@@ -124,7 +124,11 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                         className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{ backgroundColor: event.EventColor }}
                       />
-                      <div className="truncate">{event.EventTitle}</div>
+                      <div className="truncate">
+                        {" "}
+                        {event.EventColor}
+                        {event.EventTitle}
+                      </div>
                     </div>
                   ))}
               </div>

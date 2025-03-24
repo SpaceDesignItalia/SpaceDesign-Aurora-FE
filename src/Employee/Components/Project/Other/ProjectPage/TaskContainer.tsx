@@ -12,12 +12,7 @@ import {
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import axios from "axios";
-import {
-  useEffect,
-  useMemo,
-  useState,
-  useCallback,
-} from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import {
   DragDropContext,
   Draggable,
@@ -76,6 +71,7 @@ interface Task {
   ProjectTaskComments: Comment[];
   ProjectId: number;
   ProjectTaskChecklists: any[];
+  PriorityId: number;
 }
 
 interface Project {
@@ -198,9 +194,12 @@ export default function TaskContainer({
   useEffect(() => {
     async function fetchArchivedTasks() {
       try {
-        const res = await axios.get<Task[]>("/Project/GET/GetArchivedTasksByProjectId", {
-          params: { ProjectId: projectId },
-        });
+        const res = await axios.get<Task[]>(
+          "/Project/GET/GetArchivedTasksByProjectId",
+          {
+            params: { ProjectId: projectId },
+          }
+        );
         if (res.status === 200) {
           socket.emit("join", projectId);
           const updatedTasks = await Promise.all(
@@ -272,7 +271,11 @@ export default function TaskContainer({
       } else {
         setSelectedTasks([taskId]);
       }
-      if (firstSelectedTask && task && task.ProjectTaskStatusId !== firstSelectedTask.ProjectTaskStatusId) {
+      if (
+        firstSelectedTask &&
+        task &&
+        task.ProjectTaskStatusId !== firstSelectedTask.ProjectTaskStatusId
+      ) {
         updateTaskStatus(taskId, firstSelectedTask.ProjectTaskStatusId);
       }
       setUpdate((prev) => !prev);
@@ -433,7 +436,8 @@ export default function TaskContainer({
             .map((task) => ({ type: "single" as const, task }));
         }
       }
-      if (!isMultiSelect) return tasksInColumn.map((task) => ({ type: "single" as const, task }));
+      if (!isMultiSelect)
+        return tasksInColumn.map((task) => ({ type: "single" as const, task }));
       const selectedInThisColumn = tasksInColumn.filter((t) =>
         selectedTasks.includes(t.ProjectTaskId)
       );
@@ -445,7 +449,13 @@ export default function TaskContainer({
       }
       return tasksInColumn.map((task) => ({ type: "single" as const, task }));
     },
-    [tasks, selectedTasks, isDraggingMultiColumn, isMultiSelect, dragSourceColumnId]
+    [
+      tasks,
+      selectedTasks,
+      isDraggingMultiColumn,
+      isMultiSelect,
+      dragSourceColumnId,
+    ]
   );
 
   const columnTasks = useMemo(() => {
@@ -474,19 +484,18 @@ export default function TaskContainer({
 
   // Componente per il drag di un gruppo di task
   const GroupDraggable = useCallback(
-    ({
-      groupTasks,
-      index,
-    }: {
-      groupTasks: Task[];
-      index: number;
-    }) => (
-      <Draggable draggableId={`group-${groupTasks[0].ProjectTaskId}`} index={index}>
+    ({ groupTasks, index }: { groupTasks: Task[]; index: number }) => (
+      <Draggable
+        draggableId={`group-${groupTasks[0].ProjectTaskId}`}
+        index={index}
+      >
         {(provided, snapshot) => {
           const groupStyle = {
             ...provided.draggableProps.style,
             transition: "transform 0.25s ease, box-shadow 0.25s ease",
-            boxShadow: snapshot.isDragging ? "0 10px 20px rgba(0,0,0,0.4)" : "none",
+            boxShadow: snapshot.isDragging
+              ? "0 10px 20px rgba(0,0,0,0.4)"
+              : "none",
             zIndex: snapshot.isDragging ? 999 : "auto",
           };
 
@@ -503,7 +512,9 @@ export default function TaskContainer({
                     key={task.ProjectTaskId}
                     className="absolute w-full transition-all duration-200"
                     style={{
-                      transform: `translateY(${i * (snapshot.isDragging ? 8 : 16)}px)`,
+                      transform: `translateY(${
+                        i * (snapshot.isDragging ? 8 : 16)
+                      }px)`,
                       zIndex: 10 - i,
                     }}
                   >
@@ -535,16 +546,21 @@ export default function TaskContainer({
         }}
       </Draggable>
     ),
-    [columns.length, projectId, setUpdate, update, updateTaskStatus, handleTaskSelect]
+    [
+      columns.length,
+      projectId,
+      setUpdate,
+      update,
+      updateTaskStatus,
+      handleTaskSelect,
+    ]
   );
 
   return (
     <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <AddTaskModal
         isOpen={modalAddData.open}
-        isClosed={() =>
-          setModalAddData((prev) => ({ ...prev, open: false }))
-        }
+        isClosed={() => setModalAddData((prev) => ({ ...prev, open: false }))}
         fetchData={fetchData}
         ProjectId={projectId}
       />
@@ -599,9 +615,7 @@ export default function TaskContainer({
                   <ConfirmDeleteTaskModal
                     TaskData={selectedTasks
                       .map((id) =>
-                        tasks.find(
-                          (task) => task.ProjectTaskId === id
-                        )
+                        tasks.find((task) => task.ProjectTaskId === id)
                       )
                       .filter((t): t is Task => t !== undefined)}
                     DeleteTasks={deleteSelectedTasks}
@@ -628,9 +642,7 @@ export default function TaskContainer({
               onPress={() =>
                 setModalAddData((prev) => ({ ...prev, open: true }))
               }
-              startContent={
-                <Icon icon="mynaui:plus-solid" fontSize={22} />
-              }
+              startContent={<Icon icon="mynaui:plus-solid" fontSize={22} />}
               className="hidden sm:flex w-44"
             >
               Aggiungi Task
@@ -641,9 +653,7 @@ export default function TaskContainer({
               onPress={() =>
                 setModalAddData((prev) => ({ ...prev, open: true }))
               }
-              startContent={
-                <Icon icon="mynaui:plus-solid" fontSize={22} />
-              }
+              startContent={<Icon icon="mynaui:plus-solid" fontSize={22} />}
               isIconOnly
               className="sm:hidden"
             />

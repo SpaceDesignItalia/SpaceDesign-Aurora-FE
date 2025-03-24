@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import StatusAlert from "../../Components/Layout/StatusAlert";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
+import { motion } from "framer-motion";
 
 // Configura la connessione WebSocket
 const socket = io(API_WEBSOCKET_URL);
@@ -106,25 +107,55 @@ export default function Login() {
   return (
     <>
       <StatusAlert AlertData={alertData} />
-      <div className="font-sans text-gray-800">
-        <div className="min-h-screen flex flex-col items-center justify-center py-6 px-4">
-          <div className="grid md:grid-cols-2 items-center gap-4 max-w-7xl w-full">
+      <div className="font-sans min-h-screen bg-white relative overflow-hidden">
+        {/* Rimuovo gli elementi decorativi di sfondo */}
+        <div className="min-h-screen flex flex-col items-center justify-center py-6 px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.6,
+              type: "spring",
+              stiffness: 100,
+            }}
+            className="grid md:grid-cols-2 items-center gap-8 max-w-7xl w-full mx-auto"
+          >
             {/* Form di login */}
-            <div className="border border-gray-300 rounded-md p-6 max-w-md shadow-lg mx-auto md:mx-0">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white/90 backdrop-blur-xl border-2 border-white/20 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl hover:shadow-3xl transition-all duration-500 mx-auto md:mx-0"
+            >
               <form
                 className="space-y-6"
                 onSubmit={handleLogin}
                 autoComplete="on"
               >
-                <div className="mb-10">
-                  <h3 className="text-3xl font-semibold">Accedi</h3>
-                  <p className="text-sm mt-4">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="mb-10"
+                >
+                  <h3 className="text-3xl font-semibold text-primary">
+                    Accedi
+                  </h3>
+                  <p className="text-small text-default-600 mt-4">
                     Accedi per continuare e scoprire tutte le funzionalità a tua
                     disposizione. Il tuo viaggio inizia qui.
                   </p>
-                </div>
-                <div>
-                  <label htmlFor="email" className="text-sm mb-2 block">
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <label
+                    htmlFor="email"
+                    className="text-sm mb-2 block font-medium text-default-700"
+                  >
                     Email
                   </label>
                   <div className="relative flex items-center">
@@ -133,9 +164,10 @@ export default function Login() {
                       variant="bordered"
                       placeholder="Inserisci un email"
                       size="lg"
-                      radius="sm"
+                      radius="full"
+                      className="backdrop-blur-sm bg-white/50"
                       endContent={
-                        <EmailIcon className="text-2xl text-default-400 pointer-events-none" />
+                        <EmailIcon className="text-2xl text-primary pointer-events-none" />
                       }
                       isInvalid={
                         alertData.isOpen && alertData.alertColor === "red"
@@ -145,9 +177,17 @@ export default function Login() {
                       fullWidth
                     />
                   </div>
-                </div>
-                <div>
-                  <label htmlFor="password" className="text-sm mb-2 block">
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <label
+                    htmlFor="password"
+                    className="text-sm mb-2 block font-medium text-default-700"
+                  >
                     Password
                   </label>
                   <div className="relative flex items-center">
@@ -157,7 +197,8 @@ export default function Login() {
                       type={isVisible ? "text" : "password"}
                       placeholder="Inserisci la password"
                       size="lg"
-                      radius="sm"
+                      radius="full"
+                      className="backdrop-blur-sm bg-white/50"
                       endContent={
                         <button
                           className="focus:outline-none"
@@ -165,9 +206,9 @@ export default function Login() {
                           onClick={toggleVisibility}
                         >
                           {isVisible ? (
-                            <RemoveRedEyeIcon className="text-2xl text-default-400 pointer-events-none" />
+                            <RemoveRedEyeIcon className="text-2xl text-primary pointer-events-none" />
                           ) : (
-                            <VisibilityOffIcon className="text-2xl text-default-400 pointer-events-none" />
+                            <VisibilityOffIcon className="text-2xl text-primary pointer-events-none" />
                           )}
                         </button>
                       }
@@ -179,9 +220,14 @@ export default function Login() {
                       fullWidth
                     />
                   </div>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  {/* Opzione "Ricordami" e link per il recupero password */}
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="flex items-center justify-between gap-2"
+                >
                   <div className="flex items-center">
                     <Checkbox
                       isSelected={loginData.rememberMe}
@@ -204,29 +250,41 @@ export default function Login() {
                       Hai dimenticato la password?
                     </Link>
                   </div>
-                </div>
-                <div className="mt-10">
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                  className="mt-10"
+                >
                   <Button
                     isLoading={isLogging}
                     type="submit"
                     color="primary"
                     radius="full"
-                    fullWidth
+                    className="w-full shadow-lg hover:shadow-xl transition-all duration-300 text-base py-6"
                   >
                     Accedi
                   </Button>
-                </div>
+                </motion.div>
               </form>
-            </div>
+            </motion.div>
+
             {/* Immagine di accompagnamento */}
-            <div className="lg:h-[400px] md:h-[300px] mt-10 md:mt-0">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="lg:h-[500px] md:h-[400px] mt-10 md:mt-0 rounded-[2.5rem] overflow-hidden shadow-2xl"
+            >
               <img
                 src="https://readymadeui.com/login-image.webp"
                 className="w-full h-full object-cover"
                 alt="Login visual"
               />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </>

@@ -9,6 +9,7 @@ import axios from "axios";
 import { API_URL_IMG } from "../../../API/API";
 import { io } from "socket.io-client";
 import { API_WEBSOCKET_URL } from "../../../API/API";
+import AttendanceReciverModal from "../../Components/Employee/Other/AttendanceReciverModal";
 import StatusAlert from "../../Components/Layout/StatusAlert";
 
 const socket = io(API_WEBSOCKET_URL);
@@ -42,7 +43,11 @@ export default function EmployeeAttendance() {
     type: "success",
   });
 
-  const fetchEmployeeData = async (date: Date, setPrevious = false) => {
+  const fetchEmployeeData = async (
+    date: Date,
+    setPrevious = false,
+    AttendancePermission: boolean
+  ) => {
     const staffers = await axios.get("/Staffer/GET/GetAllStaffers");
     const employeesData: Employee[] = [];
 
@@ -63,10 +68,26 @@ export default function EmployeeAttendance() {
       });
     }
 
-    if (setPrevious) {
-      setPreviousMonthEmployees(employeesData);
+    if (!AttendancePermission) {
+      if (setPrevious) {
+        setPreviousMonthEmployees(
+          employeesData.filter(
+            (employee) => employee.id === loggedStafferId.toString()
+          )
+        );
+      } else {
+        setEmployees(
+          employeesData.filter(
+            (employee) => employee.id === loggedStafferId.toString()
+          )
+        );
+      }
     } else {
-      setEmployees(employeesData);
+      if (setPrevious) {
+        setPreviousMonthEmployees(employeesData);
+      } else {
+        setEmployees(employeesData);
+      }
     }
   };
 
@@ -74,6 +95,8 @@ export default function EmployeeAttendance() {
     async function fetchData() {
       setIsLoading(true);
       const permission = await hasPermission("VIEW_EMPLOYEE");
+      const AttendancePermission = await hasPermission("VIEW_ATTENDANCE");
+
       if (!permission) {
         return (window.location.href = "/");
       }
@@ -82,12 +105,12 @@ export default function EmployeeAttendance() {
       setLoggedStafferId(sessionData.data.StafferId);
 
       // Fetch current month
-      await fetchEmployeeData(selectedDate);
+      await fetchEmployeeData(selectedDate, false, AttendancePermission);
 
       // Fetch previous month
       const previousDate = new Date(selectedDate);
       previousDate.setMonth(previousDate.getMonth() - 1);
-      await fetchEmployeeData(previousDate, true);
+      await fetchEmployeeData(previousDate, true, AttendancePermission);
 
       setIsLoading(false);
     }
@@ -98,6 +121,8 @@ export default function EmployeeAttendance() {
   useEffect(() => {
     async function fetchData() {
       const permission = await hasPermission("VIEW_EMPLOYEE");
+      const AttendancePermission = await hasPermission("VIEW_ATTENDANCE");
+
       if (!permission) {
         return (window.location.href = "/");
       }
@@ -106,12 +131,12 @@ export default function EmployeeAttendance() {
       setLoggedStafferId(sessionData.data.StafferId);
 
       // Fetch current month
-      await fetchEmployeeData(selectedDate);
+      await fetchEmployeeData(selectedDate, false, AttendancePermission);
 
       // Fetch previous month
       const previousDate = new Date(selectedDate);
       previousDate.setMonth(previousDate.getMonth() - 1);
-      await fetchEmployeeData(previousDate, true);
+      await fetchEmployeeData(previousDate, true, AttendancePermission);
     }
 
     fetchData();
@@ -140,17 +165,20 @@ export default function EmployeeAttendance() {
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">
             Tabella presenze
           </h1>
-          <Breadcrumbs variant="bordered" radius="full">
-            <BreadcrumbItem href="/">
-              <Icon icon="solar:home-2-linear" fontSize={18} />
-            </BreadcrumbItem>
-            <BreadcrumbItem href="/administration/employee">
-              Dipendenti
-            </BreadcrumbItem>
-            <BreadcrumbItem href="/administration/employee/attendance">
-              Tabella presenze
-            </BreadcrumbItem>
-          </Breadcrumbs>
+          <div className="flex flex-row justify-between">
+            <Breadcrumbs variant="bordered" radius="full">
+              <BreadcrumbItem href="/">
+                <Icon icon="solar:home-2-linear" fontSize={18} />
+              </BreadcrumbItem>
+              <BreadcrumbItem href="/administration/employee">
+                Dipendenti
+              </BreadcrumbItem>
+              <BreadcrumbItem href="/administration/employee/attendance">
+                Tabella presenze
+              </BreadcrumbItem>
+            </Breadcrumbs>
+            <AttendanceReciverModal />
+          </div>
         </div>
       </header>
       <main className="px-4 sm:px-6 lg:px-8">

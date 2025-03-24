@@ -41,6 +41,7 @@ interface Task {
   ProjectTaskComments: Comment[];
   ProjectId: number;
   ProjectTaskChecklists: Checklist[];
+  PriorityId: number;
 }
 
 interface Checkbox {
@@ -102,7 +103,7 @@ export default function ConfirmDeleteTaskModal({
             />
             Sei sicuro di voler eliminare {TaskData.length} task?
           </div>
-          <div className="flex flex-row gap-2">
+          <div className="flex flex-row gap-2 justify-center items-center">
             <Button
               variant="light"
               radius="sm"
