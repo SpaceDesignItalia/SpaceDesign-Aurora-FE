@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import ViewEventModal from "./ViewEventModal";
 
 const DAYS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
@@ -37,6 +37,12 @@ interface CalendarMonthProps {
   events: CalendarEvent[];
 }
 
+const stripHtml = (html: string) => {
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
+
 const CalendarMonth: React.FC<CalendarMonthProps> = ({
   currentDate,
   onDateClick,
@@ -44,6 +50,15 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState(0);
+  const [hoveredDay, setHoveredDay] = useState<Date | null>(null);
+  const [popoverPosition, setPopoverPosition] = useState({
+    x: 0,
+    y: 0,
+    isRight: false,
+    isAbove: false,
+  });
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
   const [scrolledToBottom, setScrolledToBottom] = useState<{
     [key: string]: boolean;
   }>({});
@@ -76,9 +91,58 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
     (_, i) => new Date(year, month, i + 1)
   );
 
+  const [popoverAnimation, setPopoverAnimation] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (hoveredDay) {
+        setHoveredDay(null);
+      }
+    };
+
+    const calendar = calendarRef.current;
+    if (calendar) {
+      calendar.addEventListener("scroll", handleScroll, { passive: true });
+    }
+
+    return () => {
+      if (calendar) {
+        calendar.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [hoveredDay]);
+
+  useEffect(() => {
+    if (hoveredDay) {
+      setPopoverAnimation(true);
+    }
+  }, [hoveredDay]);
+
+  useEffect(() => {
+    const handleGlobalScroll = (e: Event) => {
+      if (hoveredDay) {
+        // Chiudi il popover se l'evento di scroll proviene da un elemento padre
+        const target = e.target as HTMLElement;
+        if (target && !popoverRef.current?.contains(target)) {
+          setHoveredDay(null);
+        }
+      }
+    };
+
+    // Aggiungi l'event listener a tutti i contenitori scrollabili
+    document.addEventListener("scroll", handleGlobalScroll, true);
+
+    return () => {
+      document.removeEventListener("scroll", handleGlobalScroll, true);
+    };
+  }, [hoveredDay]);
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>, day: Date) => {
     const target = e.target as HTMLDivElement;
     const dayKey = day.toISOString();
+
+    // Chiudi il popover quando si scrolla il calendario
+    setHoveredDay(null);
 
     // Controlla se l'utente ha scrollato fino alla fine
     const isAtBottom =
@@ -125,6 +189,76 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
     }
   };
 
+  const handleMoreEventsClick = (day: Date, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setHoveredDay(day);
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const cellRect = (
+      e.currentTarget.closest("[data-cell]") as HTMLElement
+    ).getBoundingClientRect();
+
+    const shouldShowOnRight = cellRect.left < windowWidth / 2;
+    const shouldShowAbove = cellRect.top > windowHeight / 2;
+
+    setPopoverPosition({
+      x: shouldShowOnRight ? cellRect.right : cellRect.left,
+      y: shouldShowAbove ? cellRect.top : cellRect.bottom,
+      isRight: shouldShowOnRight,
+      isAbove: shouldShowAbove,
+    });
+  };
+
+  const handleDayMouseEnter = (day: Date, e: React.MouseEvent) => {
+    const dayEvents = events.filter(
+      (event) =>
+        day >= new Date(event.EventStartDate) &&
+        day <= new Date(event.EventEndDate)
+    );
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const cellRect = (
+      e.currentTarget.closest("[data-cell]") as HTMLElement
+    ).getBoundingClientRect();
+
+    const shouldShowOnRight = cellRect.left < windowWidth / 2;
+    const shouldShowAbove = cellRect.top > windowHeight / 2;
+
+    setHoveredDay(day);
+    setPopoverPosition({
+      x: shouldShowOnRight ? cellRect.right : cellRect.left,
+      y: shouldShowAbove ? cellRect.top : cellRect.bottom,
+      isRight: shouldShowOnRight,
+      isAbove: shouldShowAbove,
+    });
+  };
+
+  const handleDayClick = (day: Date, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    const shouldShowOnRight = rect.left < windowWidth / 2;
+    const shouldShowAbove = rect.top > windowHeight / 2;
+
+    setHoveredDay(day);
+    setPopoverPosition({
+      x: shouldShowOnRight ? rect.right : rect.left,
+      y: shouldShowAbove ? rect.top : rect.bottom,
+      isRight: shouldShowOnRight,
+      isAbove: shouldShowAbove,
+    });
+  };
+
+  const handlePopoverMouseLeave = () => {
+    setHoveredDay(null);
+  };
+
   return (
     <>
       <ViewEventModal
@@ -133,10 +267,12 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
         isClosed={() => setIsOpen(false)}
       />
       <div
+        ref={calendarRef}
         className="flex-1 overflow-y-auto relative"
         style={{ minHeight: "100%" }}
+        onClick={() => setHoveredDay(null)}
       >
-        <div className="grid grid-cols-7 gap-px bg-gray-200 ">
+        <div className="grid grid-cols-7 gap-px bg-gray-200">
           {DAYS.map((day) => (
             <div
               key={day}
@@ -148,9 +284,10 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
           {prevMonthDays.map((day) => (
             <div
               key={day.toISOString()}
+              data-cell
               className="relative hover:bg-gray-50 cursor-pointer bg-gray-100 opacity-50"
               style={{ height: "18vh" }}
-              onClick={() => onDateClick(day)}
+              onClick={(e) => handleDayClick(day, e)}
             >
               <div className="absolute top-2 right-2">
                 <time
@@ -160,7 +297,7 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                   {day.getDate()}
                 </time>
               </div>
-              <div className="absolute top-10 left-1 right-1 flex flex-col gap-1 overflow-y-auto max-h-[calc(18vh-40px)]">
+              <div className="absolute top-10 left-1 right-1 flex flex-col gap-1.5">
                 {events
                   .filter(
                     (event) =>
@@ -182,6 +319,7 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                     // Poi ordina per orario di inizio
                     return a.EventStartTime.localeCompare(b.EventStartTime);
                   })
+                  .slice(0, 3)
                   .map((event) => (
                     <div
                       onClick={(e) => {
@@ -197,291 +335,154 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                         className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{ backgroundColor: event.EventColor }}
                       />
-                      <div className="truncate">{event.EventTitle}</div>
+                      <div className="flex flex-col">
+                        <div className="truncate">{event.EventTitle}</div>
+                        {event.EventStartTime === "00:00" &&
+                          event.EventEndTime === "00:00" && (
+                            <div className="text-[10px] opacity-90">
+                              Tutto il giorno
+                            </div>
+                          )}
+                      </div>
                     </div>
                   ))}
+
+                {/* Indicatore per più eventi */}
+                {events.filter(
+                  (event) =>
+                    day >= new Date(event.EventStartDate) &&
+                    day <= new Date(event.EventEndDate)
+                ).length > 3 && (
+                  <div className="mt-0.5 flex items-center justify-center">
+                    <div
+                      onClick={(e) => handleDayClick(day, e)}
+                      className="px-2 py-0.5 bg-gray-100 rounded-full text-[10px] text-gray-600 hover:bg-gray-200 transition-colors flex items-center gap-1 group hover:shadow-sm"
+                    >
+                      <svg
+                        className="w-3 h-3 transition-transform group-hover:-translate-y-0.5 group-hover:text-blue-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                      <span className="group-hover:text-blue-600">
+                        +
+                        {events.filter(
+                          (event) =>
+                            day >= new Date(event.EventStartDate) &&
+                            day <= new Date(event.EventEndDate)
+                        ).length - 3}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
-          {days.map((day) => (
-            <div
-              key={day.toISOString()}
-              className={`relative hover:bg-gray-50 cursor-pointer ${
-                day < today ? "bg-gray-200" : "bg-white"
-              }`}
-              style={{ height: "18vh" }}
-              onClick={() => onDateClick(day)}
-            >
-              <div className="absolute top-2 right-2">
-                <time
-                  dateTime={day.toISOString()}
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
-                    day.toDateString() === today.toDateString()
-                      ? "bg-blue-600 font-medium text-white"
-                      : "text-gray-900"
-                  }`}
-                >
-                  {day.getDate()}
-                </time>
-              </div>
+          {days.map((day) => {
+            const dayEvents = events.filter(
+              (event) =>
+                day >= new Date(event.EventStartDate) &&
+                day <= new Date(event.EventEndDate)
+            );
+
+            return (
               <div
-                className="absolute top-10 left-1 right-1 flex flex-col gap-2 overflow-y-auto max-h-[calc(18vh-40px)] py-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 pr-2"
-                onWheel={(e) => e.stopPropagation()}
-                onScroll={(e) => handleScroll(e, day)}
-                ref={(el) => {
-                  scrollContainerRefs.current[day.toISOString()] = el;
-                }}
+                key={day.toISOString()}
+                data-cell
+                className={`relative hover:bg-gray-50 cursor-pointer ${
+                  day < today ? "bg-gray-200" : "bg-white"
+                } ${
+                  hoveredDay?.toISOString() === day.toISOString() ? "z-10" : ""
+                }`}
+                style={{ height: "18vh" }}
+                onClick={(e) => handleDayClick(day, e)}
               >
-                {(() => {
-                  const dayEvents = events
-                    .filter(
-                      (event) =>
-                        day >= new Date(event.EventStartDate) &&
-                        day <= new Date(event.EventEndDate)
-                    )
-                    .sort((a, b) => {
-                      // Prima gli eventi che durano tutto il giorno
-                      const aIsAllDay =
-                        a.EventStartTime === "00:00" &&
-                        a.EventEndTime === "00:00";
-                      const bIsAllDay =
-                        b.EventStartTime === "00:00" &&
-                        b.EventEndTime === "00:00";
-
-                      if (aIsAllDay && !bIsAllDay) return -1;
-                      if (!aIsAllDay && bIsAllDay) return 1;
-
-                      // Poi ordina per orario di inizio
-                      return a.EventStartTime.localeCompare(b.EventStartTime);
-                    });
-
-                  // Se non ci sono eventi, ritorna null
-                  if (dayEvents.length === 0) return null;
-
-                  const maxVisibleEvents = 4; // Numero massimo di eventi da mostrare prima di indicare che ce ne sono altri
-                  const hasMoreEvents = dayEvents.length > maxVisibleEvents;
-                  const dayKey = day.toISOString();
-
-                  return (
-                    <>
-                      {/* Freccia per scorrere verso l'alto */}
-                      {scrolledToBottom[dayKey] && !scrolledToTop[dayKey] && (
-                        <div
-                          className={`sticky top-0 left-0 right-0 bg-gradient-to-b ${
-                            day < today
-                              ? "from-gray-200 via-gray-200"
-                              : "from-white via-white"
-                          } to-transparent pt-1 pb-5 -mb-6 flex justify-center items-center text-[10px] font-medium text-gray-600 cursor-pointer z-10`}
-                          onClick={(e) => scrollToTop(dayKey, e)}
-                          title="Torna all'inizio"
-                        >
-                          <div className="flex items-center px-1.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-full shadow-sm transition-colors">
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 15l7-7 7 7"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                      )}
-
-                      {dayEvents.map((event, index) => {
-                        // Controllo se l'evento inizia nello stesso giorno
-                        const isStartDay =
-                          day.toDateString() ===
-                          new Date(event.EventStartDate).toDateString();
-                        // Controllo se l'evento finisce nello stesso giorno
-                        const isEndDay =
-                          day.toDateString() ===
-                          new Date(event.EventEndDate).toDateString();
-                        // Controllo se è un evento che dura tutto il giorno
-                        const isAllDay =
-                          event.EventStartTime === "00:00" &&
-                          event.EventEndTime === "00:00";
-
-                        // Calcolo la luminosità del colore per determinare se usare testo chiaro o scuro
-                        const color = event.EventColor;
-                        const r = parseInt(color.slice(1, 3), 16);
-                        const g = parseInt(color.slice(3, 5), 16);
-                        const b = parseInt(color.slice(5, 7), 16);
-                        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-                        const textColor =
-                          brightness > 128 ? "#333333" : "#ffffff";
-
-                        return (
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setIsOpen(true && event.EventColor !== "#000000");
-                              setSelectedEventId(event.EventId);
-                            }}
-                            key={event.EventId}
-                            className={`flex items-center gap-1.5 px-2 rounded-lg shadow-sm transition-all duration-200 text-xs backdrop-blur-sm relative overflow-hidden group cursor-pointer`}
-                            style={{
-                              backgroundColor: `${event.EventColor}${
-                                isAllDay ? "cc" : "99"
-                              }`,
-                              color: textColor,
-                              transform: "scale(0.98)",
-                              transformOrigin: "left center",
-                              animationDelay: `${index * 0.05}s`,
-                              minHeight: "28px",
-                              paddingTop: "7px",
-                              paddingBottom: "7px",
-                            }}
-                            title={`${event.EventTitle}\n${
-                              event.EventDescription
-                                ? event.EventDescription
-                                : ""
-                            }\n${
-                              event.EventLocation
-                                ? "Dove: " + event.EventLocation
-                                : ""
-                            }`}
-                          >
-                            {/* Indicatore laterale di evento */}
-                            <div
-                              className={`absolute left-0 top-0 bottom-0 w-1 ${
-                                isStartDay && isEndDay
-                                  ? "rounded-l"
-                                  : isStartDay
-                                  ? "rounded-tl"
-                                  : isEndDay
-                                  ? "rounded-bl"
-                                  : ""
-                              }`}
-                              style={{ backgroundColor: event.EventColor }}
-                            />
-
-                            {/* Icona per tipo di evento (tutto il giorno o orario) */}
-                            {isAllDay ? (
-                              <svg
-                                className="w-3.5 h-3.5 flex-shrink-0 transition-transform group-hover:rotate-12"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            ) : (
-                              <svg
-                                className="w-3.5 h-3.5 flex-shrink-0 transition-transform group-hover:rotate-12"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            )}
-
-                            {/* Titolo e orario dell'evento */}
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium truncate group-hover:underline decoration-1 underline-offset-2">
-                                {event.EventTitle}
-                              </div>
-                              {!isAllDay && (
-                                <div className="text-[10px] opacity-90">
-                                  {isStartDay ? event.EventStartTime : ""}
-                                  {isStartDay && isEndDay ? " - " : ""}
-                                  {isEndDay ? event.EventEndTime : ""}
-                                </div>
-                              )}
+                <div className="absolute top-2 right-2">
+                  <time
+                    dateTime={day.toISOString()}
+                    className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
+                      day.toDateString() === today.toDateString()
+                        ? "bg-blue-600 font-medium text-white"
+                        : day.getMonth() === month
+                        ? "text-gray-900"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {day.getDate()}
+                  </time>
+                </div>
+                <div className="absolute top-10 left-1 right-1 flex flex-col gap-1.5">
+                  {dayEvents.slice(0, 3).map((event) => (
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsOpen(true && event.EventColor !== "#000000");
+                        setSelectedEventId(event.EventId);
+                      }}
+                      key={event.EventId}
+                      className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-gray-100"
+                      title={`${event.EventTitle}\n${event.EventDescription}\nDove: ${event.EventLocation}`}
+                    >
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: event.EventColor }}
+                      />
+                      <div className="flex flex-col">
+                        <div className="truncate">{event.EventTitle}</div>
+                        {event.EventStartTime === "00:00" &&
+                          event.EventEndTime === "00:00" && (
+                            <div className="text-[10px] opacity-90">
+                              Tutto il giorno
                             </div>
+                          )}
+                      </div>
+                    </div>
+                  ))}
 
-                            {/* Indicatori per evento che si estende su più giorni */}
-                            {!isStartDay && (
-                              <div className="absolute -left-0.5 top-1/2 -translate-y-1/2 text-[8px] text-white">
-                                <svg
-                                  className="w-3 h-3"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                              </div>
-                            )}
-                            {!isEndDay && (
-                              <div className="absolute -right-0.5 top-1/2 -translate-y-1/2 text-[8px] text-white">
-                                <svg
-                                  className="w-3 h-3"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                              </div>
-                            )}
-
-                            {/* Effetto hover */}
-                            <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity rounded-lg" />
-                          </div>
-                        );
-                      })}
-
-                      {/* Indicatore per eventi aggiuntivi */}
-                      {hasMoreEvents && !scrolledToBottom[dayKey] && (
-                        <div
-                          className={`sticky bottom-0 left-0 right-0 bg-gradient-to-t ${
-                            day < today
-                              ? "from-gray-200 via-gray-200"
-                              : "from-white via-white"
-                          } to-transparent pt-5 pb-1 -mt-6 flex justify-center items-center text-[10px] font-medium text-gray-600 cursor-pointer z-10`}
-                          onClick={(e) => scrollToBottom(dayKey, e)}
-                          title={`${dayEvents.length} eventi totali`}
+                  {/* Indicatore per più eventi */}
+                  {dayEvents.length > 3 && (
+                    <div className="mt-0.5 flex items-center justify-center">
+                      <div
+                        onClick={(e) => handleDayClick(day, e)}
+                        className="px-2 py-0.5 bg-gray-100 rounded-full text-[10px] text-gray-600 hover:bg-gray-200 transition-colors flex items-center gap-1 group hover:shadow-sm"
+                      >
+                        <svg
+                          className="w-3 h-3 transition-transform group-hover:-translate-y-0.5 group-hover:text-blue-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
                         >
-                          <div className="flex items-center px-1.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-full shadow-sm transition-colors">
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 9l-7 7-7-7"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                        <span className="group-hover:text-blue-600">
+                          +{dayEvents.length - 3}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           {nextMonthDays.map((day) => (
             <div
               key={day.toISOString()}
+              data-cell
               className="relative hover:bg-gray-50 cursor-pointer bg-gray-100 opacity-50"
               style={{ height: "18vh" }}
-              onClick={() => onDateClick(day)}
+              onClick={(e) => handleDayClick(day, e)}
             >
               <div className="absolute top-2 right-2">
                 <time
@@ -491,7 +492,7 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                   {day.getDate()}
                 </time>
               </div>
-              <div className="absolute top-10 left-1 right-1 flex flex-col gap-1.5 overflow-y-auto max-h-[calc(18vh-40px)]">
+              <div className="absolute top-10 left-1 right-1 flex flex-col gap-1.5">
                 {events
                   .filter(
                     (event) =>
@@ -513,151 +514,307 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                     // Poi ordina per orario di inizio
                     return a.EventStartTime.localeCompare(b.EventStartTime);
                   })
-                  .map((event, index) => {
-                    // Controllo se l'evento inizia nello stesso giorno
-                    const isStartDay =
-                      day.toDateString() ===
-                      new Date(event.EventStartDate).toDateString();
-                    // Controllo se l'evento finisce nello stesso giorno
-                    const isEndDay =
-                      day.toDateString() ===
-                      new Date(event.EventEndDate).toDateString();
-                    // Controllo se è un evento che dura tutto il giorno
-                    const isAllDay =
-                      event.EventStartTime === "00:00" &&
-                      event.EventEndTime === "00:00";
-
-                    // Calcolo la luminosità del colore per determinare se usare testo chiaro o scuro
-                    const color = event.EventColor;
-                    const r = parseInt(color.slice(1, 3), 16);
-                    const g = parseInt(color.slice(3, 5), 16);
-                    const b = parseInt(color.slice(5, 7), 16);
-                    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-                    const textColor = brightness > 128 ? "#333333" : "#ffffff";
-
-                    return (
+                  .slice(0, 3)
+                  .map((event) => (
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsOpen(true && event.EventColor !== "#000000");
+                        setSelectedEventId(event.EventId);
+                      }}
+                      key={event.EventId}
+                      className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-gray-100"
+                      title={`${event.EventTitle}\n${event.EventDescription}\nDove: ${event.EventLocation}`}
+                    >
                       <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsOpen(true && event.EventColor !== "#000000");
-                          setSelectedEventId(event.EventId);
-                        }}
-                        key={event.EventId}
-                        className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg shadow-sm transition-all duration-200 text-xs backdrop-blur-sm relative overflow-hidden group cursor-pointer`}
-                        style={{
-                          backgroundColor: `${event.EventColor}${
-                            isAllDay ? "cc" : "99"
-                          }`,
-                          color: textColor,
-                          transform: "scale(0.98)",
-                          transformOrigin: "left center",
-                          animationDelay: `${index * 0.05}s`,
-                        }}
-                        title={`${event.EventTitle}\n${
-                          event.EventDescription ? event.EventDescription : ""
-                        }\n${
-                          event.EventLocation
-                            ? "Dove: " + event.EventLocation
-                            : ""
-                        }`}
-                      >
-                        {/* Indicatore laterale di evento */}
-                        <div
-                          className={`absolute left-0 top-0 bottom-0 w-1 ${
-                            isStartDay && isEndDay
-                              ? "rounded-l"
-                              : isStartDay
-                              ? "rounded-tl"
-                              : isEndDay
-                              ? "rounded-bl"
-                              : ""
-                          }`}
-                          style={{ backgroundColor: event.EventColor }}
-                        />
-
-                        {/* Icona per tipo di evento (tutto il giorno o orario) */}
-                        {isAllDay ? (
-                          <svg
-                            className="w-3.5 h-3.5 flex-shrink-0 transition-transform group-hover:rotate-12"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            className="w-3.5 h-3.5 flex-shrink-0 transition-transform group-hover:rotate-12"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        )}
-
-                        {/* Titolo e orario dell'evento */}
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium truncate group-hover:underline decoration-1 underline-offset-2">
-                            {event.EventTitle}
-                          </div>
-                          {!isAllDay && (
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: event.EventColor }}
+                      />
+                      <div className="flex flex-col">
+                        <div className="truncate">{event.EventTitle}</div>
+                        {event.EventStartTime === "00:00" &&
+                          event.EventEndTime === "00:00" && (
                             <div className="text-[10px] opacity-90">
-                              {isStartDay ? event.EventStartTime : ""}
-                              {isStartDay && isEndDay ? " - " : ""}
-                              {isEndDay ? event.EventEndTime : ""}
+                              Tutto il giorno
                             </div>
                           )}
-                        </div>
-
-                        {/* Indicatori per evento che si estende su più giorni */}
-                        {!isStartDay && (
-                          <div className="absolute -left-0.5 top-1/2 -translate-y-1/2 text-[8px] text-white">
-                            <svg
-                              className="w-3 h-3"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </div>
-                        )}
-                        {!isEndDay && (
-                          <div className="absolute -right-0.5 top-1/2 -translate-y-1/2 text-[8px] text-white">
-                            <svg
-                              className="w-3 h-3"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </div>
-                        )}
-
-                        {/* Effetto hover */}
-                        <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity rounded-lg" />
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
+
+                {/* Indicatore per più eventi */}
+                {events.filter(
+                  (event) =>
+                    day >= new Date(event.EventStartDate) &&
+                    day <= new Date(event.EventEndDate)
+                ).length > 3 && (
+                  <div className="mt-0.5 flex items-center justify-center">
+                    <div
+                      onClick={(e) => handleDayClick(day, e)}
+                      className="px-2 py-0.5 bg-gray-100 rounded-full text-[10px] text-gray-600 hover:bg-gray-200 transition-colors flex items-center gap-1 group hover:shadow-sm"
+                    >
+                      <svg
+                        className="w-3 h-3 transition-transform group-hover:-translate-y-0.5 group-hover:text-blue-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                      <span className="group-hover:text-blue-600">
+                        +
+                        {events.filter(
+                          (event) =>
+                            day >= new Date(event.EventStartDate) &&
+                            day <= new Date(event.EventEndDate)
+                        ).length - 3}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Popover per gli eventi */}
+      {hoveredDay && (
+        <div
+          ref={popoverRef}
+          className={`fixed z-40 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 min-w-[350px] max-w-[400px] overflow-hidden backdrop-blur-sm bg-white/95 transition-all duration-300 ease-out ${
+            popoverAnimation
+              ? "opacity-100 scale-100 translate-y-0"
+              : popoverPosition.isRight
+              ? "opacity-0 scale-95 -translate-x-4"
+              : "opacity-0 scale-95 translate-x-4"
+          } ${
+            popoverPosition.isAbove
+              ? "origin-bottom translate-y-2"
+              : "origin-top -translate-y-2"
+          }`}
+          style={{
+            left: popoverPosition.isRight
+              ? `${popoverPosition.x + 8}px`
+              : "auto",
+            right: !popoverPosition.isRight
+              ? `calc(100% - ${popoverPosition.x - 8}px)`
+              : "auto",
+            top: popoverPosition.isAbove
+              ? "auto"
+              : `${popoverPosition.y + 8}px`,
+            bottom: popoverPosition.isAbove
+              ? `calc(100% - ${popoverPosition.y - 8}px)`
+              : "auto",
+            maxHeight: "min(calc(100vh - 100px), 500px)",
+            boxShadow: "0 8px 40px rgba(0, 0, 0, 0.12)",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <span className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 rounded-full">
+                {hoveredDay.getDate()}
+              </span>
+              <div className="flex flex-col">
+                <span className="text-sm font-normal text-gray-500">
+                  {new Intl.DateTimeFormat("it-IT", { month: "long" }).format(
+                    hoveredDay
+                  )}
+                </span>
+                <span>Eventi del giorno</span>
+              </div>
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onDateClick(hoveredDay)}
+                className="text-blue-600 hover:text-blue-700 transition-colors px-3 py-1.5 hover:bg-blue-50 rounded-full text-sm font-medium flex items-center gap-1"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                Vai al giorno
+              </button>
+              <button
+                onClick={() => setHoveredDay(null)}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-50 rounded-full"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div
+            className="space-y-4 pr-2 overflow-y-auto custom-scrollbar"
+            style={{
+              height: "calc(100% - 80px)",
+              maxHeight: "calc(min(100vh - 180px, 420px))",
+              scrollbarGutter: "stable",
+            }}
+          >
+            {events
+              .filter(
+                (event) =>
+                  hoveredDay >= new Date(event.EventStartDate) &&
+                  hoveredDay <= new Date(event.EventEndDate)
+              )
+              .sort((a, b) => {
+                const aIsAllDay =
+                  a.EventStartTime === "00:00" && a.EventEndTime === "00:00";
+                const bIsAllDay =
+                  b.EventStartTime === "00:00" && b.EventEndTime === "00:00";
+                if (aIsAllDay && !bIsAllDay) return -1;
+                if (!aIsAllDay && bIsAllDay) return 1;
+                return a.EventStartTime.localeCompare(b.EventStartTime);
+              })
+              .map((event, index) => (
+                <div
+                  key={event.EventId}
+                  onClick={() => {
+                    setIsOpen(true && event.EventColor !== "#000000");
+                    setSelectedEventId(event.EventId);
+                    setHoveredDay(null);
+                  }}
+                  className={`flex items-start gap-4 p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer group`}
+                  style={{
+                    transform: popoverAnimation
+                      ? "translateX(0) scale(1)"
+                      : "translateX(-20px) scale(0.95)",
+                    opacity: popoverAnimation ? 1 : 0,
+                    transition: `all 300ms cubic-bezier(0.4, 0, 0.2, 1) ${
+                      index * 50
+                    }ms`,
+                  }}
+                >
+                  <div
+                    className="w-1 h-full min-h-[2.5rem] rounded-full flex-shrink-0 group-hover:scale-y-110 transition-transform"
+                    style={{ backgroundColor: event.EventColor }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                      {event.EventTitle}
+                      {event.EventStartTime === "00:00" &&
+                        event.EventEndTime === "00:00" && (
+                          <span className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full font-normal">
+                            Tutto il giorno
+                          </span>
+                        )}
+                    </h4>
+                    {!(
+                      event.EventStartTime === "00:00" &&
+                      event.EventEndTime === "00:00"
+                    ) && (
+                      <p className="text-sm text-gray-500 mt-0.5 flex items-center gap-1.5">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        {event.EventStartTime === "00:00" &&
+                        event.EventEndTime === "00:00"
+                          ? "Tutto il giorno"
+                          : `${event.EventStartTime} - ${event.EventEndTime}`}
+                      </p>
+                    )}
+                    {event.EventLocation && (
+                      <p className="text-sm text-gray-500 mt-1.5 flex items-center gap-1.5 group-hover:text-gray-600">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                        {event.EventLocation}
+                      </p>
+                    )}
+                    {event.EventDescription && (
+                      <p
+                        className="text-sm text-gray-600 mt-2 line-clamp-2 group-hover:text-gray-700"
+                        dangerouslySetInnerHTML={{
+                          __html: event.EventDescription,
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+            {events.filter(
+              (event) =>
+                hoveredDay >= new Date(event.EventStartDate) &&
+                hoveredDay <= new Date(event.EventEndDate)
+            ).length === 0 && (
+              <div className="flex flex-col items-center justify-center h-[200px] text-gray-500">
+                <svg
+                  className="w-16 h-16 mb-4 text-gray-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <p className="text-sm font-medium mb-1">Nessun evento</p>
+                <p className="text-xs text-gray-400 text-center max-w-[250px]">
+                  Non ci sono eventi programmati per questo giorno. Clicca su
+                  "Vai al giorno" per visualizzare i dettagli.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Connettori per eventi multi-giorno */}
       <div className="absolute inset-0 pointer-events-none">
