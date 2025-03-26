@@ -260,7 +260,7 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
             bottom: popoverPosition.isAbove
               ? `calc(100% - ${popoverPosition.y - 8}px)`
               : "auto",
-            maxHeight: "min(calc(100vh - 100px), 500px)",
+            maxHeight: "min(calc(100vh - 100px), 400px)",
             boxShadow: "0 8px 40px rgba(0, 0, 0, 0.12)",
             transformOrigin: popoverPosition.isRight
               ? "left center"
@@ -327,7 +327,7 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
             className="space-y-4 pr-2 overflow-y-auto custom-scrollbar"
             style={{
               height: "calc(100% - 80px)",
-              maxHeight: "calc(min(100vh - 180px, 420px))",
+              maxHeight: "calc(min(100vh - 180px, 320px))",
               scrollbarGutter: "stable",
             }}
           >
