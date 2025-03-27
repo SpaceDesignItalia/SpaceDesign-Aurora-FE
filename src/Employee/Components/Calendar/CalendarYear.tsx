@@ -75,6 +75,7 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
     isAbove: false,
   });
   const [popoverAnimation, setPopoverAnimation] = useState(false);
+  const [popoverClosing, setPopoverClosing] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   const year = currentDate.getFullYear();
   const today = new Date();
@@ -83,6 +84,7 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
   useEffect(() => {
     if (hoveredDay) {
       setPopoverAnimation(true);
+      setPopoverClosing(false);
     }
   }, [hoveredDay]);
 
@@ -104,6 +106,16 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
 
   const handleDayClick = (day: Date, e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // Se il giorno cliccato è lo stesso di quello già visualizzato, chiudi il popup (effetto toggle)
+    if (hoveredDay && hoveredDay.toDateString() === day.toDateString()) {
+      setPopoverClosing(true);
+      setTimeout(() => {
+        setHoveredDay(null);
+      }, 200);
+      return;
+    }
+
     const rect = e.currentTarget.getBoundingClientRect();
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
@@ -141,7 +153,14 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
       <div
         className="flex-1 overflow-y-auto bg-gray-50"
         style={{ minHeight: "100%" }}
-        onClick={() => setHoveredDay(null)}
+        onClick={() => {
+          if (hoveredDay) {
+            setPopoverClosing(true);
+            setTimeout(() => {
+              setHoveredDay(null);
+            }, 200);
+          }
+        }}
       >
         <div className="grid xl:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6 p-6">
           {MONTHS.map((month, monthIndex) => (
@@ -237,7 +256,11 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
         <div
           ref={popoverRef}
           className={`fixed z-40 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 min-w-[350px] max-w-[400px] overflow-hidden backdrop-blur-sm bg-white/95 transition-all duration-300 ease-out ${
-            popoverAnimation
+            popoverClosing
+              ? popoverPosition.isRight
+                ? "opacity-0 scale-95 -translate-x-4"
+                : "opacity-0 scale-95 translate-x-4"
+              : popoverAnimation
               ? "opacity-100 scale-100 translate-y-0"
               : popoverPosition.isRight
               ? "opacity-0 scale-95 -translate-x-4"
@@ -265,6 +288,8 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
             transformOrigin: popoverPosition.isRight
               ? "left center"
               : "right center",
+            display: "flex",
+            flexDirection: "column",
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -282,53 +307,37 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
                 <span>Eventi del giorno</span>
               </div>
             </h3>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onDateClick(hoveredDay)}
-                className="text-blue-600 hover:text-blue-700 transition-colors px-3 py-1.5 hover:bg-blue-50 rounded-full text-sm font-medium flex items-center gap-1"
+            <button
+              onClick={() => {
+                setPopoverClosing(true);
+                setTimeout(() => {
+                  setHoveredDay(null);
+                }, 200);
+              }}
+              className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-50 rounded-full"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                Vai al giorno
-              </button>
-              <button
-                onClick={() => setHoveredDay(null)}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-50 rounded-full"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
 
           <div
-            className="space-y-4 pr-2 overflow-y-auto custom-scrollbar"
+            className="space-y-4 pr-2 overflow-y-auto custom-scrollbar flex-1"
             style={{
-              height: "calc(100% - 80px)",
-              maxHeight: "calc(min(100vh - 180px, 320px))",
               scrollbarGutter: "stable",
+              minHeight: "50px",
+              maxHeight: "calc(min(100vh - 240px, 260px))",
             }}
           >
             {getEventsForDay(hoveredDay)
@@ -466,6 +475,34 @@ const CalendarYear: React.FC<CalendarYearProps> = ({
                 </p>
               </div>
             )}
+          </div>
+
+          <div className="pt-3 mt-2 border-t border-gray-100 flex justify-center">
+            <button
+              onClick={() => {
+                setPopoverClosing(true);
+                setTimeout(() => {
+                  setHoveredDay(null);
+                  onDateClick(hoveredDay);
+                }, 200);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white transition-colors px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 shadow-sm hover:shadow w-full justify-center"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              Vai al giorno
+            </button>
           </div>
         </div>
       )}
