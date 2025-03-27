@@ -320,9 +320,9 @@ export default function TaskCard({
           }`}
           radius="lg"
         >
-          <CardHeader className="flex flex-col gap-3 px-3 sm:px-5 pt-4 pb-2 w-full">
-            <div className="flex items-center justify-between w-full gap-2">
-              <h1 className="text-base sm:text-lg font-semibold text-slate-800 line-clamp-1 tracking-tight flex-grow">
+          <CardHeader className="flex flex-col gap-2 xs:gap-2.5 sm:gap-3 px-2.5 xs:px-3 sm:px-4 md:px-5 pt-3 xs:pt-3.5 sm:pt-4 pb-1.5 xs:pb-2 w-full">
+            <div className="flex items-center justify-between w-full gap-1.5 xs:gap-2">
+              <h1 className="text-sm xs:text-base sm:text-lg font-semibold text-slate-800 line-clamp-1 tracking-tight flex-grow">
                 {task.ProjectTaskName}
               </h1>
               {priorities.length > 0 && (
@@ -337,11 +337,11 @@ export default function TaskCard({
                   className="bg-white/90 backdrop-blur-sm"
                 >
                   <div
-                    className={`flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
+                    className={`flex items-center gap-0.5 xs:gap-1 sm:gap-1.5 text-[10px] xs:text-[11px] sm:text-xs ${
                       getPriorityStyles(task.PriorityId).bgColor
                     } ${
                       getPriorityStyles(task.PriorityId).hoverBg
-                    } px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full transition-all border ${
+                    } px-1.5 xs:px-2 sm:px-2.5 py-0.5 xs:py-1 sm:py-1.5 rounded-full transition-all border ${
                       getPriorityStyles(task.PriorityId).borderColor
                     } shadow-sm flex-shrink-0`}
                   >
@@ -350,12 +350,12 @@ export default function TaskCard({
                       className={`${
                         getPriorityStyles(task.PriorityId).textColor
                       }`}
-                      fontSize={12}
+                      fontSize={10}
                     />
                     <span
                       className={`font-medium tracking-wide ${
                         getPriorityStyles(task.PriorityId).textColor
-                      }`}
+                      } hidden xs:inline`}
                     >
                       {priorities.find(
                         (priority) =>
@@ -369,19 +369,19 @@ export default function TaskCard({
                 <Icon
                   icon="mdi:check-circle"
                   className="text-primary animate-pulse flex-shrink-0"
-                  fontSize={24}
+                  fontSize={20}
                 />
               )}
             </div>
 
-            <div className="flex flex-col gap-1.5 w-full">
+            <div className="flex flex-col gap-1 xs:gap-1.5 w-full">
               {task.ProjectTaskTags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 sm:gap-2 w-full">
+                <div className="flex flex-wrap gap-1 xs:gap-1.5 sm:gap-2 w-full">
                   {task.ProjectTaskTags.slice(0, 2).map((tag) => (
                     <Chip
                       key={tag.ProjectTaskTagId}
                       size="sm"
-                      className="text-[11px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 sm:py-1 bg-white/50 text-slate-700 hover:bg-white/80 transition-colors border-2"
+                      className="text-[10px] xs:text-[11px] sm:text-xs font-medium px-1.5 xs:px-2 sm:px-2.5 py-0.5 sm:py-1 bg-white/50 text-slate-700 hover:bg-white/80 transition-colors border-2"
                     >
                       {tag.ProjectTaskTagName}
                     </Chip>
@@ -413,7 +413,7 @@ export default function TaskCard({
                       >
                         <Chip
                           size="sm"
-                          className="text-[11px] sm:text-xs font-medium px-2 sm:px-2.5 py-0.5 sm:py-1 bg-white/50 text-slate-700 hover:bg-white/80 transition-colors border-2"
+                          className="text-[10px] xs:text-[11px] sm:text-xs font-medium px-1.5 xs:px-2 sm:px-2.5 py-0.5 sm:py-1 bg-white/50 text-slate-700 hover:bg-white/80 transition-colors border-2"
                         >
                           +{task.ProjectTaskTags.length - 2}
                         </Chip>
@@ -425,19 +425,19 @@ export default function TaskCard({
             </div>
           </CardHeader>
 
-          <CardBody className="px-3 sm:px-5 py-2 sm:py-3">
-            <div className="flex flex-wrap gap-1.5 sm:gap-2 text-slate-700">
+          <CardBody className="px-2.5 xs:px-3 sm:px-4 md:px-5 py-1 xs:py-1.5 sm:py-2 md:py-3">
+            <div className="flex flex-wrap gap-1 xs:gap-1.5 sm:gap-2 text-slate-700">
               {hasValidDescription(task.ProjectTaskDescription ?? "") && (
                 <Tooltip
                   content="Descrizione presente"
                   showArrow
                   className="bg-white/90 backdrop-blur-sm"
                 >
-                  <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs bg-blue-50 hover:bg-blue-100/80 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full transition-all border border-blue-200 shadow-sm">
+                  <div className="flex items-center gap-0.5 xs:gap-1 sm:gap-1.5 text-[10px] xs:text-[11px] sm:text-xs bg-blue-50 hover:bg-blue-100/80 px-1.5 xs:px-2 sm:px-2.5 py-0.5 xs:py-1 sm:py-1.5 rounded-full transition-all border border-blue-200 shadow-sm">
                     <Icon
                       icon="fluent:text-description-16-filled"
                       className="text-blue-600"
-                      fontSize={12}
+                      fontSize={10}
                     />
                     <span className="font-medium tracking-wide text-blue-600">
                       Descrizione
@@ -451,11 +451,11 @@ export default function TaskCard({
                   showArrow
                   className="bg-white/90 backdrop-blur-sm"
                 >
-                  <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs bg-blue-50 hover:bg-blue-100/80 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full transition-all border border-blue-200 shadow-sm">
+                  <div className="flex items-center gap-0.5 xs:gap-1 sm:gap-1.5 text-[10px] xs:text-[11px] sm:text-xs bg-blue-50 hover:bg-blue-100/80 px-1.5 xs:px-2 sm:px-2.5 py-0.5 xs:py-1 sm:py-1.5 rounded-full transition-all border border-blue-200 shadow-sm">
                     <Icon
                       icon="solar:paperclip-linear"
                       className="text-blue-600"
-                      fontSize={12}
+                      fontSize={10}
                     />
                     <span className="font-medium tracking-wide text-blue-600">
                       {fileCount} file
@@ -469,11 +469,11 @@ export default function TaskCard({
                   showArrow
                   className="bg-white/90 backdrop-blur-sm"
                 >
-                  <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs bg-blue-50 hover:bg-blue-100/80 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full transition-all border border-blue-200 shadow-sm">
+                  <div className="flex items-center gap-0.5 xs:gap-1 sm:gap-1.5 text-[10px] xs:text-[11px] sm:text-xs bg-blue-50 hover:bg-blue-100/80 px-1.5 xs:px-2 sm:px-2.5 py-0.5 xs:py-1 sm:py-1.5 rounded-full transition-all border border-blue-200 shadow-sm">
                     <Icon
                       icon="solar:checklist-linear"
                       className="text-blue-600"
-                      fontSize={12}
+                      fontSize={10}
                     />
                     <span className="font-medium tracking-wide text-blue-600">
                       {checkboxCount} task
@@ -483,18 +483,21 @@ export default function TaskCard({
               )}
               {commentsCount > 0 && (
                 <Tooltip
-                  content={`${commentsCount} commenti`}
+                  content={`${commentsCount} ${
+                    commentsCount === 1 ? "commento" : "commenti"
+                  }`}
                   showArrow
                   className="bg-white/90 backdrop-blur-sm"
                 >
-                  <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs bg-blue-50 hover:bg-blue-100/80 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full transition-all border border-blue-200 shadow-sm">
+                  <div className="flex items-center gap-0.5 xs:gap-1 sm:gap-1.5 text-[10px] xs:text-[11px] sm:text-xs bg-blue-50 hover:bg-blue-100/80 px-1.5 xs:px-2 sm:px-2.5 py-0.5 xs:py-1 sm:py-1.5 rounded-full transition-all border border-blue-200 shadow-sm">
                     <Icon
                       icon="solar:chat-round-line-linear"
                       className="text-blue-600"
-                      fontSize={12}
+                      fontSize={10}
                     />
                     <span className="font-medium tracking-wide text-blue-600">
-                      {commentsCount} commenti
+                      {commentsCount}{" "}
+                      {commentsCount === 1 ? "commento" : "commenti"}
                     </span>
                   </div>
                 </Tooltip>
@@ -502,8 +505,8 @@ export default function TaskCard({
             </div>
           </CardBody>
 
-          <CardFooter className="flex flex-col gap-2 sm:gap-3 px-3 sm:px-5 pb-3 sm:pb-4 pt-2 border-t border-slate-200">
-            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center w-full gap-2">
+          <CardFooter className="flex flex-col gap-1.5 xs:gap-2 sm:gap-3 px-2.5 xs:px-3 sm:px-4 md:px-5 pb-2.5 xs:pb-3 sm:pb-4 pt-1 xs:pt-1.5 sm:pt-2 border-t border-slate-200">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full gap-1.5 xs:gap-2">
               {task.ProjectTaskMembers.length > 0 && (
                 <AvatarGroup
                   isBordered
@@ -525,7 +528,7 @@ export default function TaskCard({
                           `${API_URL_IMG}/profileIcons/${member.StafferImageUrl}`
                         }
                         alt={member.StafferFullName}
-                        className="border-2 border-white w-7 h-7 sm:w-8 sm:h-8"
+                        className="border-2 border-white w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8"
                       />
                     </Tooltip>
                   ))}
@@ -537,7 +540,7 @@ export default function TaskCard({
                 className="bg-white/90 backdrop-blur-sm"
               >
                 <div
-                  className={`flex items-center justify-center gap-1.5 lg:gap-2 text-[11px] lg:text-xs ${
+                  className={`flex items-center justify-center gap-1 xs:gap-1.5 sm:gap-2 text-[10px] xs:text-[11px] sm:text-xs ${
                     task.ProjectTaskExpiration
                       ? dayjs(task.ProjectTaskExpiration.toString()).isBefore(
                           dayjs(),
@@ -551,19 +554,27 @@ export default function TaskCard({
                         ? "bg-red-50 hover:bg-red-100/80 border-red-200 text-red-600"
                         : "bg-slate-100 hover:bg-slate-200/80 border-slate-300 text-slate-700"
                       : "bg-slate-50 hover:bg-slate-100/80 border-slate-200 text-slate-600"
-                  } px-2 lg:px-3 py-1 lg:py-1.5 rounded-full transition-all border shadow-sm w-full lg:w-auto text-center`}
+                  } px-1.5 xs:px-2 sm:px-2.5 py-0.5 xs:py-1 sm:py-1.5 rounded-full transition-all border shadow-sm w-full md:w-auto text-center max-w-full md:max-w-[14rem] lg:max-w-none overflow-hidden`}
                 >
                   <Icon
                     icon="solar:calendar-linear"
-                    className="text-slate-700"
-                    fontSize={12}
+                    className="text-slate-700 flex-shrink-0"
+                    fontSize={10}
                   />
-                  <span className="font-medium tracking-wide whitespace-nowrap">
-                    {formatDate(task.ProjectTaskCreation)}
-                    <span className="mx-1 lg:mx-2 opacity-50">→</span>
+                  <span className="font-medium tracking-wide whitespace-nowrap text-[9px] xs:text-[10px] sm:text-xs overflow-hidden text-ellipsis">
+                    {formatDate(task.ProjectTaskCreation).split(" ")[0]}{" "}
+                    {formatDate(task.ProjectTaskCreation).split(" ")[1]}{" "}
+                    {formatDate(task.ProjectTaskCreation).split(" ")[2]}
+                    <span className="mx-0.5 xs:mx-1 opacity-50">→</span>
                     {task.ProjectTaskExpiration
-                      ? formatDate(task.ProjectTaskExpiration)
-                      : "Nessuna scadenza"}
+                      ? `${
+                          formatDate(task.ProjectTaskExpiration).split(" ")[0]
+                        } ${
+                          formatDate(task.ProjectTaskExpiration).split(" ")[1]
+                        } ${
+                          formatDate(task.ProjectTaskExpiration).split(" ")[2]
+                        }`
+                      : "Nessuna"}
                   </span>
                 </div>
               </Tooltip>
