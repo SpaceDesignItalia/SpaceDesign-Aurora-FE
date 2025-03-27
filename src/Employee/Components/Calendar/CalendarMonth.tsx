@@ -706,98 +706,109 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
                 if (!aIsAllDay && bIsAllDay) return 1;
                 return a.EventStartTime.localeCompare(b.EventStartTime);
               })
-              .map((event, index) => (
-                <div
-                  key={event.EventId}
-                  onClick={() => {
-                    setIsOpen(true && event.EventColor !== "#000000");
-                    setSelectedEventId(event.EventId);
-                    setHoveredDay(null);
-                  }}
-                  className={`flex items-start gap-4 p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer group`}
-                  style={{
-                    transform: popoverAnimation
-                      ? "translateX(0) scale(1)"
-                      : "translateX(-20px) scale(0.95)",
-                    opacity: popoverAnimation ? 1 : 0,
-                    transition: `all 300ms cubic-bezier(0.4, 0, 0.2, 1) ${
-                      index * 50
-                    }ms`,
-                  }}
-                >
+              .map((event, index) => {
+                const isStartDay =
+                  hoveredDay.toDateString() ===
+                  new Date(event.EventStartDate).toDateString();
+                const isEndDay =
+                  hoveredDay.toDateString() ===
+                  new Date(event.EventEndDate).toDateString();
+                const isAllDay =
+                  event.EventStartTime === "00:00" &&
+                  event.EventEndTime === "00:00";
+
+                return (
                   <div
-                    className="w-1 h-full min-h-[2.5rem] rounded-full flex-shrink-0 group-hover:scale-y-110 transition-transform"
-                    style={{ backgroundColor: event.EventColor }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors flex items-center gap-2">
-                      {event.EventTitle}
-                      {event.EventStartTime === "00:00" &&
-                        event.EventEndTime === "00:00" && (
+                    key={event.EventId}
+                    onClick={() => {
+                      setIsOpen(true && event.EventColor !== "#000000");
+                      setSelectedEventId(event.EventId);
+                      setHoveredDay(null);
+                    }}
+                    className={`flex items-start gap-4 p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer group`}
+                    style={{
+                      transform: popoverAnimation
+                        ? "translateX(0) scale(1)"
+                        : "translateX(-20px) scale(0.95)",
+                      opacity: popoverAnimation ? 1 : 0,
+                      transition: `all 300ms cubic-bezier(0.4, 0, 0.2, 1) ${
+                        index * 50
+                      }ms`,
+                    }}
+                  >
+                    <div
+                      className="w-1 h-full min-h-[2.5rem] rounded-full flex-shrink-0 group-hover:scale-y-110 transition-transform"
+                      style={{ backgroundColor: event.EventColor }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                        {event.EventTitle}
+                        {isAllDay && (
                           <span className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full font-normal">
                             Tutto il giorno
                           </span>
                         )}
-                    </h4>
-                    {!(
-                      event.EventStartTime === "00:00" &&
-                      event.EventEndTime === "00:00"
-                    ) && (
-                      <p className="text-sm text-gray-500 mt-0.5 flex items-center gap-1.5">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        {event.EventStartTime === "00:00" &&
-                        event.EventEndTime === "00:00"
-                          ? "Tutto il giorno"
-                          : `${event.EventStartTime} - ${event.EventEndTime}`}
-                      </p>
-                    )}
-                    {event.EventLocation && (
-                      <p className="text-sm text-gray-500 mt-1.5 flex items-center gap-1.5 group-hover:text-gray-600">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                        </svg>
-                        {event.EventLocation}
-                      </p>
-                    )}
-                    {event.EventDescription && (
-                      <p
-                        className="text-sm text-gray-600 mt-2 line-clamp-2 group-hover:text-gray-700"
-                        dangerouslySetInnerHTML={{
-                          __html: event.EventDescription,
-                        }}
-                      />
-                    )}
+                      </h4>
+                      {!isAllDay && (
+                        <p className="text-sm text-gray-500 mt-0.5 flex items-center gap-1.5">
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          {!isStartDay && !isEndDay
+                            ? "Tutto il giorno"
+                            : isStartDay && !isEndDay
+                            ? `Dalle ${event.EventStartTime}`
+                            : !isStartDay && isEndDay
+                            ? `Fino alle ${event.EventEndTime}`
+                            : `${event.EventStartTime} - ${event.EventEndTime}`}
+                        </p>
+                      )}
+                      {event.EventLocation && (
+                        <p className="text-sm text-gray-500 mt-1.5 flex items-center gap-1.5 group-hover:text-gray-600">
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                          </svg>
+                          {event.EventLocation}
+                        </p>
+                      )}
+                      {event.EventDescription && (
+                        <p
+                          className="text-sm text-gray-600 mt-2 line-clamp-2 group-hover:text-gray-700"
+                          dangerouslySetInnerHTML={{
+                            __html: event.EventDescription,
+                          }}
+                        />
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             {events.filter(
               (event) =>
                 hoveredDay >= new Date(event.EventStartDate) &&
