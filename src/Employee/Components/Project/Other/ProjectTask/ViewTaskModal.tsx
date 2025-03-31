@@ -1623,7 +1623,7 @@ export default function ViewTaskModal({
                                 newTask!.ProjectTaskCreation,
                                 newTask!.ProjectTaskExpiration
                               )}
-                              showValueLabel={true}
+                              showValueLabel={false}
                             />
                             <div className="flex justify-end mt-2">
                               <div

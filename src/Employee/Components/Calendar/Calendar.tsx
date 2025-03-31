@@ -288,7 +288,7 @@ END:VEVENT`;
     setIsLoading(true);
     try {
       const res = await axios.get(`Calendar/GET/GetEventsByEmail`);
-      setEvents([...res.data, ...events]);
+      setEvents(res.data);
     } catch (error) {
       console.error(error);
       // Add error handling UI here
@@ -379,54 +379,30 @@ END:VEVENT`;
   const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
 
   async function fetchProjects() {
-    const res = await axios.get("/Project/GET/GetProjectInTeam", {
-      withCredentials: true,
-    });
+    try {
+      // Prima recupero gli eventi dal server
+      const eventsRes = await axios.get(`Calendar/GET/GetEventsByEmail`);
+      const calendarEvents = eventsRes.data || [];
 
-    const newEvents: CalendarEvent[] = []; // Creiamo un array per i nuovi eventi
-
-    for (const project of res.data) {
-      if (
-        project.ProjectEndDate &&
-        !events.some((event) => event.EventId === project.ProjectId)
-      ) {
-        const endDate = new Date(project.ProjectEndDate);
-        newEvents.push({
-          EventId: project.ProjectId,
-          EventTitle: "Progetto: " + project.ProjectName.substring(0, 10),
-          EventStartDate: endDate,
-          EventEndDate: endDate,
-          EventStartTime: "00:00",
-          EventEndTime: "00:00",
-          EventColor: "#000000",
-          EventDescription: "",
-          EventLocation: "",
-          EventTagName: "",
-          EventAttachments: [],
-          EventPartecipants: [],
-        });
-      }
-
-      const resTask = await axios.get("/Project/GET/GetTasksByProjectId", {
-        params: { ProjectId: project.ProjectId },
+      // Poi recupero i progetti
+      const res = await axios.get("/Project/GET/GetProjectInTeam", {
+        withCredentials: true,
       });
 
-      for (const task of resTask.data) {
-        console.log(task);
-        if (
-          task.ProjectTaskExpiration &&
-          !events.some((event) => event.EventId === task.ProjectTaskId)
-        ) {
-          console.log(task);
-          const endDate = new Date(task.ProjectTaskExpiration);
-          newEvents.push({
-            EventId: task.ProjectTaskId,
-            EventTitle: "Task: " + task.ProjectTaskName.substring(0, 10),
+      const projectEvents: CalendarEvent[] = []; // Creiamo un array per i nuovi eventi
+
+      // Aggiungiamo i progetti
+      for (const project of res.data) {
+        if (project.ProjectEndDate) {
+          const endDate = new Date(project.ProjectEndDate);
+          projectEvents.push({
+            EventId: project.ProjectId,
+            EventTitle: "Progetto: " + project.ProjectName.substring(0, 10),
             EventStartDate: endDate,
             EventEndDate: endDate,
             EventStartTime: "00:00",
             EventEndTime: "00:00",
-            EventColor: "#707070",
+            EventColor: "#000000",
             EventDescription: "",
             EventLocation: "",
             EventTagName: "",
@@ -434,10 +410,39 @@ END:VEVENT`;
             EventPartecipants: [],
           });
         }
-      }
-    }
 
-    setEvents((prevEvents) => [...prevEvents, ...newEvents]); // Aggiorniamo lo stato degli eventi
+        // Recuperiamo i task del progetto
+        const resTask = await axios.get("/Project/GET/GetTasksByProjectId", {
+          params: { ProjectId: project.ProjectId },
+        });
+
+        // Aggiungiamo i task
+        for (const task of resTask.data) {
+          if (task.ProjectTaskExpiration) {
+            const endDate = new Date(task.ProjectTaskExpiration);
+            projectEvents.push({
+              EventId: task.ProjectTaskId,
+              EventTitle: "Task: " + task.ProjectTaskName.substring(0, 10),
+              EventStartDate: endDate,
+              EventEndDate: endDate,
+              EventStartTime: "00:00",
+              EventEndTime: "00:00",
+              EventColor: "#707070",
+              EventDescription: "",
+              EventLocation: "",
+              EventTagName: "",
+              EventAttachments: [],
+              EventPartecipants: [],
+            });
+          }
+        }
+      }
+
+      // Uniamo gli eventi del calendario con quelli dei progetti
+      setEvents([...calendarEvents, ...projectEvents]);
+    } catch (error) {
+      console.error("Errore durante il recupero dei progetti:", error);
+    }
   }
 
   console.log(events);
