@@ -69,24 +69,29 @@ export default function AddProjectLink({
   const [linkTypes, setLinkTypes] = useState<ProjectLinkType[]>([]);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
+  const [faviconUrl, setFaviconUrl] = useState<string>("");
+  const [isWebsiteType, setIsWebsiteType] = useState<boolean>(false);
 
   useEffect(() => {
-    setNewLinkData({ ...newLinkData, ProjectId });
+    if (!isOpen) {
+      setIsWebsiteType(false);
+      setNewLinkData(INITIAL_LINK_DATA);
+      setFaviconUrl("");
+    } else {
+      setNewLinkData({ ...INITIAL_LINK_DATA, ProjectId });
+    }
     axios.get("/Project/GET/GetAllLinkType").then((res) => {
       setLinkTypes(res.data);
     });
-  }, [ProjectId]);
+  }, [isOpen, ProjectId]);
 
   function checkAllDataCompiled() {
-    if (
-      newLinkData.ProjectId != 0 &&
-      newLinkData.ProjectLinkTitle !== "" &&
-      newLinkData.ProjectLinkUrl !== "" &&
-      newLinkData.ProjectLinkTypeId != 0
-    ) {
-      return false;
-    }
-    return true;
+    return !(
+      newLinkData.ProjectId !== 0 &&
+      newLinkData.ProjectLinkTitle.trim() !== "" &&
+      newLinkData.ProjectLinkUrl.trim() !== "" &&
+      newLinkData.ProjectLinkTypeId !== 0
+    );
   }
 
   function handleProjectLinkTitleChange(
@@ -102,28 +107,100 @@ export default function AddProjectLink({
 
   function handleProjectLinkTypeChange(key: React.Key | null) {
     if (key !== null) {
+      const selectedTypeId = parseInt(key.toString());
       setNewLinkData({
         ...newLinkData,
-        ProjectLinkTypeId: parseInt(key.toString()),
+        ProjectLinkTypeId: selectedTypeId,
       });
+      setIsWebsiteType(selectedTypeId === 7);
+      if (selectedTypeId !== 7) {
+        setFaviconUrl("");
+      } else if (newLinkData.ProjectLinkUrl) {
+        setFaviconUrl(getFaviconUrl(newLinkData.ProjectLinkUrl));
+      }
+    }
+  }
+
+  function getFaviconUrl(url: string) {
+    try {
+      const hostname = new URL(formatUrl(url)).hostname;
+      return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+    } catch {
+      return "";
     }
   }
 
   function handleProjectLinkURLChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value.length <= 150) {
+    const value = e.target.value;
+    if (value.length <= 150) {
       setNewLinkData({
         ...newLinkData,
-        ProjectLinkUrl: e.target.value,
+        ProjectLinkUrl: value,
       });
+      if (isWebsiteType) {
+        setFaviconUrl(getFaviconUrl(value));
+      }
     }
+  }
+
+  function handleUrlKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Tab" && isWebsiteType) {
+      e.preventDefault();
+      const input = e.currentTarget;
+      const value = input.value;
+
+      if (!value.startsWith("http://") && !value.startsWith("https://")) {
+        const newValue = "https://" + value;
+        setNewLinkData({
+          ...newLinkData,
+          ProjectLinkUrl: newValue,
+        });
+        setFaviconUrl(getFaviconUrl(newValue));
+      }
+    }
+  }
+
+  function isValidUrl(url: string) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function formatUrl(url: string) {
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      return "https://" + url;
+    }
+    return url;
   }
 
   async function handleCreateNewLink() {
     try {
       setIsAddingData(true);
 
+      let formattedUrl = formatUrl(newLinkData.ProjectLinkUrl);
+
+      if (!isValidUrl(formattedUrl)) {
+        setAlertData({
+          isOpen: true,
+          onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
+          alertTitle: "URL non valido",
+          alertDescription: "Inserisci un URL valido per continuare.",
+          alertColor: "yellow",
+        });
+        setIsAddingData(false);
+        return;
+      }
+
+      const linkDataToSend = {
+        ...newLinkData,
+        ProjectLinkUrl: formattedUrl,
+      };
+
       const res = await axios.post("/Project/POST/AddProjectLink", {
-        ProjectLinkData: newLinkData,
+        ProjectLinkData: linkDataToSend,
       });
 
       if (res.status === 200) {
@@ -248,11 +325,25 @@ export default function AddProjectLink({
                     </label>
                     <Input
                       variant="bordered"
-                      placeholder="https://www.spacedesign-italia.it"
+                      placeholder={
+                        isWebsiteType
+                          ? "www.spacedesign-italia.it"
+                          : "Inserisci URL"
+                      }
                       onChange={handleProjectLinkURLChange}
+                      onKeyDown={handleUrlKeyDown}
                       type="text"
                       radius="full"
                       fullWidth
+                      startContent={
+                        isWebsiteType &&
+                        newLinkData.ProjectLinkUrl && (
+                          <img
+                            src={faviconUrl}
+                            className="w-4 h-4 object-contain"
+                          />
+                        )
+                      }
                     />
                   </div>
                 </div>

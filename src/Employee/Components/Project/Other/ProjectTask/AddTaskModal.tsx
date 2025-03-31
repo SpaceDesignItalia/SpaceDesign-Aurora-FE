@@ -75,7 +75,39 @@ interface AlertData {
 interface Priority {
   ProjectTaskPriorityId: number;
   ProjectTaskPriorityName: string;
+  color?: string;
+  icon?: string;
+  bgColor?: string;
+  textColor?: string;
 }
+
+const priorityStyles = {
+  1: {
+    icon: "ri:alarm-warning-fill",
+    textColor: "text-red-700",
+    bgColor: "bg-red-100",
+  },
+  2: {
+    icon: "solar:double-alt-arrow-up-linear",
+    textColor: "text-orange-700",
+    bgColor: "bg-orange-100",
+  },
+  3: {
+    icon: "solar:alt-arrow-up-linear",
+    textColor: "text-amber-700",
+    bgColor: "bg-amber-100",
+  },
+  4: {
+    icon: "solar:alt-arrow-down-linear",
+    textColor: "text-blue-700",
+    bgColor: "bg-blue-100",
+  },
+  5: {
+    icon: "solar:alt-arrow-down-linear",
+    textColor: "text-emerald-700",
+    bgColor: "bg-emerald-100",
+  },
+};
 
 const INITIAL_TASK_DATA: Task = {
   ProjectTaskId: 0,
@@ -87,7 +119,7 @@ const INITIAL_TASK_DATA: Task = {
   ProjectTaskTags: [],
   ProjectTaskMembers: [],
   ProjectId: 0,
-  PriorityId: 4,
+  PriorityId: 0,
 };
 
 const INITIAL_ALERT_DATA: AlertData = {
@@ -116,6 +148,9 @@ export default function AddTaskModal({
   const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
   const [isAddingData, setIsAddingData] = useState<boolean>(false);
   const [priorities, setPriorities] = useState<Priority[]>([]);
+  const [isValidTask, setIsValidTask] = useState(false);
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
+  const [dateError, setDateError] = useState(false);
 
   useEffect(() => {
     axios
@@ -226,7 +261,98 @@ export default function AddTaskModal({
     </PopoverContent>
   );
 
+  useEffect(() => {
+    // Validation: check if the start date is after the expiration date
+    if (newTask?.ProjectTaskCreation && newTask?.ProjectTaskExpiration) {
+      const start = new Date(newTask.ProjectTaskCreation.toString());
+      const end = new Date(newTask.ProjectTaskExpiration.toString());
+
+      setDateError(start > end); // If start is after end, show error
+    } else {
+      setDateError(false);
+    }
+  }, [newTask]);
+
+  useEffect(() => {
+    // Verifica che tutti i campi obbligatori siano compilati
+    const isValid =
+      // Titolo della task
+      newTask.ProjectTaskName.length > 0 &&
+      // Data di inizio
+      newTask.ProjectTaskCreation !== null &&
+      // Data di fine (se presente, deve essere valida)
+      (!newTask.ProjectTaskExpiration || !dateError) &&
+      // Descrizione obbligatoria
+      (newTask.ProjectTaskDescription?.length ?? 0) > 0 &&
+      // Priorità obbligatoria
+      newTask.PriorityId > 0;
+
+    setIsValidTask(isValid);
+  }, [newTask, dateError]);
+
+  const calculateProgress = (
+    startDate: DateValue,
+    endDate: DateValue
+  ): number => {
+    if (!startDate || !endDate) return 0;
+    const totalDuration = dayjs(endDate.toString()).diff(
+      dayjs(startDate.toString()),
+      "day"
+    );
+    const daysPassed = dayjs().diff(dayjs(startDate.toString()), "day");
+    const progress = (daysPassed / totalDuration) * 100;
+    return Math.min(Math.max(progress, 0), 100); // Restituisci una percentuale tra 0 e 100
+  };
+
+  function handleCloseModal() {
+    setNewTask({
+      ProjectTaskId: 0,
+      ProjectTaskName: "",
+      ProjectTaskDescription: "",
+      ProjectTaskExpiration: null,
+      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
+      ProjectTaskStatusId: 0,
+      ProjectTaskTags: [],
+      ProjectTaskMembers: [],
+      ProjectId: ProjectId,
+      PriorityId: 0,
+    });
+    setShowValidationErrors(false);
+    isClosed();
+    // Remove action from URL
+    if (Action) {
+      navigate(`/projects/${ProjectId}`);
+    }
+  }
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const handleRefine = async () => {
+    if (!newTask.ProjectTaskDescription) return;
+    setLoading(true);
+    try {
+      const refinedText = await axios.post("/Project/POST/RefineText", {
+        text: `Riscrivi in modo più formale e completo il seguente testo: ${newTask.ProjectTaskDescription}`,
+      });
+      setNewTask({
+        ...newTask,
+        ProjectTaskDescription: refinedText.data,
+      });
+    } catch (error) {
+      console.error("Errore:", error);
+      alert("Si è verificato un errore.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  console.log(newTask.PriorityId);
+
   async function handleAddTask() {
+    if (!isValidTask) {
+      setShowValidationErrors(true);
+      return;
+    }
+
     try {
       setIsAddingData(true);
       const formattedDate = newTask.ProjectTaskExpiration
@@ -255,7 +381,6 @@ export default function AddTaskModal({
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        // General error handling
         setAlertData({
           isOpen: true,
           onClose: () => setAlertData((prev) => ({ ...prev, isOpen: false })),
@@ -308,88 +433,6 @@ export default function AddTaskModal({
     });
   }
 
-  const [dateError, setDateError] = useState(false);
-  useEffect(() => {
-    // Validation: check if the start date is after the expiration date
-    if (newTask?.ProjectTaskCreation && newTask?.ProjectTaskExpiration) {
-      const start = new Date(newTask.ProjectTaskCreation.toString());
-      const end = new Date(newTask.ProjectTaskExpiration.toString());
-
-      setDateError(start > end); // If start is after end, show error
-    } else {
-      setDateError(false);
-    }
-  }, [newTask]);
-
-  const [isValidTask, setIsValidTask] = useState(false);
-  useEffect(() => {
-    if (!newTask.ProjectTaskCreation || !newTask.ProjectTaskExpiration) {
-      setIsValidTask(true);
-      return;
-    }
-    setIsValidTask(
-      newTask.ProjectTaskName.length > 0 &&
-        newTask.ProjectTaskCreation.toString().length > 0 &&
-        dateError === false
-    );
-  }, [newTask]);
-
-  const calculateProgress = (
-    startDate: DateValue,
-    endDate: DateValue
-  ): number => {
-    if (!startDate || !endDate) return 0;
-    const totalDuration = dayjs(endDate.toString()).diff(
-      dayjs(startDate.toString()),
-      "day"
-    );
-    const daysPassed = dayjs().diff(dayjs(startDate.toString()), "day");
-    const progress = (daysPassed / totalDuration) * 100;
-    return Math.min(Math.max(progress, 0), 100); // Restituisci una percentuale tra 0 e 100
-  };
-
-  function handleCloseModal() {
-    setNewTask({
-      ProjectTaskId: 0,
-      ProjectTaskName: "",
-      ProjectTaskDescription: "",
-      ProjectTaskExpiration: null,
-      ProjectTaskCreation: parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
-      ProjectTaskStatusId: 0,
-      ProjectTaskTags: [],
-      ProjectTaskMembers: [],
-      ProjectId: ProjectId,
-      PriorityId: 4,
-    });
-    isClosed();
-    // Remove action from URL
-    if (Action) {
-      navigate(`/projects/${ProjectId}`);
-    }
-  }
-
-  const [loading, setLoading] = useState<boolean>(false);
-  const handleRefine = async () => {
-    if (!newTask.ProjectTaskDescription) return;
-    setLoading(true);
-    try {
-      const refinedText = await axios.post("/Project/POST/RefineText", {
-        text: `Riscrivi in modo più formale e completo il seguente testo: ${newTask.ProjectTaskDescription}`,
-      });
-      setNewTask({
-        ...newTask,
-        ProjectTaskDescription: refinedText.data,
-      });
-    } catch (error) {
-      console.error("Errore:", error);
-      alert("Si è verificato un errore.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  console.log(newTask.PriorityId);
-
   return (
     <>
       <StatusAlert AlertData={alertData} />
@@ -407,14 +450,38 @@ export default function AddTaskModal({
             <>
               <ModalHeader className="flex flex-row justify-between items-center gap-2">
                 <div className="flex flex-row justify-between items-center gap-2 w-full">
-                  <Icon
-                    icon="solar:checklist-minimalistic-linear"
-                    fontSize={22}
-                  />
+                  {newTask?.PriorityId > 0 && (
+                    <div
+                      className={`p-2 rounded-lg ${
+                        priorityStyles[
+                          newTask?.PriorityId as keyof typeof priorityStyles
+                        ]?.bgColor || "bg-gray-50"
+                      }`}
+                    >
+                      <Icon
+                        icon={
+                          priorityStyles[
+                            newTask?.PriorityId as keyof typeof priorityStyles
+                          ]?.icon || "solar:checklist-minimalistic-linear"
+                        }
+                        fontSize={22}
+                        className={
+                          priorityStyles[
+                            newTask?.PriorityId as keyof typeof priorityStyles
+                          ]?.textColor || "text-gray-700"
+                        }
+                      />
+                    </div>
+                  )}
                   <Input
                     className="w-full"
                     variant="underlined"
-                    color="primary"
+                    color={
+                      showValidationErrors &&
+                      newTask.ProjectTaskName.length === 0
+                        ? "danger"
+                        : "primary"
+                    }
                     placeholder="Titolo della Task"
                     value={newTask!.ProjectTaskName}
                     maxLength={50}
@@ -429,6 +496,12 @@ export default function AddTaskModal({
                         {newTask?.ProjectTaskName.length}/50
                       </div>
                     }
+                    errorMessage={
+                      showValidationErrors &&
+                      newTask.ProjectTaskName.length === 0
+                        ? "Il titolo è obbligatorio"
+                        : undefined
+                    }
                   />
                   <Select
                     items={priorities}
@@ -436,10 +509,20 @@ export default function AddTaskModal({
                     className="w-52 mb-4"
                     variant="underlined"
                     radius="full"
+                    color={
+                      showValidationErrors && !newTask.PriorityId
+                        ? "danger"
+                        : "primary"
+                    }
+                    errorMessage={
+                      showValidationErrors && !newTask.PriorityId
+                        ? "La priorità è obbligatoria"
+                        : undefined
+                    }
                     onSelectionChange={(e) => {
                       setNewTask({
                         ...newTask,
-                        PriorityId: parseInt(e.currentKey ?? "4"),
+                        PriorityId: e?.currentKey ? parseInt(e.currentKey) : 0,
                       });
                     }}
                   >
@@ -447,8 +530,23 @@ export default function AddTaskModal({
                       <SelectItem
                         key={priority.ProjectTaskPriorityId}
                         value={priority.ProjectTaskPriorityId}
+                        textValue={priority.ProjectTaskPriorityName}
                       >
-                        {priority.ProjectTaskPriorityName}
+                        <div className="flex items-center gap-2">
+                          <Icon
+                            icon={
+                              priorityStyles[
+                                priority.ProjectTaskPriorityId as keyof typeof priorityStyles
+                              ]?.icon || "solar:minimalistic-dots-bold"
+                            }
+                            className={
+                              priorityStyles[
+                                priority.ProjectTaskPriorityId as keyof typeof priorityStyles
+                              ]?.textColor || "text-gray-700"
+                            }
+                          />
+                          <span>{priority.ProjectTaskPriorityName}</span>
+                        </div>
                       </SelectItem>
                     )}
                   </Select>
@@ -479,24 +577,28 @@ export default function AddTaskModal({
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
                         {newTask!.ProjectTaskTags.length === 0 ? (
-                          <div className="flex flex-row items-center gap-3">
-                            <p>Nessun tag trovato</p>
-                            <Popover offset={10} placement="bottom">
-                              <PopoverTrigger>
-                                <Button
-                                  color="primary"
-                                  variant="faded"
-                                  radius="full"
-                                  isIconOnly
-                                >
-                                  <Icon
-                                    icon="mynaui:plus-solid"
-                                    fontSize={22}
-                                  />
-                                </Button>
-                              </PopoverTrigger>
-                              {tagPopoverContent}
-                            </Popover>
+                          <div className="flex flex-col gap-2">
+                            <div className="flex flex-row items-center gap-3">
+                              <p className="text-gray-500">
+                                Nessun tag trovato
+                              </p>
+                              <Popover offset={10} placement="bottom">
+                                <PopoverTrigger>
+                                  <Button
+                                    color="primary"
+                                    variant="faded"
+                                    radius="full"
+                                    isIconOnly
+                                  >
+                                    <Icon
+                                      icon="mynaui:plus-solid"
+                                      fontSize={22}
+                                    />
+                                  </Button>
+                                </PopoverTrigger>
+                                {tagPopoverContent}
+                              </Popover>
+                            </div>
                           </div>
                         ) : (
                           <div className="flex flex-wrap gap-2 items-center">
@@ -543,24 +645,28 @@ export default function AddTaskModal({
                       </dt>
                       <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0 items-center">
                         {newTask!.ProjectTaskMembers.length === 0 ? (
-                          <div className="flex flex-row items-center gap-2">
-                            <p>Nessun membro trovato</p>
-                            <Popover offset={10} placement="bottom">
-                              <PopoverTrigger>
-                                <Button
-                                  color="primary"
-                                  variant="faded"
-                                  radius="full"
-                                  isIconOnly
-                                >
-                                  <Icon
-                                    icon="mynaui:plus-solid"
-                                    fontSize={22}
-                                  />
-                                </Button>
-                              </PopoverTrigger>
-                              {memberPopoverContent}
-                            </Popover>
+                          <div className="flex flex-col gap-2">
+                            <div className="flex flex-row items-center gap-2">
+                              <p className="text-gray-500">
+                                Nessun membro trovato
+                              </p>
+                              <Popover offset={10} placement="bottom">
+                                <PopoverTrigger>
+                                  <Button
+                                    color="primary"
+                                    variant="faded"
+                                    radius="full"
+                                    isIconOnly
+                                  >
+                                    <Icon
+                                      icon="mynaui:plus-solid"
+                                      fontSize={22}
+                                    />
+                                  </Button>
+                                </PopoverTrigger>
+                                {memberPopoverContent}
+                              </Popover>
+                            </div>
                           </div>
                         ) : (
                           <div className="flex flex-wrap gap-3 items-center">
@@ -677,20 +783,29 @@ export default function AddTaskModal({
                           icon="fluent:text-description-16-filled"
                           fontSize={22}
                         />
-                        Descrizione
+                        Descrizione <span className="text-danger">*</span>
                       </dt>
                       <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        <ReactQuill
-                          className="sm:col-span-2 sm:mt-0 h-fit"
-                          theme="snow"
-                          value={newTask!.ProjectTaskDescription}
-                          onChange={(e) =>
-                            setNewTask({
-                              ...newTask!,
-                              ProjectTaskDescription: e,
-                            })
-                          }
-                        />
+                        <div className="flex flex-col gap-2">
+                          <ReactQuill
+                            className="sm:col-span-2 sm:mt-0 h-fit"
+                            theme="snow"
+                            value={newTask!.ProjectTaskDescription}
+                            onChange={(e) =>
+                              setNewTask({
+                                ...newTask!,
+                                ProjectTaskDescription: e,
+                              })
+                            }
+                          />
+                          {showValidationErrors &&
+                            (!newTask.ProjectTaskDescription ||
+                              newTask.ProjectTaskDescription.length === 0) && (
+                              <p className="text-danger text-sm">
+                                La descrizione è obbligatoria
+                              </p>
+                            )}
+                        </div>
                       </dd>
                       {newTask.ProjectTaskDescription ? (
                         <Button
@@ -743,7 +858,7 @@ export default function AddTaskModal({
                     )
                   }
                   isLoading={isAddingData}
-                  isDisabled={!isValidTask && !isAddingData}
+                  isDisabled={!isValidTask || dateError}
                   variant={dateError ? "flat" : "solid"}
                 >
                   Salva

@@ -1,71 +1,21 @@
-import {
-  Button,
-  DateValue,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@heroui/react";
+import { Button, Popover, PopoverContent, PopoverTrigger } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
 
-interface Tag {
-  ProjectTaskTagId: number;
-  ProjectTaskTagName: string;
-}
-
-interface Member {
-  StafferId: number;
-  StafferFullName: string;
-  StafferEmail: string;
-  StafferImageUrl: string;
-}
-
-interface Comment {
-  ProjectTaskCommentId: number;
-  StafferId: number;
-  StafferFullName: string;
-  StafferImageUrl: string;
-  Text: string;
-  CommentDate: Date;
-}
-
-interface Task {
-  ProjectTaskId: number;
-  ProjectTaskName: string;
-  ProjectTaskDescription?: string;
-  ProjectTaskExpiration?: DateValue | null | undefined;
-  ProjectTaskCreation: DateValue;
+interface Status {
   ProjectTaskStatusId: number;
-  ProjectTaskTags: Tag[];
-  ProjectTaskMembers: Member[];
-  ProjectTaskComments: Comment[];
-  ProjectId: number;
-  ProjectTaskChecklists: Checklist[];
-  PriorityId: number;
+  ProjectTaskStatusName: string;
 }
 
-interface Checkbox {
-  CheckboxId: number;
-  Text: string;
-  IsSelected: boolean;
-  ChecklistId: number;
+interface ConfirmDeleteTaskStatusModalProps {
+  column: Status;
+  DeleteTaskStatus: (statusId: number) => void;
 }
 
-interface Checklist {
-  ChecklistId: number;
-  Text: string;
-  Checkboxes: Checkbox[];
-}
-
-interface ConfirmDeleteTaskModalProps {
-  TaskData: Task[];
-  DeleteTasks: (tasks: Task[]) => void;
-}
-
-export default function ConfirmDeleteTaskModal({
-  TaskData,
-  DeleteTasks,
-}: ConfirmDeleteTaskModalProps) {
+export default function ConfirmDeleteTaskStatusModal({
+  column,
+  DeleteTaskStatus,
+}: ConfirmDeleteTaskStatusModalProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   return (
     <Popover
@@ -101,22 +51,22 @@ export default function ConfirmDeleteTaskModal({
               className="text-warning"
               fontSize={20}
             />
-            Sei sicuro di voler eliminare {TaskData.length} task?
+            Sei sicuro di voler eliminare {column.ProjectTaskStatusName}?
           </div>
           <div className="flex flex-row gap-2 justify-center items-center">
             <Button
               variant="light"
               radius="sm"
               size="sm"
-              onClick={() => setIsOpen(false)}
+              onPress={() => setIsOpen(false)}
             >
               Annulla
             </Button>
             <Button
               color="danger"
               variant="ghost"
-              onClick={() => {
-                DeleteTasks(TaskData);
+              onPress={() => {
+                DeleteTaskStatus(column.ProjectTaskStatusId);
               }}
               radius="sm"
               size="sm"

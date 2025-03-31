@@ -11,6 +11,7 @@ import {
 import { API_URL_IMG } from "../../../../API/API";
 import { useState } from "react";
 import { Icon } from "@iconify/react";
+import { cn } from "../../../../lib/utils";
 
 interface Link {
   ProjectId: number;
@@ -35,6 +36,37 @@ export default function DeleteLinkModal({
   DeleteLink,
 }: DeleteLinkModalProps) {
   const [selected, setSelected] = useState<string>("");
+
+  const handleImageError = (
+    e: React.SyntheticEvent<HTMLImageElement, Event>,
+    link: Link
+  ) => {
+    e.currentTarget.src =
+      API_URL_IMG + "/linkIcons/" + link.ProjectLinkTypeImage;
+  };
+
+  const handleImageLoad = (
+    e: React.SyntheticEvent<HTMLImageElement, Event>,
+    link: Link
+  ) => {
+    if (link.ProjectLinkTypeId.toString() === "7") {
+      const img = e.target as HTMLImageElement;
+      const scale =
+        Math.min(32 / img.naturalWidth, 32 / img.naturalHeight) * 4.5;
+      img.style.transform = `scale(${scale})`;
+    }
+  };
+
+  const getFaviconUrl = (url: string) => {
+    try {
+      return `https://www.google.com/s2/favicons?domain=${
+        new URL(url).hostname
+      }&sz=128`;
+    } catch {
+      return "";
+    }
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -56,23 +88,32 @@ export default function DeleteLinkModal({
                 value={selected}
                 onValueChange={setSelected}
               >
-                {LinkData.map((link: Link, index: number) => {
-                  return (
-                    <Radio value={link.ProjectLinkId.toString()} key={index}>
-                      <span className="flex flex-row justify-center items-center gap-3">
-                        <img
-                          src={
-                            API_URL_IMG +
-                            "/linkIcons/" +
-                            link.ProjectLinkTypeImage
-                          }
-                          className="h-5 w-5"
-                        />
-                        <h1>{link.ProjectLinkTitle}</h1>
-                      </span>
-                    </Radio>
-                  );
-                })}
+                {LinkData.map((link: Link) => (
+                  <Radio
+                    value={link.ProjectLinkId.toString()}
+                    key={link.ProjectLinkId}
+                  >
+                    <span className="flex flex-row justify-center items-center gap-3">
+                      <img
+                        src={
+                          link.ProjectLinkTypeId.toString() === "7"
+                            ? getFaviconUrl(link.ProjectLinkUrl)
+                            : API_URL_IMG +
+                              "/linkIcons/" +
+                              link.ProjectLinkTypeImage
+                        }
+                        className={cn("h-5 w-5 object-contain", {
+                          "scale-[2.5] object-cover":
+                            link.ProjectLinkTypeId.toString() === "7",
+                        })}
+                        onLoad={(e) => handleImageLoad(e, link)}
+                        onError={(e) => handleImageError(e, link)}
+                        alt={`Icon for ${link.ProjectLinkTitle}`}
+                      />
+                      <h1>{link.ProjectLinkTitle}</h1>
+                    </span>
+                  </Radio>
+                ))}
               </RadioGroup>
             </ModalBody>
             <ModalFooter className="flex sm:flex-row flex-col">
