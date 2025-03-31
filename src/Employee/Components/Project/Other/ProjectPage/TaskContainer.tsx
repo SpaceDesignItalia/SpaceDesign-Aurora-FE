@@ -5,6 +5,7 @@ import {
   Chip,
   cn,
   type DateValue,
+  Input,
   Select,
   SelectItem,
   Tab,
@@ -28,6 +29,7 @@ import AddTaskModal from "../ProjectTask/AddTaskModal";
 import ArchivedTaskCard from "../ProjectTask/ArchivedTaskCard";
 import TaskCard from "../ProjectTask/TaskCard";
 import ConfirmDeleteTaskModal from "../ProjectTask/ConfirmDeleteTaskModal";
+import ConfirmDeleteTaskStatusModal from "../ProjectTask/ConfirmDelteTaskStatusModal";
 
 // Inizializzo il socket una sola volta
 const socket = io(API_WEBSOCKET_URL);
@@ -125,6 +127,7 @@ export default function TaskContainer({
     null
   );
   const [isDraggingMultiColumn, setIsDraggingMultiColumn] = useState(false);
+  const [editingStatus, setEditingStatus] = useState<Status | null>(null);
 
   // ----- Gestione URL e permessi -----
   useEffect(() => {
@@ -146,7 +149,10 @@ export default function TaskContainer({
     try {
       // 1) Colonne
       const statusResponse = await axios.get<Status[]>(
-        "/Project/GET/GetTaskStatuses"
+        "/Project/GET/GetTaskStatusesByProjectId",
+        {
+          params: { ProjectId: projectId },
+        }
       );
       setColumns(statusResponse.data);
 
@@ -189,6 +195,19 @@ export default function TaskContainer({
   useEffect(() => {
     fetchData();
   }, [fetchData, update, projectId]);
+
+  async function updateTaskStatusName(statusId: number, statusName: string) {
+    try {
+      await axios.post("/Project/POST/UpdateTaskStatusName", {
+        ProjectTaskStatusId: statusId,
+        ProjectTaskStatusName: statusName,
+      });
+      socket.emit("task-news", projectId);
+      setUpdate((prev) => !prev);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   // ----- Fetch Task Archiviate -----
   useEffect(() => {
@@ -300,6 +319,31 @@ export default function TaskContainer({
     },
     [projectId]
   );
+
+  async function deleteTaskStatus(statusId: number) {
+    try {
+      await axios.delete("/Project/DELETE/DeleteTaskStatus", {
+        params: { ProjectTaskStatusId: statusId },
+      });
+      socket.emit("task-news", projectId);
+      setUpdate((prev) => !prev);
+    } catch (error) {
+      console.error("Error deleting task status:", error);
+    }
+  }
+
+  async function handleAddTaskStatus() {
+    try {
+      await axios.post("/Project/POST/AddTaskStatus", {
+        ProjectId: projectId,
+        ProjectTaskStatusName: "Nuovo Status",
+      });
+      socket.emit("task-news", projectId);
+      setUpdate((prev) => !prev);
+    } catch (error) {
+      console.error("Error adding task status:", error);
+    }
+  }
 
   const changeSelectedTasksStatus = useCallback(
     (newStatusId: number) => {
@@ -643,9 +687,18 @@ export default function TaskContainer({
                 setModalAddData((prev) => ({ ...prev, open: true }))
               }
               startContent={<Icon icon="mynaui:plus-solid" fontSize={22} />}
-              className="hidden sm:flex w-44"
+              className="hidden sm:flex w-52"
             >
               Aggiungi Task
+            </Button>
+            <Button
+              color="primary"
+              radius="full"
+              onPress={() => handleAddTaskStatus()}
+              startContent={<Icon icon="mynaui:plus-solid" fontSize={22} />}
+              className="hidden sm:flex w-56"
+            >
+              Aggiungi Status
             </Button>
             <Button
               color="primary"
@@ -662,7 +715,9 @@ export default function TaskContainer({
       </div>
 
       {activeTab === "Attive" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 justify-between py-5 gap-5 mb-14">
+        <div
+          className={`grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-${columns.length} justify-between py-5 gap-5 mb-14`}
+        >
           {columns.map((column) => {
             const tasksInThisColumn =
               columnTasks[column.ProjectTaskStatusId] || [];
@@ -680,12 +735,84 @@ export default function TaskContainer({
                     : "min-h-[200px]"
                 }`}
               >
-                <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-center items-center">
-                  {column.ProjectTaskStatusName}
-                  <Chip radius="full" color="primary" variant="faded" size="sm">
-                    {tasksInThisColumn.length}
-                  </Chip>
-                </h2>
+                {editingStatus?.ProjectTaskStatusId ===
+                column.ProjectTaskStatusId ? (
+                  <div className="flex flex-row gap-2 w-full p-3 border-b">
+                    <Input
+                      variant="underlined"
+                      color="primary"
+                      placeholder="Nuovo nome"
+                      value={editingStatus.ProjectTaskStatusName}
+                      onChange={(e) =>
+                        setEditingStatus({
+                          ...editingStatus,
+                          ProjectTaskStatusName: e.target.value,
+                        })
+                      }
+                    />
+                    <Button
+                      isIconOnly
+                      color="primary"
+                      radius="full"
+                      startContent={
+                        <Icon icon="basil:save-outline" fontSize={22} />
+                      }
+                      isDisabled={!editingStatus?.ProjectTaskStatusName}
+                      onPress={() => {
+                        setEditingStatus(null);
+                        updateTaskStatusName(
+                          editingStatus.ProjectTaskStatusId,
+                          editingStatus.ProjectTaskStatusName
+                        );
+                      }}
+                    />
+                    <Button
+                      isIconOnly
+                      color="default"
+                      radius="full"
+                      startContent={
+                        <Icon
+                          icon="material-symbols:close-rounded"
+                          className="text-xl"
+                        />
+                      }
+                      onPress={() => setEditingStatus(null)}
+                    />
+                  </div>
+                ) : (
+                  <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-between items-center">
+                    <div className="flex flex-row gap-2 items-center">
+                      {" "}
+                      {column.ProjectTaskStatusName}
+                      <Chip
+                        radius="full"
+                        color="primary"
+                        variant="faded"
+                        size="sm"
+                      >
+                        {tasksInThisColumn.length}
+                      </Chip>
+                    </div>
+
+                    <div className="flex flex-row gap-2 items-center">
+                      <Button
+                        isIconOnly
+                        color="warning"
+                        variant="light"
+                        radius="full"
+                        startContent={
+                          <Icon icon="solar:pen-linear" fontSize={22} />
+                        }
+                        size="sm"
+                        onPress={() => setEditingStatus(column)}
+                      />
+                      <ConfirmDeleteTaskStatusModal
+                        column={column}
+                        DeleteTaskStatus={deleteTaskStatus}
+                      />
+                    </div>
+                  </h2>
+                )}
                 <Droppable
                   droppableId={String(column.ProjectTaskStatusId)}
                   direction="vertical"

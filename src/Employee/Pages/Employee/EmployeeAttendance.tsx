@@ -43,7 +43,11 @@ export default function EmployeeAttendance() {
     type: "success",
   });
 
-  const fetchEmployeeData = async (date: Date, setPrevious = false) => {
+  const fetchEmployeeData = async (
+    date: Date,
+    setPrevious = false,
+    AttendancePermission: boolean
+  ) => {
     const staffers = await axios.get("/Staffer/GET/GetAllStaffers");
     const employeesData: Employee[] = [];
 
@@ -64,10 +68,26 @@ export default function EmployeeAttendance() {
       });
     }
 
-    if (setPrevious) {
-      setPreviousMonthEmployees(employeesData);
+    if (!AttendancePermission) {
+      if (setPrevious) {
+        setPreviousMonthEmployees(
+          employeesData.filter(
+            (employee) => employee.id === loggedStafferId.toString()
+          )
+        );
+      } else {
+        setEmployees(
+          employeesData.filter(
+            (employee) => employee.id === loggedStafferId.toString()
+          )
+        );
+      }
     } else {
-      setEmployees(employeesData);
+      if (setPrevious) {
+        setPreviousMonthEmployees(employeesData);
+      } else {
+        setEmployees(employeesData);
+      }
     }
   };
 
@@ -75,6 +95,8 @@ export default function EmployeeAttendance() {
     async function fetchData() {
       setIsLoading(true);
       const permission = await hasPermission("VIEW_EMPLOYEE");
+      const AttendancePermission = await hasPermission("VIEW_ATTENDANCE");
+
       if (!permission) {
         return (window.location.href = "/");
       }
@@ -83,12 +105,12 @@ export default function EmployeeAttendance() {
       setLoggedStafferId(sessionData.data.StafferId);
 
       // Fetch current month
-      await fetchEmployeeData(selectedDate);
+      await fetchEmployeeData(selectedDate, false, AttendancePermission);
 
       // Fetch previous month
       const previousDate = new Date(selectedDate);
       previousDate.setMonth(previousDate.getMonth() - 1);
-      await fetchEmployeeData(previousDate, true);
+      await fetchEmployeeData(previousDate, true, AttendancePermission);
 
       setIsLoading(false);
     }
@@ -99,6 +121,8 @@ export default function EmployeeAttendance() {
   useEffect(() => {
     async function fetchData() {
       const permission = await hasPermission("VIEW_EMPLOYEE");
+      const AttendancePermission = await hasPermission("VIEW_ATTENDANCE");
+
       if (!permission) {
         return (window.location.href = "/");
       }
@@ -107,12 +131,12 @@ export default function EmployeeAttendance() {
       setLoggedStafferId(sessionData.data.StafferId);
 
       // Fetch current month
-      await fetchEmployeeData(selectedDate);
+      await fetchEmployeeData(selectedDate, false, AttendancePermission);
 
       // Fetch previous month
       const previousDate = new Date(selectedDate);
       previousDate.setMonth(previousDate.getMonth() - 1);
-      await fetchEmployeeData(previousDate, true);
+      await fetchEmployeeData(previousDate, true, AttendancePermission);
     }
 
     fetchData();
