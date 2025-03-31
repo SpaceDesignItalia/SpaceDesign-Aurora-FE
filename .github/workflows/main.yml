@@ -3,7 +3,7 @@ name: Deploy Space Design Aurora FE
 on:
   push:
     branches:
-      - main # Esegui il deploy solo quando fai push sulla branch "main"
+      - syllog-main # Esegui il deploy solo quando fai push sulla branch "main"
 
 jobs:
   build-and-deploy:
