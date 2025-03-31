@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, Input, Checkbox } from "@heroui/react";
 import EmailIcon from "@mui/icons-material/Email";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import LockIcon from "@mui/icons-material/Lock";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import StatusAlert from "../../Components/Layout/StatusAlert";
@@ -48,6 +49,10 @@ export default function Login() {
   const [isVisible, setIsVisible] = useState(false);
   const [loginData, setLoginData] = useState(INITIAL_LOGIN_DATA);
   const [alertData, setAlertData] = useState(INITIAL_ALERT_DATA);
+  const [formErrors, setFormErrors] = useState({
+    email: "",
+    password: "",
+  });
 
   // Alterna la visibilità del campo password
   const toggleVisibility = () => setIsVisible((prev) => !prev);
@@ -62,9 +67,49 @@ export default function Login() {
     setLoginData((prev) => ({ ...prev, password: e.target.value }));
   };
 
+  // Validazione email
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      return "L'email è richiesta";
+    } else if (!emailRegex.test(email)) {
+      return "Inserisci un indirizzo email valido";
+    }
+    return "";
+  };
+
+  // Validazione input durante la digitazione
+  const handleEmailBlur = () => {
+    setFormErrors((prev) => ({
+      ...prev,
+      email: validateEmail(loginData.email),
+    }));
+  };
+
+  const handlePasswordBlur = () => {
+    setFormErrors((prev) => ({
+      ...prev,
+      password: loginData.password ? "" : "La password è richiesta",
+    }));
+  };
+
   // Effettua la richiesta di login e gestisce la risposta
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validazione prima dell'invio
+    const emailError = validateEmail(loginData.email);
+    const passwordError = loginData.password ? "" : "La password è richiesta";
+
+    setFormErrors({
+      email: emailError,
+      password: passwordError,
+    });
+
+    if (emailError || passwordError) {
+      return; // Non procedere se ci sono errori
+    }
+
     setIsLogging(true);
 
     try {
@@ -107,8 +152,13 @@ export default function Login() {
   return (
     <>
       <StatusAlert AlertData={alertData} />
-      <div className="font-sans min-h-screen bg-white relative overflow-hidden">
-        {/* Rimuovo gli elementi decorativi di sfondo */}
+      <div className="font-sans min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 relative overflow-hidden">
+        {/* Elementi decorativi di sfondo */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full filter blur-3xl opacity-50 -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-300/10 rounded-full filter blur-3xl opacity-50 translate-x-1/3 translate-y-1/3"></div>
+        </div>
+
         <div className="min-h-screen flex flex-col items-center justify-center py-6 px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -125,7 +175,7 @@ export default function Login() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white/90 backdrop-blur-xl border-2 border-white/20 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl hover:shadow-3xl transition-all duration-500 mx-auto md:mx-0"
+              className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-[2rem] p-8 md:p-10 max-w-md w-full shadow-xl hover:shadow-2xl transition-all duration-500 mx-auto md:mx-0"
             >
               <form
                 className="space-y-6"
@@ -136,14 +186,13 @@ export default function Login() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="mb-10"
+                  className="mb-8"
                 >
-                  <h3 className="text-3xl font-semibold text-primary">
-                    Accedi
+                  <h3 className="text-3xl font-bold text-primary">
+                    Bentornato
                   </h3>
-                  <p className="text-small text-default-600 mt-4">
-                    Accedi per continuare e scoprire tutte le funzionalità a tua
-                    disposizione. Il tuo viaggio inizia qui.
+                  <p className="text-base text-gray-600 mt-3">
+                    Accedi al tuo account per continuare
                   </p>
                 </motion.div>
 
@@ -151,87 +200,100 @@ export default function Login() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
+                  className="space-y-1"
                 >
                   <label
                     htmlFor="email"
-                    className="text-sm mb-2 block font-medium text-default-700"
+                    className="text-sm font-medium text-gray-700"
                   >
                     Email
                   </label>
-                  <div className="relative flex items-center">
-                    <Input
-                      name="username"
-                      variant="bordered"
-                      placeholder="Inserisci un email"
-                      size="lg"
-                      radius="full"
-                      className="backdrop-blur-sm bg-white/50"
-                      endContent={
-                        <EmailIcon className="text-2xl text-primary pointer-events-none" />
-                      }
-                      isInvalid={
-                        alertData.isOpen && alertData.alertColor === "red"
-                      }
-                      onChange={handleEmailChange}
-                      required
-                      fullWidth
-                    />
-                  </div>
+                  <Input
+                    id="email"
+                    name="username"
+                    variant="bordered"
+                    placeholder="nome@azienda.com"
+                    size="lg"
+                    radius="lg"
+                    className="backdrop-blur-sm bg-white/80 shadow-sm"
+                    startContent={
+                      <EmailIcon className="text-xl text-primary/70 pointer-events-none" />
+                    }
+                    isInvalid={
+                      !!formErrors.email ||
+                      (alertData.isOpen && alertData.alertColor === "red")
+                    }
+                    errorMessage={formErrors.email}
+                    onChange={handleEmailChange}
+                    onBlur={handleEmailBlur}
+                    required
+                    fullWidth
+                  />
                 </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
+                  className="space-y-1"
                 >
                   <label
                     htmlFor="password"
-                    className="text-sm mb-2 block font-medium text-default-700"
+                    className="text-sm font-medium text-gray-700"
                   >
                     Password
                   </label>
-                  <div className="relative flex items-center">
-                    <Input
-                      name="password"
-                      variant="bordered"
-                      type={isVisible ? "text" : "password"}
-                      placeholder="Inserisci la password"
-                      size="lg"
-                      radius="full"
-                      className="backdrop-blur-sm bg-white/50"
-                      endContent={
-                        <button
-                          className="focus:outline-none"
-                          type="button"
-                          onClick={toggleVisibility}
-                        >
-                          {isVisible ? (
-                            <RemoveRedEyeIcon className="text-2xl text-primary pointer-events-none" />
-                          ) : (
-                            <VisibilityOffIcon className="text-2xl text-primary pointer-events-none" />
-                          )}
-                        </button>
-                      }
-                      isInvalid={
-                        alertData.isOpen && alertData.alertColor === "red"
-                      }
-                      onChange={handlePasswordChange}
-                      required
-                      fullWidth
-                    />
-                  </div>
+                  <Input
+                    id="password"
+                    name="password"
+                    variant="bordered"
+                    type={isVisible ? "text" : "password"}
+                    placeholder="••••••••"
+                    size="lg"
+                    radius="lg"
+                    className="backdrop-blur-sm bg-white/80 shadow-sm"
+                    startContent={
+                      <LockIcon className="text-xl text-primary/70 pointer-events-none" />
+                    }
+                    endContent={
+                      <button
+                        className="focus:outline-none p-1 rounded-full hover:bg-gray-100 transition-colors"
+                        type="button"
+                        onClick={toggleVisibility}
+                        aria-label={
+                          isVisible ? "Nascondi password" : "Mostra password"
+                        }
+                      >
+                        {isVisible ? (
+                          <RemoveRedEyeIcon className="text-xl text-primary/70" />
+                        ) : (
+                          <VisibilityOffIcon className="text-xl text-primary/70" />
+                        )}
+                      </button>
+                    }
+                    isInvalid={
+                      !!formErrors.password ||
+                      (alertData.isOpen && alertData.alertColor === "red")
+                    }
+                    errorMessage={formErrors.password}
+                    onChange={handlePasswordChange}
+                    onBlur={handlePasswordBlur}
+                    required
+                    fullWidth
+                  />
                 </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="flex items-center justify-between gap-2"
+                  className="flex items-center justify-between gap-2 pt-2"
                 >
                   <div className="flex items-center">
                     <Checkbox
                       isSelected={loginData.rememberMe}
                       radius="sm"
+                      color="primary"
                       onValueChange={() =>
                         setLoginData((prev) => ({
                           ...prev,
@@ -239,15 +301,15 @@ export default function Login() {
                         }))
                       }
                     >
-                      Ricordami
+                      <span className="text-sm text-gray-700">Ricordami</span>
                     </Checkbox>
                   </div>
                   <div className="text-sm">
                     <Link
                       to="/password-recovery"
-                      className="text-primary hover:underline"
+                      className="text-primary font-medium hover:text-primary-dark transition-colors"
                     >
-                      Hai dimenticato la password?
+                      Password dimenticata?
                     </Link>
                   </div>
                 </motion.div>
@@ -256,16 +318,17 @@ export default function Login() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7 }}
-                  className="mt-10"
+                  className="mt-8"
                 >
                   <Button
                     isLoading={isLogging}
                     type="submit"
                     color="primary"
-                    radius="full"
-                    className="w-full shadow-lg hover:shadow-xl transition-all duration-300 text-base py-6"
+                    radius="lg"
+                    className="w-full shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 text-base font-medium py-6"
+                    disableRipple={isLogging}
                   >
-                    Accedi
+                    {isLogging ? "Accesso in corso..." : "Accedi"}
                   </Button>
                 </motion.div>
               </form>
@@ -276,7 +339,6 @@ export default function Login() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
-              className="lg:h-[500px] md:h-[400px] mt-10 md:mt-0 rounded-[2.5rem] overflow-hidden shadow-2xl"
             >
               <img
                 src="https://readymadeui.com/login-image.webp"
