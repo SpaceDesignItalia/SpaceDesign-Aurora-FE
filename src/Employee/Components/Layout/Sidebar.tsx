@@ -142,7 +142,7 @@ export default function SidebarLayout() {
     // Add projects if user has permission
     const hasProjectPermission = await hasPermission("VIEW_PROJECT");
 
-    if (hasProjectPermission && projects.length > 0) {
+    if (hasProjectPermission) {
       const currentPath = window.location.pathname;
 
       // Aggiunta del pulsante "Tutti i Progetti" senza bordo
