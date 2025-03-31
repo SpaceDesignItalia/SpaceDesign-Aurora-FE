@@ -17,7 +17,6 @@ import {
   Tooltip,
 } from "@heroui/react";
 import { API_URL_IMG } from "../../../../../API/API";
-import { useDateFormatter } from "@react-aria/i18n";
 import dayjs from "dayjs";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -25,7 +24,6 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { Icon } from "@iconify/react";
 import FileCard from "./FileCard";
-import StatusAlert from "../../../Layout/StatusAlert";
 
 interface Tag {
   ProjectTaskTagId: number;
@@ -73,22 +71,6 @@ interface File {
   TaskId: number;
 }
 
-interface AlertData {
-  isOpen: boolean;
-  onClose: () => void;
-  alertTitle: string;
-  alertDescription: string;
-  alertColor: "green" | "red" | "yellow";
-}
-
-const INITIAL_ALERT_DATA: AlertData = {
-  isOpen: false,
-  onClose: () => {},
-  alertTitle: "",
-  alertDescription: "",
-  alertColor: "red",
-};
-
 export default function ViewArchivedTaskModal({
   isOpen,
   isClosed,
@@ -107,8 +89,11 @@ export default function ViewArchivedTaskModal({
   hasValidDescription: (content: string) => boolean;
 }) {
   const [newTask, setNewTask] = useState<Task>();
-  const [alertData, setAlertData] = useState<AlertData>(INITIAL_ALERT_DATA);
   const [files, setFiles] = useState<File[]>([]);
+
+  const formatDate = (isoString: string) => {
+    return dayjs(isoString).format("YYYY-MM-DD");
+  };
 
   const fetchFiles = async () => {
     try {
@@ -125,17 +110,7 @@ export default function ViewArchivedTaskModal({
     fetchFiles();
   }, [TaskData.ProjectTaskId, update]);
 
-  const formatter = useDateFormatter({ dateStyle: "full" });
-  function formatDate(date: any) {
-    if (!date) return "Nessuna scadenza";
-    return dayjs(date).format("DD MMM YYYY");
-  }
-
   function fetchTaskData() {
-    const formatDate = (isoString: string) => {
-      return dayjs(isoString).format("YYYY-MM-DD");
-    };
-
     if (TaskData) {
       setNewTask({
         ...newTask,
@@ -213,7 +188,6 @@ export default function ViewArchivedTaskModal({
 
   return (
     <>
-      <StatusAlert AlertData={alertData} />
       <Modal
         isOpen={isOpen}
         onOpenChange={isClosed}

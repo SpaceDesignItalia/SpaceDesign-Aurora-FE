@@ -53,12 +53,6 @@ interface CalendarYearProps {
   events: CalendarEvent[];
 }
 
-const stripHtml = (html: string) => {
-  const tmp = document.createElement("DIV");
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || "";
-};
-
 const CalendarYear: React.FC<CalendarYearProps> = ({
   currentDate,
   onDateClick,
