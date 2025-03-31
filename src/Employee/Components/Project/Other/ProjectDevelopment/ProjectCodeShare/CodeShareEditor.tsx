@@ -6,7 +6,7 @@ import { toPng } from "html-to-image"; // Importa la libreria per gli screenshot
 import "monaco-editor/min/vs/editor/editor.main.css"; // Importa lo stile di Monaco localmente
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { API_WEBSOCKET_URL } from "../../../../../API/API";
+import { API_WEBSOCKET_URL } from "../../../../../../API/API";
 const socket: Socket = io(API_WEBSOCKET_URL);
 import { Spinner } from "@heroui/react";
 

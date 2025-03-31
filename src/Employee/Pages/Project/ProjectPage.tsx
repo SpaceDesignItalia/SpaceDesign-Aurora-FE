@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 import { API_URL_IMG } from "../../../API/API";
 import { usePermissions } from "../../Components/Layout/PermissionProvider";
 import ChangeProjectTheme from "../../Components/Project/Other/ChangeProjectTheme";
-import CodeShareContainer from "../../Components/Project/Other/ProjectPage/CodeShareContainer";
+import DevelopmentContainer from "../../Components/Project/Other/ProjectPage/DevelopmentContainer";
 import FolderContainer from "../../Components/Project/Other/ProjectPage/FolderContainer";
 import OverviewContainer from "../../Components/Project/Other/ProjectPage/OverviewContainer";
 import TaskContainer from "../../Components/Project/Other/ProjectPage/TaskContainer";
@@ -115,7 +115,7 @@ export default function ProjectPage() {
       icon: <Icon icon="solar:folder-with-files-linear" fontSize={24} />,
     },
     {
-      title: "Code Share",
+      title: "Development",
       icon: <Icon icon="solar:code-linear" fontSize={24} />,
     },
     {
@@ -305,9 +305,9 @@ export default function ProjectPage() {
                 <FolderContainer projectData={projectData} />
               </div>
             )}
-            {activeTab === "Code Share" && (
+            {activeTab === "Development" && (
               <div>
-                <CodeShareContainer projectData={projectData} />
+                <DevelopmentContainer projectData={projectData} />
               </div>
             )}
             {activeTab === "Ticket" && (
