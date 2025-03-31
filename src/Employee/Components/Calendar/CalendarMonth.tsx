@@ -37,12 +37,6 @@ interface CalendarMonthProps {
   events: CalendarEvent[];
 }
 
-const stripHtml = (html: string) => {
-  const tmp = document.createElement("DIV");
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || "";
-};
-
 const CalendarMonth: React.FC<CalendarMonthProps> = ({
   currentDate,
   onDateClick,
@@ -59,15 +53,7 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
   });
   const popoverRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
-  const [scrolledToBottom, setScrolledToBottom] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [scrolledToTop, setScrolledToTop] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const scrollContainerRefs = useRef<{
-    [key: string]: HTMLDivElement | null;
-  }>({});
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -139,106 +125,6 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
     };
   }, [hoveredDay]);
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>, day: Date) => {
-    const target = e.target as HTMLDivElement;
-    const dayKey = day.toISOString();
-
-    // Chiudi il popover quando si scrolla il calendario
-    setHoveredDay(null);
-
-    // Controlla se l'utente ha scrollato fino alla fine
-    const isAtBottom =
-      Math.abs(target.scrollHeight - target.scrollTop - target.clientHeight) <
-      5;
-
-    // Controlla se l'utente è all'inizio
-    const isAtTop = target.scrollTop < 5;
-
-    if (isAtBottom !== scrolledToBottom[dayKey]) {
-      setScrolledToBottom((prev) => ({
-        ...prev,
-        [dayKey]: isAtBottom,
-      }));
-    }
-
-    if (isAtTop !== scrolledToTop[dayKey]) {
-      setScrolledToTop((prev) => ({
-        ...prev,
-        [dayKey]: isAtTop,
-      }));
-    }
-  };
-
-  const scrollToBottom = (dayKey: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    const container = scrollContainerRefs.current[dayKey];
-    if (container) {
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const scrollToTop = (dayKey: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    const container = scrollContainerRefs.current[dayKey];
-    if (container) {
-      container.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const handleMoreEventsClick = (day: Date, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setHoveredDay(day);
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-    const cellRect = (
-      e.currentTarget.closest("[data-cell]") as HTMLElement
-    ).getBoundingClientRect();
-
-    const shouldShowOnRight = cellRect.left < windowWidth / 2;
-    const shouldShowAbove = cellRect.top > windowHeight / 2;
-
-    setPopoverPosition({
-      x: shouldShowOnRight ? cellRect.right : cellRect.left,
-      y: shouldShowAbove ? cellRect.top : cellRect.bottom,
-      isRight: shouldShowOnRight,
-      isAbove: shouldShowAbove,
-    });
-  };
-
-  const handleDayMouseEnter = (day: Date, e: React.MouseEvent) => {
-    const dayEvents = events.filter(
-      (event) =>
-        day >= new Date(event.EventStartDate) &&
-        day <= new Date(event.EventEndDate)
-    );
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-    const cellRect = (
-      e.currentTarget.closest("[data-cell]") as HTMLElement
-    ).getBoundingClientRect();
-
-    const shouldShowOnRight = cellRect.left < windowWidth / 2;
-    const shouldShowAbove = cellRect.top > windowHeight / 2;
-
-    setHoveredDay(day);
-    setPopoverPosition({
-      x: shouldShowOnRight ? cellRect.right : cellRect.left,
-      y: shouldShowAbove ? cellRect.top : cellRect.bottom,
-      isRight: shouldShowOnRight,
-      isAbove: shouldShowAbove,
-    });
-  };
-
   const handleDayClick = (day: Date, e: React.MouseEvent) => {
     e.stopPropagation();
 
@@ -265,13 +151,6 @@ const CalendarMonth: React.FC<CalendarMonthProps> = ({
       isRight: shouldShowOnRight,
       isAbove: shouldShowAbove,
     });
-  };
-
-  const handlePopoverMouseLeave = () => {
-    setPopoverClosing(true);
-    setTimeout(() => {
-      setHoveredDay(null);
-    }, 200);
   };
 
   return (

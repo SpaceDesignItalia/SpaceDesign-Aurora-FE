@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button, Input, Checkbox } from "@heroui/react";
 import EmailIcon from "@mui/icons-material/Email";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";

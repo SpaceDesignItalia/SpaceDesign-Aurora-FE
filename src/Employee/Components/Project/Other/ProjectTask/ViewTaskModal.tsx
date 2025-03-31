@@ -29,7 +29,7 @@ import {
   SelectItem,
 } from "@heroui/react";
 import { API_URL_IMG } from "../../../../../API/API";
-import { I18nProvider, useDateFormatter } from "@react-aria/i18n";
+import { I18nProvider } from "@react-aria/i18n";
 import dayjs from "dayjs";
 import "dayjs/locale/it";
 import calendar from "dayjs/plugin/calendar";
@@ -291,7 +291,6 @@ export default function ViewTaskModal({
   }, [TaskData.ProjectTaskId]);
 
   //Formatter data
-  const formatter = useDateFormatter({ dateStyle: "full" });
   function formatDate(date: DateValue) {
     if (!date) return "Nessuna scadenza";
     try {
@@ -1068,7 +1067,7 @@ export default function ViewTaskModal({
         hideCloseButton
       >
         <ModalContent className="sm:max-w-4xl">
-          {(onClose) => (
+          {() => (
             <>
               <ModalHeader className="flex flex-col gap-1">
                 {editing ? (
