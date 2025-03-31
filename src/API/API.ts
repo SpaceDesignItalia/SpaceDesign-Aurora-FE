@@ -1,4 +1,4 @@
-export const API_URL_IMG = "https://api.spacedesign-italia.it:3000";
-export const API_WEBSOCKET_URL = "https://api.spacedesign-italia.it:3000";
-export const API_URL = "https://api.spacedesign-italia.it:3000/API/v1";
-export const FRONTEND_URL = "https://app.spacedesign-italia.it";
+export const API_URL_IMG = "https://syllog.spacedesign-italia.it:3001";
+export const API_WEBSOCKET_URL = "https://syllog.spacedesign-italia.it:3001";
+export const API_URL = "https://syllog.spacedesign-italia.it:3001/API/v1";
+export const FRONTEND_URL = "https://syllog.spacedesign-italia.it";
