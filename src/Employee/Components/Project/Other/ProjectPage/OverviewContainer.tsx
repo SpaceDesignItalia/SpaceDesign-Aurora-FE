@@ -295,7 +295,9 @@ export default function OverviewContainer({
                     Deadline
                   </dt>
                   <dd className="text-base font-semibold">
-                    {dayjs(projectData.ProjectEndDate).format("DD/MM/YYYY")}
+                    {projectData.ProjectEndDate
+                      ? dayjs(projectData.ProjectEndDate).format("DD/MM/YYYY")
+                      : "Non prefissata"}
                   </dd>
                 </div>
               </div>

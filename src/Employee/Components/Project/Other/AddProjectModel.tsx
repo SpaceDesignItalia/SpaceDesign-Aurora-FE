@@ -337,8 +337,7 @@ export default function AddProjectModel() {
                 htmlFor="project-end-date"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Fine Progetto{" "}
-                <span className="text-red-600 font-semibold">*</span>
+                Fine Progetto
               </label>
               <I18nProvider locale="it-GB">
                 <DatePicker
@@ -346,6 +345,7 @@ export default function AddProjectModel() {
                   radius="full"
                   value={newProjectData.ProjectEndDate}
                   onChange={handleProjectEndDateChange}
+                  isRequired={false}
                 />
               </I18nProvider>
             </div>

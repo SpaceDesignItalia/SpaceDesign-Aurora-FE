@@ -31,6 +31,39 @@ import TaskCard from "../ProjectTask/TaskCard";
 import ConfirmDeleteTaskModal from "../ProjectTask/ConfirmDeleteTaskModal";
 import ConfirmDeleteTaskStatusModal from "../ProjectTask/ConfirmDelteTaskStatusModal";
 
+// Componente per lo stato vuoto
+const EmptyState = ({
+  icon,
+  title,
+  description,
+  buttonText,
+  onButtonClick,
+}: {
+  icon: string;
+  title: string;
+  description: string;
+  buttonText?: string;
+  onButtonClick?: () => void;
+}) => (
+  <div className="flex flex-col items-center justify-center p-10 w-full h-full">
+    <Icon icon={icon} fontSize={50} />
+    <h3 className="mt-2 text-sm font-semibold text-gray-900">{title}</h3>
+    <p className="mt-1 text-sm text-gray-500">{description}</p>
+    {buttonText && onButtonClick && (
+      <div className="mt-6">
+        <Button
+          color="primary"
+          radius="full"
+          startContent={<Icon icon="mynaui:plus-solid" fontSize={24} />}
+          onPress={onButtonClick}
+        >
+          {buttonText}
+        </Button>
+      </div>
+    )}
+  </div>
+);
+
 // Inizializzo il socket una sola volta
 const socket = io(API_WEBSOCKET_URL);
 
@@ -718,169 +751,196 @@ export default function TaskContainer({
         <div
           className={`grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-${columns.length} justify-between py-5 gap-5 mb-14`}
         >
-          {columns.map((column) => {
-            const tasksInThisColumn =
-              columnTasks[column.ProjectTaskStatusId] || [];
-            const renderList = renderListForColumn(
-              tasksInThisColumn,
-              column.ProjectTaskStatusId
-            );
+          {columns.length === 0 ? (
+            <div className="col-span-full">
+              <EmptyState
+                icon="solar:clipboard-check-linear"
+                title="Nessuno stato trovato!"
+                description="Inizia aggiungendo un nuovo stato per organizzare le tue task."
+                buttonText="Aggiungi Stato"
+                onButtonClick={handleAddTaskStatus}
+              />
+            </div>
+          ) : (
+            columns.map((column) => {
+              const tasksInThisColumn =
+                columnTasks[column.ProjectTaskStatusId] || [];
+              const renderList = renderListForColumn(
+                tasksInThisColumn,
+                column.ProjectTaskStatusId
+              );
 
-            return (
-              <div
-                key={column.ProjectTaskStatusId}
-                className={`flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center h-fit transition-height duration-300 ${
-                  tasksInThisColumn.length === 0
-                    ? "min-h-[100px]"
-                    : "min-h-[200px]"
-                }`}
-              >
-                {editingStatus?.ProjectTaskStatusId ===
-                column.ProjectTaskStatusId ? (
-                  <div className="flex flex-row gap-2 w-full p-3 border-b">
-                    <Input
-                      variant="underlined"
-                      color="primary"
-                      placeholder="Nuovo nome"
-                      value={editingStatus.ProjectTaskStatusName}
-                      onChange={(e) =>
-                        setEditingStatus({
-                          ...editingStatus,
-                          ProjectTaskStatusName: e.target.value,
-                        })
-                      }
-                    />
-                    <Button
-                      isIconOnly
-                      color="primary"
-                      radius="full"
-                      startContent={
-                        <Icon icon="basil:save-outline" fontSize={22} />
-                      }
-                      isDisabled={!editingStatus?.ProjectTaskStatusName}
-                      onPress={() => {
-                        setEditingStatus(null);
-                        updateTaskStatusName(
-                          editingStatus.ProjectTaskStatusId,
-                          editingStatus.ProjectTaskStatusName
-                        );
-                      }}
-                    />
-                    <Button
-                      isIconOnly
-                      color="default"
-                      radius="full"
-                      startContent={
-                        <Icon
-                          icon="material-symbols:close-rounded"
-                          className="text-xl"
-                        />
-                      }
-                      onPress={() => setEditingStatus(null)}
-                    />
-                  </div>
-                ) : (
-                  <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-between items-center">
-                    <div className="flex flex-row gap-2 items-center">
-                      {" "}
-                      {column.ProjectTaskStatusName}
-                      <Chip
-                        radius="full"
+              return (
+                <div
+                  key={column.ProjectTaskStatusId}
+                  className={`flex flex-col gap-5 w-full border border-solid border-gray rounded-lg items-center h-fit transition-height duration-300 ${
+                    tasksInThisColumn.length === 0
+                      ? "min-h-[100px]"
+                      : "min-h-[200px]"
+                  }`}
+                >
+                  {editingStatus?.ProjectTaskStatusId ===
+                  column.ProjectTaskStatusId ? (
+                    <div className="flex flex-row gap-2 w-full p-3 border-b">
+                      <Input
+                        variant="underlined"
                         color="primary"
-                        variant="faded"
-                        size="sm"
-                      >
-                        {tasksInThisColumn.length}
-                      </Chip>
-                    </div>
-
-                    <div className="flex flex-row gap-2 items-center">
+                        placeholder="Nuovo nome"
+                        value={editingStatus.ProjectTaskStatusName}
+                        onChange={(e) =>
+                          setEditingStatus({
+                            ...editingStatus,
+                            ProjectTaskStatusName: e.target.value,
+                          })
+                        }
+                      />
                       <Button
                         isIconOnly
-                        color="warning"
-                        variant="light"
+                        color="primary"
                         radius="full"
                         startContent={
-                          <Icon icon="solar:pen-linear" fontSize={22} />
+                          <Icon icon="basil:save-outline" fontSize={22} />
                         }
-                        size="sm"
-                        onPress={() => setEditingStatus(column)}
+                        isDisabled={!editingStatus?.ProjectTaskStatusName}
+                        onPress={() => {
+                          setEditingStatus(null);
+                          updateTaskStatusName(
+                            editingStatus.ProjectTaskStatusId,
+                            editingStatus.ProjectTaskStatusName
+                          );
+                        }}
                       />
-                      <ConfirmDeleteTaskStatusModal
-                        column={column}
-                        DeleteTaskStatus={deleteTaskStatus}
+                      <Button
+                        isIconOnly
+                        color="default"
+                        radius="full"
+                        startContent={
+                          <Icon
+                            icon="material-symbols:close-rounded"
+                            className="text-xl"
+                          />
+                        }
+                        onPress={() => setEditingStatus(null)}
                       />
                     </div>
-                  </h2>
-                )}
-                <Droppable
-                  droppableId={String(column.ProjectTaskStatusId)}
-                  direction="vertical"
-                  type="TASK"
-                >
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className={cn(
-                        "w-full p-2 flex flex-col gap-5 h-auto",
-                        snapshot.isDraggingOver
-                          ? "bg-gray-200 opacity-35 rounded-b-lg border-2 border-dashed border-gray-500"
-                          : "bg-lightgrey"
-                      )}
-                    >
-                      {renderList.map((item, index) => {
-                        if (item.type === "single") {
-                          return (
-                            <Draggable
-                              key={item.task.ProjectTaskId}
-                              draggableId={item.task.ProjectTaskId.toString()}
-                              index={index}
-                            >
-                              {(provided, snapshot) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  id={`task-${item.task.ProjectTaskId}`}
-                                >
-                                  <TaskCard
-                                    task={item.task}
-                                    setUpdate={setUpdate}
-                                    update={update}
-                                    socket={socket}
-                                    projectId={projectId}
-                                    updateTaskStatus={updateTaskStatus}
-                                    columnCount={columns.length}
-                                    isMultiSelect={isMultiSelect}
-                                    handleTaskSelect={handleTaskSelect}
-                                    isSelected={selectedTasks.includes(
-                                      item.task.ProjectTaskId
-                                    )}
-                                    isDragging={snapshot.isDragging}
-                                    isPartOfGroup={false}
-                                  />
-                                </div>
-                              )}
-                            </Draggable>
-                          );
-                        } else {
-                          return (
-                            <GroupDraggable
-                              key={`group-${item.tasks[0].ProjectTaskId}`}
-                              groupTasks={item.tasks}
-                              index={index}
-                            />
-                          );
-                        }
-                      })}
-                      {provided.placeholder}
-                    </div>
+                  ) : (
+                    <h2 className="text-xl font-semibold p-3 border-b w-full flex flex-row gap-2 justify-between items-center">
+                      <div className="flex flex-row gap-2 items-center">
+                        {" "}
+                        {column.ProjectTaskStatusName}
+                        <Chip
+                          radius="full"
+                          color="primary"
+                          variant="faded"
+                          size="sm"
+                        >
+                          {tasksInThisColumn.length}
+                        </Chip>
+                      </div>
+
+                      <div className="flex flex-row gap-2 items-center">
+                        <Button
+                          isIconOnly
+                          color="warning"
+                          variant="light"
+                          radius="full"
+                          startContent={
+                            <Icon icon="solar:pen-linear" fontSize={22} />
+                          }
+                          size="sm"
+                          onPress={() => setEditingStatus(column)}
+                        />
+                        <ConfirmDeleteTaskStatusModal
+                          column={column}
+                          DeleteTaskStatus={deleteTaskStatus}
+                        />
+                      </div>
+                    </h2>
                   )}
-                </Droppable>
-              </div>
-            );
-          })}
+                  <Droppable
+                    droppableId={String(column.ProjectTaskStatusId)}
+                    direction="vertical"
+                    type="TASK"
+                  >
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className={cn(
+                          "w-full p-2 flex flex-col gap-5 h-auto",
+                          snapshot.isDraggingOver
+                            ? "bg-gray-200 opacity-35 rounded-b-lg border-2 border-dashed border-gray-500"
+                            : "bg-lightgrey"
+                        )}
+                      >
+                        {tasksInThisColumn.length === 0 ? (
+                          <EmptyState
+                            icon="solar:clipboard-check-linear"
+                            title="Nessuna task trovata!"
+                            description="Inizia aggiungendo una nuova task in questa colonna."
+                            buttonText="Aggiungi Task"
+                            onButtonClick={() =>
+                              setModalAddData((prev) => ({
+                                ...prev,
+                                open: true,
+                              }))
+                            }
+                          />
+                        ) : (
+                          renderList.map((item, index) => {
+                            if (item.type === "single") {
+                              return (
+                                <Draggable
+                                  key={item.task.ProjectTaskId}
+                                  draggableId={item.task.ProjectTaskId.toString()}
+                                  index={index}
+                                >
+                                  {(provided, snapshot) => (
+                                    <div
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      id={`task-${item.task.ProjectTaskId}`}
+                                    >
+                                      <TaskCard
+                                        task={item.task}
+                                        setUpdate={setUpdate}
+                                        update={update}
+                                        socket={socket}
+                                        projectId={projectId}
+                                        updateTaskStatus={updateTaskStatus}
+                                        columnCount={columns.length}
+                                        isMultiSelect={isMultiSelect}
+                                        handleTaskSelect={handleTaskSelect}
+                                        isSelected={selectedTasks.includes(
+                                          item.task.ProjectTaskId
+                                        )}
+                                        isDragging={snapshot.isDragging}
+                                        isPartOfGroup={false}
+                                      />
+                                    </div>
+                                  )}
+                                </Draggable>
+                              );
+                            } else {
+                              return (
+                                <GroupDraggable
+                                  key={`group-${item.tasks[0].ProjectTaskId}`}
+                                  groupTasks={item.tasks}
+                                  index={index}
+                                />
+                              );
+                            }
+                          })
+                        )}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </div>
+              );
+            })
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 justify-between py-5 gap-5 mb-14">
@@ -901,17 +961,27 @@ export default function TaskContainer({
                 "w-full p-2 grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-5 h-auto bg-lightgrey"
               )}
             >
-              {archivedTasks.map((task) => (
-                <ArchivedTaskCard
-                  key={task.ProjectTaskId}
-                  task={task}
-                  setUpdate={setUpdate}
-                  update={update}
-                  socket={socket}
-                  projectId={projectId}
-                  columnCount={columns.length}
-                />
-              ))}
+              {archivedTasks.length === 0 ? (
+                <div className="col-span-full">
+                  <EmptyState
+                    icon="solar:clipboard-check-linear"
+                    title="Nessuna task archiviata!"
+                    description="Le task archiviate appariranno qui."
+                  />
+                </div>
+              ) : (
+                archivedTasks.map((task) => (
+                  <ArchivedTaskCard
+                    key={task.ProjectTaskId}
+                    task={task}
+                    setUpdate={setUpdate}
+                    update={update}
+                    socket={socket}
+                    projectId={projectId}
+                    columnCount={columns.length}
+                  />
+                ))
+              )}
             </div>
           </div>
         </div>

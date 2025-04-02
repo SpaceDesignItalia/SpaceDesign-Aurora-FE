@@ -172,14 +172,14 @@ export default function EditProjectModel() {
   function handleProjectCreationDateChange(date: any) {
     setNewProjectData({
       ...newProjectData,
-      ProjectCreationDate: date,
+      ProjectCreationDate: date || null,
     });
   }
 
   function handleProjectEndDateChange(date: any) {
     setNewProjectData({
       ...newProjectData,
-      ProjectEndDate: date,
+      ProjectEndDate: date || null,
     });
   }
 
@@ -196,17 +196,38 @@ export default function EditProjectModel() {
   }
 
   function checkAllDataCompiled() {
+    // Se non c'è data di inizio progetto, disabilita il pulsante
+    if (!newProjectData.ProjectCreationDate) {
+      return true;
+    }
+
+    // Confronta date solo se entrambe esistono
+    const isSameCreationDate =
+      newProjectData.ProjectCreationDate &&
+      initialProjectData.ProjectCreationDate
+        ? dayjs(newProjectData.ProjectCreationDate.toString()).isSame(
+            dayjs(initialProjectData.ProjectCreationDate.toString())
+          )
+        : newProjectData.ProjectCreationDate ===
+          initialProjectData.ProjectCreationDate;
+
+    // Gestisce diversi casi per la data di fine progetto
+    const isSameEndDate =
+      // Caso 1: entrambe le date sono null o undefined
+      (!newProjectData.ProjectEndDate && !initialProjectData.ProjectEndDate) ||
+      // Caso 2: entrambe le date esistono, confrontale
+      (newProjectData.ProjectEndDate &&
+        initialProjectData.ProjectEndDate &&
+        dayjs(newProjectData.ProjectEndDate.toString()).isSame(
+          dayjs(initialProjectData.ProjectEndDate.toString())
+        ));
+
     return (
       newProjectData.ProjectName === initialProjectData.ProjectName &&
       newProjectData.ProjectDescription ===
         initialProjectData.ProjectDescription &&
-      dayjs(newProjectData.ProjectCreationDate.toString()).isSame(
-        dayjs(initialProjectData.ProjectCreationDate.toString())
-      ) &&
-      newProjectData.ProjectEndDate &&
-      dayjs(newProjectData.ProjectEndDate.toString()).isSame(
-        dayjs(initialProjectData.ProjectEndDate.toString())
-      ) &&
+      isSameCreationDate &&
+      isSameEndDate &&
       newProjectData.ProjectManagerId === initialProjectData.ProjectManagerId &&
       newProjectData.CompanyId === initialProjectData.CompanyId &&
       newProjectData.StatusId === initialProjectData.StatusId
@@ -240,14 +261,16 @@ export default function EditProjectModel() {
       setIsAddingData(true);
 
       // Formatta la data di inizio progetto
-      const formattedCreationDate = dayjs(
-        newProjectData.ProjectCreationDate.toString()
-      ).format("YYYY-MM-DD");
+      const formattedCreationDate = newProjectData.ProjectCreationDate
+        ? dayjs(newProjectData.ProjectCreationDate.toString()).format(
+            "YYYY-MM-DD"
+          )
+        : null;
 
-      // Formatta la data di fine progetto
-      const formattedEndDate = dayjs(
-        newProjectData.ProjectEndDate.toString()
-      ).format("YYYY-MM-DD");
+      // Formatta la data di fine progetto solo se esiste
+      const formattedEndDate = newProjectData.ProjectEndDate
+        ? dayjs(newProjectData.ProjectEndDate.toString()).format("YYYY-MM-DD")
+        : null;
 
       // Crea una copia dei dati del progetto con la data formattata
       const formattedProjectData = {
@@ -354,7 +377,8 @@ export default function EditProjectModel() {
                 htmlFor="project-end-date"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Inizio Progetto
+                Inizio Progetto{" "}
+                <span className="text-red-600 font-semibold">*</span>
               </label>
               <I18nProvider locale="it-GB">
                 <DatePicker
@@ -362,6 +386,7 @@ export default function EditProjectModel() {
                   radius="full"
                   value={newProjectData.ProjectCreationDate}
                   onChange={handleProjectCreationDateChange}
+                  isRequired={true}
                 />
               </I18nProvider>
             </div>
@@ -370,7 +395,7 @@ export default function EditProjectModel() {
                 htmlFor="project-end-date"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Fine Progetto
+                Fine Progetto (opzionale)
               </label>
               <I18nProvider locale="it-GB">
                 <DatePicker
@@ -378,6 +403,7 @@ export default function EditProjectModel() {
                   radius="full"
                   value={newProjectData.ProjectEndDate}
                   onChange={handleProjectEndDateChange}
+                  isRequired={false}
                 />
               </I18nProvider>
             </div>
@@ -545,6 +571,13 @@ export default function EditProjectModel() {
           </div>
         </div>
         <div className="py-3 text-right">
+          {!newProjectData.ProjectCreationDate && (
+            <div className="text-danger text-sm mb-2 text-right">
+              <Icon icon="mdi:alert-circle" className="inline mr-1" />
+              Attenzione: La data di inizio progetto è obbligatoria per salvare
+              le modifiche
+            </div>
+          )}
           <Button
             color="primary"
             className="text-white"
