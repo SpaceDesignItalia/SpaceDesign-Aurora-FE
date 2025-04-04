@@ -1,4 +1,4 @@
-import TimerRoundedIcon from "@mui/icons-material/TimerRounded";
+import { Icon } from "@iconify/react";
 import { cn, Progress, User } from "@heroui/react";
 import dayjs from "dayjs";
 import { API_URL_IMG } from "../../../../../API/API";
@@ -115,7 +115,11 @@ export default function OverviewContainer({
                   {calculateDeadline()}
                 </span>
               </div>
-              <TimerRoundedIcon className="text-gray-500" />
+              <Icon
+                icon="material-symbols:timer-outline"
+                className="text-gray-500"
+                fontSize={24}
+              />
             </div>
           </div>
         </div>

@@ -7,9 +7,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import FolderRoundedIcon from "@mui/icons-material/FolderRounded";
-import NoteAddRoundedIcon from "@mui/icons-material/NoteAddRounded";
-import PermMediaIcon from "@mui/icons-material/PermMedia";
+import { Icon } from "@iconify/react";
 import axios from "axios";
 import { Folder } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -26,7 +24,6 @@ import {
 import FileCard from "../ProjectFiles/FileCard";
 import FileUploaderModal from "../ProjectFiles/FileUploaderModal";
 import FolderSettingsModal from "../ProjectFiles/FolderSettingsModal";
-import { Icon } from "@iconify/react";
 
 const socket = io(API_WEBSOCKET_URL);
 
@@ -336,7 +333,7 @@ export default function FilesCustomerContainer({
                     >
                       <div className="flex flex-row gap-2 items-center w-3/4">
                         <div className="rounded-full border-2 p-2 bg-white">
-                          <FolderRoundedIcon />
+                          <Icon icon="solar:folder-bold" fontSize={24} />
                         </div>
                         <h3 className="cursor-default truncate w-full">
                           {folder.FolderName}
@@ -418,7 +415,7 @@ export default function FilesCustomerContainer({
             </>
           ) : (
             <div className="text-center">
-              <PermMediaIcon />
+              <Icon icon="solar:file-bold" fontSize={48} />
               <h3 className="mt-2 text-sm font-medium text-gray-900">
                 Nessun documento o cartella presente!
               </h3>
@@ -440,7 +437,7 @@ export default function FilesCustomerContainer({
               })
             }
           >
-            <NoteAddRoundedIcon sx={{ fontSize: 20 }} /> Carica file
+            <Icon icon="solar:file-add-bold" fontSize={20} /> Carica file
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>

@@ -1,8 +1,6 @@
 import { Tabs, Tab, Chip } from "@heroui/react";
 import { API_URL_IMG } from "../../../API/API";
-import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
-import FolderCopyRoundedIcon from "@mui/icons-material/FolderCopyRounded";
-import ConfirmationNumberRoundedIcon from "@mui/icons-material/ConfirmationNumberRounded";
+import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
@@ -52,9 +50,20 @@ export default function ProjectCustomerPage() {
   const [activeTab, setActiveTab] = useState("Panoramica");
 
   const tabs = [
-    { title: "Panoramica", icon: PublicRoundedIcon },
-    { title: "Files", icon: FolderCopyRoundedIcon },
-    { title: "Ticket", icon: ConfirmationNumberRoundedIcon },
+    {
+      title: "Panoramica",
+      icon: (
+        <Icon icon="material-symbols:dashboard-outline-rounded" fontSize={24} />
+      ),
+    },
+    {
+      title: "Files",
+      icon: <Icon icon="solar:folder-with-files-linear" fontSize={24} />,
+    },
+    {
+      title: "Ticket",
+      icon: <Icon icon="solar:ticket-linear" fontSize={24} />,
+    },
   ];
 
   useEffect(() => {
@@ -106,7 +115,7 @@ export default function ProjectCustomerPage() {
                         key={tab.title}
                         title={
                           <div className="flex items-center space-x-2">
-                            <tab.icon />
+                            {tab.icon}
                             <span>{tab.title}</span>
                           </div>
                         }
@@ -129,7 +138,7 @@ export default function ProjectCustomerPage() {
                           key={tab.title}
                           title={
                             <div className="flex items-center space-x-2">
-                              <tab.icon />
+                              {tab.icon}
                             </div>
                           }
                         />
