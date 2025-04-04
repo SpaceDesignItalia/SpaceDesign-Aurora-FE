@@ -164,10 +164,10 @@ export default function TaskContainer({
 
   // ----- Gestione URL e permessi -----
   useEffect(() => {
-    if (Action === "add-task") {
+    if (Action === "add-task" && columns.length > 0) {
       setModalAddData((prev) => ({ ...prev, open: true }));
     }
-  }, [Action]);
+  }, [Action, columns.length]);
 
   useEffect(() => {
     async function fetchPermission() {
@@ -636,7 +636,7 @@ export default function TaskContainer({
   return (
     <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <AddTaskModal
-        isOpen={modalAddData.open}
+        isOpen={modalAddData.open && columns.length > 0}
         isClosed={() => setModalAddData((prev) => ({ ...prev, open: false }))}
         fetchData={fetchData}
         ProjectId={projectId}
@@ -721,6 +721,7 @@ export default function TaskContainer({
               }
               startContent={<Icon icon="mynaui:plus-solid" fontSize={22} />}
               className="hidden sm:flex w-52"
+              isDisabled={columns.length === 0}
             >
               Aggiungi Task
             </Button>
@@ -742,6 +743,7 @@ export default function TaskContainer({
               startContent={<Icon icon="mynaui:plus-solid" fontSize={22} />}
               isIconOnly
               className="sm:hidden"
+              isDisabled={columns.length === 0}
             />
           </div>
         )}

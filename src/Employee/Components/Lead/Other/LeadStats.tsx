@@ -66,7 +66,7 @@ export default function LeadStats() {
                   {item.title}
                 </dt>
                 <dd className="text-3xl font-semibold text-gray-900">
-                  {item.value || "Dati non disponibili"}
+                  {item.value || "0"}
                 </dd>
               </div>
             </div>
