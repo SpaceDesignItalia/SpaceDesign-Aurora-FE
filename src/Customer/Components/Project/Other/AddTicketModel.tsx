@@ -55,6 +55,7 @@ export default function AddTicketModal() {
   const [alertData, setAlertData] = useState<AlertData>(ALERTDATA);
 
   useEffect(() => {
+    console.log(ProjectId);
     axios.get("/Ticket/GET/GetAllTicketTypes").then((res) => {
       setTicketType(res.data);
     });

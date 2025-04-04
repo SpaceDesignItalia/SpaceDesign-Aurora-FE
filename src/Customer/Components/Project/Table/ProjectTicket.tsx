@@ -31,6 +31,17 @@ interface Ticket {
   TicketStatusName: string;
 }
 
+interface ProjectData {
+  ProjectId: number;
+  ProjectName: string;
+  CompanyId: number;
+  UniqeCode: string;
+}
+
+interface ProjectTicketProps {
+  projectData: ProjectData;
+}
+
 const columns = [
   { name: "Codice Richiesta", uid: "ProjectTicketId" },
   { name: "Tipo di richiesta", uid: "TicketRequestName" },
@@ -38,8 +49,7 @@ const columns = [
   { name: "Azioni", uid: "actions" },
 ];
 
-export default function ProjectTicket() {
-  const { CompanyName, ProjectId, ProjectName } = useParams();
+export default function ProjectTicket({ projectData }: ProjectTicketProps) {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
@@ -48,18 +58,21 @@ export default function ProjectTicket() {
   });
 
   useEffect(() => {
-    fetchData();
-  }, [ProjectId]);
+    if (projectData.ProjectId) {
+      fetchTickets();
+    }
+  }, [projectData.ProjectId]);
 
-  function fetchData() {
+  function fetchTickets() {
     axios
       .get("/Ticket/GET/GetProjectOpenTicket", {
-        params: { ProjectId: ProjectId },
+        params: { ProjectId: projectData.ProjectId },
       })
       .then((res) => {
         setTickets(res.data);
       });
   }
+
   const [page, setPage] = useState(1);
 
   const pages = Math.ceil(tickets.length / rowsPerPage);
@@ -82,7 +95,16 @@ export default function ProjectTicket() {
               <Button
                 as={Link}
                 size="sm"
-                href="./customer/add-company"
+                href={
+                  "/projects/" +
+                  projectData.CompanyId +
+                  "/" +
+                  ticket.ProjectId +
+                  "/" +
+                  projectData.ProjectName +
+                  "/ticket/" +
+                  ticket.ProjectTicketId
+                }
                 color="primary"
                 radius="sm"
                 isIconOnly
@@ -95,7 +117,7 @@ export default function ProjectTicket() {
           return cellValue;
       }
     },
-    []
+    [projectData]
   );
 
   const onRowsPerPageChange = React.useCallback(
@@ -116,11 +138,11 @@ export default function ProjectTicket() {
                 as={Link}
                 href={
                   "/projects/" +
-                  CompanyName +
+                  projectData.CompanyId +
                   "/" +
-                  ProjectId +
+                  projectData.ProjectId +
                   "/" +
-                  ProjectName +
+                  projectData.ProjectName +
                   "/open-new-ticket"
                 }
                 color="primary"
@@ -132,7 +154,15 @@ export default function ProjectTicket() {
               </Button>
               <Button
                 as={Link}
-                href="./customer/add-company"
+                href={
+                  "/projects/" +
+                  projectData.CompanyId +
+                  "/" +
+                  projectData.ProjectId +
+                  "/" +
+                  projectData.ProjectName +
+                  "/open-new-ticket"
+                }
                 color="primary"
                 radius="sm"
                 isIconOnly
@@ -145,7 +175,7 @@ export default function ProjectTicket() {
         </div>
       </div>
     );
-  }, [onRowsPerPageChange, tickets.length]);
+  }, [onRowsPerPageChange, tickets.length, projectData]);
 
   const bottomContent = React.useMemo(() => {
     return (
