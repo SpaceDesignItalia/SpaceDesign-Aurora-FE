@@ -15,8 +15,6 @@ import {
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import axios from "axios";
-import { useParams } from "react-router-dom";
-
 interface Ticket {
   ProjectTicketId: number;
   ProjectTicketTitle: string;

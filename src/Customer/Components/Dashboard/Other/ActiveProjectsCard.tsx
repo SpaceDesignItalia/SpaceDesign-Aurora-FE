@@ -31,11 +31,7 @@ type BadgeColorType =
   | "danger"
   | undefined;
 
-export default function ActiveProjectsCard({
-  customerId,
-}: {
-  customerId: string;
-}) {
+export default function ActiveProjectsCard({}: { customerId: string }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [statusList, setStatusList] = useState<Status[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

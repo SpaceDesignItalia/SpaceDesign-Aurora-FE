@@ -26,18 +26,23 @@ export default function OverviewContainer({
 }: {
   projectData: Project;
 }) {
-  const daysUntilDeadline =
-    dayjs(projectData.ProjectEndDate).diff(dayjs(), "day") + 1;
-  const totalDays =
-    dayjs(projectData.ProjectEndDate).diff(
-      dayjs(projectData.ProjectCreationDate),
-      "day"
-    ) + 1;
-  const progressPercent = Math.floor(
-    ((totalDays - daysUntilDeadline) / totalDays) * 100
-  );
+  const daysUntilDeadline = projectData.ProjectEndDate
+    ? dayjs(projectData.ProjectEndDate).diff(dayjs(), "day") + 1
+    : null;
+  const totalDays = projectData.ProjectEndDate
+    ? dayjs(projectData.ProjectEndDate).diff(
+        dayjs(projectData.ProjectCreationDate),
+        "day"
+      ) + 1
+    : null;
+  const progressPercent = totalDays
+    ? Math.floor(((totalDays - (daysUntilDeadline || 0)) / totalDays) * 100)
+    : null;
 
   function calculateDeadline() {
+    if (!daysUntilDeadline) {
+      return <p className="text-gray-500">Nessuna scadenza</p>;
+    }
     if (daysUntilDeadline < 0) {
       return <p className="text-red-500">Scaduto</p>;
     }
@@ -64,7 +69,9 @@ export default function OverviewContainer({
               <div>
                 <h1 className="text-sm font-medium">Deadline</h1>
                 <p className="text-gray-600">
-                  {dayjs(projectData.ProjectEndDate).format("DD/MM/YYYY")}
+                  {projectData.ProjectEndDate
+                    ? dayjs(projectData.ProjectEndDate).format("DD/MM/YYYY")
+                    : "Nessuna scadenza"}
                 </p>
               </div>
             </div>
@@ -86,19 +93,21 @@ export default function OverviewContainer({
         </div>
 
         <div className="flex flex-col gap-5 col-span-6  md:col-span-2">
-          <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
-            <div className="flex justify-between items-center">
-              <h1 className="text-xl font-semibold mb-4">Completato</h1>
-              <span className="font-semibold">
-                {progressPercent >= 100 ? 100 : progressPercent}%
-              </span>
+          {progressPercent !== null && (
+            <div className="border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
+              <div className="flex justify-between items-center">
+                <h1 className="text-xl font-semibold mb-4">Completamento</h1>
+                <span className="font-semibold">
+                  {`${progressPercent >= 100 ? 100 : progressPercent}%`}
+                </span>
+              </div>
+              <Progress
+                value={progressPercent >= 100 ? 100 : progressPercent}
+                color="primary"
+                size="sm"
+              />
             </div>
-            <Progress
-              value={progressPercent >= 100 ? 100 : progressPercent}
-              color="primary"
-              size="sm"
-            />
-          </div>
+          )}
           <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
             <div className="flex flex-row items-center justify-between border border-gray-200 rounded-xl bg-white px-4 py-5 sm:px-6">
               <div className="flex flex-col items-start">
@@ -106,10 +115,13 @@ export default function OverviewContainer({
                 <span
                   className={cn(
                     "font-medium text-gray-500",
-                    progressPercent >= 70 &&
+                    progressPercent !== null &&
+                      progressPercent >= 70 &&
                       progressPercent < 85 &&
                       "text-orange-500",
-                    progressPercent >= 85 && "text-red-500"
+                    progressPercent !== null &&
+                      progressPercent >= 85 &&
+                      "text-red-500"
                   )}
                 >
                   {calculateDeadline()}

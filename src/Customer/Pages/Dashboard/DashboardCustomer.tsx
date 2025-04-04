@@ -4,7 +4,7 @@ import UpcomingEventsCard from "../../Components/Dashboard/Other/UpcomingEventsC
 import ActiveTicketsCard from "../../Components/Dashboard/Other/ActiveTicketsCard";
 import ActiveProjectsCard from "../../Components/Dashboard/Other/ActiveProjectsCard";
 import { Icon } from "@iconify/react";
-import { Button, Card, Badge } from "@heroui/react";
+import { Card } from "@heroui/react";
 
 interface Customer {
   CustomerName: string;
@@ -17,13 +17,6 @@ const CUSTOMER_DEFAULT: Customer = {
   CustomerSurname: "",
   CustomerId: "",
 };
-
-interface CustomerStats {
-  Leads: number;
-  Projects: number;
-  Tickets: number;
-  ActiveTickets?: TicketData[];
-}
 
 interface TicketData {
   ProjectTicketId: string;

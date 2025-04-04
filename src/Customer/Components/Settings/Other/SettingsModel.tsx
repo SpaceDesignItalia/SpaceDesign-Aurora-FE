@@ -261,7 +261,7 @@ export default function SettingsModel() {
     <>
       <StatusAlert AlertData={alertData} />
       <div className="border border-gray-200 sm:overflow-hidden rounded-xl">
-        <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8 border-b-2 border-gray-200">
+        <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
           <div>
             <h2 className="text-base font-medium leading-7">
               Informazioni personali
@@ -395,6 +395,8 @@ export default function SettingsModel() {
             </div>
           </form>
         </div>
+
+        <hr className="border-t-2 border-gray-200 w-full mx-auto my-0" />
 
         <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
           <div>
