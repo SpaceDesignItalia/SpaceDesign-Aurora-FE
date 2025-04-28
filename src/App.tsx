@@ -33,6 +33,7 @@ import Error404 from "./Employee/Pages/Errors/Error404";
 import ProjectCustomerDashboard from "./Customer/Pages/Project/ProjectCustomerDashboard";
 import ProjectCustomerPage from "./Customer/Pages/Project/ProjectCustomerPage";
 import AddTicketPage from "./Customer/Pages/Project/AddTicketPage";
+import TicketDetailPage from "./Customer/Pages/Project/TicketDetailPage";
 import SettingsDashboard from "./Employee/Pages/Settings/SettingsDashboard";
 import SettingsCustomerDashboard from "./Customer/Pages/Settings/SettingsCustomerDashboard";
 
@@ -174,6 +175,18 @@ const CustomerProtectedRoutes: React.FC = () => {
         <Route
           element={<AddTicketPage />}
           path="/projects/:CompanyName/:ProjectId/:ProjectName/open-new-ticket"
+        />
+        <Route
+          element={<AddTicketPage />}
+          path="/projects/:UniqueCode/open-new-ticket"
+        />
+        <Route
+          element={<TicketDetailPage />}
+          path="/projects/:CompanyId/:ProjectId/:ProjectName/ticket/:TicketId"
+        />
+        <Route
+          element={<TicketDetailPage />}
+          path="/projects/:UniqueCode/ticket/:TicketId"
         />
       </Route>
     </Routes>

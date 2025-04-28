@@ -33,7 +33,7 @@ interface ProjectData {
   ProjectId: number;
   ProjectName: string;
   CompanyId: number;
-  UniqeCode: string;
+  UniqueCode: string;
 }
 
 interface ProjectTicketProps {
@@ -54,21 +54,76 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
     column: "age",
     direction: "ascending",
   });
+  const [userData, setUserData] = useState<{ CustomerId?: number }>({});
 
   useEffect(() => {
-    if (projectData.ProjectId) {
-      fetchTickets();
-    }
+    // Prima recuperiamo i dati dell'utente per ottenere il CustomerId
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get("/Authentication/GET/GetSessionData", {
+          withCredentials: true,
+        });
+
+        if (response.data && response.data.CustomerId) {
+          setUserData(response.data);
+
+          // Ora che abbiamo i dati utente, recuperiamo i ticket
+          if (projectData.ProjectId) {
+            console.log("ProjectId:", projectData);
+            fetchTickets(response.data.CustomerId);
+          }
+        }
+      } catch (error) {
+        console.error("Errore durante il recupero dei dati utente:", error);
+      }
+    };
+
+    fetchUserData();
   }, [projectData.ProjectId]);
 
-  function fetchTickets() {
-    axios
-      .get("/Ticket/GET/GetProjectOpenTicket", {
-        params: { ProjectId: projectData.ProjectId },
-      })
-      .then((res) => {
-        setTickets(res.data);
-      });
+  async function fetchTickets(customerId: number) {
+    try {
+      // Prima otteniamo tutti i ticket dell'utente
+      const userTicketsResponse = await axios.get(
+        "/Project/GET/GetTicketFromCustomer",
+        {
+          withCredentials: true,
+          params: {
+            CustomerId: customerId,
+          },
+        }
+      );
+
+      // Poi otteniamo i ticket del progetto
+      const projectTicketsResponse = await axios.get(
+        "/Ticket/GET/GetProjectOpenTicket",
+        {
+          params: { ProjectId: projectData.ProjectId },
+        }
+      );
+
+      if (
+        Array.isArray(userTicketsResponse.data) &&
+        Array.isArray(projectTicketsResponse.data)
+      ) {
+        // Creiamo un insieme di ID dei ticket dell'utente per una ricerca efficiente
+        const userTicketIds = new Set(
+          userTicketsResponse.data.map((ticket: any) =>
+            ticket.ProjectTicketId.toString()
+          )
+        );
+
+        // Filtriamo i ticket del progetto per mostrare solo quelli che appartengono all'utente
+        const filteredTickets = projectTicketsResponse.data.filter(
+          (ticket: Ticket) =>
+            userTicketIds.has(ticket.ProjectTicketId.toString())
+        );
+
+        setTickets(filteredTickets);
+      }
+    } catch (error) {
+      console.error("Errore durante il recupero dei ticket:", error);
+    }
   }
 
   const [page, setPage] = useState(1);
@@ -93,16 +148,7 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
               <Button
                 as={Link}
                 size="sm"
-                href={
-                  "/projects/" +
-                  projectData.CompanyId +
-                  "/" +
-                  ticket.ProjectId +
-                  "/" +
-                  projectData.ProjectName +
-                  "/ticket/" +
-                  ticket.ProjectTicketId
-                }
+                href={`http://localhost:5173/projects/${projectData.UniqueCode}/ticket/${ticket.ProjectTicketId}`}
                 color="primary"
                 radius="sm"
                 isIconOnly
@@ -135,13 +181,9 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
               <Button
                 as={Link}
                 href={
-                  "/projects/" +
-                  projectData.CompanyId +
-                  "/" +
-                  projectData.ProjectId +
-                  "/" +
-                  projectData.ProjectName +
-                  "/open-new-ticket"
+                  projectData.UniqueCode
+                    ? `http://localhost:5173/projects/${projectData.UniqueCode}/open-new-ticket`
+                    : `http://localhost:5173/projects/${projectData.CompanyId}/${projectData.ProjectId}/${projectData.ProjectName}/open-new-ticket`
                 }
                 color="primary"
                 radius="sm"
@@ -153,13 +195,9 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
               <Button
                 as={Link}
                 href={
-                  "/projects/" +
-                  projectData.CompanyId +
-                  "/" +
-                  projectData.ProjectId +
-                  "/" +
-                  projectData.ProjectName +
-                  "/open-new-ticket"
+                  projectData.UniqueCode
+                    ? `http://localhost:5173/projects/${projectData.UniqueCode}/open-new-ticket`
+                    : `http://localhost:5173/projects/${projectData.CompanyId}/${projectData.ProjectId}/${projectData.ProjectName}/open-new-ticket`
                 }
                 color="primary"
                 radius="sm"
@@ -215,7 +253,7 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Nessun azienda trovata!"} items={items}>
+        <TableBody emptyContent={"Nessun ticket trovato!"} items={items}>
           {(item) => (
             <TableRow key={item.ProjectTicketId}>
               {(columnKey) => (

@@ -59,7 +59,12 @@ export default function TableCard({ project }: { project: Project }) {
   }
 
   // Calcola la percentuale di completamento del progetto
-  function calculateProgress(startDate: string, endDate: string): number {
+  function calculateProgress(
+    startDate: string,
+    endDate: string | null
+  ): number {
+    if (!endDate) return 0;
+
     const start = dayjs(startDate);
     const end = dayjs(endDate);
     const today = dayjs();
@@ -75,7 +80,7 @@ export default function TableCard({ project }: { project: Project }) {
 
   const progressPercent = calculateProgress(
     project.ProjectCreationDate,
-    project.ProjectEndDate
+    project.ProjectEndDate || null
   );
 
   return (
@@ -100,7 +105,9 @@ export default function TableCard({ project }: { project: Project }) {
                   {dayjs(project.ProjectCreationDate).format("DD/MM/YYYY")}
                 </dt>
                 <dd className="text-gray-700">
-                  {dayjs(project.ProjectEndDate).format("DD/MM/YYYY")}
+                  {project.ProjectEndDate
+                    ? dayjs(project.ProjectEndDate).format("DD/MM/YYYY")
+                    : "Nessuna scadenza"}
                 </dd>
               </div>
               <Progress

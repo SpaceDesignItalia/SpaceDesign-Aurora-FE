@@ -33,9 +33,21 @@ interface TicketData {
   ProjectName?: string;
 }
 
+interface Project {
+  ProjectId: number;
+  CompanyName: string;
+  ProjectName: string;
+  ProjectDescription: string;
+  ProjectCreationDate: string;
+  ProjectEndDate: string | null;
+  StatusId: number;
+  UniqueCode: string;
+}
+
 export default function DashboardCustomer() {
   const [userData, setUserData] = useState<Customer>(CUSTOMER_DEFAULT);
   const [activeTickets, setActiveTickets] = useState<TicketData[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -49,6 +61,7 @@ export default function DashboardCustomer() {
 
         // Fetch customer stats once we have user data
         if (response.data.CustomerName && response.data.CustomerSurname) {
+          // Ottieni i ticket
           const statsResponse = await axios.get(
             "/Project/GET/GetTicketFromCustomer",
             {
@@ -58,6 +71,13 @@ export default function DashboardCustomer() {
               },
             }
           );
+
+          // Ottieni i progetti
+          const projectsResponse = await axios.get(
+            "/Project/GET/GetProjectsByCustomerId",
+            { withCredentials: true }
+          );
+          setProjects(projectsResponse.data);
 
           // Ottieni i ticket dalla risposta
           const tickets = statsResponse.data;
@@ -111,6 +131,17 @@ export default function DashboardCustomer() {
     fetchUserData();
   }, []);
 
+  // Filtra progetti attivi e non scaduti
+  const activeProjects = projects.filter((project) => {
+    const isActiveStatus = [1, 2, 3, 7].includes(Number(project.StatusId));
+    const today = new Date();
+    const isNotExpired =
+      project.ProjectEndDate === null ||
+      new Date(project.ProjectEndDate) > today;
+
+    return isActiveStatus && isNotExpired;
+  });
+
   return (
     <div className="bg-gray-50 min-h-screen pb-16">
       {isLoading ? (
@@ -139,7 +170,7 @@ export default function DashboardCustomer() {
           {/* Contenuto principale */}
           <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
               <Card className="p-6 rounded-xl border-none shadow-sm hover:shadow-lg transition-all duration-300 hover:translate-y-[-3px] bg-white overflow-hidden">
                 <div className="flex justify-between items-center">
                   <div>
@@ -150,10 +181,10 @@ export default function DashboardCustomer() {
                       {activeTickets.length}
                     </h3>
                   </div>
-                  <div className="p-3 rounded-full bg-primary/10 border border-primary/20">
+                  <div className="p-3 rounded-full bg-violet-100 border border-violet-200">
                     <Icon
-                      icon="solar:ticket-linear"
-                      className="text-primary text-2xl"
+                      icon="fluent:ticket-24-filled"
+                      className="text-violet-600 text-2xl"
                     />
                   </div>
                 </div>
@@ -174,10 +205,10 @@ export default function DashboardCustomer() {
                       }
                     </h3>
                   </div>
-                  <div className="p-3 rounded-full bg-success/10 border border-success/20">
+                  <div className="p-3 rounded-full bg-blue-100 border border-blue-200">
                     <Icon
-                      icon="solar:ticket-check-bold"
-                      className="text-success text-2xl"
+                      icon="fluent:ticket-diagonal-16-filled"
+                      className="text-blue-600 text-2xl"
                     />
                   </div>
                 </div>
@@ -187,48 +218,16 @@ export default function DashboardCustomer() {
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-gray-500 text-sm font-medium mb-1">
-                      In Attesa
+                      Progetti Totali
                     </p>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      {
-                        activeTickets.filter(
-                          (t) =>
-                            t.TicketStatusId === "3" ||
-                            t.TicketStatusId === "8" ||
-                            t.TicketStatusId === "9"
-                        ).length
-                      }
+                      {projects.length}
                     </h3>
                   </div>
-                  <div className="p-3 rounded-full bg-warning/10 border border-warning/20">
+                  <div className="p-3 rounded-full bg-emerald-100 border border-emerald-200">
                     <Icon
-                      icon="solar:clock-circle-linear"
-                      className="text-warning text-2xl"
-                    />
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6 rounded-xl border-none shadow-sm hover:shadow-lg transition-all duration-300 hover:translate-y-[-3px] bg-white overflow-hidden">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-gray-500 text-sm font-medium mb-1">
-                      Ultimi 30 giorni
-                    </p>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      {
-                        activeTickets.filter(
-                          (t) =>
-                            new Date(t.ProjectTicketCreationDate) >
-                            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-                        ).length
-                      }
-                    </h3>
-                  </div>
-                  <div className="p-3 rounded-full bg-secondary/10 border border-secondary/20">
-                    <Icon
-                      icon="solar:calendar-linear"
-                      className="text-secondary text-2xl"
+                      icon="fluent:folder-24-filled"
+                      className="text-emerald-600 text-2xl"
                     />
                   </div>
                 </div>
@@ -240,10 +239,10 @@ export default function DashboardCustomer() {
               {/* Colonna sinistra - Ticket Attivi */}
               <div className="lg:col-span-2 space-y-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                  <div className="bg-primary/10 p-1.5 rounded-full">
+                  <div className="bg-violet-100 p-1.5 rounded-full">
                     <Icon
-                      icon="solar:ticket-linear"
-                      className="text-primary text-xl"
+                      icon="fluent:ticket-24-filled"
+                      className="text-violet-600 text-xl"
                     />
                   </div>
                   I tuoi ticket
@@ -256,10 +255,10 @@ export default function DashboardCustomer() {
               {/* Colonna destra - Eventi e Progetti */}
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                  <div className="bg-primary/10 p-1.5 rounded-full">
+                  <div className="bg-blue-100 p-1.5 rounded-full">
                     <Icon
-                      icon="solar:calendar-linear"
-                      className="text-primary text-xl"
+                      icon="fluent:calendar-month-24-filled"
+                      className="text-blue-600 text-xl"
                     />
                   </div>
                   Eventi in arrivo
@@ -269,10 +268,10 @@ export default function DashboardCustomer() {
                 </div>
 
                 <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2 mt-6">
-                  <div className="bg-primary/10 p-1.5 rounded-full">
+                  <div className="bg-emerald-100 p-1.5 rounded-full">
                     <Icon
-                      icon="solar:folder-linear"
-                      className="text-primary text-xl"
+                      icon="fluent:folder-24-filled"
+                      className="text-emerald-600 text-xl"
                     />
                   </div>
                   Progetti attivi

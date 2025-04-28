@@ -117,13 +117,6 @@ export default function ActiveProjectsCard({}: { customerId: string }) {
 
   return (
     <div className="border border-gray-200 rounded-xl p-3 bg-white shadow-sm">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-md font-medium text-gray-800 flex items-center gap-2">
-          <Icon icon="solar:folder-linear" className="text-primary" />
-          Progetti Attivi
-        </h2>
-      </div>
-
       <div className="space-y-2">
         {loading ? (
           <div className="py-2 flex items-center justify-center">
@@ -165,7 +158,10 @@ export default function ActiveProjectsCard({}: { customerId: string }) {
           </div>
         ) : (
           <div className="py-3 flex items-center justify-center text-gray-500 text-sm">
-            <Icon icon="solar:folder-linear" className="mr-2 text-gray-400" />
+            <Icon
+              icon="fluent:folder-24-filled"
+              className="mr-2 text-emerald-600"
+            />
             Nessun progetto attivo
           </div>
         )}

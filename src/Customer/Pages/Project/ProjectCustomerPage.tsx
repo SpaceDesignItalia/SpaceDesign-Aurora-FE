@@ -23,7 +23,7 @@ interface Project {
   ProjectManagerFullName: string;
   ProjectManagerEmail: string;
   RoleName: string;
-  UniqeCode: string;
+  UniqueCode: string;
 }
 
 export default function ProjectCustomerPage() {
@@ -45,7 +45,7 @@ export default function ProjectCustomerPage() {
     ProjectManagerFullName: "",
     ProjectManagerEmail: "",
     RoleName: "",
-    UniqeCode: "",
+    UniqueCode: "",
   });
   const [activeTab, setActiveTab] = useState("Panoramica");
 
@@ -72,7 +72,7 @@ export default function ProjectCustomerPage() {
         params: { UniqueCode },
       })
       .then((res) => {
-        setProjectData(res.data);
+        setProjectData({ ...res.data, UniqueCode });
       });
   }, [UniqueCode]);
 

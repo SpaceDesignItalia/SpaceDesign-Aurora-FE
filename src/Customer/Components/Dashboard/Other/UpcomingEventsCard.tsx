@@ -53,9 +53,6 @@ export default function UpcomingEventsCard() {
 
   return (
     <div className="border-2 h-full rounded-xl p-4 md:p-5 bg-white">
-      <h1 className="text-lg md:text-xl font-medium mb-4 text-gray-800">
-        Eventi in programma
-      </h1>
       <div className="space-y-4">
         {sortedEvents.length > 0 ? (
           sortedEvents.map((event) => (
@@ -132,8 +129,11 @@ export default function UpcomingEventsCard() {
           ))
         ) : (
           <div className="flex flex-col items-center justify-center text-gray-500">
-            <Icon icon="solar:calendar-linear" className="text-4xl mb-2" />
-            <p>Nessun evento in programma.</p>
+            <Icon
+              icon="fluent:calendar-month-24-filled"
+              className="text-blue-600 text-4xl mb-2"
+            />
+            <p>Nessun evento in arrivo</p>
           </div>
         )}
       </div>

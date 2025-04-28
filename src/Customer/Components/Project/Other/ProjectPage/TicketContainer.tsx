@@ -4,7 +4,7 @@ interface Project {
   ProjectId: number;
   ProjectName: string;
   CompanyId: number;
-  UniqeCode: string;
+  UniqueCode: string;
 }
 
 interface TicketContainerProps {

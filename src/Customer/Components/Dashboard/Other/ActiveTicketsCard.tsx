@@ -15,6 +15,7 @@ interface TicketProps {
   ProjectTicketCompletedDate?: string | null;
   CompanyId?: string;
   ProjectName?: string;
+  UniqueCode?: string;
 }
 
 export default function ActiveTicketsCard({
@@ -154,15 +155,6 @@ export default function ActiveTicketsCard({
 
   return (
     <div className="border border-gray-200 h-full rounded-xl p-6 bg-white shadow-md hover:shadow-lg transition-shadow duration-300">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl md:text-2xl font-semibold text-gray-800">
-          Ticket Attivi
-        </h1>
-        <div className="bg-primary/10 p-2 rounded-full">
-          <Icon icon="solar:ticket-linear" className="text-primary text-xl" />
-        </div>
-      </div>
-
       <div className="space-y-5">
         {tickets.length > 0 ? (
           tickets.map((ticket) => (
@@ -235,18 +227,9 @@ export default function ActiveTicketsCard({
                 className="px-6 py-2 font-medium shadow-sm hover:shadow transition-all duration-300 min-w-[140px] self-end sm:self-center mt-2 sm:mt-0"
                 endContent={<Icon icon="solar:arrow-right-linear" />}
                 href={
-                  "/projects/" +
-                  (ticket.CompanyId ||
-                    (projectData && projectData.CompanyId) ||
-                    "") +
-                  "/" +
-                  ticket.ProjectId +
-                  "/" +
-                  (ticket.ProjectName ||
-                    (projectData && projectData.ProjectName) ||
-                    "") +
-                  "/ticket/" +
-                  ticket.ProjectTicketId
+                  ticket.UniqueCode
+                    ? `/projects/${ticket.UniqueCode}/ticket/${ticket.ProjectTicketId}`
+                    : "#"
                 }
                 as="a"
               >
