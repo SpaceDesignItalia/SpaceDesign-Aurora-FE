@@ -15,6 +15,8 @@ import {
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import axios from "axios";
+import { useParams } from "react-router-dom";
+
 interface Ticket {
   ProjectTicketId: number;
   ProjectTicketTitle: string;
@@ -48,6 +50,7 @@ const columns = [
 ];
 
 export default function ProjectTicket({ projectData }: ProjectTicketProps) {
+  const { UniqueCode } = useParams<{ UniqueCode: string }>();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
@@ -55,6 +58,31 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
     direction: "ascending",
   });
   const [userData, setUserData] = useState<{ CustomerId?: number }>({});
+  const [project, setProject] = useState<ProjectData>({
+    ProjectId: 0,
+    ProjectName: "",
+    CompanyId: 0,
+    UniqueCode: "",
+  });
+
+  // Carica i dati del progetto
+  useEffect(() => {
+    if (UniqueCode) {
+      axios
+        .get("/Project/GET/GetProjectByUniqueCode", {
+          params: { UniqueCode },
+        })
+        .then((res) => {
+          setProject(res.data);
+        })
+        .catch((error) => {
+          console.error("Errore durante il recupero del progetto:", error);
+        });
+    } else {
+      // Se le props sono disponibili, usale come fallback
+      setProject(projectData);
+    }
+  }, [UniqueCode, projectData]);
 
   useEffect(() => {
     // Prima recuperiamo i dati dell'utente per ottenere il CustomerId
@@ -68,9 +96,8 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
           setUserData(response.data);
 
           // Ora che abbiamo i dati utente, recuperiamo i ticket
-          if (projectData.ProjectId) {
-            console.log("ProjectId:", projectData);
-            fetchTickets(response.data.CustomerId);
+          if (project.ProjectId) {
+            fetchTickets(response.data.CustomerId, project.ProjectId);
           }
         }
       } catch (error) {
@@ -79,9 +106,9 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
     };
 
     fetchUserData();
-  }, [projectData.ProjectId]);
+  }, [project.ProjectId]);
 
-  async function fetchTickets(customerId: number) {
+  async function fetchTickets(customerId: number, projectId: number) {
     try {
       // Prima otteniamo tutti i ticket dell'utente
       const userTicketsResponse = await axios.get(
@@ -98,7 +125,7 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
       const projectTicketsResponse = await axios.get(
         "/Ticket/GET/GetProjectOpenTicket",
         {
-          params: { ProjectId: projectData.ProjectId },
+          params: { ProjectId: projectId },
         }
       );
 
@@ -148,7 +175,9 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
               <Button
                 as={Link}
                 size="sm"
-                href={`http://localhost:5173/projects/${projectData.UniqueCode}/ticket/${ticket.ProjectTicketId}`}
+                href={`http://localhost:5173/projects/${
+                  project.UniqueCode || UniqueCode
+                }/ticket/${ticket.ProjectTicketId}`}
                 color="primary"
                 radius="sm"
                 isIconOnly
@@ -161,7 +190,7 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
           return cellValue;
       }
     },
-    [projectData]
+    [project, UniqueCode]
   );
 
   const onRowsPerPageChange = React.useCallback(
@@ -173,6 +202,8 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
   );
 
   const topContent = React.useMemo(() => {
+    const uniqueCodeToUse = project.UniqueCode || UniqueCode;
+
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between gap-3 items-end">
@@ -181,9 +212,9 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
               <Button
                 as={Link}
                 href={
-                  projectData.UniqueCode
-                    ? `http://localhost:5173/projects/${projectData.UniqueCode}/open-new-ticket`
-                    : `http://localhost:5173/projects/${projectData.CompanyId}/${projectData.ProjectId}/${projectData.ProjectName}/open-new-ticket`
+                  uniqueCodeToUse
+                    ? `http://localhost:5173/projects/${uniqueCodeToUse}/open-new-ticket`
+                    : `http://localhost:5173/projects/${project.CompanyId}/${project.ProjectId}/${project.ProjectName}/open-new-ticket`
                 }
                 color="primary"
                 radius="sm"
@@ -195,9 +226,9 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
               <Button
                 as={Link}
                 href={
-                  projectData.UniqueCode
-                    ? `http://localhost:5173/projects/${projectData.UniqueCode}/open-new-ticket`
-                    : `http://localhost:5173/projects/${projectData.CompanyId}/${projectData.ProjectId}/${projectData.ProjectName}/open-new-ticket`
+                  uniqueCodeToUse
+                    ? `http://localhost:5173/projects/${uniqueCodeToUse}/open-new-ticket`
+                    : `http://localhost:5173/projects/${project.CompanyId}/${project.ProjectId}/${project.ProjectName}/open-new-ticket`
                 }
                 color="primary"
                 radius="sm"
@@ -211,7 +242,7 @@ export default function ProjectTicket({ projectData }: ProjectTicketProps) {
         </div>
       </div>
     );
-  }, [onRowsPerPageChange, tickets.length, projectData]);
+  }, [onRowsPerPageChange, tickets.length, project, UniqueCode]);
 
   const bottomContent = React.useMemo(() => {
     return (

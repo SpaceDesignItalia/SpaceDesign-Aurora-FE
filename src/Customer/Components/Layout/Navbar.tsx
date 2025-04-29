@@ -91,6 +91,16 @@ export default function Navbar() {
         parentRoute: { href: "/projects", subRoutes: ["/projects/"] },
       }),
     },
+    {
+      name: "Calendario",
+      href: "/calendar",
+      icon: "solar:calendar-linear",
+      requiredCondition: true,
+      current: isSubRoute({
+        currentUrl,
+        parentRoute: { href: "/calendar", subRoutes: ["/calendar/"] },
+      }),
+    },
   ];
 
   function logout() {

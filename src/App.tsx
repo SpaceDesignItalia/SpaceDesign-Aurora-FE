@@ -36,6 +36,7 @@ import AddTicketPage from "./Customer/Pages/Project/AddTicketPage";
 import TicketDetailPage from "./Customer/Pages/Project/TicketDetailPage";
 import SettingsDashboard from "./Employee/Pages/Settings/SettingsDashboard";
 import SettingsCustomerDashboard from "./Customer/Pages/Settings/SettingsCustomerDashboard";
+import CustomerCalendarPage from "./Customer/Pages/Calendar/CalendarPage";
 
 import PasswordRecovery from "./Employee/Components/Login/PasswordRecovery";
 import PasswordReset from "./Employee/Components/Login/PasswordReset";
@@ -172,6 +173,8 @@ const CustomerProtectedRoutes: React.FC = () => {
         <Route element={<SettingsCustomerDashboard />} path="/settings" />
         <Route element={<ProjectCustomerDashboard />} path="/projects" />
         <Route element={<ProjectCustomerPage />} path="/projects/:UniqueCode" />
+        <Route element={<CustomerCalendarPage />} path="/calendar" />
+        <Route element={<CustomerCalendarPage />} path="/calendar/:Action" />
         <Route
           element={<AddTicketPage />}
           path="/projects/:CompanyName/:ProjectId/:ProjectName/open-new-ticket"
